@@ -542,10 +542,14 @@ bloque('Datos · tomas, escenarios y banco');
     const donde = nombreDeToma(idPieza, toma);
     const escenario = toma.escenario;
     if (escenario === null || escenario === undefined || escenario === '') {
-      if (toma.id === idCartela && cartelaSeCompone) {
+      // Cada pieza puede traer su propia cartela marcando la toma con
+      // `cartela: true`. La serie tiene tres —el teaser, el opening y el
+      // ending— y todas son lo mismo: un fotograma negro con el título
+      // compuesto en el montaje, que no es un sitio que se genere.
+      if (toma.cartela === true || (toma.id === idCartela && cartelaSeCompone)) {
         notas.push(
           `${donde} no tiene escenario y se acepta: es la cartela ` +
-            '(cartela.toma), un fotograma negro con el título compuesto en el ' +
+            'de su pieza, un fotograma negro con el título compuesto en el ' +
             'montaje, no un sitio que se genere.'
         );
       } else {

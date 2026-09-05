@@ -1,0 +1,893 @@
+{
+  "_nota": "Opening y ending de la serie. Se generan UNA VEZ y se reutilizan en los doce episodios: no se vuelven a generar nunca, se pegan como capa. herramientas/parche-datos.mjs los mete en datos/serie.json. Los prompts de imagen y vídeo van en inglés porque son para los modelos; todo lo demás, en español.",
+  "_decision_pendiente": "La canción va sin letra, como el canto del teaser. serie.json (musica.letra_mas_adelante) deja abierto en qué idioma canta la madre, y esa decisión es del episodio 10. Cuando se tome, el encargo de estas dos piezas se reescribe con letra y se regeneran las dos: son dos generaciones para toda la serie.",
+  "musica": [
+    {
+      "id": "opening-tema",
+      "duracion_s": 90,
+      "pista": "instrumental con voz sin letra",
+      "encargo": "Opening theme for a bleak adult anime drama, ninety seconds, building. Opens with a single wooden flute alone, the same broken folk melody a mother would hum, unresolved. Low strings enter underneath at fifteen seconds, cold and wide. At thirty seconds a dry hand-drum pulse begins, no reverb, steady and rising. At fifty-five seconds the full ensemble arrives with a wordless female vocalise soaring over it, exhausted rather than triumphant, and the folk melody returns underneath transformed into something harder. Ends on an unresolved chord that hangs. No lyrics of any kind. No brass fanfare, no electronic drums, no synth pads, no uplifting major-key resolution.",
+      "negativo": "lyrics, words, sung words, rap, brass fanfare, electronic drums, synth pads, uplifting resolution, major key triumph, pop production, guitar",
+      "nota": "Es el mismo tema que el lecho del teaser, crecido. Sin letra a propósito: la letra se decide en el episodio 10."
+    },
+    {
+      "id": "ending-tema",
+      "duracion_s": 90,
+      "pista": "instrumental con voz sin letra",
+      "encargo": "Ending theme for a bleak adult anime drama, ninety seconds, almost still. A solo female voice, low breathy mezzo, singing a wordless vocalise alone for the first twenty seconds, close and dry, as if to a child in a dark room. A single sustained low string joins underneath and never moves. At sixty seconds a wooden flute answers the voice once, quietly, and does not finish the phrase. Fades to nothing. No percussion of any kind. No lyrics. No build, no climax, no resolution.",
+      "negativo": "percussion, drums, lyrics, words, choir, harmony, build, climax, brass, electronic elements, reverb wash, pop production",
+      "nota": "La melodía de la madre, la misma del teaser, sin crecer. El ending es lo que queda cuando el episodio termina."
+    }
+  ],
+  "opening": {
+    "titulo": "Opening — La mirada que el mundo temerá",
+    "duracion_s": 90,
+    "fija": true,
+    "nota_fija": "Se genera una vez para toda la serie y se pega como capa en cada episodio. No se regenera por episodio.",
+    "audio": {
+      "musica": [
+        "opening-tema"
+      ],
+      "voz": []
+    },
+    "acabado": {
+      "paso_de_dos": [
+        "OP02",
+        "OP03",
+        "OP04",
+        "OP05",
+        "OP06",
+        "OP08",
+        "OP09",
+        "OP12",
+        "OP13",
+        "OP14",
+        "OP15",
+        "OP16",
+        "OP17",
+        "OP18",
+        "OP19",
+        "OP23",
+        "OP24",
+        "OP25"
+      ],
+      "cadena_ffmpeg": "fps=12,fps=24,rgbashift=rh=-1:bh=1,split[a][b];[b]curves=all='0/0 0.7/0.2 1/1',gblur=sigma=14[glow];[a][glow]blend=all_mode=screen:all_opacity=0.35,noise=alls=7:allf=t+u,vignette=PI/5",
+      "nota": "El paso de dos en los planos con personaje. Los de ambiente y cámara sobre fondo van a 24 limpios, como en un anime real."
+    },
+    "cartela_final": {
+      "es": "LA MIRADA QUE EL MUNDO TEMERÁ"
+    },
+    "tomas": [
+      {
+        "id": "OP01",
+        "inicio": 0,
+        "dur": 4,
+        "dur_gen": 4,
+        "recorte": [
+          0,
+          4
+        ],
+        "veo": "economico",
+        "luz": "CRIPTA",
+        "escenario": "cripta",
+        "refs": [],
+        "encadena_con": null,
+        "boca_visible": null,
+        "imagen": "Extreme low angle of a vaulted stone crypt ceiling, ribbed arches lost in darkness, thick torch smoke drifting across, no figures",
+        "video": "The smoke drifts and the torchlight breathes. Camera cranes slowly upward. Nothing else moves."
+      },
+      {
+        "id": "OP02",
+        "inicio": 4,
+        "dur": 3,
+        "dur_gen": 4,
+        "recorte": [
+          0,
+          3
+        ],
+        "veo": "medio",
+        "luz": "CRIPTA",
+        "escenario": "cripta",
+        "refs": [
+          "madre-cripta"
+        ],
+        "encadena_con": null,
+        "boca_visible": null,
+        "imagen": "Close shot of a gaunt young woman lying on a dark stone altar, head turned to one side, eyes open and empty, orange torchlight raking across her face",
+        "video": "Her eyes stay open. One slow blink and nothing else. Camera locked."
+      },
+      {
+        "id": "OP03",
+        "inicio": 7,
+        "dur": 3,
+        "dur_gen": 4,
+        "recorte": [
+          0,
+          3
+        ],
+        "veo": "medio",
+        "luz": "CRIPTA",
+        "escenario": "cripta",
+        "refs": [
+          "saharis-bebe-cripta"
+        ],
+        "encadena_con": null,
+        "boca_visible": null,
+        "imagen": "Extreme close up of a newborn's red eyes, wide open and unblinking, firelight reflected in them, the rest of the face in deep shadow",
+        "video": "The eyes do not blink. The reflected fire flickers. Very slow push in."
+      },
+      {
+        "id": "OP04",
+        "inicio": 10,
+        "dur": 4,
+        "dur_gen": 4,
+        "recorte": [
+          0,
+          4
+        ],
+        "veo": "medio",
+        "luz": "CRIPTA",
+        "escenario": "cripta",
+        "refs": [
+          "celebrante-mascara"
+        ],
+        "encadena_con": null,
+        "boca_visible": null,
+        "imagen": "Low angle of a figure in a dark robe wearing a leather mask moulded into a demonic grin, torchlight from below, hooded figures behind out of focus",
+        "video": "The mask turns slowly toward camera and stops. Everything else is still."
+      },
+      {
+        "id": "OP05",
+        "inicio": 14,
+        "dur": 3,
+        "dur_gen": 4,
+        "recorte": [
+          0,
+          3
+        ],
+        "veo": "medio",
+        "luz": "BARRIO",
+        "escenario": "barrio-humo",
+        "refs": [
+          "saharis-5-barrio"
+        ],
+        "encadena_con": null,
+        "boca_visible": null,
+        "imagen": "A gaunt five year old boy standing alone in a mud alley in the rain, oversized rag tunic, bare feet, no expression, leaning shacks around him",
+        "video": "Rain falls. He does not move and does not flinch. Camera pushes in very slowly."
+      },
+      {
+        "id": "OP06",
+        "inicio": 17,
+        "dur": 3,
+        "dur_gen": 4,
+        "recorte": [
+          0,
+          3
+        ],
+        "veo": "medio",
+        "luz": "BARRIO",
+        "escenario": "tunel",
+        "refs": [
+          "saharis-10-espalda"
+        ],
+        "encadena_con": null,
+        "boca_visible": null,
+        "imagen": "A ten year old boy seen from behind running through a flooded stone tunnel, shallow water, cold light far ahead",
+        "video": "He runs away from camera through the water, splashing. Camera tracks behind him. Face never visible."
+      },
+      {
+        "id": "OP07",
+        "inicio": 20,
+        "dur": 3,
+        "dur_gen": 4,
+        "recorte": [
+          0,
+          3
+        ],
+        "veo": "medio",
+        "luz": "CRIPTA",
+        "escenario": "academia",
+        "refs": [
+          "saharis-10-cripta"
+        ],
+        "encadena_con": null,
+        "boca_visible": null,
+        "imagen": "A ten year old boy alone at a low desk in a bare stone hall, rows of empty desks around him, torchlight, a blackened writing wall behind",
+        "video": "He writes. Only the hand moves. Camera locked, very slow push in."
+      },
+      {
+        "id": "OP08",
+        "inicio": 23,
+        "dur": 3,
+        "dur_gen": 4,
+        "recorte": [
+          0,
+          3
+        ],
+        "veo": "medio",
+        "luz": "BARRIO",
+        "escenario": "calle",
+        "refs": [
+          "saharis-12-barrio"
+        ],
+        "encadena_con": null,
+        "boca_visible": null,
+        "imagen": "A boy of twelve standing still on wet cobbles between shuttered shopfronts, spaced lamps, people passing him as blurs",
+        "video": "The crowd moves past him; he stays perfectly still and watches. Camera locked."
+      },
+      {
+        "id": "OP09",
+        "inicio": 26,
+        "dur": 4,
+        "dur_gen": 4,
+        "recorte": [
+          0,
+          4
+        ],
+        "veo": "calidad",
+        "luz": "NOBLE",
+        "escenario": "elserath-despacho",
+        "refs": [
+          "saharis-noble",
+          "saharis-ancla"
+        ],
+        "encadena_con": null,
+        "boca_visible": null,
+        "imagen": "A young man of seventeen in an immaculate dark charcoal noble coat standing at a heavy desk, warm gold lamplight, ledgers and sealing wax, no expression",
+        "video": "He lifts his head from the ledger and looks off-frame. Nothing else moves. Camera locked."
+      },
+      {
+        "id": "OP10",
+        "inicio": 30,
+        "dur": 4,
+        "dur_gen": 4,
+        "recorte": [
+          0,
+          4
+        ],
+        "veo": "medio",
+        "luz": "BARRIO",
+        "escenario": "tuneles",
+        "refs": [],
+        "encadena_con": null,
+        "boca_visible": null,
+        "imagen": "A dry stone room under a city, one lantern, and a whole wall covered floor to ceiling in pinned papers, maps, lists and cord",
+        "video": "The lantern flame wavers and the papers stir. Slow lateral pan across the wall."
+      },
+      {
+        "id": "OP11",
+        "inicio": 34,
+        "dur": 4,
+        "dur_gen": 4,
+        "recorte": [
+          0,
+          4
+        ],
+        "veo": "economico",
+        "luz": "NOBLE",
+        "escenario": "consejo",
+        "refs": [],
+        "encadena_con": null,
+        "boca_visible": null,
+        "imagen": "High wide shot of an empty council chamber, a shallow amphitheatre of dark benches around a speaker's floor, gold light and dust from high windows",
+        "video": "Dust drifts in the light shafts. Very slow push in toward the empty floor. Nobody is there."
+      },
+      {
+        "id": "OP12",
+        "inicio": 38,
+        "dur": 3,
+        "dur_gen": 4,
+        "recorte": [
+          0,
+          3
+        ],
+        "veo": "medio",
+        "luz": "NOBLE",
+        "escenario": "elserath-salon",
+        "refs": [
+          "livia-noble"
+        ],
+        "encadena_con": null,
+        "boca_visible": null,
+        "imagen": "A young woman of twenty with dark blonde hair pinned up, wide brown eyes, alert and unafraid, standing among tall windows and faded tapestries",
+        "video": "She turns her head toward camera and almost smiles. Camera locked."
+      },
+      {
+        "id": "OP13",
+        "inicio": 41,
+        "dur": 3,
+        "dur_gen": 4,
+        "recorte": [
+          0,
+          3
+        ],
+        "veo": "medio",
+        "luz": "BARRIO",
+        "escenario": "bosque",
+        "refs": [
+          "eira-barrio"
+        ],
+        "encadena_con": null,
+        "boca_visible": null,
+        "imagen": "A young woman with long silver hair and dark green eyes standing among enormous ancient tree trunks, shafts of daylight, plain undyed linen",
+        "video": "The light shifts through the canopy across her face. She does not move. Camera locked."
+      },
+      {
+        "id": "OP14",
+        "inicio": 44,
+        "dur": 3,
+        "dur_gen": 4,
+        "recorte": [
+          0,
+          3
+        ],
+        "veo": "medio",
+        "luz": "BARRIO",
+        "escenario": "campamento",
+        "refs": [
+          "kael-barrio"
+        ],
+        "encadena_con": null,
+        "boca_visible": null,
+        "imagen": "A man of twenty-five leaning on a crutch, a burn scar across one cheek, standing among hundreds of cloth and mud tents and small fires",
+        "video": "Smoke drifts across the frame. He shifts his weight on the crutch once. Camera locked."
+      },
+      {
+        "id": "OP15",
+        "inicio": 47,
+        "dur": 3,
+        "dur_gen": 4,
+        "recorte": [
+          0,
+          3
+        ],
+        "veo": "medio",
+        "luz": "NOBLE",
+        "escenario": "casa-vharn",
+        "refs": [
+          "deras-noble"
+        ],
+        "encadena_con": null,
+        "boca_visible": null,
+        "imagen": "A young man of eighteen, handsome and certain, black hair oiled back, sharp silver and grey clothing, standing in a cold marble hall",
+        "video": "He turns toward camera with the ease of someone who has never been refused. Camera locked."
+      },
+      {
+        "id": "OP16",
+        "inicio": 50,
+        "dur": 3,
+        "dur_gen": 4,
+        "recorte": [
+          0,
+          3
+        ],
+        "veo": "medio",
+        "luz": "NOBLE",
+        "escenario": "casa-vharn",
+        "refs": [
+          "vharn-noble"
+        ],
+        "encadena_con": null,
+        "boca_visible": null,
+        "imagen": "A lean immaculate man of fifty with iron-grey hair and a cold courteous face, silver and grey, in a hall of marble and silver with no dust",
+        "video": "He looks directly at camera without moving anything else. Camera locked."
+      },
+      {
+        "id": "OP17",
+        "inicio": 53,
+        "dur": 3,
+        "dur_gen": 4,
+        "recorte": [
+          0,
+          3
+        ],
+        "veo": "medio",
+        "luz": "BARRIO",
+        "escenario": "barrio-humo",
+        "refs": [
+          "rothar-barrio"
+        ],
+        "encadena_con": null,
+        "boca_visible": null,
+        "imagen": "A heavy man of twenty-five going soft, dark curly hair, flushed face, good clothes badly worn, standing in a mud alley in the rain",
+        "video": "Rain runs off him. He looks over his shoulder, one step behind. Camera locked."
+      },
+      {
+        "id": "OP18",
+        "inicio": 56,
+        "dur": 3,
+        "dur_gen": 4,
+        "recorte": [
+          0,
+          3
+        ],
+        "veo": "medio",
+        "luz": "CRIPTA",
+        "escenario": "cripta",
+        "refs": [
+          "acolita-cripta"
+        ],
+        "encadena_con": null,
+        "boca_visible": null,
+        "imagen": "A woman with a cadaverous face and shaven head, bone pendants, dark cult robe, lit only by torchlight from below, devout and gentle",
+        "video": "She tilts her head slightly, gently, and holds. Camera locked."
+      },
+      {
+        "id": "OP19",
+        "inicio": 59,
+        "dur": 3,
+        "dur_gen": 4,
+        "recorte": [
+          0,
+          3
+        ],
+        "veo": "calidad",
+        "luz": "CRIPTA",
+        "escenario": "cripta",
+        "refs": [
+          "celebrante-cripta"
+        ],
+        "encadena_con": null,
+        "boca_visible": null,
+        "imagen": "An ordinary old man in his seventies with a mild pleasant face and close-cropped white hair, plain dark robe, torchlight from below, no mask",
+        "video": "He smiles very slightly, kindly, and holds it. Camera locked. Nothing else moves."
+      },
+      {
+        "id": "OP20",
+        "inicio": 62,
+        "dur": 3,
+        "dur_gen": 4,
+        "recorte": [
+          0,
+          3
+        ],
+        "veo": "economico",
+        "luz": "BARRIO",
+        "escenario": "orilla",
+        "refs": [],
+        "encadena_con": null,
+        "boca_visible": null,
+        "imagen": "The river bank below a refugee camp, flat stones, reeds, grey water, a city wall far behind in the haze",
+        "video": "The water moves and the reeds bend. Slow lateral pan. Nobody is there."
+      },
+      {
+        "id": "OP21",
+        "inicio": 65,
+        "dur": 3,
+        "dur_gen": 4,
+        "recorte": [
+          0,
+          3
+        ],
+        "veo": "economico",
+        "luz": "CRIPTA",
+        "escenario": "registros",
+        "refs": [],
+        "encadena_con": null,
+        "boca_visible": null,
+        "imagen": "A vast record vault, shelves of ledgers from floor to ceiling vanishing into darkness, one lantern on the floor",
+        "video": "The lantern light gutters and the shadows shift along the shelves. Very slow push in."
+      },
+      {
+        "id": "OP22",
+        "inicio": 68,
+        "dur": 4,
+        "dur_gen": 4,
+        "recorte": [
+          0,
+          4
+        ],
+        "veo": "medio",
+        "luz": "BARRIO",
+        "escenario": "camino-norte",
+        "refs": [],
+        "encadena_con": null,
+        "boca_visible": null,
+        "imagen": "A bare north road climbing between stone and snow under a cold grey sky, a single line of cart tracks, nobody on it",
+        "video": "Snow drifts across the road. Slow push forward along the tracks."
+      },
+      {
+        "id": "OP23",
+        "inicio": 72,
+        "dur": 4,
+        "dur_gen": 4,
+        "recorte": [
+          0,
+          4
+        ],
+        "veo": "medio",
+        "luz": "NOBLE",
+        "escenario": "elserath-salon",
+        "refs": [
+          "saharis-noble-nuca"
+        ],
+        "encadena_con": "OP24",
+        "boca_visible": null,
+        "imagen": "Medium shot from behind of a young man in an immaculate dark noble coat standing motionless in a great hall while guests move around him",
+        "video": "The guests move around him; he stays perfectly still. Camera pushes slowly toward the back of his head."
+      },
+      {
+        "id": "OP24",
+        "inicio": 76,
+        "dur": 3,
+        "dur_gen": 4,
+        "recorte": [
+          0,
+          3
+        ],
+        "veo": "calidad",
+        "luz": "NOBLE",
+        "escenario": "elserath-salon",
+        "refs": [
+          "saharis-noble-frontal",
+          "saharis-ancla"
+        ],
+        "encadena_con": null,
+        "boca_visible": "saharis",
+        "imagen": "Close up portrait of a seventeen year old man turning to face camera, half his face in warm gold light and half in complete shadow, red eyes, no expression",
+        "video": "He turns his head to camera and holds the look. Nothing else moves. He does not smile."
+      },
+      {
+        "id": "OP25",
+        "inicio": 79,
+        "dur": 4,
+        "dur_gen": 4,
+        "recorte": [
+          0,
+          4
+        ],
+        "veo": "medio",
+        "luz": "NOBLE",
+        "escenario": "elserath-salon",
+        "refs": [
+          "saharis-manos"
+        ],
+        "encadena_con": null,
+        "boca_visible": null,
+        "imagen": "Close shot of an adult male hand slowly opening, a long old ritual scar crossing the palm, a silver signet ring, warm gold light, dark background",
+        "video": "The fingers open fully to reveal the scarred palm. Camera locked. Total stillness."
+      },
+      {
+        "id": "OP26",
+        "inicio": 83,
+        "dur": 4,
+        "dur_gen": 4,
+        "recorte": [
+          0,
+          4
+        ],
+        "veo": "economico",
+        "luz": "CRIPTA",
+        "escenario": "cripta",
+        "refs": [],
+        "encadena_con": null,
+        "boca_visible": null,
+        "imagen": "Wide shot of a crypt altar, empty and dry, no torches, cold grey daylight falling through a collapsed section of the vault above",
+        "video": "Dust drifts slowly in the grey light. Camera locked. Nobody is there."
+      },
+      {
+        "id": "OP27",
+        "inicio": 87,
+        "dur": 3,
+        "dur_gen": 4,
+        "recorte": [
+          0,
+          3
+        ],
+        "veo": "economico",
+        "luz": "CRIPTA",
+        "escenario": null,
+        "cartela": true,
+        "refs": [],
+        "encadena_con": null,
+        "boca_visible": null,
+        "imagen": "Pure black frame",
+        "video": "Black. Title card composited in post, not generated."
+      }
+    ]
+  },
+  "ending": {
+    "titulo": "Ending — La mirada que el mundo temerá",
+    "duracion_s": 90,
+    "fija": true,
+    "nota_fija": "Se genera una vez para toda la serie y se pega como capa en cada episodio. No se regenera por episodio.",
+    "audio": {
+      "musica": [
+        "ending-tema"
+      ],
+      "voz": []
+    },
+    "acabado": {
+      "paso_de_dos": [
+        "ED03",
+        "ED11",
+        "ED12"
+      ],
+      "cadena_ffmpeg": "fps=12,fps=24,rgbashift=rh=-1:bh=1,split[a][b];[b]curves=all='0/0 0.7/0.2 1/1',gblur=sigma=14[glow];[a][glow]blend=all_mode=screen:all_opacity=0.35,noise=alls=7:allf=t+u,vignette=PI/5",
+      "nota": "Casi todo el ending es cámara sobre fondo: va a 24 limpios. El paso de dos solo donde hay una mano o una figura."
+    },
+    "cartela_final": {
+      "es": "LA MIRADA QUE EL MUNDO TEMERÁ"
+    },
+    "tomas": [
+      {
+        "id": "ED01",
+        "inicio": 0,
+        "dur": 6,
+        "dur_gen": 6,
+        "recorte": [
+          0,
+          6
+        ],
+        "veo": "economico",
+        "luz": "CRIPTA",
+        "escenario": "cripta",
+        "refs": [],
+        "encadena_con": null,
+        "boca_visible": null,
+        "imagen": "Wide shot of an empty crypt sanctuary years later, dry and cold, no torches, grey daylight through a collapsed vault, a single dried flower on the altar",
+        "video": "Dust drifts very slowly in the grey light. Camera locked. Nobody is there."
+      },
+      {
+        "id": "ED02",
+        "inicio": 6,
+        "dur": 6,
+        "dur_gen": 6,
+        "recorte": [
+          0,
+          6
+        ],
+        "veo": "economico",
+        "luz": "BARRIO",
+        "escenario": "cripta-celda",
+        "refs": [],
+        "encadena_con": null,
+        "boca_visible": null,
+        "imagen": "A bare stone cell, empty, a rotted straw pallet, one high barred opening throwing a pale shape of light on the floor",
+        "video": "The shape of light creeps almost imperceptibly across the floor. Camera locked."
+      },
+      {
+        "id": "ED03",
+        "inicio": 12,
+        "dur": 6,
+        "dur_gen": 6,
+        "recorte": [
+          0,
+          6
+        ],
+        "veo": "medio",
+        "luz": "BARRIO",
+        "escenario": "cripta-celda",
+        "refs": [
+          "madre-manos"
+        ],
+        "encadena_con": null,
+        "boca_visible": null,
+        "imagen": "Close detail of a woman's very thin scarred hands resting open on a cold stone floor, cold light from above, nothing else in frame",
+        "video": "The hands do not move at all. The light shifts very slightly. Camera locked."
+      },
+      {
+        "id": "ED04",
+        "inicio": 18,
+        "dur": 6,
+        "dur_gen": 6,
+        "recorte": [
+          0,
+          6
+        ],
+        "veo": "economico",
+        "luz": "BARRIO",
+        "escenario": "tuneles",
+        "refs": [],
+        "encadena_con": null,
+        "boca_visible": null,
+        "imagen": "A wall covered floor to ceiling in pinned papers, maps, lists and cord, lit by one guttering lantern, the room empty",
+        "video": "The lantern gutters and the papers stir. Very slow lateral drift. Nobody is there."
+      },
+      {
+        "id": "ED05",
+        "inicio": 24,
+        "dur": 6,
+        "dur_gen": 6,
+        "recorte": [
+          0,
+          6
+        ],
+        "veo": "economico",
+        "luz": "BARRIO",
+        "escenario": "bosque-lago",
+        "refs": [],
+        "encadena_con": null,
+        "boca_visible": null,
+        "imagen": "A still black lake inside an ancient forest at night, moonlight lying flat on the water, reeds at the edge",
+        "video": "The water barely moves. Camera locked. Complete stillness."
+      },
+      {
+        "id": "ED06",
+        "inicio": 30,
+        "dur": 6,
+        "dur_gen": 6,
+        "recorte": [
+          0,
+          6
+        ],
+        "veo": "economico",
+        "luz": "BARRIO",
+        "escenario": "camino-norte",
+        "refs": [],
+        "encadena_con": null,
+        "boca_visible": null,
+        "imagen": "The north road under falling snow, bare hills giving way to stone, cold grey light, no tracks and nobody on it",
+        "video": "Snow falls steadily. Camera locked. Nothing passes."
+      },
+      {
+        "id": "ED07",
+        "inicio": 36,
+        "dur": 6,
+        "dur_gen": 6,
+        "recorte": [
+          0,
+          6
+        ],
+        "veo": "economico",
+        "luz": "BARRIO",
+        "escenario": "kadre",
+        "refs": [],
+        "encadena_con": null,
+        "boca_visible": null,
+        "imagen": "A northern village of dark timber houses under heavy snow at dusk, smoke rising straight from the chimneys, warm light in one window",
+        "video": "The smoke rises. The window light flickers once. Camera locked."
+      },
+      {
+        "id": "ED08",
+        "inicio": 42,
+        "dur": 6,
+        "dur_gen": 6,
+        "recorte": [
+          0,
+          6
+        ],
+        "veo": "economico",
+        "luz": "NOBLE",
+        "escenario": "casa-ilmen",
+        "refs": [],
+        "encadena_con": null,
+        "boca_visible": null,
+        "imagen": "The hearth of a prosperous northern farmhouse, a scrubbed table, boots by the door, warm firelight, the chairs empty",
+        "video": "The fire moves. The room stays empty. Camera locked, almost imperceptible drift in."
+      },
+      {
+        "id": "ED09",
+        "inicio": 48,
+        "dur": 6,
+        "dur_gen": 6,
+        "recorte": [
+          0,
+          6
+        ],
+        "veo": "economico",
+        "luz": "BARRIO",
+        "escenario": "orilla",
+        "refs": [],
+        "encadena_con": null,
+        "boca_visible": null,
+        "imagen": "Flat stones and reeds at a river bank, grey water moving slowly, a city wall far behind in the haze",
+        "video": "The water moves and the reeds bend. Camera locked."
+      },
+      {
+        "id": "ED10",
+        "inicio": 54,
+        "dur": 6,
+        "dur_gen": 6,
+        "recorte": [
+          0,
+          6
+        ],
+        "veo": "economico",
+        "luz": "BARRIO",
+        "escenario": "campamento",
+        "refs": [],
+        "encadena_con": null,
+        "boca_visible": null,
+        "imagen": "A refugee camp by a river at night seen from a distance, hundreds of small fires among cloth and mud tents, smoke over everything",
+        "video": "The fires flicker across the whole field. Camera locked. Very slow drift."
+      },
+      {
+        "id": "ED11",
+        "inicio": 60,
+        "dur": 6,
+        "dur_gen": 6,
+        "recorte": [
+          0,
+          6
+        ],
+        "veo": "medio",
+        "luz": "NOBLE",
+        "escenario": "elserath-despacho",
+        "refs": [
+          "saharis-manos"
+        ],
+        "encadena_con": null,
+        "boca_visible": null,
+        "imagen": "Close shot of a silver signet ring set down on a dark polished desk beside a closed ledger, one oil lamp, an adult male hand withdrawing from frame",
+        "video": "The hand withdraws and leaves the ring. Camera locked. Nothing else moves."
+      },
+      {
+        "id": "ED12",
+        "inicio": 66,
+        "dur": 6,
+        "dur_gen": 6,
+        "recorte": [
+          0,
+          6
+        ],
+        "veo": "medio",
+        "luz": "NOBLE",
+        "escenario": "elserath-salon",
+        "refs": [
+          "saharis-noble-nuca"
+        ],
+        "encadena_con": null,
+        "boca_visible": null,
+        "imagen": "Medium shot from behind of a young man in a dark noble coat standing alone at a tall window, the great hall empty behind him, warm gold light going cold",
+        "video": "He stands without moving. The light fades very slowly. Camera locked. Face never visible."
+      },
+      {
+        "id": "ED13",
+        "inicio": 72,
+        "dur": 6,
+        "dur_gen": 6,
+        "recorte": [
+          0,
+          6
+        ],
+        "veo": "economico",
+        "luz": "CRIPTA",
+        "escenario": "cripta",
+        "refs": [],
+        "encadena_con": null,
+        "boca_visible": null,
+        "imagen": "Close shot of a single dried flower resting on a dark stone altar, recently placed, cold grey daylight from above",
+        "video": "Dust drifts across it. Camera locked. Total stillness."
+      },
+      {
+        "id": "ED14",
+        "inicio": 78,
+        "dur": 6,
+        "dur_gen": 6,
+        "recorte": [
+          0,
+          6
+        ],
+        "veo": "economico",
+        "luz": "BARRIO",
+        "escenario": "elserath-jardin",
+        "refs": [],
+        "encadena_con": null,
+        "boca_visible": null,
+        "imagen": "A walled garden at night, clipped hedges gone slightly wild, gravel paths, cold moonlight, no lamps and nobody there",
+        "video": "The hedges move very slightly. Camera locked."
+      },
+      {
+        "id": "ED15",
+        "inicio": 84,
+        "dur": 6,
+        "dur_gen": 6,
+        "recorte": [
+          0,
+          6
+        ],
+        "veo": "economico",
+        "luz": "CRIPTA",
+        "escenario": null,
+        "cartela": true,
+        "refs": [],
+        "encadena_con": null,
+        "boca_visible": null,
+        "imagen": "Pure black frame",
+        "video": "Black. Title card composited in post, not generated."
+      }
+    ]
+  }
+}

@@ -956,3 +956,48 @@ operación lanzada y perdida es un clip pagado que nadie recoge.
 
 Ningún mensaje de error lleva el nombre dentro: saldría tachado y no serviría de
 nada. Se nombra el prefijo, que sí es útil y no identifica la cuenta.
+
+### 13.6 El opening y el ending
+
+Un animé los tiene, y son **los mismos en los doce episodios**. Faltaban.
+
+| Pieza | Planos | Duración | Música |
+|---|---|---|---|
+| `opening` | 27 | 90 s | `opening-tema` |
+| `ending` | 15 | 90 s | `ending-tema` |
+
+Las dos llevan `fija: true`, y eso quiere decir una cosa concreta: **se generan
+una vez para toda la serie y no se regeneran nunca por episodio.** A 400 planos
+por episodio, regenerarlas doce veces serían 504 planos tirados y —peor— doce
+openings ligeramente distintos, que es justo lo que hace que una serie parezca
+hecha a trozos.
+
+El montaje de un episodio queda:
+
+```
+capas_previas: [ opening.mp4, acto-I.mp4, acto-II.mp4, …, ending.mp4 ]
+```
+
+Todo entra ya montado y la capa de episodio **solo concatena**. La estructura de
+capas de §7 ya lo permitía sin tocar nada: `capas_previas` no distingue entre un
+acto recién montado y un opening de hace tres semanas.
+
+Viven en `datos/opening-ending.json`, que el parche mete en `serie.json`. Están
+aparte para que se puedan leer y corregir sin bucear en el script.
+
+**Dos cosas heredadas del resto del sistema, no inventadas aquí:**
+
+- Los planos usan **solo placas y escenarios que ya existen en el banco**. El
+  opening recorre la cadena de edades de Saharis —bebé, 5, 10, 12, adulto— que es
+  exactamente para lo que esa cadena existe: si esas cinco fueran cinco personas,
+  el opening lo cantaría a la primera.
+- Una toma de cartela se marca con `cartela: true` en la propia toma, y por eso
+  puede no tener escenario. Antes solo había una en toda la serie
+  (`cartela.toma`); ahora hay tres, una por pieza, y el invariante lo comprueba
+  pieza a pieza.
+
+**Lo que queda abierto y no se decide aquí:** la letra. `serie.json`
+(`musica.letra_mas_adelante`) deja pendiente en qué idioma canta la madre, y esa
+decisión es del episodio 10. Hasta entonces las dos piezas van con **voz sin
+letra**, como el canto del teaser. Cuando se decida, se reescribe el encargo y se
+regeneran las dos: son dos generaciones para toda la serie, no veinticuatro.

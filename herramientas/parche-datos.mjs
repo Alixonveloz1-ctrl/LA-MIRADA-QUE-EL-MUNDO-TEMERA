@@ -251,6 +251,50 @@ if (!serie.modelos.texto) {
   anota('modelos.texto añadido (desglose)');
 }
 
+// ---------------------------------------------------------------------------
+// 4. El opening y el ending.
+//
+// Faltaban, y son estructurales: un animé los tiene y son LOS MISMOS en los doce
+// episodios. Se generan UNA VEZ —27 planos el opening, 15 el ending— y a partir
+// de ahí se pegan como capa en cada montaje. Nunca se regeneran por episodio: a
+// 400 planos por episodio, regenerarlos doce veces serían 504 planos tirados y,
+// peor, doce openings ligeramente distintos.
+//
+// Viven en datos/opening-ending.json para que se puedan leer y corregir sin
+// bucear en este script.
+// ---------------------------------------------------------------------------
+
+const opEd = JSON.parse(readFileSync(join(raiz, 'datos/opening-ending.json'), 'utf8'));
+
+for (const pieza of ['opening', 'ending']) {
+  if (serie.piezas[pieza]) continue;
+  serie.piezas[pieza] = opEd[pieza];
+  anota(`pieza «${pieza}» añadida (${opEd[pieza].tomas.length} planos, ${opEd[pieza].duracion_s} s)`);
+}
+
+const yaSuena = new Set(serie.musica.piezas.map((m) => m.id));
+for (const tema of opEd.musica) {
+  if (yaSuena.has(tema.id)) continue;
+  serie.musica.piezas.push(tema);
+  anota(`música «${tema.id}» añadida (${tema.duracion_s} s)`);
+}
+
+if (!serie.episodios.opening_ending) {
+  serie.episodios.opening_ending = {
+    regla:
+      'El opening y el ending se generan UNA VEZ para toda la serie y se pegan como capa en cada ' +
+      'episodio. No se regeneran nunca por episodio.',
+    montaje:
+      'El montaje de un episodio es: opening + acto I + acto II + ... + ending, y todos entran por ' +
+      'capas_previas ya montados. La capa de episodio solo concatena.',
+    por_que:
+      'A 400 planos por episodio, regenerarlos doce veces serían 504 planos tirados y doce ' +
+      'openings ligeramente distintos, que es lo que hace que una serie parezca hecha a trozos.',
+    orden: ['opening', 'actos', 'ending'],
+  };
+  anota('episodios.opening_ending: la regla de generarlos una vez');
+}
+
 serie.meta.version_datos = (serie.meta.version_datos || 0) + 1;
 serie.meta.parche = {
   de: 'datos/serie.base.json',
@@ -273,6 +317,12 @@ for (const [idPieza, pieza] of Object.entries(serie.piezas)) {
     }
     if (toma.escenario && !escenarios.has(toma.escenario)) {
       quejas.push(`${idPieza}/${toma.id}: el escenario "${toma.escenario}" no existe`);
+    }
+    // Una toma sin escenario solo vale si es la cartela: un fotograma negro con
+    // el título compuesto en el montaje, que no es un sitio que se genere.
+    const esCartela = toma.cartela === true || serie.cartela?.toma === toma.id;
+    if (!toma.escenario && !esCartela) {
+      quejas.push(`${idPieza}/${toma.id}: no tiene escenario y no está marcada como cartela`);
     }
   }
 }
