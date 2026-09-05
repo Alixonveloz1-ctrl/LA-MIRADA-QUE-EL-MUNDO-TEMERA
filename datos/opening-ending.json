@@ -667,7 +667,8 @@
         "confirmada": false
       }
     ],
-    "nota_letra": "Los tiempos son PLANEADOS, no medidos. Lyria no canta al segundo lo que se le pide, así que la pantalla de Audio deja escuchar la pista y marcar cada línea con el dedo. Hasta que una línea no está marcada (confirmada:true en el estado), no se quema como subtítulo: un subtítulo que no cuadra con lo que suena es peor que no ponerlo."
+    "nota_letra": "Los tiempos son PLANEADOS, no medidos. Lyria no canta al segundo lo que se le pide, así que la pantalla de Audio deja escuchar la pista y marcar cada línea con el dedo. Hasta que una línea no está marcada (confirmada:true en el estado), no se quema como subtítulo: un subtítulo que no cuadra con lo que suena es peor que no ponerlo.",
+    "letra_aprobada": true
   },
   "ending": {
     "titulo": "Ending — La mirada que el mundo temerá",
@@ -1029,6 +1030,8 @@
         "confirmada": false
       }
     ],
-    "nota_letra": "Los tiempos son PLANEADOS, no medidos. Lyria no canta al segundo lo que se le pide, así que la pantalla de Audio deja escuchar la pista y marcar cada línea con el dedo. Hasta que una línea no está marcada (confirmada:true en el estado), no se quema como subtítulo: un subtítulo que no cuadra con lo que suena es peor que no ponerlo."
-  }
+    "nota_letra": "Los tiempos son PLANEADOS, no medidos. Lyria no canta al segundo lo que se le pide, así que la pantalla de Audio deja escuchar la pista y marcar cada línea con el dedo. Hasta que una línea no está marcada (confirmada:true en el estado), no se quema como subtítulo: un subtítulo que no cuadra con lo que suena es peor que no ponerlo.",
+    "letra_aprobada": true
+  },
+  "_letra_aprobada": "Las dos letras están APROBADAS y no se tocan sin decirlo. El opening lo canta él y recoge las dos frases de la madre del teaser; el ending lo canta ELLA y su centro es su frase palabra por palabra. Por eso cada episodio abre con lo que él decidió ser y cierra con la que lo vio antes. Si algún día hay que cambiar un verso, se cambia aquí, se vuelve a generar la pieza y se vuelven a marcar los tiempos: los de la versión anterior ya no valen."
 }

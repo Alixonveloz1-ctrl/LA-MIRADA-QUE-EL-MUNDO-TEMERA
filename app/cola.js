@@ -1184,8 +1184,26 @@ async function revivirHuerfanos() {
       const desde = Date.parse(trabajo.actualizado);
       if (Number.isFinite(desde) && Date.now() - desde < UMBRAL_HUERFANO_MS) continue;
 
-      if (soloTexto(trabajo.operacion)) {
-        // Ya lanzó lo que tenía que lanzar. Repetirlo cuesta dinero.
+      // Quién puede darse por hecho y quién no, y esto se decide por TIPO, no
+      // por si hay una operación apuntada.
+      //
+      //   · `clip`: al lanzarlo se encoló su `clip-consultar` EN LA MISMA
+      //     escritura, así que hay quien lo recoja. Darlo por hecho es correcto
+      //     y relanzarlo costaría otro euro y dejaría la primera operación
+      //     huérfana.
+      //   · `montaje`: nadie lo recoge. Si se diera por hecho, no se llamaría
+      //     nunca a `montaje-estado`, su salida no quedaría apuntada, y la
+      //     pantalla seguiría viendo esa capa como sin montar. Vuelve a
+      //     pendiente: su ejecutor ya es idempotente —si el trabajo trae
+      //     operación, CONSULTA en vez de relanzar—, así que no se monta dos
+      //     veces.
+      //   · Los demás no llegaron a lanzar nada: vuelven a pendiente y ya está.
+      //
+      // Ojo con la condición: la operación de un clip vale `true`, no una
+      // cadena, porque su nombre lleva el project id dentro y no viaja hasta el
+      // navegador (contrato §13.5). Preguntar por una cadena aquí haría que
+      // TODOS los clips se relanzaran, y eso es dinero.
+      if (trabajo.tipo === 'clip' && trabajo.operacion) {
         trabajo.estado = HECHO;
       } else {
         trabajo.estado = PENDIENTE;
