@@ -45,7 +45,7 @@
 import { llamar, pesos } from '../api.js';
 import { actual, alCambiar } from '../estado.js';
 import { h, pantalla, seccion, tarjeta, boton, aviso, espera, vaciar } from '../ui.js';
-import { bytes, fecha, porcentaje } from '../formato.js';
+import { bytes, fecha, porcentaje, plural } from '../formato.js';
 
 // ---------------------------------------------------------------------------
 // Constantes de la pantalla
@@ -120,6 +120,7 @@ export default {
     // clase «rejilla» para que las tarjetas de dentro se repartan en dos columnas
     // cuando el teléfono se tumba, igual que si colgaran de la sección.
     const huecos = {
+      variables: h('div', { clase: 'rejilla' }),
       cuenta: h('div', { clase: 'rejilla' }),
       bucket: h('div', { clase: 'rejilla' }),
       cors: h('div', { clase: 'rejilla' }),
@@ -143,6 +144,7 @@ export default {
         'Qué modelos tiene permitidos esta cuenta, si el bucket contesta y cuánto pesa cada ' +
         'respuesta. Nada de lo que hay aquí gasta una generación: a cada modelo se le manda la ' +
         'petición más barata que demuestra acceso.'),
+      seccion('Las variables', huecos.variables),
       seccion('La cuenta', huecos.cuenta),
       seccion('El bucket', huecos.bucket),
       seccion('CORS del bucket', huecos.cors),
@@ -206,7 +208,7 @@ export default {
 
         if (fallo) {
           pintarElFalloEntero(huecos.cuenta, fallo);
-          for (const clave of ['bucket', 'cors', 'modelos', 'voces', 'montaje']) {
+          for (const clave of ['bucket', 'cors', 'modelos', 'voces', 'montaje', 'variables']) {
             vaciar(huecos[clave]).appendChild(
               h('p', { clase: 'tenue' },
                 'No se ha podido comprobar: la comprobación no ha llegado a contestar.'));
@@ -214,6 +216,7 @@ export default {
           return;
         }
 
+        pintarVariables(huecos.variables, datos);
         pintarCuenta(huecos.cuenta, datos);
         pintarBucket(huecos.bucket, datos);
         pintarModelos(huecos.modelos, datos);
@@ -1013,4 +1016,78 @@ function loQueDijo(fallo) {
 /** Un objeto de verdad, o uno vacío: así ninguna sección se rompe por un null. */
 function objeto(valor) {
   return valor && typeof valor === 'object' && !Array.isArray(valor) ? valor : {};
+}
+
+/**
+ * Las variables de entorno: cuáles están puestas y cuáles no. Nunca su valor.
+ *
+ * Va la primera de la pantalla cuando falta alguna obligatoria, porque si falta
+ * GCP_SERVICE_ACCOUNT todo lo de abajo sale en rojo por la misma razón y no
+ * tiene sentido leerlo modelo por modelo.
+ *
+ * Cada variable que falta lleva pegada la frase del Redeploy. Esa frase es la
+ * que evita la tarde entera que se pierde cuando alguien pone la variable, la
+ * pantalla sigue diciendo que falta, y se busca el fallo donde no está.
+ */
+function pintarVariables(hueco, datos) {
+  vaciar(hueco);
+
+  const lista = Array.isArray(datos?.variables) ? datos.variables : [];
+  if (!lista.length) {
+    hueco.appendChild(h('p', { clase: 'tenue' },
+      'Esta versión de la función no dice qué variables tiene puestas.'));
+    return;
+  }
+
+  const faltan = lista.filter((v) => v.obligatoria && !v.puesta);
+  const sinPoner = lista.filter((v) => !v.obligatoria && !v.puesta);
+
+  if (faltan.length) {
+    hueco.appendChild(aviso(
+      `Falta ${plural(faltan.length, 'una variable obligatoria', 'variables obligatorias')}: ` +
+      `${faltan.map((v) => v.nombre).join(', ')}. Sin ellas no funciona nada de lo demás.`,
+      { tono: 'error', detalle: REDESPLIEGUE },
+    ));
+  } else {
+    hueco.appendChild(aviso('Todas las obligatorias están puestas.', { tono: 'bien' }));
+  }
+
+  // El sello del despliegue responde a la única pregunta que no se puede
+  // responder de otra forma: si el Redeploy se llegó a hacer.
+  const sello = datos?.despliegue;
+  if (sello && (sello.commit || sello.arrancado)) {
+    hueco.appendChild(h('p', { clase: 'tenue' },
+      'Este despliegue: ' +
+      [sello.commit && `commit ${sello.commit}`, sello.entorno,
+       sello.arrancado && `arrancado ${fecha(sello.arrancado)}`]
+        .filter(Boolean).join(' · ') +
+      '. Si acabas de redesplegar y esto no ha cambiado, el Redeploy no se hizo.'));
+  }
+
+  for (const v of lista) {
+    const acciones = [];
+    if (!v.puesta) {
+      acciones.push(h('p', { clase: 'tenue' }, REDESPLIEGUE));
+    }
+    hueco.appendChild(tarjeta({
+      titulo: v.nombre,
+      // `tarjeta` marca el estado con {tipo, texto} y los tipos son los de
+      // ui.js: 'listo' pinta verde apagado, 'fallido' rojo apagado, 'pendiente'
+      // gris. Y se distinguen también por la palabra, no solo por el color.
+      estado: v.puesta
+        ? { tipo: 'listo', texto: 'Puesta' }
+        : { tipo: v.obligatoria ? 'fallido' : 'pendiente',
+            texto: v.obligatoria ? 'Falta' : 'Sin poner' },
+      pie: v.puesta
+        ? v.para
+        : `${v.para} ${v.obligatoria ? 'Sin ella no arranca nada.' : ''}`.trim(),
+      acciones,
+    }));
+  }
+
+  if (sinPoner.length) {
+    hueco.appendChild(h('p', { clase: 'tenue' },
+      `Hay ${plural(sinPoner.length, 'variable opcional sin poner', 'variables opcionales sin poner')}. ` +
+      'No es un fallo: cada tarjeta dice qué se pierde sin ella.'));
+  }
 }

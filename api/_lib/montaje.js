@@ -565,15 +565,11 @@ function direccionDelJob(ent) {
 }
 
 /**
- * MONTAJE_URL, comprobada.
- *
- * FALTA EN EL CONTRATO: `entorno()` (docs/contrato.md §12) devuelve `montajeJob`
- * y `montajeRegion`, pero no MONTAJE_URL ni MONTAJE_KEY, que llegan con la
- * enmienda §13.4 y salen del instalador del montador. Se leen aquí del entorno,
- * que es de donde sale todo lo de la cuenta; conviene añadirlas a `entorno()`.
+ * MONTAJE_URL, comprobada. Sale de `entorno()`, como todo lo de la cuenta, para
+ * que haya una sola fuente y para que el censor la vea.
  */
 function urlDelMontador() {
-  const crudo = (process.env.MONTAJE_URL || '').trim();
+  const crudo = String(entorno().montajeUrl || '').trim();
   if (!crudo) return null;
 
   // El instalador imprime la dirección del recurso; que alguien la copie con el
@@ -621,9 +617,14 @@ function urlDelMontador() {
   return `https://${direccion.host}${direccion.pathname}`;
 }
 
-/** La clave que solo comparten el endpoint y el montador. Puede no estar. */
+/**
+ * La clave que solo comparten el endpoint y el montador. Puede no estar: sin
+ * ella el montador trabaja igual, pero acepta el encargo de cualquiera. Sale de
+ * `entorno()` para que el censor la tache si alguna vez se cuela en una
+ * respuesta.
+ */
 function claveDelMontador() {
-  return (process.env.MONTAJE_KEY || '').trim() || null;
+  return entorno().montajeKey;
 }
 
 /** Lo que se enseña cuando no hay montador configurado. */

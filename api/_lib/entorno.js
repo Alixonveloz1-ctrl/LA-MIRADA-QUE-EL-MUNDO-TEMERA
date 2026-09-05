@@ -35,9 +35,62 @@ const TACHADO = '«tachado»';
 const VARIABLES = [
   'GCP_SERVICE_ACCOUNT', 'GCS_BUCKET', 'GCS_PREFIX', 'GCP_LOCATION',
   'IMAGE_MODEL', 'VEO_MODEL', 'TTS_MODEL', 'MUSIC_MODEL', 'STT_MODEL', 'TEXTO_MODEL',
-  'MONTAJE_JOB', 'MONTAJE_REGION', 'CONCURRENCIA', 'CLAVE_ACCESO',
+  'MONTAJE_JOB', 'MONTAJE_REGION', 'MONTAJE_URL', 'MONTAJE_KEY',
+  'CONCURRENCIA', 'CLAVE_ACCESO',
   'GCP_PROJECT_NUMBER',
 ];
+
+/**
+ * Lo que hay que saber de cada variable para poder enseñarla en Salud: si es
+ * obligatoria, y qué se pierde si falta.
+ *
+ * Existe porque la trampa de despliegue que más tiempo hace perder es que Vercel
+ * NO aplica una variable nueva a un despliegue ya construido: se pone la
+ * variable, Salud sigue diciendo que falta, y se busca el fallo donde no está.
+ * Para poder decirlo hay que saber primero cuál falta.
+ */
+export const FICHA_DE_VARIABLES = [
+  { nombre: 'GCP_SERVICE_ACCOUNT', obligatoria: true,
+    para: 'El JSON completo de la service account. De aquí sale el project id: nunca de una constante.' },
+  { nombre: 'GCS_BUCKET', obligatoria: true,
+    para: 'El nombre del bucket, sin «gs://». Es la única verdad: estado, banco, keyframes, clips, audio y montajes.' },
+  { nombre: 'GCS_PREFIX', obligatoria: false,
+    para: 'La carpeta del proyecto dentro del bucket. Vacío significa la raíz del bucket.' },
+  { nombre: 'GCP_LOCATION', obligatoria: false,
+    para: 'La región por defecto. Sin ella, us-central1. Los Gemini 3.x van siempre por «global» pase lo que pase.' },
+  { nombre: 'IMAGE_MODEL', obligatoria: false, para: 'Sustituye el modelo de imagen sin tocar código.' },
+  { nombre: 'VEO_MODEL', obligatoria: false, para: 'Sustituye el modelo de vídeo sin tocar código.' },
+  { nombre: 'TTS_MODEL', obligatoria: false, para: 'Sustituye el modelo de voz sin tocar código.' },
+  { nombre: 'MUSIC_MODEL', obligatoria: false, para: 'Sustituye el modelo de música sin tocar código.' },
+  { nombre: 'STT_MODEL', obligatoria: false, para: 'Sustituye el modelo de alineación sin tocar código.' },
+  { nombre: 'TEXTO_MODEL', obligatoria: false, para: 'Sustituye el modelo de texto del desglose sin tocar código.' },
+  { nombre: 'MONTAJE_JOB', obligatoria: false,
+    para: 'El nombre del Job de Cloud Run. Sin él —y sin MONTAJE_URL— no se puede montar, pero todo lo demás funciona.' },
+  { nombre: 'MONTAJE_REGION', obligatoria: false,
+    para: 'La región del Job de Cloud Run. Sin ella se usa la de GCP_LOCATION.' },
+  { nombre: 'MONTAJE_URL', obligatoria: false,
+    para: 'La dirección del montador, tal y como la imprime montador/instalar.sh. Si está, manda sobre MONTAJE_JOB.' },
+  { nombre: 'MONTAJE_KEY', obligatoria: false,
+    para: 'La clave que solo comparten esta función y el montador. Sin ella el montador trabaja igual, pero acepta el encargo de cualquiera.' },
+  { nombre: 'CONCURRENCIA', obligatoria: false,
+    para: 'Cuántas generaciones a la vez como máximo. Sin ella, 3. Saturar las cuotas de Vertex devuelve errores que parecen falta de acceso.' },
+  { nombre: 'CLAVE_ACCESO', obligatoria: false,
+    para: 'El pestillo de la puerta. Sin ella la función queda abierta y cualquiera que dé con la URL gasta el dinero del proyecto.' },
+  { nombre: 'GCP_PROJECT_NUMBER', obligatoria: false,
+    para: 'El número de proyecto, solo para que el censor pueda tacharlo entero. Sin él lo caza igual por el patrón «projects/<dígitos>».' },
+];
+
+/**
+ * Qué variables están puestas y cuáles no, sin devolver ni un valor. Lo usa
+ * Salud, y tiene que funcionar aunque falten las obligatorias: ese es justo el
+ * caso que hay que poder enseñar.
+ */
+export function estadoDeVariables() {
+  return FICHA_DE_VARIABLES.map((f) => ({
+    ...f,
+    puesta: Boolean((process.env[f.nombre] || '').trim()),
+  }));
+}
 
 let cacheHuella = null;
 let cacheValor = null;
@@ -72,6 +125,12 @@ export function entorno() {
     modelos: tablaDeModelos(serie(), region),
     montajeJob: (process.env.MONTAJE_JOB || '').trim() || null,
     montajeRegion: (process.env.MONTAJE_REGION || '').trim() || region,
+    // Las dos que imprime montador/instalar.sh al terminar. Ninguna es
+    // obligatoria: sin ellas no se puede montar, pero todo lo demás del estudio
+    // funciona, y Salud tiene que poder decir que faltan sin que la función se
+    // caiga al arrancar.
+    montajeUrl: (process.env.MONTAJE_URL || '').trim() || null,
+    montajeKey: (process.env.MONTAJE_KEY || '').trim() || null,
     concurrencia: leerConcurrencia(),
     clave: (process.env.CLAVE_ACCESO || '').trim(),
     // FALTA EN EL CONTRATO: el censor tiene que tachar «el número de proyecto»

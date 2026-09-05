@@ -368,6 +368,7 @@ function literalesDe(ent) {
   if (ent.prefijo) apunta(fuera, ent.prefijo);   // el vacío no se tacha: no hay nada que tachar
   apunta(fuera, ent.numeroProyecto);
   apunta(fuera, ent.clave);                      // CLAVE_ACCESO es una credencial
+  apunta(fuera, ent.montajeKey);                 // MONTAJE_KEY también: la comparten esta función y el montador
 
   if (Array.isArray(ent.extras)) for (const extra of ent.extras) apunta(fuera, extra);
 

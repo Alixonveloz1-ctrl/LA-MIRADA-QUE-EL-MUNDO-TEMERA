@@ -44,7 +44,7 @@
 // través de `entorno()`, y cada uno se enseña con la variable que lo sustituye.
 
 import { Buffer } from 'node:buffer';
-import { entorno, enmascarar } from './entorno.js';
+import { entorno, enmascarar, estadoDeVariables } from './entorno.js';
 import { serie } from './datos.js';
 import { ErrorDeCara } from './errores.js';
 import { token, AMBITOS } from './auth.js';
@@ -145,6 +145,21 @@ export async function salud() {
       // bucket», que es distinto de no saberlo.
       prefijo: enmascarar(ent.prefijo),
     },
+
+    // Todas las variables de docs/contrato.md §10 y §13.4, con si están puestas
+    // y qué se pierde sin cada una. Nunca su valor: solo si hay algo o no.
+    //
+    // Existe por la trampa de despliegue que más tiempo hace perder: Vercel NO
+    // aplica una variable nueva a un despliegue ya construido. Se pone la
+    // variable, Salud sigue diciendo que falta, y se busca el fallo donde no
+    // está. Para poder decir «¿la acabas de añadir? hace falta un Redeploy» hay
+    // que saber primero cuál falta, y eso es esta lista.
+    variables: estadoDeVariables(),
+
+    // El sello del despliegue, recortado. Sirve para una sola cosa, pero
+    // importante: saber si el Redeploy se llegó a hacer de verdad. Si después de
+    // redesplegar este sello es el mismo de antes, no se redesplegó.
+    despliegue: selloDelDespliegue(),
 
     // FALTA EN EL CONTRATO: docs/contrato.md §2 dice que Salud «comprueba
     // credenciales» pero no le da sitio en el objeto que devuelve. Se añade con
@@ -519,4 +534,24 @@ function textoDeFallo(fallo) {
 function recorte(texto, maximo) {
   const t = String(texto);
   return t.length <= maximo ? t : `${t.slice(0, maximo)}… (recortado: eran ${t.length} caracteres)`;
+}
+
+/**
+ * Cómo se llama este despliegue, recortado a lo justo para reconocerlo.
+ *
+ * No identifica la cuenta ni el proyecto: es el commit y el momento en que se
+ * construyó. Sirve para responder a la única pregunta que no se puede responder
+ * de otra forma: «¿se ha llegado a hacer el Redeploy?». Si el sello es el mismo
+ * que antes de tocar las variables, no se hizo.
+ */
+function selloDelDespliegue() {
+  const commit = (process.env.VERCEL_GIT_COMMIT_SHA || '').trim();
+  const entorno_ = (process.env.VERCEL_ENV || '').trim();
+  return {
+    commit: commit ? commit.slice(0, 7) : null,
+    entorno: entorno_ || null,
+    // La hora de arranque de este proceso. Dos respuestas seguidas con la misma
+    // hora vienen del mismo arranque; si cambia, la función se ha reiniciado.
+    arrancado: new Date(Date.now() - Math.round(process.uptime() * 1000)).toISOString(),
+  };
 }

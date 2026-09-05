@@ -77,7 +77,7 @@ del repositorio clonado (`cd <repo>`), porque `--source montador` es esta misma
 carpeta y de ella sale el `Dockerfile`:
 
 ```
-gcloud run jobs deploy montador --source montador --region <region> --memory 2Gi --cpu 2 --task-timeout 3600 --max-retries 0 --set-env-vars MONTAJE_CLAVE=<la clave>
+gcloud run jobs deploy montador-mirada --source montador --region <region> --memory 2Gi --cpu 2 --task-timeout 3600 --max-retries 0 --set-env-vars MONTAJE_CLAVE=<la clave>
 ```
 
 - **Job y no servicio**, y esto es una trampa cara: a un *servicio* de Cloud Run
@@ -140,7 +140,7 @@ la pisaría al lanzarse y la comparación no comprobaría nada.
 
 | Variable | Qué es |
 |---|---|
-| `MONTAJE_JOB` | el nombre del trabajo (`montador`, si no le has puesto otro) |
+| `MONTAJE_JOB` | el nombre del trabajo (`montador-mirada`, que es el que pone el instalador) |
 | `MONTAJE_REGION` | su región; si se deja sin poner, se usa la de `GCP_LOCATION` |
 | `MONTAJE_KEY` | la misma clave que `MONTAJE_CLAVE` |
 | `MONTAJE_URL` | opcional. La dirección entera del trabajo, si prefieres darla escrita |
@@ -199,7 +199,7 @@ gcloud run jobs update montador --region <region> --set-env-vars MONTAJE_CLAVE=<
 ```
 
 ```
-gcloud run jobs execute montador --region <region> --wait
+gcloud run jobs execute montador-mirada --region <region> --wait
 ```
 
 Con `--wait` espera a que termine y dice si ha ido bien. Si ha ido mal, lo que

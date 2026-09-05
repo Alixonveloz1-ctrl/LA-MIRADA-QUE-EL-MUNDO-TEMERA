@@ -112,6 +112,12 @@ import { lanzar as lanzarMontaje, estado as estadoDeMontaje } from './montaje.js
  *  400 planos no puede ser 400 peticiones, pero tampoco una sola descomunal. */
 const MAXIMO_RUTAS = 200;
 
+/** Lo que devuelve `listar` como mucho de una vez. A 99 bytes por objeto son
+ *  ~500 KB, la novena parte del tope de 4,5 MB, y deja sitio de sobra aunque el
+ *  día de mañana cada objeto traiga más campos. Lo que no cabe se sigue pidiendo
+ *  con `cursor`, nunca se corta en silencio. */
+const TOPE_LISTAR = 5000;
+
 /** Límite propio de `veo-consultar`, por debajo de los 60 s de la plataforma:
  *  si se agota se contesta `hecho:false` en vez de morir sin excepción. */
 const PLAZO_DE_CONSULTA_MS = 45_000;
@@ -1138,7 +1144,37 @@ async function modoFirmar(cuerpo) {
  */
 async function modoListar(cuerpo) {
   const prefijo = typeof cuerpo.prefijo === 'string' ? cuerpo.prefijo : '';
-  return { objetos: await listarElBucket(prefijo) };
+  const todos = await listarElBucket(prefijo);
+
+  // Tope y cursor, y aquí está el motivo.
+  //
+  // `firmar` y `borrar` tienen tope escrito (200 rutas) porque la petición la
+  // compone quien llama. `listar` era el único modo cuya respuesta la decide lo
+  // que haya en el bucket y no lo que se le pida: a 99 bytes por objeto, la
+  // respuesta se pasa de los 4,5 MB a partir de unos 45.000 objetos.
+  //
+  // Hoy no se llega: un episodio deja ~1.400 objetos entre keyframes y clips, y
+  // la serie entera ~16.800, que es el 37% del tope. Pero ese margen de 2,7
+  // veces lo gasta cualquier cosa que hoy no está ahí —los intentos que nadie
+  // borra, las muestras de voz de cada candidata, los montajes por capas— y el
+  // día que se gaste, el fallo llega como una respuesta cortada que parece un
+  // tiempo agotado. Se pone tope ahora, que cuesta diez líneas.
+  const tope = Math.min(Math.max(Number(cuerpo.tope) || TOPE_LISTAR, 1), TOPE_LISTAR);
+  const desde = typeof cuerpo.cursor === 'string' && cuerpo.cursor ? cuerpo.cursor : null;
+
+  const empieza = desde ? todos.findIndex((o) => o.ruta > desde) : 0;
+  const arranque = empieza < 0 ? todos.length : empieza;
+  const objetos = todos.slice(arranque, arranque + tope);
+  const quedan = todos.length - arranque - objetos.length;
+
+  return {
+    objetos,
+    total: todos.length,
+    // Con cursor, la siguiente llamada sigue por donde esta lo dejó. Sin él, se
+    // sabe que faltan y cuántas: nunca se devuelve una lista corta en silencio.
+    cursor: quedan > 0 ? objetos[objetos.length - 1].ruta : null,
+    quedan: Math.max(0, quedan),
+  };
 }
 
 /**
