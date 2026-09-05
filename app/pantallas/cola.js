@@ -19,11 +19,13 @@
 //     y ya está pagada: abandonarla la dejaría huérfana, con el clip terminado
 //     en el bucket y nadie que lo recoja. Detener para lo que no ha empezado.
 //
-//   · LA CONCURRENCIA ESTÁ A LA VISTA Y SE PUEDE BAJAR. Saturar las cuotas de
-//     Vertex no devuelve «has pasado tu cuota»: devuelve errores que parecen
-//     falta de acceso al modelo, y se acaba buscando el fallo en los permisos de
-//     la cuenta, que es donde no está. Por eso el tope se ve, se toca y se
-//     explica con esa frase escrita al lado.
+//   · UNA GENERACIÓN CADA VEZ, Y NO ES UN AJUSTE. Aquí había un selector de 1 a
+//     8 y venía a 3. Ya no: las cuotas de esta cuenta son cortas y con cuotas
+//     cortas la concurrencia no da velocidad, da fallos. Vertex pasado de cuota
+//     no devuelve «has gastado tu cuota»: devuelve errores que parecen falta de
+//     acceso al modelo, y se acaba buscando el fallo en los permisos, que es
+//     donde no está. Así que se explica la regla en vez de ofrecer una palanca
+//     que solo sirve para romper cosas.
 //
 //   · EL GASTO ES INFORMACIÓN, NO UN LÍMITE. No hay tope, no hay bloqueo y no
 //     hay que pedir permiso para gastar. Lo que hay es la cuenta: cuántas
@@ -48,11 +50,9 @@ import { ErrorDeCara } from '../api.js';
 import { actual, alCambiar, cambiar } from '../estado.js';
 import {
   EVENTO_FALLO_DE_COLA,
-  concurrencia,
   corriendo,
   detener,
   encolarVarios,
-  fijarConcurrencia,
   reanudar,
   resumen
 } from '../cola.js';
@@ -100,9 +100,6 @@ const PRECIOS = {
 // ---------------------------------------------------------------------------
 // Números y palabras fijas de esta pantalla
 // ---------------------------------------------------------------------------
-
-/** Los topes de concurrencia que se ofrecen. Uno por dedo. */
-const TOPES = [1, 2, 3, 4, 5, 6, 7, 8];
 
 /**
  * Cuántas veces insiste la cola antes de rendirse con un error reintentable:
@@ -364,7 +361,7 @@ function construir(repintar) {
 }
 
 // ---------------------------------------------------------------------------
-// El mando: cómo va, detener, reanudar y el tope de concurrencia
+// El mando: cómo va, detener, reanudar y la regla de una cada vez
 // ---------------------------------------------------------------------------
 
 /**
@@ -516,62 +513,35 @@ function frasesDelResumen(cuenta, parada) {
 }
 
 /**
- * El tope de generaciones a la vez, con la frase que explica por qué existe.
+ * La regla de una generación cada vez, dicha en pantalla.
+ *
+ * ESTO ERA UN SELECTOR de 1 a 8 y ya no lo es. Con las cuotas de esta cuenta,
+ * subir el número no va más rápido: tumba la tanda entera y hay que reintentarla,
+ * y los errores que llegan no dicen «cuota», dicen cosas que parecen falta de
+ * acceso al modelo. Así que no es un ajuste, es una regla, y lo que se hace aquí
+ * es explicarla en vez de ofrecer una palanca que solo sirve para romper cosas.
+ *
  * @param {object} ctx
  * @returns {HTMLElement}
  */
 function bloqueDeConcurrencia(ctx) {
-  const puesta = concurrencia();
-  const numeros = TOPES.includes(puesta) ? TOPES : [...TOPES, puesta].sort((a, b) => a - b);
-
-  const fila = h('div', {
-    clase: 'filtro',
-    role: 'group',
-    'aria-label': 'Generaciones a la vez'
-  });
-
-  for (const numero of numeros) {
-    const activa = numero === puesta;
-    fila.appendChild(
-      h(
-        'button',
-        {
-          type: 'button',
-          clase: ['pastilla', activa && 'activa'],
-          'aria-pressed': activa ? 'true' : 'false',
-          'aria-label': `${numero} generaciones a la vez`,
-          alClic: async () => {
-            if (numero === puesta) return;
-            try {
-              await fijarConcurrencia(numero);
-              queja = null;
-            } catch (fallo) {
-              queja = comoErrorDeCara(fallo);
-            }
-            ctx.repintar();
-          }
-        },
-        h('span', { clase: 'pastilla-texto' }, String(numero))
-      )
-    );
-  }
-
   return h(
     'div',
     null,
     h(
       'p',
       { clase: 'suave', estilo: { margin: '0 0 var(--espacio-2)' } },
-      `Generaciones a la vez: ${puesta}.`
+      'Una generación cada vez.'
     ),
-    fila,
     h(
       'p',
-      { clase: 'tenue', estilo: { 'font-size': '13px', 'margin-top': 'var(--espacio-2)' } },
-      'Subirlo va más rápido hasta que deja de ir: pasadas las cuotas de Vertex, lo que llega no ' +
-        'es «has gastado tu cuota», son errores que parecen falta de acceso al modelo, y se acaba ' +
-        'buscando el fallo en los permisos de la cuenta, que es donde no está. Si empiezan a salir ' +
-        'fallos raros de golpe, lo primero que hay que probar es bajar este número.'
+      { clase: 'tenue', estilo: { 'font-size': '13px', margin: '0' } },
+      'Termina una, empieza la siguiente. Aunque pidas diez voces de golpe, se genera la primera ' +
+        'y las otras nueve esperan su turno en esta cola, en orden. No hay un número que subir: ' +
+        'con las cuotas de esta cuenta, pedir varias a la vez no va más rápido, tumba la tanda ' +
+        'entera, y lo que llega no es «has gastado tu cuota» sino errores que parecen falta de ' +
+        'acceso al modelo, que es donde nunca está el fallo. Vale para todo: imágenes, clips, ' +
+        'voces, música y montajes.'
     )
   );
 }

@@ -207,6 +207,30 @@ que se probaba un solo nombre— y por eso hoy se mide en vez de darse por hecho
 
 ---
 
+### Una generación cada vez
+
+**Todo pasa por la cola y se hace de una en una.** Imágenes, clips, voces,
+música, montajes y las muestras para elegir voz: no hay ninguna pantalla que
+llame a un modelo por su cuenta. Aunque pidas diez voces de golpe, se genera la
+primera y las otras nueve esperan su turno, en orden.
+
+No es un ajuste. Aquí había un selector de 1 a 8 que venía a 3, y se ha quitado:
+con las cuotas de una cuenta nueva, subirlo no va más rápido, tumba la tanda
+entera. Y Vertex pasado de cuota **no** contesta «has gastado tu cuota»:
+contesta un 429 que en pantalla se lee como falta de acceso al modelo, y se
+acaba buscando el fallo en los permisos, que es donde nunca está. La variable
+`CONCURRENCIA` también se ha quitado — no la leía nadie.
+
+El hueco se cuenta sobre el estado del **bucket**, no sobre la pestaña que
+tienes delante, así que «una cada vez» vale para todo el estudio aunque dejes
+otra ventana abierta. Para poder distinguir «lo está haciendo otro» de «lo cogió
+un navegador que ya no existe», quien trabaja refresca la hora de su trabajo
+cada quince segundos; sin latido durante cuarenta y cinco, ese trabajo vuelve a
+la cola. Por eso, al recargar la página, lo que se quedó a medias vuelve solo en
+menos de un minuto en vez de bloquear el estudio durante cuatro.
+
+---
+
 ## Antes de desplegar
 
 ```

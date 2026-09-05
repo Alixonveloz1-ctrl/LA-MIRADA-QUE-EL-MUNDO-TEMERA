@@ -24,8 +24,6 @@ import { ErrorDeCara } from './errores.js';
 const RUTA_SERIE = new URL('../../datos/serie.json', import.meta.url);
 
 const REGION_POR_DEFECTO = 'us-central1';
-const CONCURRENCIA_POR_DEFECTO = 3;
-const CONCURRENCIA_MAXIMA = 20;
 const NIVELES = ['calidad', 'medio', 'economico'];
 
 /** Lo mismo que pone el censor. Un valor tachado se lee igual en todas partes. */
@@ -36,7 +34,7 @@ const VARIABLES = [
   'GCP_SERVICE_ACCOUNT', 'GCS_BUCKET', 'GCS_PREFIX', 'GCP_LOCATION',
   'IMAGE_MODEL', 'VEO_MODEL', 'TTS_MODEL', 'MUSIC_MODEL', 'STT_MODEL', 'TEXTO_MODEL',
   'MONTAJE_JOB', 'MONTAJE_REGION', 'MONTAJE_URL', 'MONTAJE_KEY',
-  'CONCURRENCIA', 'CLAVE_ACCESO',
+  'CLAVE_ACCESO',
   'GCP_PROJECT_NUMBER',
 ];
 
@@ -72,8 +70,6 @@ export const FICHA_DE_VARIABLES = [
     para: 'NO hace falta ponerla: la dirección se compone sola con el proyecto, la región y el nombre del Job. Solo si el montador está en otro sitio.' },
   { nombre: 'MONTAJE_KEY', obligatoria: false,
     para: 'La clave que solo comparten esta función y el montador. Sin ella el montaje funciona igual: lanzar el Job ya exige las credenciales de la cuenta. Es un cinturón de más, no un requisito.' },
-  { nombre: 'CONCURRENCIA', obligatoria: false,
-    para: 'Cuántas generaciones a la vez como máximo. Sin ella, 3. Saturar las cuotas de Vertex devuelve errores que parecen falta de acceso.' },
   { nombre: 'CLAVE_ACCESO', obligatoria: false,
     para: 'El pestillo de la puerta. Sin ella la función queda abierta y cualquiera que dé con la URL gasta el dinero del proyecto.' },
   { nombre: 'GCP_PROJECT_NUMBER', obligatoria: false,
@@ -102,7 +98,13 @@ let cacheSerie = null;
 
 /**
  * → { sa, bucket, prefijo, region, modelos, montajeJob, montajeRegion,
- *     concurrencia, clave, numeroProyecto }
+ *     montajeUrl, montajeKey, clave, numeroProyecto }
+ *
+ * Ya no hay `concurrencia`: el estudio genera de una en una y la variable
+ * CONCURRENCIA se ha quitado. No la leía nadie en el servidor —la cola vive en
+ * el navegador— y ofrecerla invitaba a subirla, que con las cuotas de una cuenta
+ * nueva es la forma más rápida de llenar la pantalla de errores que parecen
+ * falta de acceso a los modelos.
  *
  * `sa` es el JSON de la service account ya parseado. `modelos` es
  * { imagen:{calidad,medio,economico}, veo:{calidad,medio,economico},
@@ -142,7 +144,6 @@ export function entorno() {
     // caiga al arrancar.
     montajeUrl: (process.env.MONTAJE_URL || '').trim() || null,
     montajeKey: (process.env.MONTAJE_KEY || '').trim() || null,
-    concurrencia: leerConcurrencia(),
     clave: (process.env.CLAVE_ACCESO || '').trim(),
     // FALTA EN EL CONTRATO: el censor tiene que tachar «el número de proyecto»
     // (§3) y ese número no viene en el JSON de la service account, que solo trae
@@ -301,24 +302,6 @@ function leerBucket() {
 function leerPrefijo() {
   const crudo = (process.env.GCS_PREFIX || '').trim();
   return crudo.replace(/^\/+/, '').replace(/\/+$/, '');
-}
-
-function leerConcurrencia() {
-  const crudo = (process.env.CONCURRENCIA || '').trim();
-  if (!crudo) return CONCURRENCIA_POR_DEFECTO;
-
-  const n = Number(crudo);
-  if (!Number.isInteger(n) || n < 1) {
-    throw new ErrorDeCara(
-      `CONCURRENCIA está puesta como "${crudo}" y tiene que ser un número entero de 1 en ` +
-      'adelante: cuántas generaciones se lanzan a la vez como máximo. Si se deja sin poner, ' +
-      `son ${CONCURRENCIA_POR_DEFECTO}. Subirla mucho no va más rápido: satura la cuota de ` +
-      'Vertex y devuelve errores que parecen falta de acceso.',
-      { http: 500 },
-    );
-  }
-  // Por encima del tope la cuota de Vertex empieza a devolver 429 en cadena.
-  return Math.min(n, CONCURRENCIA_MAXIMA);
 }
 
 // ---------------------------------------------------------------------------

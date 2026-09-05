@@ -14,11 +14,21 @@
 // encola veinticuatro y deja los otros veinticuatro como estaban. Reencolar es
 // seguro por construcción, no por acordarse de comprobarlo.
 //
-// POR QUÉ HAY UN TOPE DE CONCURRENCIA Y ESTÁ A LA VISTA. Saturar las cuotas de
-// Vertex no devuelve «has pasado tu cuota»: devuelve errores que parecen falta de
-// acceso al modelo, y se acaba buscando el fallo en los permisos de la cuenta,
-// que es donde no está. Por eso el tope existe (tres por defecto), se lee del
-// estado y se puede bajar desde la pantalla de Cola sin tocar código.
+// POR QUÉ SE GENERA UNA COSA CADA VEZ, Y NO ES UN AJUSTE. Esto era un tope de 1
+// a 12 que venía a 3 y se tocaba desde la pantalla de Cola. Ya no. Las cuotas de
+// esta cuenta son cortas, y con cuotas cortas la concurrencia no es una palanca
+// de velocidad: es una fuente de fallos. Vertex pasado de cuota NO devuelve «has
+// gastado tu cuota», devuelve un 429 que se lee como falta de acceso al modelo, y
+// se acaba buscando el fallo en los permisos de la cuenta, que es donde no está.
+// Termina una, empieza la siguiente; pedir diez de golpe son diez trabajos en la
+// cola y una sola llamada en vuelo.
+//
+// Y el hueco se cuenta sobre el estado del BUCKET, no sobre esta pestaña: un
+// trabajo «en curso» lo está haciendo alguien, aquí o en el ordenador que quedó
+// abierto. Así «una cada vez» vale para todo el estudio y no solo para esta
+// ventana. Quien trabaja late —refresca la hora de lo que tiene cogido cada
+// quince segundos— para que se pueda distinguir «lo está haciendo otro» de «lo
+// cogió un navegador que ya no existe».
 //
 // POR QUÉ SE ESCRIBE EL ESTADO POR TANDAS Y NO POR TRABAJO. Cada escritura de
 // `estado.json` es una petición con su condición de generación. Con 400 planos,
@@ -51,15 +61,22 @@ import { bytes as enBytes } from './formato.js';
 // Números que gobiernan la cola
 // ---------------------------------------------------------------------------
 
-/** Cuántos trabajos a la vez si el estado no dice otra cosa (contrato §10). */
-const CONCURRENCIA_POR_DEFECTO = 3;
-
 /**
- * El techo de lo que se puede subir desde la pantalla. Por encima de esto las
- * cuotas de Vertex empiezan a devolver errores que parecen falta de acceso, que
- * es exactamente el fallo que este tope existe para no provocar.
+ * UNA GENERACIÓN CADA VEZ. Una, no tres, y no se puede subir.
+ *
+ * Esto era un ajuste de pantalla con valores de 1 a 12 y venía a 3. Ya no: esta
+ * cuenta de Google es nueva y sus cuotas son cortas, y con cuotas cortas la
+ * concurrencia no es una palanca de velocidad, es una fuente de fallos. Vertex
+ * pasado de cuota NO contesta «has gastado tu cuota»: contesta un 429 que se lee
+ * como falta de acceso al modelo, y se acaba buscando el fallo en los permisos,
+ * que es donde no está.
+ *
+ * Así que se pide de una en una: termina una, empieza la siguiente. Diez voces
+ * pedidas de golpe son diez trabajos en la cola y una sola llamada en vuelo.
+ * Tarda más y llega siempre, que con estas cuotas es más rápido que ir de tres
+ * en tres y reintentar.
  */
-const CONCURRENCIA_MAXIMA = 12;
+const A_LA_VEZ = 1;
 
 /**
  * Las esperas entre reintentos, en milisegundos. Cuatro y se para: 2, 4, 8, 16.
@@ -87,7 +104,35 @@ const ESPERA_MONTAJE_MAX = 120000;
  * trabajo a alguien que lo está haciendo sería generarlo dos veces y pagarlo dos
  * veces.
  */
-const UMBRAL_HUERFANO_MS = 4 * 60 * 1000;
+const UMBRAL_HUERFANO_MS = 45 * 1000;
+
+/**
+ * Cada cuánto el que está trabajando dice «sigo aquí», refrescando la hora del
+ * trabajo que tiene cogido.
+ *
+ * SIN ESTO EL UMBRAL DE ARRIBA TENÍA QUE SER ENORME. Antes eran cuatro minutos,
+ * y el motivo estaba escrito: sin latido no hay forma de distinguir «este
+ * trabajo lo cogió un navegador que ya se cerró» de «lo está haciendo la otra
+ * pestaña ahora mismo», y revivirle un trabajo a quien lo está haciendo es
+ * pagarlo dos veces. Pero con una sola generación a la vez esos cuatro minutos
+ * se notan: recargas la página y el estudio se queda parado hasta que caduque el
+ * trabajo que se quedó a medias.
+ *
+ * Con el latido la diferencia sí se ve: quien está trabajando refresca la hora
+ * cada quince segundos, y quien se cerró deja de refrescarla. Cuarenta y cinco
+ * segundos sin latir son tres latidos perdidos: ya no hay nadie.
+ *
+ * Cuesta una escritura del estado cada quince segundos y SOLO mientras hay algo
+ * generándose, que con una generación a la vez es como mucho una cada quince
+ * segundos en todo el estudio.
+ */
+const LATIDO_DEL_TRABAJO_MS = 15 * 1000;
+
+/**
+ * Cuánto se espera cuando hay algo generándose y no queda hueco. Corto: en
+ * cuanto el otro termine hay que coger lo siguiente sin dejar la cuota parada.
+ */
+const ESPERA_SI_HAY_ALGUIEN_MS = 1500;
 
 /** Cuántos trabajos terminados se guardan antes de empezar a tirar los viejos. */
 const MAX_HECHAS = 200;
@@ -437,6 +482,13 @@ const NORMALIZADORES = {
     return { args, identidad: args };
   },
 
+  muestra(crudos) {
+    const personaje = exigirArg(crudos, ['personaje'], 'de qué personaje es la frase de muestra');
+    const voz_id = exigirArg(crudos, ['voz_id', 'voz'], 'qué voz candidata tiene que decirla');
+    const args = { personaje, voz_id };
+    return { args, identidad: args };
+  },
+
   musica(crudos) {
     const pieza = exigirArg(crudos, ['pieza'], 'de qué pieza es esta música');
     const id = exigirArg(crudos, ['id', 'musica'], 'qué pieza de música se genera');
@@ -590,6 +642,64 @@ export function encolar(tipo, args) {
 }
 
 /**
+ * Cómo va un trabajo, preguntando por lo mismo con lo que se encoló.
+ *
+ * Existe porque con una generación a la vez lo normal ya no es «se está
+ * generando»: es «está esperando su turno». Una pantalla que solo sepa distinguir
+ * hecho de no hecho deja al usuario mirando un botón que no hace nada aparente,
+ * y pulsándolo otra vez.
+ *
+ * @param {string} tipo
+ * @param {object} args los mismos que se le pasaron a `encolar`
+ * @returns {string|null} `pendiente`, `en_curso`, `hecho`, `fallido`,
+ *   `detenido`, o null si ese trabajo no está en la cola
+ */
+export function comoVa(tipo, args) {
+  let id;
+  try {
+    id = prepararEncolado(tipo, args).id;
+  } catch {
+    return null; // Argumentos que no valen: no hay tal trabajo.
+  }
+
+  try {
+    const trabajo = buscarEnCola(actual(), id);
+    return trabajo ? trabajo.estado : null;
+  } catch {
+    return null; // Todavía no hay estado que mirar.
+  }
+}
+
+/**
+ * Cuántos trabajos hay por delante de este en la cola, sin contarlo a él.
+ * Sirve para decir «el cuarto de la cola» en vez de un «esperando» sin más.
+ *
+ * @param {string} tipo
+ * @param {object} args
+ * @returns {number}
+ */
+export function cuantosPorDelante(tipo, args) {
+  let id;
+  try {
+    id = prepararEncolado(tipo, args).id;
+  } catch {
+    return 0;
+  }
+
+  try {
+    const cola = colaDe(actual());
+    const donde = cola.findIndex((trabajo) => trabajo && trabajo.id === id);
+    if (donde < 0) return 0;
+    return cola
+      .slice(0, donde)
+      .filter((trabajo) => trabajo && (trabajo.estado === PENDIENTE || trabajo.estado === EN_CURSO))
+      .length;
+  } catch {
+    return 0;
+  }
+}
+
+/**
  * Mete muchos trabajos de una vez y con una sola escritura del estado. Es lo que
  * usa el botón de «desglosar el episodio» (24 escenas) o el de «generar los
  * keyframes que faltan» (400 planos): encolarlos uno a uno serían 400 escrituras.
@@ -699,64 +809,17 @@ function aplicarCambios(cambios, estado) {
 // ---------------------------------------------------------------------------
 
 /**
- * Cuántos trabajos a la vez, según el estado.
- * @param {object} estado
- * @returns {number}
- */
-function topeDe(estado) {
-  const dicho = Number(estado && estado.concurrencia);
-  if (!Number.isFinite(dicho) || dicho < 1) return CONCURRENCIA_POR_DEFECTO;
-  return Math.min(Math.floor(dicho), CONCURRENCIA_MAXIMA);
-}
-
-/**
- * El tope de trabajos a la vez que hay puesto ahora mismo.
- * @returns {number}
+ * Cuántas generaciones se admiten a la vez. Una. Siempre.
  *
- * FALTA EN EL CONTRATO: §8 dice que la concurrencia es «visible y ajustable en
- * pantalla» y §10 le da un valor por defecto, pero §12 no da la función para
- * leerla ni para cambiarla, y §5 no la escribe en el estado. Se guarda en
- * `estado.concurrencia` y se lee y se fija con estas dos. Que se revise.
+ * Es una función y no una constante suelta porque el bucle pregunta por ella en
+ * cada vuelta y así se lee lo que hace: no hay ningún caso en el que devuelva
+ * otra cosa, y no se lee del estado —un valor viejo guardado en el bucket no
+ * puede volver a poner tres—.
+ *
+ * @returns {number}
  */
 export function concurrencia() {
-  try {
-    return topeDe(actual());
-  } catch {
-    return CONCURRENCIA_POR_DEFECTO;
-  }
-}
-
-/**
- * Cambia el tope de trabajos a la vez y lo guarda en el bucket, para que siga
- * puesto al volver a abrir.
- * @param {number} cuantas entre 1 y `CONCURRENCIA_MAXIMA`
- * @returns {Promise<number>} el tope que ha quedado
- *
- * FALTA EN EL CONTRATO: ver `concurrencia()`.
- */
-export async function fijarConcurrencia(cuantas) {
-  const pedida = Number(cuantas);
-  if (!Number.isFinite(pedida) || pedida < 1) {
-    throw new ErrorDeCara(
-      'El número de generaciones a la vez tiene que ser uno o más. Con menos no se generaría nada.',
-      { reintentable: false, http: 400 }
-    );
-  }
-  if (pedida > CONCURRENCIA_MAXIMA) {
-    throw new ErrorDeCara(
-      `Más de ${CONCURRENCIA_MAXIMA} generaciones a la vez satura las cuotas de Vertex, y cuando ` +
-        'eso pasa los errores que llegan parecen falta de acceso al modelo aunque la cuenta lo ' +
-        `tenga. Deja el tope en ${CONCURRENCIA_MAXIMA} o menos.`,
-      { reintentable: false, http: 400 }
-    );
-  }
-
-  const tope = Math.floor(pedida);
-  await cambiar((estado) => {
-    estado.concurrencia = tope;
-  });
-  despertarBucle();
-  return tope;
+  return A_LA_VEZ;
 }
 
 // ---------------------------------------------------------------------------
@@ -901,17 +964,44 @@ async function bucle() {
       continue;
     }
 
-    const tanda = listos.slice(0, topeDe(estado));
+    // EL HUECO SE CUENTA SOBRE EL ESTADO DEL BUCKET, no sobre esta pestaña.
+    //
+    // Un trabajo «en curso» lo está haciendo alguien: esta pestaña, o la que se
+    // dejó abierta en el ordenador. Si el hueco se contara solo con lo que esta
+    // pestaña tiene en vuelo, dos pestañas harían dos generaciones a la vez sin
+    // enterarse la una de la otra, que es exactamente lo que no puede pasar con
+    // estas cuotas. Contándolo aquí, «una cada vez» vale para todo el estudio y
+    // no solo para esta ventana.
+    //
+    // Los huérfanos no cuentan: ese trabajo lo cogió un navegador que ya no
+    // existe, y `revivirHuerfanos` lo devolverá a la cola.
+    const trabajando = cola.filter(
+      (trabajo) => trabajo && trabajo.estado === EN_CURSO && !pareceHuerfano(trabajo, ahora)
+    ).length;
+
+    const huecos = concurrencia() - trabajando;
+
+    if (huecos < 1) {
+      // Hay algo generándose. Se espera y se vuelve a mirar; si quien lo cogió
+      // ya no está, el repaso de huérfanos lo devolverá a pendiente.
+      await dormir(ESPERA_SI_HAY_ALGUIEN_MS);
+      await revivirHuerfanos();
+      continue;
+    }
+
+    const tanda = listos.slice(0, huecos);
     const cogidos = await cogerLaTanda(tanda);
     if (!cogidos.length) continue;
 
     for (const trabajo of cogidos) enVuelo.add(trabajo.id);
+    const parar = empezarElLatido();
     try {
       const { valor: resoluciones, cambios } = await conCuaderno(() =>
         Promise.all(cogidos.map((trabajo) => ejecutarUno(trabajo)))
       );
       await escribirLaTanda(cambios, resoluciones);
     } finally {
+      parar();
       for (const trabajo of cogidos) enVuelo.delete(trabajo.id);
     }
   }
@@ -1158,15 +1248,58 @@ async function revivirLoQueQuedoAMedias() {
  *
  * @returns {Promise<void>}
  */
+/**
+ * ¿Este trabajo en curso lo dejó tirado un navegador que ya no existe?
+ *
+ * Lo que está haciendo ESTA pestaña nunca es huérfano —lo dice `enVuelo`— y lo
+ * que está haciendo otra tampoco, mientras siga latiendo: quien trabaja refresca
+ * la hora del trabajo cada `LATIDO_DEL_TRABAJO_MS`. Sin latido durante
+ * `UMBRAL_HUERFANO_MS`, no hay nadie.
+ *
+ * @param {object} trabajo
+ * @param {number} ahora en milisegundos
+ * @returns {boolean}
+ */
+function pareceHuerfano(trabajo, ahora) {
+  if (!trabajo || trabajo.estado !== EN_CURSO) return false;
+  if (enVuelo.has(trabajo.id)) return false;
+  const desde = Date.parse(trabajo.actualizado);
+  if (!Number.isFinite(desde)) return true; // Sin hora no hay a quién esperar.
+  return ahora - desde >= UMBRAL_HUERFANO_MS;
+}
+
+/**
+ * Dice «sigo aquí» mientras esta pestaña trabaja, refrescando la hora de lo que
+ * tiene cogido. Devuelve cómo pararlo.
+ *
+ * Si el navegador se cierra o se recarga, los latidos paran solos y el trabajo
+ * queda huérfano a los cuarenta y cinco segundos, no a los cuatro minutos.
+ *
+ * @returns {() => void}
+ */
+function empezarElLatido() {
+  const reloj = setInterval(() => {
+    if (!enVuelo.size) return;
+    escribirYa((estado) => {
+      const cuando = ahoraIso();
+      for (const trabajo of colaDe(estado)) {
+        if (trabajo && trabajo.estado === EN_CURSO && enVuelo.has(trabajo.id)) {
+          trabajo.actualizado = cuando;
+        }
+      }
+    });
+  }, LATIDO_DEL_TRABAJO_MS);
+
+  return () => clearInterval(reloj);
+}
+
 async function revivirHuerfanos() {
   let hayAlguno = false;
 
   try {
+    const ahora = Date.now();
     for (const trabajo of colaDe(actual())) {
-      if (!trabajo || trabajo.estado !== EN_CURSO) continue;
-      if (enVuelo.has(trabajo.id)) continue;
-      const desde = Date.parse(trabajo.actualizado);
-      if (Number.isFinite(desde) && Date.now() - desde < UMBRAL_HUERFANO_MS) continue;
+      if (!pareceHuerfano(trabajo, ahora)) continue;
       hayAlguno = true;
       break;
     }
@@ -1178,11 +1311,9 @@ async function revivirHuerfanos() {
 
   await cambiar((estado) => {
     const cuando = ahoraIso();
+    const ahora = Date.now();
     for (const trabajo of colaDe(estado)) {
-      if (!trabajo || trabajo.estado !== EN_CURSO) continue;
-      if (enVuelo.has(trabajo.id)) continue;
-      const desde = Date.parse(trabajo.actualizado);
-      if (Number.isFinite(desde) && Date.now() - desde < UMBRAL_HUERFANO_MS) continue;
+      if (!pareceHuerfano(trabajo, ahora)) continue;
 
       // Quién puede darse por hecho y quién no, y esto se decide por TIPO, no
       // por si hay una operación apuntada.
@@ -1239,7 +1370,10 @@ export async function recuperarOperaciones() {
   const cuenta = { consultadas: pendientes.length, terminadas: 0, enVuelo: 0, fallidas: 0 };
   if (!pendientes.length) return cuenta;
 
-  const tope = topeDe(estado);
+  // De una en una, como todo lo demás. Consultar una operación no genera nada y
+  // es barato, pero sigue siendo una llamada a Vertex y con estas cuotas veinte
+  // consultas a la vez cuentan igual que veinte generaciones.
+  const tope = concurrencia();
   const cambios = [];
 
   for (let i = 0; i < pendientes.length; i += tope) {
@@ -1553,6 +1687,24 @@ export const EJECUTORES = {
   },
 
   /** Una pieza de música de Lyria. */
+  /**
+   * Una frase de muestra de un personaje con una voz candidata, para elegirle
+   * voz escuchándola.
+   *
+   * POR QUÉ PASA POR LA COLA. Antes la pantalla de Voces la pedía directamente,
+   * saltándose todo esto. Pulsar «Oír esta voz» en tres candidatas disparaba tres
+   * llamadas a la vez —y cada una lleva dentro una traducción al japonés, que es
+   * otra llamada más—, y lo que volvía era un 429 de cuota que se lee como falta
+   * de acceso al modelo. Encolada, se pide una y hasta que no termina no empieza
+   * la siguiente.
+   *
+   * Aquí no se apunta nada en el estado: la función ya deja la muestra apuntada
+   * antes de contestar. Encolarla solo sirve para que espere su turno.
+   */
+  async muestra(args) {
+    await llamar('voz-muestra', { personaje: args.personaje, voz_id: args.voz_id });
+  },
+
   async musica(args) {
     const hecho = await llamar('musica', { pieza: args.pieza, id: args.id });
     const durS = Number(hecho.dur_s) || 0;

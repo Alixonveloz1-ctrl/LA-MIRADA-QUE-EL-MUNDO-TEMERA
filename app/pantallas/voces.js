@@ -45,6 +45,7 @@
 
 import { llamar } from '../api.js';
 import { actual, alCambiar, cambiar } from '../estado.js';
+import { encolar, comoVa, cuantosPorDelante } from '../cola.js';
 import {
   h, pantalla, seccion, tarjeta, boton, aviso, barra, filtro, espera, confirmar, vaciar,
 } from '../ui.js';
@@ -95,8 +96,9 @@ export default {
     const urls = new Map();
     /** Qué personajes tienen el panel de candidatas abierto. */
     const abiertos = new Set();
-    /** Qué muestras se están generando ahora mismo: «personaje|voz». */
-    const generando = new Set();
+    // Qué muestras están pedidas ya no se apunta aquí: lo sabe la cola, que vive
+    // en el bucket. Guardarlo en esta pantalla hacía que al recargar la página
+    // pareciera que no se había pedido nada, y se volvía a pedir.
     /** El género por el que filtra cada personaje su lista de candidatas. */
     const generoElegido = new Map();
     /** Lo último que hay que decirle al usuario en cada tarjeta. */
@@ -646,15 +648,26 @@ export default {
       const id = String(ficha.personaje);
       const clave = `${id}|${voz.id}`;
       const oible = muestraOible(id, voz.id);
-      const trabajando = generando.has(clave);
+      const enLaCola = comoVaLaMuestra(id, voz.id);
+      const trabajando = Boolean(enLaCola);
       const dura = duraciones.get(clave);
       const nota = h('p', { clase: 'tenue', estilo: { margin: '4px 0 0', 'font-size': '12px' } });
 
       const acciones = [];
 
       if (trabajando) {
-        acciones.push(boton('Generando…', () => {}, {
-          desactivado: 'Ya se está generando esta muestra. Se paga una vez.',
+        // Se dice si está sonando ya o si está haciendo cola, y cuántos van
+        // delante. Con una generación a la vez, «esperando» es el estado normal
+        // y no decir cuánto queda invita a pulsar otra vez.
+        const esperando = enLaCola.estado === 'pendiente';
+        acciones.push(boton(esperando ? 'En la cola…' : 'Generando…', () => {}, {
+          desactivado: esperando
+            ? (enLaCola.porDelante
+                ? `Esperando turno: van ${enLaCola.porDelante} por delante. Se genera una cosa ` +
+                  'cada vez, y esta cuenta tiene las cuotas cortas: pedir varias a la vez las ' +
+                  'tumba todas.'
+                : 'Esperando turno: es la siguiente. Se genera una cosa cada vez.')
+            : 'Ya se está generando esta muestra. Se paga una vez.',
         }));
       } else {
         acciones.push(boton(
@@ -700,7 +713,11 @@ export default {
                 'porque los dos dicen una o dos líneas y no salen juntos en ninguna escena, así ' +
                 'que nadie los va a tener los dos en la cabeza a la vez.')
             : null,
-          trabajando ? espera('Diciendo la frase con esta voz…') : null),
+          trabajando
+            ? espera(enLaCola.estado === 'pendiente'
+                ? 'Esperando su turno en la cola…'
+                : 'Diciendo la frase con esta voz…')
+            : null),
         acciones,
       });
     }
@@ -710,45 +727,55 @@ export default {
     // -----------------------------------------------------------------------
 
     /**
-     * Genera la muestra de un personaje con una voz candidata. La frase, la
-     * intención y la traducción las pone la función: desde aquí solo van dos ids.
+     * PIDE la muestra de un personaje con una voz candidata: la mete en la cola
+     * y vuelve. La frase, la intención y la traducción las pone la función; desde
+     * aquí solo van dos ids.
+     *
+     * POR QUÉ POR LA COLA Y NO DIRECTA. Antes esto llamaba a `voz-muestra` en el
+     * acto. Pulsar «Oír esta voz» en tres candidatas disparaba tres llamadas a la
+     * vez, y cada una lleva dentro una traducción al japonés, que es otra llamada
+     * más: seis peticiones a Vertex en el mismo segundo. Lo que volvía era un 429
+     * de cuota que en pantalla se lee como falta de acceso al modelo. Con la cola
+     * se pide una, y hasta que no termina no empieza la siguiente.
      *
      * @param {object} ficha
      * @param {{id:string}} voz
-     * @returns {Promise<void>}
+     * @returns {void}
      */
-    async function generarMuestra(ficha, voz) {
+    function generarMuestra(ficha, voz) {
       const id = String(ficha.personaje);
-      const clave = `${id}|${voz.id}`;
-      if (generando.has(clave)) return;
-
-      generando.add(clave);
       recados.delete(id);
-      refrescar(id);
 
       try {
-        const datos = await llamar('voz-muestra', { personaje: id, voz_id: voz.id });
-        if (!vivo) return;
-
-        if (datos.ruta && datos.url) urls.set(datos.ruta, datos.url);
-        if (datos.ja) japonesReciente.set(id, String(datos.ja));
-        if (datos.dur_s != null) duraciones.set(clave, Number(datos.dur_s));
-
-        // La función ya lo ha apuntado en el estado del bucket. La copia de este
-        // navegador se enterará en la próxima escritura; mientras tanto, lo que
-        // se acaba de generar se recuerda aquí para poder oírlo sin repetirlo.
-        recordarMuestra(id, voz.id, datos.ruta);
+        encolar('muestra', { personaje: id, voz_id: voz.id });
       } catch (fallo) {
-        if (!vivo) return;
         recados.set(id, {
           tono: 'error',
-          mensaje: fallo && fallo.mensaje ? fallo.mensaje : 'No se ha podido generar la muestra.',
+          mensaje: fallo && fallo.mensaje ? fallo.mensaje : 'No se ha podido pedir la muestra.',
           detalle: fallo && fallo.detalle ? fallo.detalle : null,
         });
-      } finally {
-        generando.delete(clave);
-        if (vivo) refrescar(id);
       }
+
+      if (vivo) refrescar(id);
+    }
+
+    /**
+     * Cómo va la muestra de esta voz para este personaje: si está esperando su
+     * turno, si se está generando ahora mismo, o si falló.
+     *
+     * Se pregunta a la cola y no a una variable de esta pantalla, porque la cola
+     * vive en el bucket: al recargar la página, o al abrirla en otro sitio, se
+     * sigue viendo lo mismo.
+     *
+     * @param {string} id
+     * @param {string} vozId
+     * @returns {{estado:string, porDelante:number}|null}
+     */
+    function comoVaLaMuestra(id, vozId) {
+      const args = { personaje: id, voz_id: vozId };
+      const estado = comoVa('muestra', args);
+      if (estado !== 'pendiente' && estado !== 'en_curso') return null;
+      return { estado, porDelante: cuantosPorDelante('muestra', args) };
     }
 
     /**
