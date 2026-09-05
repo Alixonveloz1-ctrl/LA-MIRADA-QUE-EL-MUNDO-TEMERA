@@ -1075,6 +1075,13 @@ function tarjetaDeMusica(ctx, laMusica, maximo) {
     );
   }
 
+  // Si esta pieza lleva letra cantada, aquí va el marcador. Solo aparece cuando
+  // ya hay pista: no se puede marcar lo que no suena.
+  const laLetra = Array.isArray(pieza.letra) && pieza.audio?.musica?.includes(id) ? pieza.letra : null;
+  if (laLetra && laLetra.length && media) {
+    pie.appendChild(marcadorDeLetra(ctx, id, laLetra, media));
+  }
+
   if (enLaCola && enLaCola.error) {
     pie.appendChild(aviso(enLaCola.error, { tono: 'error', detalle: enLaCola.detalle }));
   }
@@ -1947,4 +1954,170 @@ function loQueDijo(fallo) {
   if (typeof fallo === 'string') return fallo;
   if (fallo.message) return String(fallo.message);
   return String(fallo);
+}
+
+// ---------------------------------------------------------------------------
+// Marcar la letra escuchándola
+// ---------------------------------------------------------------------------
+
+/**
+ * Marcar con el dedo dónde empieza cada línea de la canción, oyéndola.
+ *
+ * POR QUÉ ASÍ Y NO MIDIÉNDOLO SOLO. Con la voz hablada se mide: se genera, se
+ * pasa por Speech-to-Text y salen la entrada y la salida reales. Con una canción
+ * eso no funciona —el reconocimiento de voz cantada es malo— y hay algo peor:
+ * Lyria no canta exactamente lo que se le pide. Puede cambiar una palabra,
+ * repetir un verso o saltarse uno. Un subtítulo colocado sobre una estimación
+ * diría en español algo que no es lo que se está oyendo, y eso es peor que no
+ * poner subtítulo.
+ *
+ * Así que se escucha y se marca. Y eso NO rompe la regla de que el usuario solo
+ * decide sobre cosas que se perciben: aquí no está juzgando un texto, está
+ * oyendo una canción y diciendo cuándo entra cada verso. Lo que ve es la línea
+ * en español que va a salir en pantalla; lo que decide es un instante.
+ *
+ * Hasta que una línea no está marcada no se quema como subtítulo.
+ *
+ * @param {object} ctx
+ * @param {string} idMusica
+ * @param {{ja:string, es:string, t:number, hasta:number}[]} laLetra
+ * @param {HTMLAudioElement} audio el reproductor de esta misma pista
+ * @returns {HTMLElement}
+ */
+function marcadorDeLetra(ctx, idMusica, laLetra, audio) {
+  const caja = h('div', { clase: 'marcador-letra' });
+  const guardado = musicaGuardada(ctx.estado, idMusica);
+  const marcados = Array.isArray(guardado.letra_tiempos) ? guardado.letra_tiempos.slice() : [];
+
+  /** La primera línea que todavía no tiene marca. */
+  const siguiente = () => marcados.findIndex((uno, i) => i < laLetra.length && !uno) === -1
+    ? marcados.length
+    : marcados.findIndex((uno, i) => i < laLetra.length && !uno);
+
+  const cabecera = h('p', { clase: 'suave', estilo: { margin: '12px 0 4px' } });
+  const linea = h('p', {
+    estilo: { margin: '4px 0', 'font-size': '17px', 'line-height': '1.35' }
+  });
+  const lista = h('div', { estilo: { margin: '8px 0 0' } });
+  const botones = h('div', { clase: 'tarjeta-acciones' });
+
+  const pintar = () => {
+    const i = Math.min(siguiente(), laLetra.length);
+    const hechas = marcados.filter(Boolean).length;
+
+    vaciar(cabecera).appendChild(
+      document.createTextNode(
+        hechas >= laLetra.length
+          ? `Letra marcada entera: ${laLetra.length} de ${laLetra.length}.`
+          : `Marcar la letra — ${hechas} de ${laLetra.length}. Dale al play y toca el botón ` +
+            'justo cuando empiece cada verso.'
+      )
+    );
+
+    vaciar(linea);
+    if (i < laLetra.length) {
+      linea.appendChild(h('strong', null, laLetra[i].es));
+    } else {
+      linea.appendChild(
+        h('span', { clase: 'tenue' }, 'Ya están todas. Si alguna quedó torcida, empieza de nuevo.')
+      );
+    }
+
+    vaciar(lista);
+    laLetra.forEach((una, k) => {
+      const cuando = marcados[k];
+      lista.appendChild(
+        h(
+          'p',
+          {
+            clase: cuando ? null : 'tenue',
+            estilo: { margin: '2px 0', 'font-size': '13px' }
+          },
+          h('span', { clase: 'numero' }, cuando ? `${cuando.inicio.toFixed(1)} s` : '— — —'),
+          '  ',
+          una.es
+        )
+      );
+    });
+
+    vaciar(botones);
+    botones.appendChild(
+      boton(
+        i < laLetra.length ? 'Aquí empieza este verso' : 'Letra completa',
+        () => marcar(),
+        {
+          tono: i < laLetra.length ? 'principal' : 'suave',
+          desactivado:
+            i >= laLetra.length
+              ? 'Ya están marcados todos los versos. Para rehacerlo, empieza de nuevo.'
+              : audio.paused
+                ? 'Dale al play primero: se marca oyendo la canción, no de memoria.'
+                : false
+        }
+      )
+    );
+    if (marcados.some(Boolean)) {
+      botones.appendChild(boton('Empezar de nuevo', () => reiniciar(), { tono: 'peligro' }));
+    }
+  };
+
+  /** Apunta el instante actual como principio del verso que toca. */
+  const marcar = async () => {
+    const i = siguiente();
+    if (i >= laLetra.length) return;
+
+    const inicio = Math.max(0, Number(audio.currentTime) || 0);
+    // El final de un verso es el principio del siguiente, y el del último dura
+    // lo que pedía la letra. Así no hay huecos ni solapes en el subtítulo.
+    marcados[i] = { inicio, fin: inicio + Math.max(1.5, laLetra[i].hasta - laLetra[i].t) };
+    if (i > 0 && marcados[i - 1]) marcados[i - 1].fin = inicio;
+
+    pintar();
+    await guardarTiempos();
+  };
+
+  const reiniciar = async () => {
+    if (!(await confirmar('¿Borrar las marcas y empezar la letra de nuevo?'))) return;
+    marcados.length = 0;
+    pintar();
+    await guardarTiempos();
+  };
+
+  const guardarTiempos = async () => {
+    try {
+      await cambiar((estado) => {
+        const suya = entradaDeMusica(estado, idMusica);
+        suya.letra_tiempos = marcados.slice();
+      });
+    } catch (fallo) {
+      caja.appendChild(
+        aviso(
+          'No se han podido guardar las marcas de la letra. Vuelve a tocar el botón del verso que ' +
+            'estabas marcando.',
+          { tono: 'error', detalle: fallo && fallo.mensaje ? fallo.mensaje : String(fallo) }
+        )
+      );
+    }
+  };
+
+  // El botón se enciende y se apaga con el play, sin repintar la tarjeta: eso
+  // pararía la pista justo cuando hace falta que suene.
+  audio.addEventListener('play', pintar);
+  audio.addEventListener('pause', pintar);
+
+  caja.appendChild(cabecera);
+  caja.appendChild(linea);
+  caja.appendChild(botones);
+  caja.appendChild(
+    h(
+      'p',
+      { clase: 'tenue', estilo: { margin: '10px 0 2px', 'font-size': '12px' } },
+      'Lyria no canta al segundo lo que se le pide, así que estos tiempos se marcan oyéndolos. ' +
+        'Un verso sin marcar no se quema como subtítulo: mejor sin subtítulo que con uno que no ' +
+        'cuadra con lo que suena.'
+    )
+  );
+  caja.appendChild(lista);
+  pintar();
+  return caja;
 }

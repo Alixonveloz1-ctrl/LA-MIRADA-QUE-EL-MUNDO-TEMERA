@@ -917,6 +917,7 @@ function revisar(modelo, ambito, estado) {
   // aquí, porque es lo único que se pone en el acto (plan §9).
   if (!ambito.previas) {
     componerVoz(modelo, ambito, estado, { audio, subtitulos, faltas, notas });
+    componerLetra(modelo, ambito, estado, { subtitulos, faltas, notas });
   }
   componerMusica(modelo, ambito, estado, duracion, { audio, faltas, notas });
 
@@ -2414,4 +2415,57 @@ function loQueDijo(fallo) {
   if (typeof fallo === 'string') return fallo;
   if (fallo.message) return String(fallo.message);
   return String(fallo);
+}
+
+/**
+ * Los subtítulos de la LETRA cantada del opening y del ending.
+ *
+ * Solo entran los versos MARCADOS oyendo la canción, no los tiempos planeados.
+ * Lyria no canta al segundo lo que se le pide —puede cambiar una palabra,
+ * repetir un verso o saltárselo—, así que un subtítulo colocado sobre una
+ * estimación diría en español algo que no es lo que suena. Mejor sin subtítulo
+ * que con uno que no cuadra.
+ *
+ * Lo que se pinta es el `es`. El `ja` es lo que se canta y no llega a pantalla:
+ * en pantalla no hay japonés en ningún momento.
+ *
+ * @param {object} modelo la pieza de datos/serie.json
+ * @param {object} ambito
+ * @param {object} estado
+ * @param {{subtitulos:Array, faltas:Array, notas:Array}} salida
+ */
+function componerLetra(modelo, ambito, estado, salida) {
+  const laLetra = Array.isArray(modelo.letra) ? modelo.letra : [];
+  if (!laLetra.length) return;
+
+  const idsDeMusica = Array.isArray(modelo.audio && modelo.audio.musica) ? modelo.audio.musica : [];
+  const guardada = idsDeMusica
+    .map((id) => (estado.audio && estado.audio.musica ? estado.audio.musica[id] : null))
+    .find((una) => una && Array.isArray(una.letra_tiempos) && una.letra_tiempos.some(Boolean));
+
+  const marcados = guardada ? guardada.letra_tiempos : [];
+  const conMarca = laLetra.filter((una, i) => marcados[i] && Number.isFinite(marcados[i].inicio));
+
+  if (!conMarca.length) {
+    salida.faltas.push(
+      `La canción de «${modelo.titulo || 'esta pieza'}» no tiene ningún verso marcado, así que ` +
+        'saldría sin subtítulos. Ve a Audio, dale al play y marca cada verso con el dedo.'
+    );
+    return;
+  }
+
+  if (conMarca.length < laLetra.length) {
+    salida.notas.push(
+      `De la canción hay ${conMarca.length} de ${laLetra.length} versos marcados. Los que falten no ` +
+        'llevarán subtítulo: se marcan en Audio, oyendo la pista.'
+    );
+  }
+
+  laLetra.forEach((una, i) => {
+    const marca = marcados[i];
+    if (!marca || !Number.isFinite(marca.inicio)) return;
+    const desde = Math.max(0, ambito.desde + marca.inicio);
+    const hasta = Math.max(desde + 0.8, ambito.desde + (marca.fin || marca.inicio + 3));
+    salida.subtitulos.push({ desde: redondear(desde), hasta: redondear(hasta), texto: una.es });
+  });
 }

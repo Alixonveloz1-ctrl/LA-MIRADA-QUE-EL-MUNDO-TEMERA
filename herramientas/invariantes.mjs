@@ -874,8 +874,23 @@ bloque('Datos · lo que se ve en pantalla');
   const CJK =
     /[　-〿぀-ゟ゠-ヿ㐀-䶿一-鿿豈-﫿＀-￯]/;
 
-  /** Los únicos sitios donde el japonés es lo correcto: lo que se oye. */
-  const esCampoDeAudio = (ruta) => /^piezas\.[^.]+\.audio\.voz\[\d+\]\.ja$/.test(ruta);
+  /**
+   * Los únicos sitios donde el japonés es lo correcto: lo que se OYE.
+   *
+   *   · `audio.voz[].ja`  — lo que dice un personaje.
+   *   · `letra[].ja`      — lo que se CANTA en el opening y en el ending.
+   *   · el encargo a Lyria — la letra viaja dentro del encargo para que la
+   *     cante; el encargo en sí va en inglés porque Lyria rechaza la petición
+   *     entera en cualquier otro idioma, pero la letra que va dentro es japonés
+   *     y tiene que serlo.
+   *
+   * En los tres casos, lo que se PINTA es el campo `es` de al lado. En pantalla
+   * no hay japonés en ningún momento.
+   */
+  const esCampoDeAudio = (ruta) =>
+    /^piezas\.[^.]+\.audio\.voz\[\d+\]\.ja$/.test(ruta) ||
+    /^piezas\.[^.]+\.letra\[\d+\]\.ja$/.test(ruta) ||
+    /^musica\.piezas\[\d+\]\.encargo$/.test(ruta);
 
   /** El campo que existe, no es un fallo, y no puede llegar a pantalla. */
   const esCartelaFinalJa = (ruta) => /^piezas\.[^.]+\.cartela_final\.ja$/.test(ruta);

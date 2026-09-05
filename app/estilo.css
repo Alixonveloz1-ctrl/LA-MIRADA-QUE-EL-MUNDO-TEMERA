@@ -1028,3 +1028,15 @@ body > nav a[aria-current="page"]::before {
     --texto-tenue: #97a1ad;
   }
 }
+
+/* El marcador de letra de una canción: se escucha y se marca con el dedo.
+   El botón es grande a propósito — se toca a ciegas mientras suena. */
+.marcador-letra {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid var(--linea, #2a2f36);
+}
+.marcador-letra .tarjeta-acciones button {
+  min-height: 56px;
+  font-size: 16px;
+}

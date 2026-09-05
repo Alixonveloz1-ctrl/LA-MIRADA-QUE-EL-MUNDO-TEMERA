@@ -996,8 +996,37 @@ aparte para que se puedan leer y corregir sin bucear en el script.
   (`cartela.toma`); ahora hay tres, una por pieza, y el invariante lo comprueba
   pieza a pieza.
 
-**Lo que queda abierto y no se decide aquí:** la letra. `serie.json`
-(`musica.letra_mas_adelante`) deja pendiente en qué idioma canta la madre, y esa
-decisión es del episodio 10. Hasta entonces las dos piezas van con **voz sin
-letra**, como el canto del teaser. Cuando se decida, se reescribe el encargo y se
-regeneran las dos: son dos generaciones para toda la serie, no veinticuatro.
+### 13.7 Las canciones del opening y del ending
+
+**Son dos cosas distintas y no se mezclan:**
+
+| | Qué es | Idioma |
+|---|---|---|
+| **Opening / ending** | Las canciones **de la serie**, como cualquier animé | Cantadas en **japonés**, subtítulo en **español** |
+| **La canción de la madre** | Un elemento **de la historia** | En un idioma que no se habla en ese mundo. Sigue pendiente, y es decisión del episodio 10 |
+
+La segunda no es el opening. Nadie las unifique más adelante.
+
+La letra vive en `piezas[opening|ending].letra`, con `ja` (lo que se canta) y `es`
+(lo que se pinta). El `ja` es de los pocos sitios donde el japonés es lo correcto,
+junto a `audio.voz[].ja`: en pantalla no hay japonés en ningún momento. La letra
+viaja **dentro del encargo a Lyria**, que va en inglés porque Lyria rechaza la
+petición entera en cualquier otro idioma; la letra que lleva dentro es japonesa y
+tiene que serlo.
+
+**Los tiempos se marcan oyendo, no se estiman.** Con la voz hablada se mide con
+Speech-to-Text. Con una canción eso no vale, por dos razones: el reconocimiento
+de voz cantada es malo, y —lo que de verdad importa— **Lyria no canta exactamente
+lo que se le pide**: puede cambiar una palabra, repetir un verso o saltárselo. Un
+subtítulo colocado sobre una estimación diría en español algo que no es lo que
+suena.
+
+Así que la pantalla de Audio trae un **marcador**: se le da al play y se toca un
+botón grande justo cuando entra cada verso. Los tiempos van a
+`estado.audio.musica[id].letra_tiempos`. **Un verso sin marcar no se quema como
+subtítulo** — mejor sin subtítulo que con uno que no cuadra con lo que suena.
+
+Esto **no** rompe la regla de que el usuario solo decide sobre lo que percibe:
+no está juzgando un texto, está oyendo una canción y diciendo cuándo entra cada
+verso. Lo que ve es la línea en español que va a salir en pantalla; lo que
+decide es un instante.
