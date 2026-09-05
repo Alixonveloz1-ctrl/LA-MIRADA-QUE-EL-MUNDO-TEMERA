@@ -14,6 +14,35 @@ y ahí el pegado sí funciona.
 
 ---
 
+## 0. Lo más corto de todo: un enlace
+
+Cloud Shell sabe clonar un repositorio y abrir un tutorial con **botones** que
+meten cada comando en el terminal por ti. Con eso no hay que teclear **nada**, y
+el problema de que el terminal no deje pegar desde el móvil desaparece.
+
+**[▶ Abrir en Cloud Shell e instalar](https://shell.cloud.google.com/cloudshell/open?cloudshell_git_repo=https%3A%2F%2Fgithub.com%2FAlixonveloz1-ctrl%2FLA-MIRADA-QUE-EL-MUNDO-TEMERA&cloudshell_git_branch=claude%2Fnew-session-4grflv&cloudshell_tutorial=despliegue%2Ftutorial.md)**
+
+Ese enlace clona el repositorio y abre `despliegue/tutorial.md` en el panel
+lateral. Vas pulsando Siguiente y el botón de cada comando. Son seis pasos y
+unos diez minutos.
+
+Cuando el código esté en `main`, el enlace se queda sin la parte de la rama:
+
+```
+https://shell.cloud.google.com/cloudshell/open?cloudshell_git_repo=https%3A%2F%2Fgithub.com%2FAlixonveloz1-ctrl%2FLA-MIRADA-QUE-EL-MUNDO-TEMERA&cloudshell_tutorial=despliegue%2Ftutorial.md
+```
+
+<details>
+<summary>Si prefieres las dos líneas a mano</summary>
+
+```
+git clone https://github.com/Alixonveloz1-ctrl/LA-MIRADA-QUE-EL-MUNDO-TEMERA.git
+```
+```
+bash LA-MIRADA-QUE-EL-MUNDO-TEMERA/instalar.sh
+```
+</details>
+
 ## 0. La forma corta: dos líneas
 
 **Casi todo esto lo hace un script del repositorio.** Los pasos 1 a 5 de abajo

@@ -23,16 +23,16 @@ imágenes: todo lo visual lo genera la herramienta.
 
 ## Cómo se usa
 
-1. Se pone en marcha una vez. Casi todo lo hace un script: en Cloud Shell, desde
-   el móvil, dos líneas y ninguna más —
+1. Se pone en marcha una vez, y casi todo lo hace un script. Desde el móvil, sin
+   teclear nada:
 
-   ```
-   git clone https://github.com/<usuario>/<repo>.git
-   bash <repo>/instalar.sh
-   ```
+   **[▶ Abrir en Cloud Shell e instalar](https://shell.cloud.google.com/cloudshell/open?cloudshell_git_repo=https%3A%2F%2Fgithub.com%2FAlixonveloz1-ctrl%2FLA-MIRADA-QUE-EL-MUNDO-TEMERA&cloudshell_git_branch=claude%2Fnew-session-4grflv&cloudshell_tutorial=despliegue%2Ftutorial.md)**
 
-   APIs, bucket, CORS, service account, permisos y montador. Lo que queda a mano
-   es Vercel, y está en **[docs/despliegue.md](docs/despliegue.md)**.
+   Clona el repositorio y abre un tutorial con botones que meten cada comando en
+   el terminal. Habilita las APIs, crea o detecta el bucket, le aplica el CORS,
+   crea la cuenta de servicio con sus permisos y su clave, y despliega el
+   montador. Lo que queda a mano es Vercel, y está en
+   **[docs/despliegue.md](docs/despliegue.md)**.
 
    Lo que Google necesita no se dicta como comandos: vive en `despliegue/`, en
    archivos que el instalador lee.

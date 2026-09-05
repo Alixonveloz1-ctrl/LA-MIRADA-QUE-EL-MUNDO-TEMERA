@@ -214,13 +214,48 @@ titulo "5. LA CUENTA Y SUS PERMISOS"
 CORREO_APP="${NOMBRE_SA}@${PROYECTO}.iam.gserviceaccount.com"
 CORREO_COMPUTE="${NUMERO}-compute@developer.gserviceaccount.com"
 
+# La cuenta puede haberla creado ya el usuario, con el nombre que le diera la
+# gana. Así que: si está la que este script usa por defecto, se coge; si no, se
+# enseñan las que haya y se elige POR NÚMERO, igual que el bucket; y solo si no
+# hay ninguna se crea. Nunca se crea una segunda cuenta a espaldas de nadie:
+# tener dos, con permisos repartidos entre las dos, es un fallo que se tarda en
+# ver porque todo parece configurado.
 if gcloud iam service-accounts describe "$CORREO_APP" --project "$PROYECTO" >/dev/null 2>&1; then
-  bien "La cuenta ya existía."
+  bien "La cuenta ya existía: $NOMBRE_SA"
 else
-  gcloud iam service-accounts create "$NOMBRE_SA" \
-    --display-name "La mirada — aplicación" \
-    --project "$PROYECTO" --quiet
-  bien "Cuenta creada."
+  mapfile -t CUENTAS < <(gcloud iam service-accounts list --project "$PROYECTO" \
+    --format='value(email)' 2>/dev/null | grep -v -- '-compute@developer' || true)
+
+  if [ "${#CUENTAS[@]}" -eq 0 ]; then
+    gcloud iam service-accounts create "$NOMBRE_SA" \
+      --display-name "La mirada — aplicación" \
+      --project "$PROYECTO" --quiet
+    bien "Cuenta creada: $NOMBRE_SA"
+  else
+    echo "Ya hay ${#CUENTAS[@]} cuenta(s) de servicio en este"
+    echo "proyecto. ¿Cuál usa la aplicación?"
+    echo "Escribe SOLO EL NÚMERO:"
+    echo
+    for i in "${!CUENTAS[@]}"; do printf '  %2d) %s\n' "$((i + 1))" "${CUENTAS[$i]%%@*}"; done
+    printf '  %2d) crear una nueva (%s)\n' "$(( ${#CUENTAS[@]} + 1 ))" "$NOMBRE_SA"
+    echo
+    while :; do
+      read -r -p "Número: " CUAL
+      [[ "$CUAL" =~ ^[0-9]+$ ]] && [ "$CUAL" -ge 1 ] \
+        && [ "$CUAL" -le "$(( ${#CUENTAS[@]} + 1 ))" ] && break
+      echo "  Escribe un número entre 1 y $(( ${#CUENTAS[@]} + 1 ))."
+    done
+    if [ "$CUAL" -eq "$(( ${#CUENTAS[@]} + 1 ))" ]; then
+      gcloud iam service-accounts create "$NOMBRE_SA" \
+        --display-name "La mirada — aplicación" \
+        --project "$PROYECTO" --quiet
+      bien "Cuenta creada: $NOMBRE_SA"
+    else
+      CORREO_APP="${CUENTAS[$((CUAL - 1))]}"
+      NOMBRE_SA="${CORREO_APP%%@*}"
+      bien "Se usa la tuya: $NOMBRE_SA"
+    fi
+  fi
 fi
 
 paso "Dando permisos (despliegue/permisos.txt):"
