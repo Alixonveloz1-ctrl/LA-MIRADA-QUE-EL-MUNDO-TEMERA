@@ -461,9 +461,30 @@ export default {
       // sería peor que enseñarla.
       const suyo = generoDelPersonaje(serie, id);
       const puesto = generoElegido.get(id) || (suyo && generos.includes(suyo) ? suyo : 'todos');
-      const lista = puesto === 'todos'
+
+      // LAS QUE YA SON DE OTRO NO SE OFRECEN. Ni siquiera se puede pagar su
+      // muestra: generarla sería tirar el dinero en una voz que no se puede
+      // elegir. Pero tampoco desaparecen sin más —eso deja buscando una voz que
+      // se oyó ayer y ya no está—: se dicen abajo, con el nombre de quien la
+      // tiene, que es a donde hay que ir a soltarla si se la quiere quitar.
+      // El mapa se arma UNA vez para toda la tarjeta. Preguntarlo voz a voz lo
+      // reconstruía treinta veces por personaje, y en un teléfono con
+      // veintinueve tarjetas eso se nota al desplazar.
+      const dueno = duenosDeLasVoces();
+      const deOtro = (voz) => {
+        const suyo = dueno.get(voz.id);
+        return suyo && suyo !== id ? suyo : null;
+      };
+
+      const deSuGenero = puesto === 'todos'
         ? candidatas
         : candidatas.filter((v) => generoDe(v) === puesto);
+      const lista = deSuGenero.filter((v) => !deOtro(v));
+      const tomadas = deSuGenero.filter((v) => deOtro(v));
+
+      /** Cuántas quedan libres de un género, contando las de todo el catálogo. */
+      const libresDe = (g) =>
+        candidatas.filter((v) => (g === 'todos' || generoDe(v) === g) && !deOtro(v)).length;
 
       const panel = h('div', { estilo: { 'margin-top': '12px' } },
         h('p', { clase: 'tenue', estilo: { margin: '0 0 8px', 'font-size': '13px' } },
@@ -472,12 +493,10 @@ export default {
           'volver a entrar aquí no lo paga otra vez.'),
         generos.length > 1
           ? filtro(
-              [{ id: 'todos', texto: 'Todas', cuenta: candidatas.length }].concat(
-                generos.map((g) => ({
-                  id: g,
-                  texto: primeraMayuscula(g),
-                  cuenta: candidatas.filter((v) => generoDe(v) === g).length,
-                })),
+              // La cuenta de cada pastilla es la de las que QUEDAN, no la del
+              // catálogo: enseñar «16» cuando solo hay 4 elegibles es mentir.
+              [{ id: 'todos', texto: 'Todas', cuenta: libresDe('todos') }].concat(
+                generos.map((g) => ({ id: g, texto: primeraMayuscula(g), cuenta: libresDe(g) })),
               ),
               puesto,
               (valor) => {
@@ -488,15 +507,57 @@ export default {
           : null);
 
       if (!lista.length) {
-        panel.appendChild(h('p', { clase: 'tenue' },
-          'Ninguna voz de la lista tiene ese género declarado. Quita el filtro para verlas todas.'));
+        panel.appendChild(h('p', { estilo: { margin: '8px 0 0' } },
+          tomadas.length
+            ? 'No queda ninguna voz libre con este filtro: las ' +
+              `${tomadas.length === 1 ? 'que había ya es' : `${tomadas.length} que había ya son`} ` +
+              'de otros personajes. Quita el filtro para ver las del otro género, o ve a la ' +
+              'tarjeta de quien tiene la que quieres y dale a «Cambiar la voz elegida».'
+            : 'Ninguna voz de la lista tiene ese género declarado. Quita el filtro para verlas todas.'));
+        if (tomadas.length) panel.appendChild(pintarLasTomadas(tomadas, dueno));
         return panel;
       }
 
       const rejilla = h('div', { clase: 'rejilla', estilo: { 'margin-top': '10px' } });
       for (const voz of lista) rejilla.appendChild(pintarCandidata(ficha, voz));
       panel.appendChild(rejilla);
+
+      if (tomadas.length) panel.appendChild(pintarLasTomadas(tomadas, dueno));
+
+      // El aviso de que se está acabando el margen. Son 30 voces y 29
+      // personajes: no sobra casi nada, y enterarse con la última es tarde.
+      const quedan = libresDe('todos');
+      if (quedan <= 3) {
+        panel.appendChild(h('p', { estilo: { margin: '10px 0 0', 'font-size': '13px' } },
+          `Quedan ${quedan === 1 ? 'una sola voz libre' : `${quedan} voces libres`} en todo el ` +
+          'catálogo para los personajes que aún no tienen. Si hace falta una para alguien que ' +
+          'habla más, se recupera con «Cambiar la voz elegida» en la tarjeta de quien la tenga.'));
+      }
+
       return panel;
+    }
+
+    /**
+     * Las voces que no se ofrecen porque ya son de otro, con el nombre de quien
+     * las tiene. Es lo que convierte «esta voz ha desaparecido» en «esta voz es
+     * de la Madre, y si la quieres aquí, se la quitas allí».
+     *
+     * @param {object[]} tomadas
+     * @param {Map<string,string>} dueno voz → personaje
+     * @returns {HTMLElement}
+     */
+    function pintarLasTomadas(tomadas, dueno) {
+      const dichas = tomadas
+        .map((v) => `${nombreCortoDeVoz(v.id)} (${nombreEnPantalla(dueno.get(v.id))})`)
+        .join(', ');
+
+      return h('div', { estilo: { 'margin-top': '10px' } },
+        h('p', { clase: 'tenue', estilo: { margin: '0', 'font-size': '13px' } },
+          `${tomadas.length === 1 ? 'Una voz no se ofrece' : `${tomadas.length} voces no se ofrecen`} ` +
+          'porque ya están fijadas en otro personaje: ', h('span', { clase: 'mono' }, dichas), '. ' +
+          'Dos personajes con el mismo timbre son el mismo personaje para el oído, y eso no se ' +
+          'arregla después sin volver a grabar. Para recuperar una, ve a la tarjeta de quien la ' +
+          'tiene y dale a «Cambiar la voz elegida».'));
     }
 
     /**
@@ -619,6 +680,24 @@ export default {
       );
       if (!seguro || !vivo) return;
 
+      // Se vuelve a mirar DESPUÉS de confirmar. Entre que se abrió el panel y se
+      // dijo que sí puede haber pasado un rato, y en otra pestaña —o en otro
+      // móvil— puede haberse fijado esta misma voz. El panel de al lado no se
+      // entera solo.
+      const otro = yaEsDeOtro(vozId, id);
+      if (otro) {
+        recados.set(id, {
+          tono: 'error',
+          mensaje:
+            `${nombreCortoDeVoz(vozId)} ya es la voz de ${nombreEnPantalla(otro)}. Se ha fijado ` +
+            'mientras este panel estaba abierto. Una voz es de un solo personaje: elige otra, o ' +
+            `ve a la tarjeta de ${nombreEnPantalla(otro)} y dale a «Cambiar la voz elegida».`,
+          detalle: null,
+        });
+        refrescar(id);
+        return;
+      }
+
       recados.delete(id);
       // Se cierra el panel ANTES de escribir: `cambiar()` avisa a la pantalla en
       // cuanto guarda, y para entonces la tarjeta ya tiene que saber que esto
@@ -709,6 +788,41 @@ export default {
       const voces = elEstado().voces;
       const dentro = voces && typeof voces === 'object' ? voces[id] : null;
       return dentro && typeof dentro === 'object' ? dentro : {};
+    }
+
+    /**
+     * De quién es ya cada voz: `voz_id → personaje`. Una voz por personaje y un
+     * personaje por voz.
+     *
+     * POR QUÉ NO SE COMPARTE UNA VOZ. Dos personajes con el mismo timbre son el
+     * mismo personaje para el oído, por mucho que el guion los llame distinto. En
+     * una serie de doce capítulos eso no se arregla después: habría que rehacer
+     * todo lo grabado del segundo. Así que en cuanto una voz queda fijada, deja
+     * de ofrecerse a los demás.
+     *
+     * @returns {Map<string, string>}
+     */
+    function duenosDeLasVoces() {
+      const voces = elEstado().voces;
+      const salida = new Map();
+      if (!voces || typeof voces !== 'object') return salida;
+      for (const [personaje, dentro] of Object.entries(voces)) {
+        if (!dentro || typeof dentro !== 'object') continue;
+        const vozId = typeof dentro.voz_id === 'string' ? dentro.voz_id.trim() : '';
+        if (vozId) salida.set(vozId, personaje);
+      }
+      return salida;
+    }
+
+    /**
+     * Quién tiene ya esta voz, si no es el propio personaje que pregunta.
+     * @param {string} vozId
+     * @param {string} salvo el personaje que está eligiendo
+     * @returns {string|null} el id del que la tiene, o null si está libre
+     */
+    function yaEsDeOtro(vozId, salvo) {
+      const dueno = duenosDeLasVoces().get(String(vozId ?? '').trim());
+      return dueno && dueno !== salvo ? dueno : null;
     }
 
     /** La voz ya elegida de un personaje, o null. */

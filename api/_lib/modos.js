@@ -534,6 +534,22 @@ async function modoVozMuestra(cuerpo) {
   }
 
   const leido = await leerElEstado();
+
+  // NO SE PAGA UNA MUESTRA QUE NO SE VA A PODER ELEGIR. Si esa voz ya está
+  // fijada en otro personaje, generarla es tirar el dinero: se oiría, gustaría,
+  // y al fijarla saltaría el choque. Se dice antes de gastar y se dice de quién
+  // es, que es lo único que hace falta para decidir.
+  const deQuienEs = duenoDeLaVoz(leido.estado, vozId);
+  if (deQuienEs && deQuienEs !== idPersonaje) {
+    throw new ErrorDeCara(
+      `No se ha generado nada y no se ha gastado nada: la voz «${vozId}» ya está fijada en ` +
+        `«${deQuienEs}». Una voz es de un solo personaje, así que esta muestra no se podría ` +
+        'elegir aunque sonara bien. Elige otra de la lista, o ve a la tarjeta de ' +
+        `«${deQuienEs}» y dale a «Cambiar la voz elegida».`,
+      { reintentable: false, http: 409 }
+    );
+  }
+
   const yaTraducida = japonesGuardado(leido.estado, idPersonaje);
 
   // La traducción se hace UNA vez por personaje y se guarda. La segunda voz
@@ -1206,6 +1222,66 @@ function sinNombresDeOperacion(estado) {
 }
 
 /**
+ * Se niega a guardar un estado en el que dos personajes tengan la misma voz.
+ *
+ * POR QUÉ NO SE COMPARTE UNA VOZ. Dos personajes con el mismo timbre son el
+ * mismo personaje para el oído, por mucho que el guion los llame distinto. En
+ * doce capítulos eso no se arregla después: habría que volver a grabar todo lo
+ * del segundo. Y no es un problema de sitio: hay treinta voces y veintinueve
+ * personajes, así que cada uno puede tener la suya.
+ *
+ * SE NIEGA, PERO NO ENCIERRA. Soltar una voz —dejarla en null— quita el choque,
+ * así que un estado que ya viniera mal siempre se puede arreglar: se suelta una
+ * de las dos y se vuelve a guardar. Si esto rechazara cualquier escritura
+ * mientras hubiera un duplicado, no habría manera de deshacerlo.
+ *
+ * @param {object} estado el que manda el navegador
+ */
+/**
+ * De qué personaje es ya una voz, según el estado del bucket.
+ * @param {object} estado
+ * @param {string} vozId
+ * @returns {string|null} el id del personaje, o null si la voz está libre
+ */
+function duenoDeLaVoz(estado, vozId) {
+  const voces = esObjeto(estado) && esObjeto(estado.voces) ? estado.voces : null;
+  if (!voces) return null;
+  const buscada = soloTexto(vozId);
+  if (!buscada) return null;
+
+  for (const [personaje, dentro] of Object.entries(voces)) {
+    if (!esObjeto(dentro)) continue;
+    if (soloTexto(dentro.voz_id) === buscada) return personaje;
+  }
+  return null;
+}
+
+function comprobarQueNadieComparteVoz(estado) {
+  const voces = esObjeto(estado.voces) ? estado.voces : null;
+  if (!voces) return;
+
+  const dueno = new Map();
+  for (const [personaje, dentro] of Object.entries(voces)) {
+    if (!esObjeto(dentro)) continue;
+    const vozId = soloTexto(dentro.voz_id);
+    if (!vozId) continue;
+
+    const yaLaTiene = dueno.get(vozId);
+    if (yaLaTiene) {
+      throw new ErrorDeCara(
+        `No se ha guardado nada: la voz «${vozId}» estaría a la vez en «${yaLaTiene}» y en ` +
+          `«${personaje}», y una voz es de un solo personaje. Dos personajes con el mismo timbre ` +
+          'son el mismo personaje para quien lo oye, y en doce capítulos eso solo se arregla ' +
+          'volviendo a grabar. En la tarjeta de uno de los dos, «Cambiar la voz elegida», y ' +
+          'vuelve a elegir: hay treinta voces para veintinueve personajes, así que sitio hay.',
+        { reintentable: false, http: 409 }
+      );
+    }
+    dueno.set(vozId, personaje);
+  }
+}
+
+/**
  * Guarda el estado solo si nadie lo ha cambiado por debajo. NO pisa nunca el
  * trabajo de otra pestaña o de otro móvil: ante conflicto contesta 409 con el
  * estado bueno y su generación para que el navegador reaplique su cambio encima.
@@ -1227,6 +1303,13 @@ async function modoEstadoEscribir(cuerpo) {
     'sobre qué versión del estado estás guardando, que es lo que impide pisar lo que se haya ' +
       'hecho desde otro sitio'
   );
+
+  // UNA VOZ, UN PERSONAJE. Se comprueba AQUÍ, en la única puerta por la que
+  // pasan todos los cambios de estado, y no solo en la pantalla: dos pestañas
+  // pueden elegir la misma voz a la vez, y en una carrera de las que se
+  // resuelven con 409 el que pierde vuelve a aplicar su cambio encima del bueno
+  // —que es lo correcto para todo lo demás— y colaría el duplicado.
+  comprobarQueNadieComparteVoz(estado);
 
   try {
     // Los nombres de operación se conservan de lo que hay en el bucket: el

@@ -162,6 +162,13 @@ que se probaba un solo nombre— y por eso hoy se mide en vez de darse por hecho
    escribió la frase a mano y a los once figurantes se la saca del guion
    `npm run datos` —su línea de riesgo alto, o la de intención más detallada—,
    y la pantalla dice cuál de las dos cosas está oyendo.
+   **Una voz es de un solo personaje**: en cuanto queda fijada deja de ofrecerse
+   a los demás, ni siquiera se puede pagar su muestra, y el servidor rechaza
+   guardar un estado donde dos la compartan. Dos personajes con el mismo timbre
+   son el mismo personaje para el oído, y en doce capítulos eso solo se arregla
+   volviendo a grabar. El margen es estrecho —30 voces para 29 personajes—, así
+   que la pantalla avisa cuando quedan tres libres y `npm run invariantes` falla
+   si los números dejan de dar.
 3. **Banco** — los personajes y los escenarios de toda la serie: generar, mirar,
    aprobar y regenerar, con las cadenas de ancla y de edad a la vista.
 4. **Desglose** — se elige un episodio y se convierte en planos, una llamada de

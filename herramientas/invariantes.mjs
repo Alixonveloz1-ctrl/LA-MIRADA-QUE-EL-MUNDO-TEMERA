@@ -1625,6 +1625,81 @@ bloque('Datos · todo el que habla tiene frase que decir');
 }
 
 // ===========================================================================
+// DATOS · Hay voces para todos, y cada uno la suya
+// ===========================================================================
+//
+// Una voz es de un solo personaje: dos personajes con el mismo timbre son el
+// mismo personaje para el oído, y en doce capítulos eso solo se arregla
+// volviendo a grabar. Eso lo impide `comprobarQueNadieComparteVoz` en el
+// servidor, pero solo tiene sentido si los números dan. Aquí se comprueba que
+// dan, porque el día que no den no se ve hasta el último personaje: se llega con
+// todo elegido menos uno y sin ninguna voz que ponerle.
+//
+// LA CUENTA. Cada personaje con género declarado solo puede coger voces de su
+// género; los que no lo tienen declarado pueden coger cualquiera. Para que haya
+// un reparto posible hacen falta tres cosas a la vez —es la condición de Hall
+// para este caso, que con tres grupos se escribe entera—:
+//
+//   femeninos ≤ voces femeninas
+//   masculinos ≤ voces masculinas
+//   todos ≤ todas las voces
+//
+// Con dos de las tres no basta: doce masculinos y dieciséis voces masculinas
+// cumple la segunda, pero si además hay veinte personajes sin género declarado
+// no hay reparto y las dos primeras no lo dirían.
+
+bloque('Datos · hay voces para todos, y cada uno la suya');
+
+{
+  const catalogo = (serie.voces && serie.voces.catalogo) || [];
+  const reparto = (serie.voces && serie.voces.reparto) || [];
+
+  const vocesDe = (g) => catalogo.filter((v) => v && v.genero === g).length;
+
+  const generoDe = (id) => {
+    const ficha = serie.personajes && serie.personajes[id];
+    const g = ficha && typeof ficha.genero === 'string' ? ficha.genero.trim() : '';
+    return g && g !== 'sin decidir' ? g : null;
+  };
+
+  const necesitan = { femenina: 0, masculina: 0, cualquiera: 0 };
+  for (const ficha of reparto) {
+    const g = generoDe(String(ficha.personaje));
+    if (g === 'femenina' || g === 'masculina') necesitan[g] += 1;
+    else necesitan.cualquiera += 1;
+  }
+
+  const quejas = [];
+  const mira = (cuantos, cuantas, quienes, deQue) => {
+    if (cuantos > cuantas) {
+      quejas.push(
+        `Hay ${cuantos} ${quienes} y solo ${cuantas} ${deQue}. Una voz es de un solo personaje, ` +
+          `así que ${cuantos - cuantas} se quedarían sin ninguna. O se añaden voces al catálogo ` +
+          '(datos/voces-gemini.json), o se acepta que dos personajes compartan timbre, que es ' +
+          'justo lo que el servidor impide.',
+      );
+    }
+  };
+
+  mira(necesitan.femenina, vocesDe('femenina'), 'personajes femeninos', 'voces femeninas');
+  mira(necesitan.masculina, vocesDe('masculina'), 'personajes masculinos', 'voces masculinas');
+  mira(reparto.length, catalogo.length, 'personajes en el reparto', 'voces en el catálogo');
+
+  comprobar('Cada personaje puede tener una voz distinta', quejas);
+
+  const sobran = catalogo.length - reparto.length;
+  avisar(
+    `${catalogo.length} voces (${vocesDe('femenina')} femeninas, ${vocesDe('masculina')} ` +
+      `masculinas) para ${reparto.length} personajes: ${necesitan.femenina} femeninos, ` +
+      `${necesitan.masculina} masculinos y ${necesitan.cualquiera} sin género declarado, que ` +
+      `pueden coger cualquiera. Sobra${sobran === 1 ? '' : 'n'} ${sobran}. ` +
+      (sobran <= 2
+        ? 'Es MUY justo: un personaje más en el reparto y no hay reparto posible.'
+        : 'Hay margen, pero no mucho.'),
+  );
+}
+
+// ===========================================================================
 // CÓDIGO · Nada llama a algo que no existe
 // ===========================================================================
 //
