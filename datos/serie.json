@@ -49,7 +49,8 @@
         "modelo de texto: gemini-3-pro no existe → gemini-3.1-pro(-preview)",
         "música: región «global» —ese era el 404— y máximo 184 s",
         "catálogo de 30 voces de Gemini (Chirp fuera)",
-        "género puesto a 27 personajes, sacado de su identidad"
+        "género puesto a 27 personajes, sacado de su identidad",
+        "frase de muestra sacada del guion para 11 personajes que no la tenían"
       ]
     }
   },
@@ -2725,7 +2726,14 @@
           3
         ],
         "voz_id": null,
-        "muestra": null
+        "muestra": {
+          "ep": 3,
+          "escena": "13",
+          "texto": "Esto es mejor de lo que él busca.",
+          "intencion": "sorprendido",
+          "del_guion": true,
+          "porque": "Elegida por ser, de sus 3 líneas, la que lleva la intención más detallada."
+        }
       },
       {
         "personaje": "cocinero",
@@ -2735,7 +2743,14 @@
           1
         ],
         "voz_id": null,
-        "muestra": null
+        "muestra": {
+          "ep": 1,
+          "escena": "9",
+          "texto": "¿Y qué quiere usted?",
+          "intencion": "desconfiado",
+          "del_guion": true,
+          "porque": "Elegida por ser, de sus 2 líneas, la que lleva la intención más detallada."
+        }
       },
       {
         "personaje": "administrador",
@@ -2745,7 +2760,14 @@
           2
         ],
         "voz_id": null,
-        "muestra": null
+        "muestra": {
+          "ep": 2,
+          "escena": "5",
+          "texto": "Sí, señor.",
+          "intencion": "neutro, funcionario",
+          "del_guion": true,
+          "porque": "Elegida por ser, de sus 2 líneas, la que lleva la intención más detallada."
+        }
       },
       {
         "personaje": "escribano",
@@ -2755,7 +2777,14 @@
           2
         ],
         "voz_id": null,
-        "muestra": null
+        "muestra": {
+          "ep": 2,
+          "escena": "12",
+          "texto": "Eso último no es verdad.",
+          "intencion": "objeción tímida",
+          "del_guion": true,
+          "porque": "Elegida por ser, de sus 2 líneas, la que lleva la intención más detallada."
+        }
       },
       {
         "personaje": "criado",
@@ -2765,7 +2794,14 @@
           3
         ],
         "voz_id": null,
-        "muestra": null
+        "muestra": {
+          "ep": 3,
+          "escena": "6",
+          "texto": "Luna nueva.",
+          "intencion": "soltándolo de golpe",
+          "del_guion": true,
+          "porque": "Elegida por ser, de sus 2 líneas, la que lleva la intención más detallada."
+        }
       },
       {
         "personaje": "voz",
@@ -2775,7 +2811,14 @@
           5
         ],
         "voz_id": null,
-        "muestra": null
+        "muestra": {
+          "ep": 5,
+          "escena": "13",
+          "texto": "¿Y si ya no hay enemigos?",
+          "intencion": "la misma voz, sin reproche. Y luego el silencio",
+          "del_guion": true,
+          "porque": "Elegida por ser, de sus 2 líneas, la que lleva la intención más detallada."
+        }
       },
       {
         "personaje": "otro concejal",
@@ -2786,7 +2829,14 @@
           12
         ],
         "voz_id": null,
-        "muestra": null
+        "muestra": {
+          "ep": 6,
+          "escena": "4",
+          "texto": "¿Y el terreno?",
+          "intencion": "preguntando por preguntar",
+          "del_guion": true,
+          "porque": "Elegida por ser, de sus 2 líneas, la que lleva la intención más detallada."
+        }
       },
       {
         "personaje": "secretario",
@@ -2796,7 +2846,14 @@
           9
         ],
         "voz_id": null,
-        "muestra": null
+        "muestra": {
+          "ep": 9,
+          "escena": "3",
+          "texto": "La semana pasada sí.",
+          "intencion": "sin poder ayudar",
+          "del_guion": true,
+          "porque": "Elegida por ser, de sus 2 líneas, la que lleva la intención más detallada."
+        }
       },
       {
         "personaje": "posadero",
@@ -2821,7 +2878,14 @@
           1
         ],
         "voz_id": null,
-        "muestra": null
+        "muestra": {
+          "ep": 1,
+          "escena": "3",
+          "texto": "...y usted qué dice, joven Saharis.",
+          "intencion": "social, ligera, invitándolo a hablar",
+          "del_guion": true,
+          "porque": "Elegida por ser, de sus única línea, la que lleva la intención más detallada."
+        }
       },
       {
         "personaje": "encargado",
@@ -2831,7 +2895,14 @@
           8
         ],
         "voz_id": null,
-        "muestra": null
+        "muestra": {
+          "ep": 8,
+          "escena": "1",
+          "texto": "Los rituales...",
+          "intencion": "empezando a excusarse",
+          "del_guion": true,
+          "porque": "Elegida por ser, de sus única línea, la que lleva la intención más detallada."
+        }
       },
       {
         "personaje": "nina-kadre",
@@ -2841,7 +2912,14 @@
           10
         ],
         "voz_id": null,
-        "muestra": null
+        "muestra": {
+          "ep": 10,
+          "escena": "17",
+          "texto": "¿El qué.",
+          "intencion": "distraída",
+          "del_guion": true,
+          "porque": "Elegida por ser, de sus única línea, la que lleva la intención más detallada."
+        }
       }
     ],
     "deriva_de_tono": {

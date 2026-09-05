@@ -33,12 +33,15 @@
 // reparto ya viene ordenado por volumen de diálogo en datos/serie.json y aquí no
 // se reordena: se enseña como está y se marcan los seis primeros.
 //
-// POR QUÉ ALGUIEN PUEDE QUEDARSE SIN MUESTRA. La frase de muestra vive en
-// `voces.reparto[].muestra` y hay figurantes que no la tienen escrita. Para esos
-// se busca en datos/guiones.json su línea más difícil disponible y se enseña
-// tal cual, diciendo de qué episodio y escena sale y por qué es esa. Lo que no
-// se hace jamás es inventar una frase: si no hay ninguna, se dice «sin frase de
-// muestra» y ahí se queda.
+// DE DÓNDE SALE LA FRASE DE MUESTRA. De `voces.reparto[].muestra`, siempre. A
+// dieciocho personajes se la escribieron a mano; a los otros once —figurantes de
+// dos o tres líneas— se la saca del guion `npm run datos`, con su línea más
+// difícil: la marcada de riesgo alto, y si no hay ninguna, la de intención más
+// detallada. Esos llevan `del_guion: true` y su motivo, y aquí se dice en
+// pantalla, porque oír una línea elegida por una regla no es lo mismo que oír la
+// que alguien escogió a mano. Pero se oye igual: no hay nada que pegar en ningún
+// archivo. Lo que no se hace jamás es inventar una frase: quien no habla ni una
+// vez en los guiones se queda sin muestra y se dice con esas palabras.
 
 import { llamar } from '../api.js';
 import { actual, alCambiar, cambiar } from '../estado.js';
@@ -403,50 +406,7 @@ export default {
               'Lo que se oye, en japonés: ', h('span', { clase: 'mono' }, ja),
               ' — la serie se dobla en japonés y se subtitula en español; este texto no aparece ' +
               'en pantalla en ningún momento del vídeo.')
-          : null,
-        muestra.prestada ? pintarComoEscribirla(id, muestra) : null);
-    }
-
-    /**
-     * Para los que no tienen frase de muestra escrita: el trozo de JSON, listo
-     * para copiar, que hay que pegar en datos/serie.json para que se les pueda
-     * elegir voz. No se manda desde aquí porque la muestra la compone la función
-     * desde los datos, no el navegador.
-     *
-     * @param {string} id
-     * @param {object} muestra
-     * @returns {HTMLElement}
-     */
-    function pintarComoEscribirla(id, muestra) {
-      const trozo = JSON.stringify({
-        muestra: {
-          ep: muestra.ep ?? null,
-          escena: muestra.escena ?? null,
-          texto: muestra.texto,
-          intencion: muestra.intencion || '',
-        },
-      }, null, 2);
-
-      const caja = h('pre', {
-        clase: 'mono',
-        estilo: {
-          margin: '8px 0 0',
-          padding: '8px 10px',
-          background: 'var(--fondo-alto-2)',
-          'border-radius': 'var(--radio-chico)',
-          'white-space': 'pre-wrap',
-          'font-size': '12px',
-        },
-      }, trozo);
-
-      const elBoton = boton('Copiar la muestra para serie.json', () => copiar(trozo, elBoton, caja));
-
-      return h('div', null,
-        h('p', { clase: 'tenue', estilo: { margin: '8px 0 0', 'font-size': '12px' } },
-          'Esta línea está en el guion pero no en «voces.reparto» de datos/serie.json, y la muestra ' +
-          `la compone la función desde ahí. Pégala en la entrada de «${id}» y podrá oírse:`),
-        caja,
-        h('div', { clase: 'tarjeta-acciones' }, elBoton));
+          : null);
     }
 
     /**
@@ -926,14 +886,20 @@ export default {
       const texto = escrita && typeof escrita.texto === 'string' ? escrita.texto.trim() : '';
 
       if (texto) {
+        // `del_guion` lo pone el parche cuando la frase no estaba escrita a mano
+        // y hubo que sacarla de los guiones. Se dice en pantalla, con el motivo:
+        // oír una línea elegida por una regla no es lo mismo que oír la que
+        // alguien escogió a mano, y quien elige la voz tiene derecho a saberlo.
+        // Pero se oye igual: no hay nada que pegar en ningún archivo.
+        const delGuion = escrita.del_guion === true;
         return {
           texto,
           intencion: typeof escrita.intencion === 'string' ? escrita.intencion.trim() : null,
           de: escrita.ep != null && escrita.escena != null
             ? `Episodio ${escrita.ep}, escena ${escrita.escena}.`
             : null,
-          porque: null,
-          prestada: false,
+          porque: delGuion && typeof escrita.porque === 'string' ? escrita.porque : null,
+          prestada: delGuion,
           sePuedeOir: true,
           ep: escrita.ep ?? null,
           escena: escrita.escena ?? null,
@@ -941,6 +907,10 @@ export default {
         };
       }
 
+      // RED DE SEGURIDAD, no camino normal. El parche escribe la frase de todo el
+      // que habla en los guiones, así que aquí no debería llegar nadie. Si llega
+      // —alguien editó serie.json a mano, o el parche no se pasó— se enseña la
+      // línea igual, para que al menos se vea cuál es, y se dice qué falta.
       const delGuion = lineaMasDificil(String(ficha.personaje));
 
       if (delGuion) {
@@ -954,9 +924,10 @@ export default {
           ep: delGuion.ep,
           escena: delGuion.escena,
           porQueNoSePuede:
-            'No tiene frase de muestra escrita en datos/serie.json, y la muestra la compone la ' +
-            'función desde ahí: el navegador manda un id, no un texto. Copia la línea de abajo a ' +
-            'su entrada de «voces.reparto» y podrá elegírsele voz.',
+            'Esta línea está en el guion pero no en «voces.reparto» de datos/serie.json, y la ' +
+            'muestra la compone la función desde ahí. Normalmente la escribe solo ' +
+            '«npm run datos»: si falta, es que serie.json se ha editado a mano o que el ' +
+            'despliegue lleva datos viejos. Vuelve a desplegar y se arregla sin tocar nada.',
         };
       }
 
@@ -1323,36 +1294,6 @@ function episodiosEnTexto(lista) {
     : `${tramos.slice(0, -1).join(', ')} y ${tramos[tramos.length - 1]}`;
 
   return numeros.length === 1 ? `episodio ${cuerpo}` : `episodios ${cuerpo}`;
-}
-
-/**
- * Copia al portapapeles y lo dice en el propio botón. Si el navegador no deja,
- * se marca el texto para poder copiarlo con el dedo.
- * @param {string} texto
- * @param {HTMLElement} elBoton
- * @param {HTMLElement} caja
- * @returns {Promise<void>}
- */
-async function copiar(texto, elBoton, caja) {
-  const antes = elBoton.textContent;
-  try {
-    await navigator.clipboard.writeText(texto);
-    elBoton.textContent = 'Copiado';
-  } catch {
-    try {
-      const rango = document.createRange();
-      rango.selectNodeContents(caja);
-      const seleccion = window.getSelection();
-      seleccion.removeAllRanges();
-      seleccion.addRange(rango);
-    } catch {
-      // Si tampoco se puede marcar, el texto sigue ahí para copiarlo a mano.
-    }
-    elBoton.textContent = 'Ya está marcado: cópialo tú';
-  }
-  setTimeout(() => {
-    elBoton.textContent = antes;
-  }, 2500);
 }
 
 /** Primera letra en mayúscula, el resto tal cual. */

@@ -158,6 +158,10 @@ que se probaba un solo nombre— y por eso hoy se mide en vez de darse por hecho
 2. **Voces** — los personajes ordenados por volumen de diálogo, cada uno con las
    voces de Gemini **de su género** diciendo su frase más difícil, para elegir
    escuchando. Chirp queda fuera de todo el proyecto: Chirp lee, Gemini actúa.
+   Los veintinueve se pueden oír sin tocar ni un archivo: a dieciocho se les
+   escribió la frase a mano y a los once figurantes se la saca del guion
+   `npm run datos` —su línea de riesgo alto, o la de intención más detallada—,
+   y la pantalla dice cuál de las dos cosas está oyendo.
 3. **Banco** — los personajes y los escenarios de toda la serie: generar, mirar,
    aprobar y regenerar, con las cadenas de ancla y de edad a la vista.
 4. **Desglose** — se elige un episodio y se convierte en planos, una llamada de

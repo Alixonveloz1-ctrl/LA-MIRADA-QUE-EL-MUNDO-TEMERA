@@ -424,6 +424,107 @@ for (const [id, ficha] of Object.entries(serie.personajes)) {
 }
 anota(`género puesto a ${conGenero} personajes, sacado de su identidad`);
 
+// ---------------------------------------------------------------------------
+// LA FRASE DE MUESTRA DE TODO EL QUE HABLA.
+//
+// Para elegirle voz a un personaje hay que oírle decir algo, y lo que dice sale
+// de `voces.reparto[].muestra`. Once de los veintinueve no la traían escrita:
+// figurantes con dos o tres líneas.
+//
+// LO QUE PASABA ANTES, Y ESTABA MAL. La pantalla de Voces SÍ les buscaba su
+// línea más difícil en los guiones y la enseñaba —con su episodio, su escena y
+// por qué esa—, pero el botón de probar voces salía apagado y en su sitio había
+// un recuadro con un JSON y un botón de «copiar para serie.json». Es decir: la
+// herramienta tenía la frase delante, la estaba pintando en la pantalla, y aun
+// así mandaba a editar un archivo a mano y a volver a desplegar. Si algo se
+// puede hacer aquí, se hace aquí.
+//
+// Se cierra en el origen, que es donde toca: la frase se escribe EN EL DATO, con
+// el mismo criterio con el que la pantalla la elegía. Así el servidor no cambia
+// —sigue leyendo `voces.reparto[].muestra` y nada más—, la pantalla deja de
+// tener un callejón sin salida, y el criterio vive escrito UNA vez.
+//
+// EL CRITERIO, para que se pueda discutir:
+//   1. la línea que el guion marca de riesgo alto, que son las que ningún TTS
+//      lleva bien y por tanto las que más hay que oír antes de decidir;
+//   2. si no hay ninguna, la que lleva la intención más detallada, que es la que
+//      más le pide a la voz;
+//   3. a igualdad, la más larga.
+//
+// Lo que NO se hace jamás es inventar una frase. Quien no habla ni una vez en
+// los guiones se queda sin muestra, y la pantalla lo dice con esas palabras.
+// ---------------------------------------------------------------------------
+
+const guiones = JSON.parse(readFileSync(join(raiz, 'datos/guiones.json'), 'utf8'));
+
+/** La línea más difícil de un personaje en los guiones, con el criterio de arriba. */
+function lineaMasDificil(id) {
+  let mejor = null;
+  let mejorNota = -1;
+  let cuantas = 0;
+  let deRiesgo = 0;
+
+  for (const episodio of guiones.guiones || []) {
+    for (const escena of (episodio && episodio.escenas) || []) {
+      for (const linea of (escena && escena.dialogo) || []) {
+        if (!linea || linea.quien !== id) continue;
+        const texto = typeof linea.texto === 'string' ? linea.texto.trim() : '';
+        if (!texto) continue;
+
+        cuantas += 1;
+        const riesgo = String(linea.riesgo || '').trim().toLowerCase() === 'alto';
+        if (riesgo) deRiesgo += 1;
+
+        const intencion = typeof linea.intencion === 'string' ? linea.intencion.trim() : '';
+        const nota = (riesgo ? 100000 : 0) + intencion.length * 100 + texto.length;
+
+        if (nota > mejorNota) {
+          mejorNota = nota;
+          mejor = { texto, intencion: intencion || null, ep: episodio.episodio, escena: String(escena.escena), riesgo };
+        }
+      }
+    }
+  }
+
+  if (!mejor) return null;
+
+  mejor.porque = mejor.riesgo
+    ? (deRiesgo === 1
+        ? 'Elegida por ser su única línea marcada de riesgo alto en el guion.'
+        : `Elegida por ser una de sus ${deRiesgo} líneas marcadas de riesgo alto en el guion.`)
+    : `Elegida por ser, de sus ${cuantas === 1 ? 'única línea' : `${cuantas} líneas`}, la que ` +
+      'lleva la intención más detallada.';
+  return mejor;
+}
+
+let conMuestra = 0;
+const mudos = [];
+for (const ficha of serie.voces.reparto || []) {
+  const escrita = ficha.muestra && typeof ficha.muestra.texto === 'string' ? ficha.muestra.texto.trim() : '';
+  if (escrita) continue;
+
+  const delGuion = lineaMasDificil(String(ficha.personaje));
+  if (!delGuion) {
+    mudos.push(String(ficha.personaje));
+    continue;
+  }
+
+  ficha.muestra = {
+    ep: delGuion.ep,
+    escena: delGuion.escena,
+    texto: delGuion.texto,
+    intencion: delGuion.intencion,
+    // De dónde salió y por qué, para que la pantalla lo pueda decir. Una frase
+    // sacada del guion no es lo mismo que una escrita a mano para esto, y quien
+    // elige la voz tiene derecho a saber cuál de las dos está oyendo.
+    del_guion: true,
+    porque: delGuion.porque,
+  };
+  conMuestra += 1;
+}
+anota(`frase de muestra sacada del guion para ${conMuestra} personajes que no la tenían`);
+if (mudos.length) anota(`sin frase de muestra (no hablan en los guiones): ${mudos.join(', ')}`);
+
 serie.meta.version_datos = (serie.meta.version_datos || 0) + 1;
 serie.meta.parche = {
   de: 'datos/serie.base.json',

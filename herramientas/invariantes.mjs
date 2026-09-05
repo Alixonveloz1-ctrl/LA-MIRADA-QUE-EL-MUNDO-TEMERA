@@ -1547,6 +1547,84 @@ bloque('Código · ningún id de modelo a mano');
 }
 
 // ===========================================================================
+// DATOS · Todo el que habla tiene frase que decir
+// ===========================================================================
+//
+// POR QUÉ EXISTE. Para elegirle voz a un personaje hay que oírle decir algo, y
+// lo que dice sale de `voces.reparto[].muestra`. Once de los veintinueve no la
+// traían, y la pantalla —que SÍ les encontraba su línea en el guion y la estaba
+// pintando— enseñaba en su sitio un recuadro con un JSON y un botón de «copiar
+// para serie.json», con el botón de probar voces apagado. Tener la frase delante
+// y aun así mandar a editar un archivo a mano no es una limitación: es un
+// callejón sin salida puesto a mano. Lo cierra el parche, y esto lo vigila.
+
+bloque('Datos · todo el que habla tiene frase que decir');
+
+{
+  const reparto = (serie.voces && serie.voces.reparto) || [];
+
+  /** Quién habla de verdad en los guiones, y cuántas veces. */
+  const hablan = new Map();
+  for (const episodio of guiones.guiones || []) {
+    for (const escena of (episodio && episodio.escenas) || []) {
+      for (const linea of (escena && escena.dialogo) || []) {
+        if (!linea || typeof linea.quien !== 'string') continue;
+        if (typeof linea.texto !== 'string' || !linea.texto.trim()) continue;
+        hablan.set(linea.quien, (hablan.get(linea.quien) || 0) + 1);
+      }
+    }
+  }
+
+  const sinFrase = [];
+  const sinMotivo = [];
+  let aMano = 0;
+  let delGuion = 0;
+
+  for (const ficha of reparto) {
+    const id = String(ficha.personaje);
+    const muestra = ficha.muestra && typeof ficha.muestra === 'object' ? ficha.muestra : null;
+    const texto = muestra && typeof muestra.texto === 'string' ? muestra.texto.trim() : '';
+
+    if (!texto) {
+      // Sin frase solo se puede estar por una razón: no hablar nunca. Si habla y
+      // no tiene frase, es que el parche no se ha pasado o alguien editó a mano.
+      if (hablan.has(id)) {
+        sinFrase.push(
+          `«${id}» dice ${hablan.get(id)} líneas en los guiones y no tiene frase de muestra en ` +
+            'voces.reparto[].muestra. Sin ella no se le puede elegir voz escuchando, que es lo ' +
+            'único que decide. La escribe sola «npm run datos».',
+        );
+      }
+      continue;
+    }
+
+    if (muestra.del_guion === true) {
+      delGuion += 1;
+      // La frase sacada por una regla tiene que decir por qué es esa: es lo que
+      // permite discutirla en vez de tragársela.
+      if (typeof muestra.porque !== 'string' || !muestra.porque.trim()) {
+        sinMotivo.push(`«${id}» tiene frase sacada del guion y no dice por qué es esa`);
+      }
+      // Y tiene que ser una línea que ese personaje dice de verdad.
+      if (!hablan.has(id)) {
+        sinMotivo.push(`«${id}» tiene frase marcada como sacada del guion, pero no habla en él`);
+      }
+    } else {
+      aMano += 1;
+    }
+  }
+
+  comprobar('Todo el que habla en los guiones tiene frase de muestra', sinFrase);
+  comprobar('Cada frase sacada del guion dice por qué es esa', sinMotivo);
+  avisar(
+    `De ${reparto.length} personajes del reparto, ${aMano} llevan la frase escrita a mano y ` +
+      `${delGuion} la llevan sacada del guion por «npm run datos». Ninguno obliga a editar nada: ` +
+      'a los dieciocho de siempre se les escribió y a los figurantes se les busca su línea más ' +
+      'difícil, pero los dos se oyen igual desde la pantalla.',
+  );
+}
+
+// ===========================================================================
 // CÓDIGO · Nada llama a algo que no existe
 // ===========================================================================
 //
