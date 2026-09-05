@@ -12,8 +12,50 @@ teclearse, y es corto. Cuando haya que meter un texto largo se usa el **Editor**
 de Cloud Shell (el icono del lápiz, «Open Editor»), que es una página web normal
 y ahí el pegado sí funciona.
 
-Se tarda entre media hora y una hora la primera vez. El paso 5 se puede dejar
-para más adelante: sin montador se genera todo, pero no se monta nada.
+---
+
+## 0. La forma corta: dos líneas
+
+**Casi todo esto lo hace un script del repositorio.** Los pasos 1 a 5 de abajo
+—APIs, bucket, CORS, service account, permisos y montador— son exactamente lo
+que hace `instalar.sh`, y no hace falta seguirlos a mano.
+
+En Cloud Shell, dos líneas y ninguna más:
+
+```
+git clone https://github.com/<usuario>/<repo>.git
+```
+```
+bash <repo>/instalar.sh
+```
+
+Eso es todo lo que hay que teclear. El script no te pide ningún texto largo: el
+proyecto lo enseña y esperas un Enter, el bucket lo eliges **por número**, y el
+dominio del CORS es opcional. Tarda entre seis y diez minutos.
+
+Al terminar deja las variables escritas en `~/mirada-variables.txt`, con la clave
+de la service account **en base64 y en una sola línea**, que es la única forma de
+copiar dos kilobytes de JSON en un móvil sin que se rompa. La aplicación la
+acepta así.
+
+Lo que el script **no** puede hacer, porque necesita un navegador y una tarjeta:
+
+- Crear la cuenta de Google Cloud y **activar la facturación**. Lo comprueba y se
+  para si falta, porque sin facturación Vertex falla más tarde con errores que no
+  la mencionan.
+- **Vercel.** Ahí hay que entrar y pegar las variables a mano (paso 4).
+
+Qué instala y con qué permisos no está escrito dentro del script: vive en
+`despliegue/`, en tres archivos que el script lee —`apis.txt`, `cors.json` y
+`permisos.txt`—. Si mañana hace falta otra API o otro permiso, se añade ahí.
+
+**Los pasos 1 a 5 de abajo siguen escritos** por dos razones: para saber qué ha
+hecho el script, y para poder hacerlo a mano si alguno falla. Si el script ha ido
+bien, salta directamente al **paso 4 (Vercel)**.
+
+Se tarda entre media hora y una hora la primera vez si se hace todo a mano, y
+unos diez minutos con el script. El montador se puede dejar para más adelante:
+sin él se genera todo, pero no se monta nada.
 
 ---
 
@@ -269,7 +311,7 @@ git clone https://github.com/<usuario>/<repo>.git
 ```
 
 ```
-bash <repo>/montador/instalar.sh
+bash <repo>/instalar.sh
 ```
 
 El instalador enseña el proyecto activo y espera un Enter (es el único momento en

@@ -23,7 +23,19 @@ imágenes: todo lo visual lo genera la herramienta.
 
 ## Cómo se usa
 
-1. Se pone en marcha una vez siguiendo **[docs/despliegue.md](docs/despliegue.md)**.
+1. Se pone en marcha una vez. Casi todo lo hace un script: en Cloud Shell, desde
+   el móvil, dos líneas y ninguna más —
+
+   ```
+   git clone https://github.com/<usuario>/<repo>.git
+   bash <repo>/instalar.sh
+   ```
+
+   APIs, bucket, CORS, service account, permisos y montador. Lo que queda a mano
+   es Vercel, y está en **[docs/despliegue.md](docs/despliegue.md)**.
+
+   Lo que Google necesita no se dicta como comandos: vive en `despliegue/`, en
+   archivos que el instalador lee.
 2. Se abre la dirección de Vercel en el teléfono y se añade a la pantalla de
    inicio, que es como se abre a pantalla completa.
 3. Se entra en **Salud** y no se gasta nada hasta que esté todo en verde.

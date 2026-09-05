@@ -853,15 +853,43 @@ Cómo queda impuesto por la forma del código, no por un comentario:
 Las instrucciones de montaje se despliegan a mano y siempre van por detrás del
 repositorio. De ahí sale todo lo siguiente.
 
-**La instalación del montador cabe en dos líneas tecleables.** El terminal de
+**La instalación ENTERA cabe en dos líneas tecleables.** El terminal de
 Cloud Shell no deja pegar desde el móvil, y aquí solo hay móvil:
 
 ```
 git clone https://github.com/<usuario>/<repo>.git
-bash <repo>/montador/instalar.sh
+bash <repo>/instalar.sh
 ```
 
-Todo lo demás lo hace `montador/instalar.sh`, que vive en el repositorio: enseña
+Y no vale solo para el montador: la regla es de toda la instalación. APIs,
+bucket, CORS, service account, permisos y montador entran en esas dos líneas.
+Lo único que queda fuera es lo que necesita un navegador y una tarjeta —crear la
+cuenta de Google Cloud, activar la facturación— y Vercel.
+
+**Lo que Google necesita no se dicta como comandos: son archivos del
+repositorio**, en `despliegue/`, que el instalador lee.
+
+| Archivo | Qué lleva |
+|---|---|
+| `despliegue/apis.txt` | Las APIs a habilitar, una por línea, con para qué sirve cada una |
+| `despliegue/cors.json` | La configuración de CORS del bucket |
+| `despliegue/permisos.txt` | Qué papel necesita cada cuenta, dónde y por qué |
+
+Si mañana hace falta otra API o otro permiso, se añade al archivo y el instalador
+lo aplica sin tocar una línea de código. Un permiso escrito dentro del script es
+un permiso que nadie encuentra cuando falla.
+
+**La clave de la service account sale en base64, en una sola línea.** Son dos
+kilobytes de JSON y en un móvil no se copian de otra forma sin que se rompan;
+`entorno()` acepta las dos formas justo por esto.
+
+**La clave del montador no se regenera nunca en silencio.** Si el job ya existe,
+se busca por dos caminos —preguntándosela al job y en el archivo de variables de
+la vez anterior— y solo si no aparece por ninguno se genera otra, diciéndolo con
+todas las letras: una clave nueva sin avisar deja el montaje fallando por una
+razón que no se parece en nada a la verdadera.
+
+El instalador, además: enseña
 el proyecto activo y espera un Enter (único momento de darse cuenta de que se
 está en la cuenta equivocada), detecta el bucket —si hay varios, el usuario
 escribe **un número**, no un nombre—, habilita las APIs que falten, genera la

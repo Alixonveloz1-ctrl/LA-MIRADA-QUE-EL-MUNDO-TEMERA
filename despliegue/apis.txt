@@ -1,0 +1,10 @@
+# Las APIs que hay que habilitar, y para qué sirve cada una.
+# instalar.sh lee este archivo: una por línea, lo de detrás de # es comentario.
+
+aiplatform.googleapis.com        # Vertex: imagen, vídeo, música y texto
+storage.googleapis.com           # El bucket, que es la única verdad
+texttospeech.googleapis.com      # Gemini TTS, la voz hablada
+speech.googleapis.com            # Speech-to-Text, medir los tiempos de subtítulo
+run.googleapis.com               # El montador, como Job
+cloudbuild.googleapis.com        # Construir la imagen del montador
+artifactregistry.googleapis.com  # Guardar esa imagen

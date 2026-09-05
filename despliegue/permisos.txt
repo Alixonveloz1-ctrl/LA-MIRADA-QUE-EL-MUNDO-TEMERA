@@ -1,0 +1,14 @@
+# Quién necesita qué, y por qué. instalar.sh lee este archivo.
+# Formato: cuenta | papel | dónde | por qué
+# cuenta: "app" (la que usa Vercel) o "compute" (la que ejecuta el montador)
+# dónde:  "proyecto" o "bucket"
+
+app     | roles/aiplatform.user      | proyecto | Generar imagen, vídeo, música y texto
+app     | roles/storage.objectAdmin  | bucket   | Escribir y leer todo el material
+app     | roles/run.developer        | proyecto | Lanzar el Job del montador
+app     | roles/iam.serviceAccountUser | proyecto | Ejecutar el Job con la cuenta de compute
+
+# LA TRAMPA CARA: el montador NO se ejecuta con la cuenta de Vercel, sino con la
+# cuenta de compute del proyecto. Sin este permiso el montaje falla AL ESCRIBIR
+# EL RESULTADO, después de haber hecho todo el trabajo.
+compute | roles/storage.objectAdmin  | bucket   | Leer el material y escribir el montaje

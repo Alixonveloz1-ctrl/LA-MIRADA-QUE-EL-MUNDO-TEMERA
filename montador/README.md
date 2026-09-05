@@ -31,10 +31,10 @@ git clone https://github.com/<usuario>/<repo>.git
 ```
 
 ```
-bash <repo>/montador/instalar.sh
+bash <repo>/instalar.sh
 ```
 
-Eso es todo. `instalar.sh` enseña el proyecto activo y espera un Enter —es el
+Eso es todo. El instalador de la raíz enseña el proyecto activo y espera un Enter —es el
 único momento de darse cuenta de que estás en la cuenta equivocada—, detecta el
 bucket, habilita las APIs que falten, genera la clave del montador, construye,
 despliega, da los permisos e **imprime al final, en un recuadro, las variables
