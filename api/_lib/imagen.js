@@ -21,7 +21,7 @@ import { Buffer } from 'node:buffer';
 import { entorno } from './entorno.js';
 import { nivelImagen } from './datos.js';
 import { ErrorDeCara } from './errores.js';
-import { llamar, urlModelo, conGrafias } from './vertex.js';
+import { llamar, urlModelo, conGrafias, comoGrafia } from './vertex.js';
 
 // Formato de la serie. El 16:9 tiene que coincidir con el `aspectRatio` de Veo
 // o el clip recorta la imagen que se aprobó.
@@ -71,7 +71,7 @@ export async function generar({ texto, negativo = null, referencias = [], nivel 
   // con el nombre de preview y el definitivo, y cuál contesta depende del
   // proyecto. Pedir solo uno y recibir 404 se lee como «no lo tienes».
   const respuesta = await conGrafias(modelo, (id) =>
-    llamar(urlModelo({ ...modelo, id }, 'generateContent', ent.sa.project_id), cuerpoPara(id, partes), {
+    llamar(urlModelo(comoGrafia(modelo, id), 'generateContent', ent.sa.project_id), cuerpoPara(id, partes), {
       metodo: 'POST',
       limiteMs: LIMITE_MS,
       contexto: {

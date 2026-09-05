@@ -36,7 +36,7 @@ import { Buffer } from 'node:buffer';
 import { entorno } from './entorno.js';
 import { serie, nivelVeo } from './datos.js';
 import { ErrorDeCara } from './errores.js';
-import { llamar, urlModelo } from './vertex.js';
+import { llamar, urlModelo, conGrafias, comoGrafia } from './vertex.js';
 
 // Los únicos parámetros fijos, tal cual los declara `modelos.video.parametros_fijos`
 // en datos/serie.json. El 16:9 tiene que coincidir con el de la imagen o el clip
@@ -137,26 +137,65 @@ export async function lanzar({
   // línea de código.
   const modelo = nivelVeo(nivel);
   const ent = entorno();
-  const url = urlModelo(modelo, 'predictLongRunning', ent.sa.project_id);
-
-  const contexto = {
-    que: 'lanzar la generación del clip',
-    modelo: modelo.id,
-    region: modelo.region,
-    variable: modelo.variable
-  };
 
   const finDelPlazo = Date.now() + PRESUPUESTO_LANZAR_MS;
   const restante = () => finDelPlazo - Date.now();
 
+  // Por todas las grafías del modelo, igual que en imagen, voz, música y texto:
+  // Vertex publica el mismo Veo con el nombre de preview y con el definitivo.
+  // Un 404 no cuesta nada y no genera nada, así que probar el otro nombre es
+  // gratis; quedarse en el primero es dar por perdida una cuenta que sí lo tiene.
+  //
+  // El plazo es UNO para toda la llamada, no uno por grafía: lo que no puede
+  // pasar es que probar nombres se coma el tiempo de generar.
+  return conGrafias(modelo, (id) =>
+    lanzarConEsteNombre(comoGrafia(modelo, id), ent, restante, {
+      prompt,
+      negativo: negativoFinal,
+      imagen,
+      enlace,
+      duracion,
+      carpeta
+    })
+  );
+}
+
+/**
+ * El lanzamiento con UNA grafía concreta del modelo, con su región.
+ *
+ * Aquí dentro está el baile del fotograma de enlace: se pide con él y, si el
+ * modelo lo rechaza, se vuelve a pedir una sola vez sin él. Los dos intentos son
+ * del mismo nombre de modelo, y por eso están juntos: si el que falla es el
+ * nombre —un 404—, sale de aquí sin tocar nada y `conGrafias` prueba el
+ * siguiente; si el que falla es el fotograma, no hay nombre que arregle eso.
+ *
+ * @param {{id:string, region:string, variable:string}} conEsteNombre
+ * @param {object} ent el entorno ya leído.
+ * @param {() => number} restante milisegundos que quedan de los 60 s de la
+ *   plataforma. Es UNO para toda la llamada, no uno por grafía.
+ * @param {object} pieza prompt, negativo, imagen, enlace, duracion y carpeta,
+ *   ya comprobados por `lanzar()`.
+ * @returns {Promise<{operacion:string, avisoSinLastFrame:boolean}>}
+ */
+async function lanzarConEsteNombre(conEsteNombre, ent, restante, pieza) {
+  const { prompt, negativo, imagen, enlace, duracion, carpeta } = pieza;
+  const url = urlModelo(conEsteNombre, 'predictLongRunning', ent.sa.project_id);
+
+  const contexto = {
+    que: 'lanzar la generación del clip',
+    modelo: conEsteNombre.id,
+    region: conEsteNombre.region,
+    variable: conEsteNombre.variable
+  };
+
   // Primer intento: con el fotograma de enlace, si esta toma encadena.
   try {
-    const respuesta = await llamar(url, cuerpoDeLanzamiento(prompt, negativoFinal, imagen, enlace, duracion, carpeta), {
+    const respuesta = await llamar(url, cuerpoDeLanzamiento(prompt, negativo, imagen, enlace, duracion, carpeta), {
       metodo: 'POST',
       limiteMs: restante(),
       contexto
     });
-    return { operacion: nombreDeOperacion(respuesta, modelo), avisoSinLastFrame: false };
+    return { operacion: nombreDeOperacion(respuesta, conEsteNombre), avisoSinLastFrame: false };
   } catch (fallo) {
     if (!esRechazoDeLastFrame(fallo, enlace !== null)) {
       // Ha fallado por otra cosa. Se devuelve el error de Google tal cual, sin
@@ -185,12 +224,12 @@ export async function lanzar({
     // Este clip se usará entero igual (`dur === dur_gen` en las tomas
     // encadenadas), pero la entrada no interpolará con la toma anterior y el
     // corte se verá. Por eso vuelve el aviso: para que se diga en pantalla.
-    const respuesta = await llamar(url, cuerpoDeLanzamiento(prompt, negativoFinal, imagen, null, duracion, carpeta), {
+    const respuesta = await llamar(url, cuerpoDeLanzamiento(prompt, negativo, imagen, null, duracion, carpeta), {
       metodo: 'POST',
       limiteMs: restante(),
       contexto
     });
-    return { operacion: nombreDeOperacion(respuesta, modelo), avisoSinLastFrame: true };
+    return { operacion: nombreDeOperacion(respuesta, conEsteNombre), avisoSinLastFrame: true };
   }
 }
 
@@ -309,18 +348,23 @@ function nombreDeOperacion(respuesta, modelo) {
 export async function consultar(operacion, nivel) {
   const nombre = comprobarNombreDeOperacion(operacion);
   const modelo = nivelVeo(nivel);
-  comprobarQueLaOperacionEsDeEsteModelo(nombre, modelo);
+
+  // Aquí NO se prueban grafías: la operación vive colgada de la que la lanzó y
+  // de la región donde se creó, y las dos van escritas dentro de su nombre. Se
+  // pregunta exactamente ahí. Probar otro nombre solo conseguiría un 404 por
+  // cada uno y dar por perdido un clip que se está generando bien.
+  const comoSeLanzo = grafiaDeLaOperacion(nombre, modelo);
 
   const ent = entorno();
-  const url = urlModelo(modelo, 'fetchPredictOperation', ent.sa.project_id);
+  const url = urlModelo(comoSeLanzo, 'fetchPredictOperation', ent.sa.project_id);
 
   const respuesta = await llamar(url, { operationName: nombre }, {
     metodo: 'POST',
     limiteMs: LIMITE_CONSULTA_MS,
     contexto: {
       que: 'consultar cómo va el clip',
-      modelo: modelo.id,
-      region: modelo.region,
+      modelo: comoSeLanzo.id,
+      region: comoSeLanzo.region,
       variable: modelo.variable
     }
   });
@@ -412,23 +456,31 @@ function comprobarNombreDeOperacion(operacion) {
  * @param {string} nombre
  * @param {{id:string, region:string, variable:string}} modelo
  */
-function comprobarQueLaOperacionEsDeEsteModelo(nombre, modelo) {
+function grafiaDeLaOperacion(nombre, modelo) {
   const partes = /\/locations\/([^/]+)\/publishers\/[^/]+\/models\/([^/]+)\/operations\//.exec(nombre);
-  if (!partes) return;
+  if (!partes) return modelo;
 
   const regionDelNombre = partes[1];
   const modeloDelNombre = partes[2];
 
-  if (modeloDelNombre === modelo.id && regionDelNombre === modelo.region) return;
+  // Cualquiera de las grafías de ESTE nivel vale: son nombres distintos del
+  // mismo modelo y el clip se lanzó con la que contestara ese día. Lo que no
+  // vale es otro nivel de Veo, que sí sería otro modelo y otro precio.
+  const grafias = Array.isArray(modelo.ids) && modelo.ids.length ? modelo.ids : [modelo.id];
+  if (grafias.includes(modeloDelNombre)) {
+    // La región sale del nombre y no de la tabla: donde se creó la operación es
+    // el único sitio donde se puede consultar, aunque GCP_LOCATION haya cambiado.
+    return { ...modelo, id: modeloDelNombre, region: regionDelNombre };
+  }
 
   throw new ErrorDeCara(
     `Este clip se lanzó con el modelo «${modeloDelNombre}» en la región «${regionDelNombre}» y ` +
-      `ahora se está preguntando por él al modelo «${modelo.id}» en «${modelo.region}», que no es ` +
-      'el mismo sitio: Google contestaría que no existe. Una operación solo se puede consultar ' +
-      'donde se creó. Suele pasar por dos motivos: la toma tiene apuntado otro nivel de Veo del ' +
-      `que se usó al lanzarla, o se han cambiado las variables ${modelo.variable} o GCP_LOCATION ` +
-      'con el clip a medio generar. Devuélvelas a como estaban para recoger este clip, o da la ' +
-      'toma por perdida y vuelve a lanzarla.',
+      `ahora se está preguntando por él a un nivel de Veo que se llama ${grafias.join(' o ')}, ` +
+      'que no es el mismo modelo: Google contestaría que no existe. Una operación solo se puede ' +
+      'consultar donde se creó. Suele pasar por dos motivos: la toma tiene apuntado otro nivel de ' +
+      `Veo del que se usó al lanzarla, o se ha cambiado la variable ${modelo.variable} con el clip ` +
+      'a medio generar. Devuélvela a como estaba para recoger este clip, o da la toma por perdida ' +
+      'y vuelve a lanzarla.',
     { reintentable: false, http: 400 }
   );
 }

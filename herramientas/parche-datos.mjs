@@ -341,6 +341,17 @@ if (!serie.voces.modelo.ids) {
   anota('grafías de voz: 4, empezando por la de preview');
 }
 
+// LA REGIÓN DE LA VOZ, DECLARADA. Sin declararla, cada grafía se pide a la que
+// le tocaría por su nombre —«global» las 3.x, la región de la cuenta las 2.5— y
+// las dos últimas se irían a un sitio donde no están. Gemini TTS se sirve desde
+// «global» en las dos generaciones: es lo que hay funcionando hoy en producción
+// en studio.LegadodeHierro, que llama a gemini-2.5-flash-tts en
+// /locations/global/. Declarada aquí, manda para las cuatro.
+if (!serie.voces.modelo.region) {
+  serie.voces.modelo.region = 'global';
+  anota('región de la voz: global, para las cuatro grafías');
+}
+
 // Texto: «gemini-3-pro» no existe. El que hay es «gemini-3.1-pro».
 if (serie.modelos.texto && !serie.modelos.texto.ids) {
   serie.modelos.texto.ids = ['gemini-3.1-pro-preview', 'gemini-3.1-pro', 'gemini-2.5-pro'];

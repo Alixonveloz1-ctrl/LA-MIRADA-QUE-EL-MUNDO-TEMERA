@@ -106,7 +106,13 @@ let cacheSerie = null;
  *
  * `sa` es el JSON de la service account ya parseado. `modelos` es
  * { imagen:{calidad,medio,economico}, veo:{calidad,medio,economico},
- *   tts, musica, stt, texto }, y cada modelo es { id, region, variable }.
+ *   tts, musica, stt, texto }, y cada modelo es
+ * { id, ids, region, regiones, variable }.
+ *
+ * `ids` son TODAS las grafías con las que Vertex publica ese modelo —el nombre
+ * de preview y el definitivo—, en el orden en que hay que probarlas, y
+ * `regiones` dice a qué región va cada una. Sin las dos cosas, `conGrafias()` se
+ * queda probando un solo nombre y un 404 se lee como falta de acceso.
  */
 export function entorno() {
   const huella = huellaDelEntorno();
@@ -359,7 +365,7 @@ function familia(nudo, donde, variable, region) {
         { http: 500 },
       );
     }
-    salida[nivel] = { id: String(dato.id), region: regionDe(dato.id, dato.region, region), variable };
+    salida[nivel] = modeloDe(dato, variable, region);
   }
   return salida;
 }
@@ -374,8 +380,49 @@ function suelto(nudo, donde, variable, region) {
       { http: 500 },
     );
   }
-  const declarada = nudo && nudo.region ? String(nudo.region) : null;
-  return { id, region: id ? regionDe(id, declarada, region) : region, variable };
+  if (!id) return { id: null, ids: [], region, regiones: {}, variable };
+  return modeloDe(nudo, variable, region);
+}
+
+/**
+ * Un modelo de la tabla, con TODAS sus grafías y la región de cada una.
+ *
+ * ESTO ES LO QUE FALTABA Y COSTÓ UN DESPLIEGUE ENTERO. Vertex publica el mismo
+ * modelo con dos nombres —el de preview y el definitivo—; `datos/serie.json` los
+ * declara los dos en `ids` y `conGrafias()` los prueba en orden. Pero aquí se
+ * construía el modelo con `{ id, region, variable }` y se tiraba `ids` por el
+ * camino, así que `conGrafias()` recibía la lista vacía, se caía a `[modelo.id]`
+ * y probaba un solo nombre. El 404 que volvía nombraba una sola grafía —y eso
+ * fue lo que delató el fallo: si de verdad se hubieran probado cuatro, el error
+ * las habría dicho las cuatro.
+ *
+ * La región se calcula GRAFÍA A GRAFÍA, no una vez para todas: una lista puede
+ * mezclar generaciones (un 3.x y un 2.5 del mismo modelo), y la regla de la
+ * región depende de eso. Si el dato declara región, esa manda para todas.
+ */
+function modeloDe(dato, variable, region) {
+  const id = String(dato.id);
+  const declarada = dato.region ? String(dato.region) : null;
+  const ids = grafiasDe(dato, id);
+  const regiones = {};
+  for (const grafia of ids) regiones[grafia] = regionDe(grafia, declarada, region);
+  return { id, ids, region: regiones[id], regiones, variable };
+}
+
+/**
+ * Las grafías a probar: las declaradas en `ids`, en su orden, y el `id` al final
+ * si no estuviera entre ellas. El orden lo pone el dato a propósito —primero la
+ * que Google sirve hoy a más proyectos—, así que aquí no se reordena.
+ */
+function grafiasDe(dato, id) {
+  const declaradas = Array.isArray(dato.ids)
+    ? dato.ids.map((g) => String(g).trim()).filter(Boolean)
+    : [];
+  const salida = [];
+  for (const grafia of [...declaradas, id]) {
+    if (!salida.includes(grafia)) salida.push(grafia);
+  }
+  return salida;
 }
 
 /**
@@ -452,8 +499,16 @@ function aplicar(entrada, valor, variable, region) {
     );
   }
 
+  const laRegion = regionPedida || regionDe(id, null, region);
+
   entrada.id = id;
-  entrada.region = regionPedida || regionDe(id, null, region);
+  entrada.region = laRegion;
+
+  // Quien pone la variable nombra UNA grafía a mano, y esa es la que quiere. Las
+  // que traía el dato se van con el id viejo: seguir probándolas sería llamar a
+  // un modelo que nadie ha pedido, y encima taparía el error del que sí.
+  entrada.ids = [id];
+  entrada.regiones = { [id]: laRegion };
 }
 
 // ---------------------------------------------------------------------------

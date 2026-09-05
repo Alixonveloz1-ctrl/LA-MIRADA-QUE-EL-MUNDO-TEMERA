@@ -43,7 +43,7 @@ import { ErrorDeCara } from './errores.js';
 import { serie, escenaDeGuion, personajesDeEscena, nivelImagen } from './datos.js';
 import { comprobarCupos } from './prompt.js';
 import { entorno } from './entorno.js';
-import { llamar, urlModelo } from './vertex.js';
+import { llamar, urlModelo, conGrafias, comoGrafia } from './vertex.js';
 
 // Las únicas duraciones que genera Veo (contrato §6.3 y plan §5). 2 y 3 segundos
 // no existen: por eso todo plano trae `dur_gen` y `recorte`. No sale de
@@ -156,16 +156,20 @@ export async function generar(prompt, { json = false, limiteMs } = {}) {
     }
   };
 
-  const respuesta = await llamar(urlModelo(modelo, 'generateContent', ent.sa.project_id), cuerpo, {
-    metodo: 'POST',
-    limiteMs,
-    contexto: {
-      que: json ? 'pedir el desglose al modelo de texto' : 'pedir una respuesta al modelo de texto',
-      modelo: modelo.id,
-      region: modelo.region,
-      variable: modelo.variable
-    }
-  });
+  // Por todas las grafías: el mismo modelo puede estar publicado con el nombre
+  // de preview y con el definitivo, y cuál contesta depende del proyecto.
+  const respuesta = await conGrafias(modelo, (id) =>
+    llamar(urlModelo(comoGrafia(modelo, id), 'generateContent', ent.sa.project_id), cuerpo, {
+      metodo: 'POST',
+      limiteMs,
+      contexto: {
+        que: json ? 'pedir el desglose al modelo de texto' : 'pedir una respuesta al modelo de texto',
+        modelo: id,
+        region: comoGrafia(modelo, id).region,
+        variable: modelo.variable
+      }
+    })
+  );
 
   const devuelto = sacarTexto(respuesta, modelo);
   return json ? parsearJson(devuelto, respuesta, modelo) : devuelto;

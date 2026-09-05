@@ -45,6 +45,7 @@
         "grafías de video.medio: veo-3.1-fast-generate-001, veo-3.1-fast-generate-preview",
         "grafías de video.economico: veo-3.1-lite-generate-001, veo-3.1-lite-generate-preview",
         "grafías de voz: 4, empezando por la de preview",
+        "región de la voz: global, para las cuatro grafías",
         "modelo de texto: gemini-3-pro no existe → gemini-3.1-pro(-preview)",
         "música: región «global» —ese era el 404— y máximo 184 s",
         "catálogo de 30 voces de Gemini (Chirp fuera)",
@@ -2401,7 +2402,8 @@
         "gemini-3.1-flash-tts",
         "gemini-2.5-flash-preview-tts",
         "gemini-2.5-flash-tts"
-      ]
+      ],
+      "region": "global"
     },
     "idioma": "ja-JP",
     "por_que": "Se elige por expresividad. Chirp queda descartado de todo el proyecto: Chirp lee, este actua.",

@@ -49,7 +49,7 @@ import { serie } from './datos.js';
 import { ErrorDeCara } from './errores.js';
 import { token, AMBITOS } from './auth.js';
 import { escribir, leer, firmar } from './gcs.js';
-import { llamar, urlModelo } from './vertex.js';
+import { llamar, urlModelo, conGrafias, comoGrafia } from './vertex.js';
 import { listarVoces } from './audio.js';
 
 // Los dos objetos que Salud deja en el bucket. Son ruidosos a propósito: quien
@@ -400,46 +400,77 @@ async function comprobarModelo(entrada, proyecto) {
     );
   }
 
+  // POR TODAS LAS GRAFÍAS, y no por una. Un modelo que Vertex publica con dos
+  // nombres estaba dando aquí un 404 que se leía como «tu cuenta no tiene este
+  // modelo» siendo mentira: lo tiene con el otro nombre. Salud comprueba lo
+  // MISMO que después se va a usar, así que tiene que probar lo mismo: si al
+  // generar se prueban cuatro grafías, aquí se prueban las cuatro.
+  //
+  // Dentro, el 400 y el 429 son SÍ (regla 3 de la cabecera) y por eso se
+  // resuelven aquí, no fuera: si se dejaran salir como error, `conGrafias`
+  // seguiría probando nombres que no hacen falta —el modelo ya contestó— y la
+  // ficha acabaría enseñando una grafía distinta de la que funcionó.
   try {
-    await llamar(urlModelo(modelo, entrada.verbo, proyecto), entrada.cuerpo, {
-      metodo: 'POST',
-      limiteMs: LIMITE_MS,
-      contexto: {
-        que: entrada.que,
-        modelo: modelo.id,
-        region: modelo.region,
-        variable: modelo.variable,
-      },
+    const bueno = await conGrafias(modelo, async (id) => {
+      const conEsteNombre = comoGrafia(modelo, id);
+      try {
+        await llamar(urlModelo(conEsteNombre, entrada.verbo, proyecto), entrada.cuerpo, {
+          metodo: 'POST',
+          limiteMs: LIMITE_MS,
+          contexto: {
+            que: entrada.que,
+            modelo: id,
+            region: conEsteNombre.region,
+            variable: modelo.variable,
+          },
+        });
+        // Con un cuerpo así, un 200 sería raro; pero si contesta, responde.
+        return { grafia: conEsteNombre, aviso: null };
+      } catch (fallo) {
+        const http = Number(fallo && fallo.http);
+
+        // 400: ha resuelto quién llama, dónde y a qué modelo, y lo único que no
+        // le gusta es el cuerpo, que está mal a propósito. Hay acceso.
+        if (http === 400) return { grafia: conEsteNombre, aviso: null };
+
+        // 429: hay acceso, pero la cuota está al límite ahora mismo. Se cuenta
+        // como sí y se deja dicho al lado, porque un 429 se confunde muchísimo
+        // con una falta de permisos y lleva a tocar lo que no toca.
+        if (http === 429) return { grafia: conEsteNombre, aviso: textoDeFallo(fallo) };
+
+        // 403 y 404 los recoge `conGrafias` para probar el nombre siguiente;
+        // 401 y lo demás salen tal cual, que es lo que hay que leer.
+        throw fallo;
+      }
     });
-    // Con un cuerpo así, un 200 sería raro; pero si contesta, responde.
-    return fichaDeModelo(entrada, true, null);
+
+    return fichaDeModelo(entrada, true, bueno.aviso, bueno.grafia);
   } catch (fallo) {
-    const http = Number(fallo && fallo.http);
-
-    // 400: ha resuelto quién llama, dónde y a qué modelo, y lo único que no le
-    // gusta es el cuerpo, que está mal a propósito. Hay acceso.
-    if (http === 400) return fichaDeModelo(entrada, true, null);
-
-    // 429: hay acceso, pero la cuota está al límite ahora mismo. Se cuenta como
-    // sí y se deja dicho al lado, porque un 429 se confunde muchísimo con una
-    // falta de permisos y lleva a tocar lo que no toca.
-    if (http === 429) return fichaDeModelo(entrada, true, textoDeFallo(fallo));
-
-    // 401, 403, 404 y lo demás: no se puede usar. El mensaje de `errores.js` ya
-    // explica cada caso, incluido el 404 de los Gemini 3.x, que parece falta de
-    // acceso y en realidad es que esos modelos solo se sirven desde «global».
+    // Se acabaron las grafías —o el fallo no era de nombre—. El mensaje de
+    // `conGrafias` dice CUÁLES se probaron y en qué región cada una, que es
+    // justo lo que hay que saber para decidir si sobra el modelo o falta el
+    // permiso; `errores.js` explica el resto de los casos.
     return fichaDeModelo(entrada, false, textoDeFallo(fallo));
   }
 }
 
-/** La ficha de un modelo tal y como la pinta la pantalla. */
-function fichaDeModelo(entrada, ok, error) {
+/**
+ * La ficha de un modelo tal y como la pinta la pantalla.
+ *
+ * `id` y `region` son los de la grafía QUE CONTESTÓ cuando alguna contestó, no
+ * los del primer nombre de la lista: la pantalla tiene que enseñar lo que de
+ * verdad se va a llamar al generar. `grafias` va siempre, para que se vea de un
+ * vistazo que se probó más de un nombre.
+ */
+function fichaDeModelo(entrada, ok, error, grafiaBuena) {
   const modelo = entrada.modelo || {};
+  const usado = grafiaBuena || modelo;
   return {
     clave: entrada.clave,
-    id: modelo.id ?? null,
-    region: modelo.region ?? null,
+    id: usado.id ?? null,
+    region: usado.region ?? null,
     variable: modelo.variable ?? null,
+    grafias: Array.isArray(modelo.ids) && modelo.ids.length ? modelo.ids : null,
     ok,
     error,
   };

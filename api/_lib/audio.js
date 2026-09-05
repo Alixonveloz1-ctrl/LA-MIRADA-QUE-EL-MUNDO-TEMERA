@@ -35,7 +35,7 @@ import { Buffer } from 'node:buffer';
 import { entorno } from './entorno.js';
 import { serie } from './datos.js';
 import { ErrorDeCara } from './errores.js';
-import { llamar, urlModelo, urlServicio, conGrafias } from './vertex.js';
+import { llamar, urlModelo, urlServicio, conGrafias, comoGrafia } from './vertex.js';
 
 // Los dos servicios de Google que no son Vertex y que este módulo usa. Son
 // puertas públicas: no identifican ninguna cuenta.
@@ -161,7 +161,7 @@ export async function musica({ texto, negativo = null, durS } = {}) {
   let respuesta;
   try {
     respuesta = await conGrafias(modelo, (id) =>
-      llamar(urlModelo({ ...modelo, id }, 'generateContent', ent.sa.project_id), cuerpo, {
+      llamar(urlModelo(comoGrafia(modelo, id), 'generateContent', ent.sa.project_id), cuerpo, {
         metodo: 'POST',
         limiteMs: LIMITE_MS,
         contexto: {
@@ -324,16 +324,22 @@ export async function voz({ partes, instruccion, voces } = {}) {
     }
   };
 
-  const respuesta = await llamar(urlModelo(modelo, 'generateContent', ent.sa.project_id), cuerpo, {
-    metodo: 'POST',
-    limiteMs: LIMITE_MS,
-    contexto: {
-      que: 'generar la voz del bloque',
-      modelo: modelo.id,
-      region: modelo.region,
-      variable: modelo.variable
-    }
-  });
+  // Por todas las grafías del modelo de voz, igual que la música. Vertex publica
+  // Gemini TTS con el nombre de preview y con el definitivo, y cuál contesta
+  // depende del proyecto: pedir solo uno y recibir un 404 se lee como «tu cuenta
+  // no tiene voz», que es mentira.
+  const respuesta = await conGrafias(modelo, (id) =>
+    llamar(urlModelo(comoGrafia(modelo, id), 'generateContent', ent.sa.project_id), cuerpo, {
+      metodo: 'POST',
+      limiteMs: LIMITE_MS,
+      contexto: {
+        que: 'generar la voz del bloque',
+        modelo: id,
+        region: comoGrafia(modelo, id).region,
+        variable: modelo.variable
+      }
+    })
+  );
 
   const { datos, mime } = sacarAudio(respuesta, modelo, 'la voz');
 

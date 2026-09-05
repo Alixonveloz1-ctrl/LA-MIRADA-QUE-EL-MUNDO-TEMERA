@@ -563,6 +563,9 @@ function fichaDeModelo(modelo) {
   const responde = modelo.ok === true;
   const hayNota = Boolean(modelo.error);
 
+  /** ¿Este modelo tiene más de un nombre posible? Con uno solo no hay nada que contar. */
+  const varias = (m) => Array.isArray(m.grafias) && m.grafias.length > 1;
+
   return tarjeta({
     titulo: nombreDeModelo(modelo.clave),
     // Un modelo que responde pero trae nota es el 429: hay acceso, pero ahora
@@ -573,14 +576,28 @@ function fichaDeModelo(modelo) {
       : { tipo: 'fallido', texto: 'No se puede usar' },
     pie: h('div', null,
       h('dl', { estilo: estiloDeLista() },
+        // Cuando responde, el id es el de la grafía QUE CONTESTÓ, no el primero
+        // de la lista: es el nombre con el que de verdad se va a generar.
         dato('Id', modelo.id, {
           mono: true,
+          nota: responde && varias(modelo) ? 'El nombre con el que ha contestado.' : null,
           falta: 'No hay ningún id declarado para esta casilla en datos/serie.json.',
         }),
         dato('Región', modelo.region, {
           mono: true,
           falta: 'Sin región declarada.',
         }),
+        // Los nombres que se han probado. Se enseñan porque el error que más
+        // confunde de todos —«tu cuenta no tiene este modelo»— casi nunca es
+        // eso: es que Vertex lo publica con otro nombre. Ver cuántos se han
+        // probado dice de un vistazo si el problema es el nombre o el acceso.
+        varias(modelo)
+          ? dato('Se ha probado como', modelo.grafias.join(', '), {
+              mono: true,
+              nota: 'Vertex publica el mismo modelo con el nombre de preview y con el ' +
+                    'definitivo, y cuál contesta depende del proyecto. Se prueban todos.',
+            })
+          : null,
         dato('Variable', modelo.variable, {
           mono: true,
           nota: 'Ponla en Vercel con otro id dentro y este modelo se sustituye sin tocar código.',

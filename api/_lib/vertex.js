@@ -420,6 +420,23 @@ const GRAFIA_BUENA = new Map();
  * @param {(id:string) => Promise<any>} hacer qué hacer con cada grafía
  * @returns {Promise<any>}
  */
+/**
+ * El mismo modelo, escrito con una de sus grafías y pedido a LA REGIÓN DE ESA
+ * GRAFÍA, no a la de la primera.
+ *
+ * Importa porque una lista de grafías puede mezclar generaciones: un Gemini 3.x
+ * solo se sirve desde «global» y un 2.5 desde la región de la cuenta. Pedir el
+ * 2.5 a «global» porque el 3.x de al lado va ahí devuelve el mismo 404 que se
+ * está intentando esquivar, y encima parece que tampoco existe con ese nombre.
+ *
+ * @param {{id:string, region:string, regiones?:Object<string,string>}} modelo
+ * @param {string} id la grafía que toca probar.
+ */
+export function comoGrafia(modelo, id) {
+  const regiones = (modelo && modelo.regiones) || null;
+  return { ...modelo, id, region: (regiones && regiones[id]) || modelo.region };
+}
+
 export async function conGrafias(modelo, hacer) {
   const grafias = Array.isArray(modelo.ids) && modelo.ids.length ? modelo.ids : [modelo.id];
   const memoria = `${modelo.variable || ''}:${grafias[0]}`;
@@ -445,7 +462,8 @@ export async function conGrafias(modelo, hacer) {
   // lo lea no sabe si el problema es el nombre o el acceso.
   throw new ErrorDeCara(
     `Ninguna de las formas conocidas de este modelo contesta en tu proyecto. Se ha probado como: ` +
-      `${orden.join(', ')}. Si el modelo existe con otro nombre, se pone en la variable ` +
+      `${orden.map((g) => `${g} (en ${comoGrafia(modelo, g).region})`).join(', ')}. ` +
+      `Si el modelo existe con otro nombre, se pone en la variable ` +
       `${modelo.variable || 'de entorno'} y se sustituye sin tocar código.`,
     {
       detalle: ultimo && ultimo.detalle ? ultimo.detalle : (ultimo && ultimo.mensaje) || null,

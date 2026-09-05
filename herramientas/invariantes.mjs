@@ -1542,6 +1542,106 @@ bloque('Código · ningún id de modelo a mano');
 }
 
 // ===========================================================================
+// CÓDIGO · Todas las grafías se prueban
+// ===========================================================================
+//
+// POR QUÉ EXISTE ESTA COMPROBACIÓN. Vertex publica el mismo modelo con dos
+// nombres —el de preview y el definitivo— y cuál contesta depende del proyecto.
+// `datos/serie.json` los declara los dos en `ids` y `conGrafias()` los prueba en
+// orden. Pero durante un despliegue entero eso no sirvió de nada: `entorno()`
+// armaba cada modelo como `{ id, region, variable }` y tiraba `ids` por el
+// camino, así que `conGrafias()` recibía la lista vacía, se caía al único id y
+// probaba un solo nombre. Y encima Salud, voz, texto y Veo ni siquiera pasaban
+// por `conGrafias()`. El 404 que se veía en pantalla nombraba una sola grafía;
+// eso fue lo que lo delató, y es lo que se comprueba aquí para que no vuelva.
+
+bloque('Código · todas las grafías se prueban');
+
+{
+  // 1. NINGÚN MÓDULO LLAMA A UN MODELO POR UN SOLO NOMBRE. Quien compone una URL
+  // de modelo tiene que saber de grafías. `vertex.js` queda fuera porque es
+  // quien las implementa.
+  const quejas = [];
+  for (const rel of archivos) {
+    if (!rel.startsWith('api/') || !esJavaScript(rel)) continue;
+    if (rel.endsWith('_lib/vertex.js')) continue;
+    const fuente = fuenteDe(rel);
+    if (fuente === null) continue;
+    const codigo = soloCodigo(fuente);
+    if (!codigo.includes('urlModelo(')) continue;
+    if (codigo.includes('conGrafias(')) continue;
+    quejas.push(
+      `${rel} compone la URL de un modelo con urlModelo() y no pasa nunca por ` +
+        'conGrafias(), así que prueba un solo nombre. Si Google publica ese modelo ' +
+        'con el otro, el 404 que vuelve dice «tu cuenta no tiene este modelo» y es ' +
+        'mentira: lo tiene con el nombre que no se ha probado.'
+    );
+  }
+  comprobar('Ningún modelo se llama por un solo nombre', quejas);
+
+  // 2. LA TABLA DE `entorno()` ENTREGA LAS GRAFÍAS. Esto no se mira leyendo el
+  // código: se arma la tabla de verdad y se comprueba lo que trae. Es el fallo
+  // que hubo, y leer el archivo no lo habría enseñado.
+  process.env.GCP_SERVICE_ACCOUNT ||= JSON.stringify({
+    project_id: 'proyecto-de-mentira',
+    // Ni el correo ni la clave se parecen a los de verdad, y es a propósito: la
+    // comprobación de más arriba —«sin correos de service account en el código»—
+    // no distingue un ejemplo de un descuido, y hace bien en no distinguirlo.
+    client_email: 'nadie@ejemplo.invalid',
+    // La cabecera va porque `entorno()` la exige; detrás no hay material ninguno.
+    private_key: '-----BEGIN PRIVATE KEY-----\nno-es-una-clave\n-----END PRIVATE KEY-----\n',
+  });
+  process.env.GCS_BUCKET ||= 'bucket-de-mentira';
+
+  const { entorno } = await import('../api/_lib/entorno.js');
+  const tabla = entorno().modelos;
+
+  /** Cada casilla de la tabla, con el camino por el que se llega a ella. */
+  const casillas = [];
+  for (const [familia, valor] of Object.entries(tabla)) {
+    if (valor && typeof valor.variable === 'string') casillas.push([familia, valor]);
+    else if (valor) {
+      for (const [nivel, hoja] of Object.entries(valor)) casillas.push([`${familia}.${nivel}`, hoja]);
+    }
+  }
+
+  const sinGrafias = [];
+  const sinRegion = [];
+  for (const [camino, modelo] of casillas) {
+    // Speech-to-Text va sin id a propósito: la v1 elige el suyo.
+    if (!modelo.id) continue;
+
+    if (!Array.isArray(modelo.ids) || !modelo.ids.includes(modelo.id)) {
+      sinGrafias.push(
+        `entorno().modelos.${camino} entrega «${modelo.id}» sin su lista de grafías. ` +
+          'conGrafias() se caería a ese único nombre y probaría uno solo.'
+      );
+      continue;
+    }
+
+    // Y cada grafía con SU región: una lista puede mezclar generaciones, y un
+    // Gemini 3.x solo se sirve desde «global» mientras que un 2.5 no.
+    for (const grafia of modelo.ids) {
+      if (!modelo.regiones || !modelo.regiones[grafia]) {
+        sinRegion.push(`entorno().modelos.${camino} no dice a qué región pedir «${grafia}»`);
+      }
+    }
+  }
+
+  comprobar('Cada modelo llega con todas sus grafías', sinGrafias);
+  comprobar('Cada grafía llega con su región', sinRegion);
+
+  const cuantas = casillas
+    .filter(([, m]) => m.id)
+    .reduce((suma, [, m]) => suma + (m.ids ? m.ids.length : 1), 0);
+  avisar(
+    `Hoy se probarían ${cuantas} grafías repartidas en ${casillas.filter(([, m]) => m.id).length} ` +
+      'modelos. Un nombre que no contesta cuesta un 404 y no genera nada, así que probarlos ' +
+      'todos es gratis; el que sí contesta se recuerda y se prueba primero la próxima vez.'
+  );
+}
+
+// ===========================================================================
 // CÓDIGO · Una llamada de texto por escena (§13.3)
 // ===========================================================================
 

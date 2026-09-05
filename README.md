@@ -120,6 +120,36 @@ que no ayuda a nadie y una cosa más que puede escribirse mal.
 
 ---
 
+### Los dos 404 que no son falta de acceso
+
+Cuando Google contesta *«Publisher model … was not found or your project does not
+have access to it»*, casi nunca es que la cuenta no tenga el modelo. Son dos
+trampas distintas, y las dos están resueltas en el código:
+
+**La región.** Los Gemini 3.x y Lyria 3 Pro **solo** se sirven desde `global`.
+Pedirlos a `us-central1` devuelve exactamente el mismo 404 que «no tienes
+acceso». La región de cada modelo la declara `datos/serie.json` y, si no la
+declara, se deduce del nombre.
+
+**El nombre.** Vertex publica el mismo modelo con **dos** grafías —la de preview
+y la definitiva— y cuál de las dos contesta depende del proyecto. Las dos son
+reales. Por eso `datos/serie.json` declara todas las que se conocen, en `ids`, y
+`conGrafias()` las prueba en orden hasta que una contesta; un nombre que no
+existe cuesta un 404, no genera nada y no se cobra, así que probarlos todos es
+gratis. La que funciona se recuerda y se prueba primero la próxima vez.
+
+Salud enseña, en cada modelo, **con qué nombre ha contestado** y **cuáles se han
+probado**. Si ninguno contesta, el error los nombra todos con su región: eso es
+lo que separa «sobra el modelo» de «falta el permiso».
+
+Esto no se cumple solo: `npm run invariantes` arma la tabla de modelos de verdad
+y comprueba que cada uno llega con todas sus grafías y cada grafía con su región,
+y que ningún módulo compone la URL de un modelo sin pasar por `conGrafias()`. Fue
+justo lo que se rompió una vez —la tabla entregaba el id y tiraba la lista, así
+que se probaba un solo nombre— y por eso hoy se mide en vez de darse por hecho.
+
+---
+
 ## Las ocho pantallas
 
 1. **Salud** — dice quién es esta instalación, si el bucket se lee y se escribe,
