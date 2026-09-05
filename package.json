@@ -1,0 +1,14 @@
+{
+  "name": "la-mirada-que-el-mundo-temera",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Estudio de producción de La mirada que el mundo temerá. Un animé, un camino.",
+  "engines": { "node": ">=20" },
+  "scripts": {
+    "datos": "node herramientas/parche-datos.mjs",
+    "invariantes": "node herramientas/invariantes.mjs",
+    "pesar": "node herramientas/pesar.mjs",
+    "comprobar": "npm run datos && npm run invariantes && npm run pesar"
+  }
+}

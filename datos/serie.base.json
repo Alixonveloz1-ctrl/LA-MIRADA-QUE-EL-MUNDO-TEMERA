@@ -1,0 +1,1988 @@
+{
+  "meta": {
+    "proyecto": "la-mirada-que-el-mundo-temera",
+    "titulo_es": "LA MIRADA QUE EL MUNDO TEMERÁ",
+    "version_datos": 7,
+    "nota": "Fuente única de verdad de la herramienta. Un solo animé. Si algo no está aquí, no se genera.",
+    "nota_idioma": "En pantalla, solo espanol. El japones existe unicamente como audio hablado (piezas.teaser.audio.voz).",
+    "alcance": "Estudio completo de la serie. Hoy contiene una pieza: el teaser."
+  },
+  "formato": {
+    "proporcion": "16:9",
+    "resolucion": "1080p",
+    "fps": 24
+  },
+  "modelos": {
+    "imagen": {
+      "calidad": {
+        "id": "gemini-3-pro-image",
+        "region": "global"
+      },
+      "medio": {
+        "id": "gemini-3.1-flash-image",
+        "region": "global"
+      },
+      "economico": {
+        "id": "gemini-2.5-flash-image",
+        "region": "us-central1"
+      },
+      "por_defecto": "medio",
+      "protocolo": "generateContent",
+      "nota": "La familia Imagen queda fuera: no acepta imágenes de referencia. Los Gemini 3.x solo se sirven desde 'global'.",
+      "parametros": {
+        "aspectRatio": "16:9",
+        "resolution": "2K",
+        "nota": "En mayuscula: '2K'. En minuscula lo rechaza. 16:9 debe coincidir con el aspectRatio de Veo o el clip recorta."
+      }
+    },
+    "video": {
+      "calidad": {
+        "id": "veo-3.1-generate-001"
+      },
+      "medio": {
+        "id": "veo-3.1-fast-generate-001"
+      },
+      "economico": {
+        "id": "veo-3.1-lite-generate-001"
+      },
+      "protocolo": "predictLongRunning + fetchPredictOperation",
+      "parametros_fijos": {
+        "aspectRatio": "16:9",
+        "sampleCount": 1,
+        "generateAudio": false,
+        "personGeneration": "allow_adult"
+      },
+      "nota": "generateAudio en false: cuesta la mitad y la banda se compone aparte. storageUri obligatorio, el MP4 nunca pasa por la función."
+    },
+    "sustituible_por_entorno": [
+      "IMAGE_MODEL",
+      "VEO_MODEL"
+    ],
+    "regla": "Si un modelo falla se devuelve el error de Google tal cual. Nunca se sustituye por otro en silencio."
+  },
+  "estilo": {
+    "bloque": "high-budget cinematic 2D anime film, seinen register, reference-tier adult anime drama. Fine variable-weight linework, restrained 2-3 tone cel shading with soft skin gradients, desaturated cool palette of wet stone, muted moss green and blue-grey. Single hard light source, heavy contrast, faces half in shadow, volumetric haze. Filmic grain, gentle halation on highlights, soft vignette. Detailed lived-in environment, grounded proportions, understated expressions.",
+    "negativo": "bright saturated shonen palette, glowing specular eyes, western cartoon, webtoon-flat shading, chibi, thick uniform outlines, 3D render, CGI, Disney/Pixar look, semi-realistic painted faces, lens flare, neon, text, watermark, signature",
+    "regla": "El bloque se concatena LITERAL al final de todo prompt de imagen y de video, sin excepción. Una toma generada sin él se descarta."
+  },
+  "luces": {
+    "CRIPTA": "lit only by orange torchlight from below, deep crushed blacks, drifting smoke, damp stone",
+    "BARRIO": "cold blue-grey daylight or moonlight, rain haze, no warm source, wet surfaces",
+    "NOBLE": "warm diffuse gold from oil lamps and tall windows, dust suspended in the air, polished wood",
+    "NEUTRA": "neutral dark background, even directional light, no environment"
+  },
+  "instrucciones_referencia": {
+    "banco": "CHARACTER ANCHOR above: this is {nombre}. Copy this character's IDENTITY exactly - same face shape, same hair colour and cut, same eye colour, same build, same age, same art style. Do NOT copy the pose, the framing, the scale or the background: redraw them exactly as this new plate describes.",
+    "toma": "CHARACTER REFERENCE above: this is {nombre}. Match this character's IDENTITY exactly - same face, same hair, same eyes, same build, same clothing design. The ONLY things you must NOT copy are the pose, framing, scale and background: redraw {nombre} at the body pose, camera angle and SCALE this shot requires, correctly proportioned against the environment, sharing the scene's perspective and lighting. Do not mix up characters.",
+    "maximo_referencias": {
+      "veo": 3,
+      "gemini-3-pro-image": "6 de objeto + 5 de personaje + 3 de estilo",
+      "gemini-3.1-flash-image": "10 de objeto + 4 de personaje",
+      "uso": "El escenario viaja como referencia de objeto/estilo y los personajes como referencia de personaje. Son cupos distintos y no compiten."
+    }
+  },
+  "personajes": {
+    "madre": {
+      "identidad": "young woman in her early twenties, gaunt and worn; long dark brown hair, matted and unwashed; pale olive skin; large deep-set grey-green eyes with dark circles; high sharp cheekbones, cracked lips; very thin; torn undyed linen shift; old and fresh scars across both wrists"
+    },
+    "bebe": {
+      "nombre": "el bebé",
+      "identidad": "newborn infant, damp dark hair, unusually alert red eyes, pale skin, small and fragile"
+    },
+    "nino5": {
+      "nombre": "el niño de cinco años",
+      "identidad": "gaunt boy about five years old, dark hair grown out unevenly, red eyes, pale olive skin like his mother's, filthy oversized rag tunic, bare feet, dirt worked into every crease of his skin, no expression at all"
+    },
+    "nino10": {
+      "nombre": "el niño de diez años",
+      "identidad": "wiry boy about ten years old, dark hair to the jaw, red eyes, pale olive skin, a long fresh ritual scar across the left palm, thin scavenged dark clothing, cloth wraps on his feet, flat unreadable face"
+    },
+    "saharis": {
+      "identidad": "young man about seventeen, black hair cut short and neat, red eyes, pale olive skin, fine features gone hard, the same high cheekbones as his mother, immaculate dark charcoal noble coat with a high collar, a silver signet ring, a long old scar across the left palm, unreadable face",
+      "nota": "Ancla de linaje. Todas las edades encadenan a esta. Sus pomulos son los de su madre: es el unico rasgo heredado."
+    },
+    "saharis-bebe": {
+      "identidad": "newborn infant, damp dark hair, unusually alert red eyes, pale skin",
+      "nota": "Encadena al ancla de linaje de saharis: misma estructura osea, mismos pomulos, mismo color de ojos. Solo cambia la edad."
+    },
+    "saharis-5": {
+      "identidad": "gaunt boy of five, dark hair grown out unevenly, red eyes, filthy oversized rag tunic, bare feet, no expression",
+      "nota": "Encadena al ancla de linaje de saharis: misma estructura osea, mismos pomulos, mismo color de ojos. Solo cambia la edad."
+    },
+    "saharis-10": {
+      "identidad": "wiry boy of ten, dark hair to the jaw, red eyes, a fresh ritual scar across the left palm, thin scavenged dark clothing",
+      "nota": "Encadena al ancla de linaje de saharis: misma estructura osea, mismos pomulos, mismo color de ojos. Solo cambia la edad."
+    },
+    "saharis-12": {
+      "identidad": "boy of twelve, harder and taller, red eyes, scarred hands, street clothes, flat unreadable face",
+      "nota": "Encadena al ancla de linaje de saharis: misma estructura osea, mismos pomulos, mismo color de ojos. Solo cambia la edad."
+    },
+    "celebrante": {
+      "identidad": "old man in his seventies, thin, ordinary, liver-spotted hands, close-cropped white hair, mild pleasant face, plain dark robe. In ritual he wears a leather mask moulded into a demonic grin"
+    },
+    "livia": {
+      "identidad": "young woman of twenty, fair skin, dark blonde hair pinned up with loose strands, wide brown eyes, alert and unafraid, well-made but slightly outdated noble dresses"
+    },
+    "eira": {
+      "identidad": "young woman of twenty-two, long silver hair, dark green eyes with a hidden sadness, plain undyed linen, hands red from cold and work, upright and calm"
+    },
+    "rothar": {
+      "identidad": "man of twenty-five, heavy build going soft, dark curly hair, flushed face, good clothes badly worn, a permanent look of being one step behind"
+    },
+    "deras": {
+      "identidad": "young man of eighteen, handsome and certain, black hair oiled back, sharp expensive clothing in Vharn silver and grey, the bearing of someone who has never been refused"
+    },
+    "iven": {
+      "identidad": "man of sixty, broad and sagging, white beard trimmed unevenly, watery eyes, fine old clothes with a wine stain that is never gone"
+    },
+    "vharn": {
+      "identidad": "man of fifty, lean and immaculate, iron-grey hair, cold courteous face, Vharn silver and grey"
+    },
+    "abuela": {
+      "identidad": "woman of seventy-five, strong and weathered, grey hair braided back, the same high cheekbones as her daughter, thick northern wool, working hands"
+    },
+    "acolita": {
+      "identidad": "woman with a cadaverous face, shaven head, bone pendants, dark cult robe; devout and gentle in a way that is worse than cruelty"
+    },
+    "anciano-academia": {
+      "identidad": "very old priest, hunched, rotten teeth, cloudy eye, heavy stained ritual robe"
+    },
+    "kael": {
+      "identidad": "man of twenty-four, lame in one leg and leaning on a crutch, brown hair to the shoulders, a burn scar across one cheek, forest-village clothing gone ragged"
+    },
+    "sura": {
+      "identidad": "girl of twelve, street-thin, tangled dark hair, a broken front tooth, oversized scavenged clothes"
+    },
+    "osk": {
+      "identidad": "thin man of forty, narrow face, quick eyes, nondescript clothes chosen to be forgotten"
+    },
+    "escribano": {
+      "identidad": "old clerk, stooped, ink-stained fingers, thick spectacles, threadbare dark coat"
+    },
+    "cocinero": {
+      "identidad": "man of fifty, thick forearms, apron, grey stubble, permanently tired"
+    },
+    "nina-kadre": {
+      "identidad": "girl of six, round face, fair braids, thick knitted northern clothes, well fed and unafraid"
+    },
+    "posadero": {
+      "identidad": "heavy northern man of fifty, red face, apron, beard"
+    },
+    "prestamista": {
+      "identidad": "man of forty-five, neat, soft-spoken, rings on both hands"
+    }
+  },
+  "banco": {
+    "regla": "El ancla se genera SOLO con texto. Todas las demás placas del personaje se generan contra su ancla ya aprobada. Si se cambia un ancla, se reprueban todas las suyas.",
+    "ruta": "banco/{personaje}/{placa}.png",
+    "orden": [
+      "anclas",
+      "resto"
+    ],
+    "placas": [
+      {
+        "id": "saharis-ancla",
+        "personaje": "saharis",
+        "ancla": true,
+        "luz": "NEUTRA",
+        "encuadre": "Medium shot, front facing, neutral dark background, even directional light, no expression"
+      },
+      {
+        "id": "saharis-barrio",
+        "personaje": "saharis",
+        "luz": "BARRIO",
+        "encuadre": "Medium shot, three-quarter view, in the environment, no expression"
+      },
+      {
+        "id": "saharis-cripta",
+        "personaje": "saharis",
+        "luz": "CRIPTA",
+        "encuadre": "Medium shot, three-quarter view, in the environment, no expression"
+      },
+      {
+        "id": "saharis-noble",
+        "personaje": "saharis",
+        "luz": "NOBLE",
+        "encuadre": "Medium shot, three-quarter view, in the environment, no expression"
+      },
+      {
+        "id": "saharis-bebe-ancla",
+        "personaje": "saharis-bebe",
+        "ancla": true,
+        "luz": "NEUTRA",
+        "encuadre": "Medium shot, front facing, neutral dark background, even directional light, no expression",
+        "encadena_a": "saharis-ancla"
+      },
+      {
+        "id": "saharis-bebe-cripta",
+        "personaje": "saharis-bebe",
+        "luz": "CRIPTA",
+        "encuadre": "Medium shot, three-quarter view, in the environment, no expression"
+      },
+      {
+        "id": "saharis-5-ancla",
+        "personaje": "saharis-5",
+        "ancla": true,
+        "luz": "NEUTRA",
+        "encuadre": "Medium shot, front facing, neutral dark background, even directional light, no expression",
+        "encadena_a": "saharis-ancla"
+      },
+      {
+        "id": "saharis-5-barrio",
+        "personaje": "saharis-5",
+        "luz": "BARRIO",
+        "encuadre": "Medium shot, three-quarter view, in the environment, no expression"
+      },
+      {
+        "id": "saharis-5-cripta",
+        "personaje": "saharis-5",
+        "luz": "CRIPTA",
+        "encuadre": "Medium shot, three-quarter view, in the environment, no expression"
+      },
+      {
+        "id": "saharis-10-ancla",
+        "personaje": "saharis-10",
+        "ancla": true,
+        "luz": "NEUTRA",
+        "encuadre": "Medium shot, front facing, neutral dark background, even directional light, no expression",
+        "encadena_a": "saharis-ancla"
+      },
+      {
+        "id": "saharis-10-barrio",
+        "personaje": "saharis-10",
+        "luz": "BARRIO",
+        "encuadre": "Medium shot, three-quarter view, in the environment, no expression"
+      },
+      {
+        "id": "saharis-10-cripta",
+        "personaje": "saharis-10",
+        "luz": "CRIPTA",
+        "encuadre": "Medium shot, three-quarter view, in the environment, no expression"
+      },
+      {
+        "id": "saharis-12-ancla",
+        "personaje": "saharis-12",
+        "ancla": true,
+        "luz": "NEUTRA",
+        "encuadre": "Medium shot, front facing, neutral dark background, even directional light, no expression",
+        "encadena_a": "saharis-ancla"
+      },
+      {
+        "id": "saharis-12-barrio",
+        "personaje": "saharis-12",
+        "luz": "BARRIO",
+        "encuadre": "Medium shot, three-quarter view, in the environment, no expression"
+      },
+      {
+        "id": "madre-ancla",
+        "personaje": "madre",
+        "ancla": true,
+        "luz": "NEUTRA",
+        "encuadre": "Medium shot, front facing, neutral dark background, even directional light, no expression"
+      },
+      {
+        "id": "madre-barrio",
+        "personaje": "madre",
+        "luz": "BARRIO",
+        "encuadre": "Medium shot, three-quarter view, in the environment, no expression"
+      },
+      {
+        "id": "madre-cripta",
+        "personaje": "madre",
+        "luz": "CRIPTA",
+        "encuadre": "Medium shot, three-quarter view, in the environment, no expression"
+      },
+      {
+        "id": "madre-noble",
+        "personaje": "madre",
+        "luz": "NOBLE",
+        "encuadre": "Medium shot, three-quarter view, in the environment, no expression"
+      },
+      {
+        "id": "celebrante-ancla",
+        "personaje": "celebrante",
+        "ancla": true,
+        "luz": "NEUTRA",
+        "encuadre": "Medium shot, front facing, neutral dark background, even directional light, no expression"
+      },
+      {
+        "id": "celebrante-barrio",
+        "personaje": "celebrante",
+        "luz": "BARRIO",
+        "encuadre": "Medium shot, three-quarter view, in the environment, no expression"
+      },
+      {
+        "id": "celebrante-cripta",
+        "personaje": "celebrante",
+        "luz": "CRIPTA",
+        "encuadre": "Medium shot, three-quarter view, in the environment, no expression"
+      },
+      {
+        "id": "celebrante-noble",
+        "personaje": "celebrante",
+        "luz": "NOBLE",
+        "encuadre": "Medium shot, three-quarter view, in the environment, no expression"
+      },
+      {
+        "id": "livia-ancla",
+        "personaje": "livia",
+        "ancla": true,
+        "luz": "NEUTRA",
+        "encuadre": "Medium shot, front facing, neutral dark background, even directional light, no expression"
+      },
+      {
+        "id": "livia-barrio",
+        "personaje": "livia",
+        "luz": "BARRIO",
+        "encuadre": "Medium shot, three-quarter view, in the environment, no expression"
+      },
+      {
+        "id": "livia-cripta",
+        "personaje": "livia",
+        "luz": "CRIPTA",
+        "encuadre": "Medium shot, three-quarter view, in the environment, no expression"
+      },
+      {
+        "id": "livia-noble",
+        "personaje": "livia",
+        "luz": "NOBLE",
+        "encuadre": "Medium shot, three-quarter view, in the environment, no expression"
+      },
+      {
+        "id": "eira-ancla",
+        "personaje": "eira",
+        "ancla": true,
+        "luz": "NEUTRA",
+        "encuadre": "Medium shot, front facing, neutral dark background, even directional light, no expression"
+      },
+      {
+        "id": "eira-barrio",
+        "personaje": "eira",
+        "luz": "BARRIO",
+        "encuadre": "Medium shot, three-quarter view, in the environment, no expression"
+      },
+      {
+        "id": "rothar-ancla",
+        "personaje": "rothar",
+        "ancla": true,
+        "luz": "NEUTRA",
+        "encuadre": "Medium shot, front facing, neutral dark background, even directional light, no expression"
+      },
+      {
+        "id": "rothar-barrio",
+        "personaje": "rothar",
+        "luz": "BARRIO",
+        "encuadre": "Medium shot, three-quarter view, in the environment, no expression"
+      },
+      {
+        "id": "rothar-noble",
+        "personaje": "rothar",
+        "luz": "NOBLE",
+        "encuadre": "Medium shot, three-quarter view, in the environment, no expression"
+      },
+      {
+        "id": "deras-ancla",
+        "personaje": "deras",
+        "ancla": true,
+        "luz": "NEUTRA",
+        "encuadre": "Medium shot, front facing, neutral dark background, even directional light, no expression"
+      },
+      {
+        "id": "deras-barrio",
+        "personaje": "deras",
+        "luz": "BARRIO",
+        "encuadre": "Medium shot, three-quarter view, in the environment, no expression"
+      },
+      {
+        "id": "deras-noble",
+        "personaje": "deras",
+        "luz": "NOBLE",
+        "encuadre": "Medium shot, three-quarter view, in the environment, no expression"
+      },
+      {
+        "id": "iven-ancla",
+        "personaje": "iven",
+        "ancla": true,
+        "luz": "NEUTRA",
+        "encuadre": "Medium shot, front facing, neutral dark background, even directional light, no expression"
+      },
+      {
+        "id": "iven-noble",
+        "personaje": "iven",
+        "luz": "NOBLE",
+        "encuadre": "Medium shot, three-quarter view, in the environment, no expression"
+      },
+      {
+        "id": "vharn-ancla",
+        "personaje": "vharn",
+        "ancla": true,
+        "luz": "NEUTRA",
+        "encuadre": "Medium shot, front facing, neutral dark background, even directional light, no expression"
+      },
+      {
+        "id": "vharn-noble",
+        "personaje": "vharn",
+        "luz": "NOBLE",
+        "encuadre": "Medium shot, three-quarter view, in the environment, no expression"
+      },
+      {
+        "id": "abuela-ancla",
+        "personaje": "abuela",
+        "ancla": true,
+        "luz": "NEUTRA",
+        "encuadre": "Medium shot, front facing, neutral dark background, even directional light, no expression"
+      },
+      {
+        "id": "abuela-noble",
+        "personaje": "abuela",
+        "luz": "NOBLE",
+        "encuadre": "Medium shot, three-quarter view, in the environment, no expression"
+      },
+      {
+        "id": "acolita-ancla",
+        "personaje": "acolita",
+        "ancla": true,
+        "luz": "NEUTRA",
+        "encuadre": "Medium shot, front facing, neutral dark background, even directional light, no expression"
+      },
+      {
+        "id": "acolita-cripta",
+        "personaje": "acolita",
+        "luz": "CRIPTA",
+        "encuadre": "Medium shot, three-quarter view, in the environment, no expression"
+      },
+      {
+        "id": "anciano-academia-ancla",
+        "personaje": "anciano-academia",
+        "ancla": true,
+        "luz": "NEUTRA",
+        "encuadre": "Medium shot, front facing, neutral dark background, even directional light, no expression"
+      },
+      {
+        "id": "anciano-academia-cripta",
+        "personaje": "anciano-academia",
+        "luz": "CRIPTA",
+        "encuadre": "Medium shot, three-quarter view, in the environment, no expression"
+      },
+      {
+        "id": "anciano-academia-noble",
+        "personaje": "anciano-academia",
+        "luz": "NOBLE",
+        "encuadre": "Medium shot, three-quarter view, in the environment, no expression"
+      },
+      {
+        "id": "kael-ancla",
+        "personaje": "kael",
+        "ancla": true,
+        "luz": "NEUTRA",
+        "encuadre": "Medium shot, front facing, neutral dark background, even directional light, no expression"
+      },
+      {
+        "id": "kael-barrio",
+        "personaje": "kael",
+        "luz": "BARRIO",
+        "encuadre": "Medium shot, three-quarter view, in the environment, no expression"
+      },
+      {
+        "id": "sura-ancla",
+        "personaje": "sura",
+        "ancla": true,
+        "luz": "NEUTRA",
+        "encuadre": "Medium shot, front facing, neutral dark background, even directional light, no expression"
+      },
+      {
+        "id": "sura-barrio",
+        "personaje": "sura",
+        "luz": "BARRIO",
+        "encuadre": "Medium shot, three-quarter view, in the environment, no expression"
+      },
+      {
+        "id": "osk-ancla",
+        "personaje": "osk",
+        "ancla": true,
+        "luz": "NEUTRA",
+        "encuadre": "Medium shot, front facing, neutral dark background, even directional light, no expression"
+      },
+      {
+        "id": "osk-barrio",
+        "personaje": "osk",
+        "luz": "BARRIO",
+        "encuadre": "Medium shot, three-quarter view, in the environment, no expression"
+      },
+      {
+        "id": "escribano-ancla",
+        "personaje": "escribano",
+        "ancla": true,
+        "luz": "NEUTRA",
+        "encuadre": "Medium shot, front facing, neutral dark background, even directional light, no expression"
+      },
+      {
+        "id": "escribano-barrio",
+        "personaje": "escribano",
+        "luz": "BARRIO",
+        "encuadre": "Medium shot, three-quarter view, in the environment, no expression"
+      },
+      {
+        "id": "cocinero-ancla",
+        "personaje": "cocinero",
+        "ancla": true,
+        "luz": "NEUTRA",
+        "encuadre": "Medium shot, front facing, neutral dark background, even directional light, no expression"
+      },
+      {
+        "id": "cocinero-noble",
+        "personaje": "cocinero",
+        "luz": "NOBLE",
+        "encuadre": "Medium shot, three-quarter view, in the environment, no expression"
+      },
+      {
+        "id": "nina-kadre-ancla",
+        "personaje": "nina-kadre",
+        "ancla": true,
+        "luz": "NEUTRA",
+        "encuadre": "Medium shot, front facing, neutral dark background, even directional light, no expression"
+      },
+      {
+        "id": "nina-kadre-noble",
+        "personaje": "nina-kadre",
+        "luz": "NOBLE",
+        "encuadre": "Medium shot, three-quarter view, in the environment, no expression"
+      },
+      {
+        "id": "posadero-ancla",
+        "personaje": "posadero",
+        "ancla": true,
+        "luz": "NEUTRA",
+        "encuadre": "Medium shot, front facing, neutral dark background, even directional light, no expression"
+      },
+      {
+        "id": "posadero-barrio",
+        "personaje": "posadero",
+        "luz": "BARRIO",
+        "encuadre": "Medium shot, three-quarter view, in the environment, no expression"
+      },
+      {
+        "id": "prestamista-ancla",
+        "personaje": "prestamista",
+        "ancla": true,
+        "luz": "NEUTRA",
+        "encuadre": "Medium shot, front facing, neutral dark background, even directional light, no expression"
+      },
+      {
+        "id": "prestamista-barrio",
+        "personaje": "prestamista",
+        "luz": "BARRIO",
+        "encuadre": "Medium shot, three-quarter view, in the environment, no expression"
+      },
+      {
+        "id": "celebrante-mascara",
+        "personaje": "celebrante",
+        "luz": "CRIPTA",
+        "encuadre": "Medium shot wearing the leather ritual mask moulded into a demonic grin, torchlight from below"
+      },
+      {
+        "id": "eira-joven",
+        "personaje": "eira",
+        "luz": "BARRIO",
+        "encadena_a": "eira-ancla",
+        "encuadre": "The same woman at sixteen: younger face, same silver hair and green eyes, forest village clothing, dappled forest light"
+      },
+      {
+        "id": "kael-joven",
+        "personaje": "kael",
+        "luz": "BARRIO",
+        "encadena_a": "kael-ancla",
+        "encuadre": "The same man at twelve: no crutch, no scar, forest village clothing"
+      },
+      {
+        "id": "acolita-joven",
+        "personaje": "acolita",
+        "luz": "CRIPTA",
+        "encadena_a": "acolita-ancla",
+        "encuadre": "The same woman twenty years younger, still cadaverous, still devout"
+      }
+    ],
+    "nota_serie": "El banco es de la SERIE, no de una pieza. Crece con cada episodio que se desglosa: Eira, Kael, Deras, Livia, Rothar, el Celebrante, la abuela, Sura. Y escenarios: el Consejo, Casa Vharn, Kadre, el campamento, la academia.",
+    "edades": {
+      "problema": "Saharis aparece con 0, 5, 10, 12, 16, 17 y 18 anos. Generadas por separado son siete personas distintas y los flashbacks no funcionan.",
+      "solucion": "Todas las edades encadenan al MISMO ancla de linaje —la del adulto— con la instruccion de conservar la estructura de la cara y cambiar la edad.",
+      "instruccion": "LINEAGE ANCHOR above: this is the same person at a different age. Keep the underlying bone structure, eye colour and cheekbones EXACTLY. Change only what age changes: proportions of the head to the body, softness of the features, height, build. Do not copy the pose, framing or clothing.",
+      "nota_madre": "La madre solo tiene una edad, pero sus pomulos deben verse en el ancla de Saharis. Es el unico rasgo heredado y es lo que hace que el corte entre flashback y presente signifique algo."
+    },
+    "derivado_de": "guiones.json — los personajes y las luces que necesita cada uno salen de las escenas donde aparecen, no de una lista escrita a mano."
+  },
+  "piezas": {
+    "teaser": {
+      "titulo": "Teaser Temporada 1",
+      "duracion_s": 78,
+      "audio": {
+        "cancion_entra_s": 18,
+        "percusion_entra_s": 38,
+        "silencio_absoluto_s": [
+          69,
+          72
+        ],
+        "sin_ambiente_de_fiesta": true,
+        "nota": "La canción se corta a mitad de nota en el último plano.",
+        "voz": [
+          {
+            "t": 24,
+            "quien": "madre",
+            "ja": "見つからないで。",
+            "es": "No dejes que te vean.",
+            "hasta": 26.5
+          },
+          {
+            "t": 33,
+            "quien": "madre",
+            "ja": "ここは、輝くものを壊す。",
+            "es": "Este lugar destruye lo que brilla.",
+            "hasta": 36.0
+          },
+          {
+            "t": 58,
+            "quien": "madre",
+            "ja": "神になる前のあなたを見た者を、忘れないで。",
+            "es": "No olvides quién te vio antes de que fueras dios.",
+            "hasta": 62.0
+          },
+          {
+            "t": 70,
+            "quien": "saharis",
+            "ja": "二度と。",
+            "es": "Nunca más.",
+            "hasta": 72.0
+          }
+        ]
+      },
+      "acabado": {
+        "paso_de_dos": [
+          "A4",
+          "B2",
+          "B3",
+          "B4",
+          "C2",
+          "C4",
+          "D4",
+          "D5",
+          "E1"
+        ],
+        "cadena_ffmpeg": "fps=12,fps=24,rgbashift=rh=-1:bh=1,split[a][b];[b]curves=all='0/0 0.7/0.2 1/1',gblur=sigma=14[glow];[a][glow]blend=all_mode=screen:all_opacity=0.35,noise=alls=7:allf=t+u,vignette=PI/5",
+        "nota": "El paso de dos (fps=12,fps=24) solo en los planos listados. Los de cámara sobre fondo van a 24 limpios, como en un anime real."
+      },
+      "cartela_final": {
+        "es": "LA MIRADA QUE EL MUNDO TEMERÁ",
+        "ja": "世界が恐れる眼差し"
+      },
+      "tomas": [
+        {
+          "id": "A1",
+          "inicio": 0,
+          "dur": 4,
+          "veo": "economico",
+          "luz": "CRIPTA",
+          "refs": [],
+          "encadena_con": null,
+          "imagen": "Extreme macro shot, a single drop of water falling toward a shallow puddle on wet cracked stone floor, barely lit by distant orange torchlight, deep black surroundings",
+          "video": "The drop falls and hits the puddle, slow concentric ripples spread. Camera locked, no movement. Everything else perfectly still.",
+          "dur_gen": 4,
+          "recorte": [
+            0,
+            4
+          ],
+          "escenario": "cripta",
+          "boca_visible": null
+        },
+        {
+          "id": "A2",
+          "inicio": 4,
+          "dur": 3,
+          "veo": "economico",
+          "luz": "CRIPTA",
+          "refs": [],
+          "encadena_con": null,
+          "imagen": "Low angle wide shot of a vaulted stone crypt ceiling, the shadows of many hooded figures thrown across the ribbed stone by torchlight, the figures themselves out of frame",
+          "video": "The cast shadows sway and shift with the torch flame. Slow lateral pan to the right across the ceiling.",
+          "dur_gen": 4,
+          "recorte": [
+            0,
+            3
+          ],
+          "escenario": "cripta",
+          "boca_visible": null
+        },
+        {
+          "id": "A3",
+          "inicio": 7,
+          "dur": 3,
+          "veo": "economico",
+          "luz": "CRIPTA",
+          "refs": [],
+          "encadena_con": null,
+          "imagen": "Close detail of ritual symbols painted in fresh dark blood on a damp stone wall, thick droplets beginning to run downward",
+          "video": "A droplet of blood slowly runs down the wall. Very slow push in. Nothing else moves.",
+          "dur_gen": 4,
+          "recorte": [
+            0,
+            3
+          ],
+          "escenario": "cripta",
+          "boca_visible": null
+        },
+        {
+          "id": "A4",
+          "inicio": 10,
+          "dur": 4,
+          "veo": "medio",
+          "luz": "CRIPTA",
+          "refs": [
+            "nino5-manos",
+            "nino5-cripta"
+          ],
+          "encadena_con": null,
+          "imagen": "Close shot of a small child's hands, filthy and thin, resting flat on cold stone floor, torchlight raking across from the left, the rest of the body out of frame",
+          "video": "The small hands slowly close into fists. Camera locked. Only the fingers move.",
+          "dur_gen": 4,
+          "recorte": [
+            0,
+            4
+          ],
+          "escenario": "cripta",
+          "boca_visible": null
+        },
+        {
+          "id": "A5",
+          "inicio": 14,
+          "dur": 4,
+          "veo": "economico",
+          "luz": "CRIPTA",
+          "refs": [],
+          "encadena_con": null,
+          "imagen": "Extreme low angle of a colossal humanoid stone idol with many arms and a grinning goat skull head, seen from the floor, torch smoke drifting across it",
+          "video": "Camera cranes upward very slowly along the idol, never reaching the head. Smoke drifts across the frame.",
+          "dur_gen": 4,
+          "recorte": [
+            0,
+            4
+          ],
+          "escenario": "cripta",
+          "boca_visible": null
+        },
+        {
+          "id": "B1",
+          "inicio": 18,
+          "dur": 3,
+          "veo": "economico",
+          "luz": "BARRIO",
+          "refs": [
+            "madre-barrio-espalda"
+          ],
+          "encadena_con": null,
+          "imagen": "Interior of a bare stone cell, a young woman seen from behind sitting on the floor cradling a wrapped bundle, silhouetted against the pale light of the open doorway",
+          "video": "She rocks slowly back and forth. Camera locked. Dust drifts in the doorway light.",
+          "dur_gen": 4,
+          "recorte": [
+            0,
+            3
+          ],
+          "escenario": "celda",
+          "boca_visible": null
+        },
+        {
+          "id": "B2",
+          "inicio": 21,
+          "dur": 4,
+          "veo": "medio",
+          "luz": "BARRIO",
+          "refs": [
+            "madre-barrio-34"
+          ],
+          "encadena_con": null,
+          "imagen": "Extreme close up of a young woman's cracked lips, lower half of the face only, eyes out of frame, cold light from the left, lips parted mid-word",
+          "video": "She finishes a soft sung phrase, then her lips move continuously as she speaks quietly and urgently to the child. The mouth keeps moving for as long as she is speaking. Camera locked, nothing else moves.",
+          "dur_gen": 4,
+          "recorte": [
+            0,
+            4
+          ],
+          "nota": "Unico plano del teaser con boca visible sonando una linea. Ella deja de cantar y susurra; el vocalise sigue por debajo como partitura, no como sonido de la escena.",
+          "escenario": "celda",
+          "boca_visible": "madre"
+        },
+        {
+          "id": "B3",
+          "inicio": 25,
+          "dur": 3,
+          "veo": "medio",
+          "luz": "CRIPTA",
+          "refs": [
+            "bebe-cripta"
+          ],
+          "encadena_con": null,
+          "imagen": "Extreme close up of an infant's red eyes, wide open, unblinking, looking upward, warm low torchlight, the rest of the face barely visible in shadow",
+          "video": "The eyes do not blink. The reflected firelight flickers in them. Camera locked, almost imperceptible drift in.",
+          "dur_gen": 4,
+          "recorte": [
+            0,
+            3
+          ],
+          "escenario": "cripta",
+          "boca_visible": null
+        },
+        {
+          "id": "B4",
+          "inicio": 28,
+          "dur": 3,
+          "veo": "medio",
+          "luz": "BARRIO",
+          "refs": [
+            "madre-manos",
+            "nino5-manos"
+          ],
+          "encadena_con": null,
+          "imagen": "Close shot of a woman's thin scarred hand placing a torn piece of hard bread into a small child's open palm, both hands only, cold grey light",
+          "video": "The bread is placed, the small fingers slowly curl around it. Camera locked.",
+          "dur_gen": 4,
+          "recorte": [
+            0,
+            3
+          ],
+          "escenario": "celda",
+          "boca_visible": null
+        },
+        {
+          "id": "B5",
+          "inicio": 31,
+          "dur": 4,
+          "veo": "economico",
+          "luz": "BARRIO",
+          "refs": [
+            "madre-barrio-espalda",
+            "nino5-barrio"
+          ],
+          "encadena_con": null,
+          "imagen": "Medium shot from behind the mother's head as she holds a small child against her chest, neither face visible, cold light from a barred window beyond",
+          "video": "Her shoulders rise and fall once with a breath. Very slow push in from behind. No faces revealed.",
+          "dur_gen": 4,
+          "recorte": [
+            0,
+            4
+          ],
+          "escenario": "celda",
+          "boca_visible": null
+        },
+        {
+          "id": "B6",
+          "inicio": 35,
+          "dur": 3,
+          "veo": "medio",
+          "luz": "CRIPTA",
+          "refs": [],
+          "encadena_con": null,
+          "imagen": "Close shot of a curved black serrated ritual knife sliding out from a dark sleeve, inscriptions along the blade catching torchlight, background thrown out of focus",
+          "video": "The blade slides fully clear of the sleeve and stops. Camera locked. Firelight travels along the edge.",
+          "dur_gen": 4,
+          "recorte": [
+            0,
+            3
+          ],
+          "escenario": "cripta",
+          "boca_visible": null
+        },
+        {
+          "id": "C1",
+          "inicio": 38,
+          "dur": 2,
+          "veo": "economico",
+          "luz": "CRIPTA",
+          "refs": [],
+          "encadena_con": null,
+          "imagen": "Close shot of fresh blood spattered across pale stone floor, torchlight from the side",
+          "video": "A few last drops land. Camera locked. Nothing else moves.",
+          "dur_gen": 4,
+          "recorte": [
+            0,
+            2
+          ],
+          "escenario": "cripta",
+          "boca_visible": null
+        },
+        {
+          "id": "C2",
+          "inicio": 40,
+          "dur": 2,
+          "veo": "calidad",
+          "luz": "CRIPTA",
+          "refs": [
+            "bebe-cripta",
+            "bebe-ancla"
+          ],
+          "encadena_con": null,
+          "imagen": "Close up of an infant's face spattered with fine blood droplets, red eyes open, absolutely no expression, low orange torchlight, deep shadow behind",
+          "video": "The face does not move. One single slow blink and nothing else. Camera locked. He does not cry.",
+          "dur_gen": 4,
+          "recorte": [
+            0,
+            2
+          ],
+          "escenario": "cripta",
+          "boca_visible": "bebe"
+        },
+        {
+          "id": "C3",
+          "inicio": 42,
+          "dur": 4,
+          "veo": "medio",
+          "luz": "CRIPTA",
+          "refs": [],
+          "encadena_con": "C4",
+          "imagen": "A fallen torch on the stone floor of a crypt corridor, flames beginning to catch on scattered cloth and straw, smoke rising",
+          "video": "The fire spreads along the corridor floor toward camera. Slow push in through thickening smoke.",
+          "dur_gen": 4,
+          "recorte": [
+            0,
+            4
+          ],
+          "escenario": "cripta",
+          "boca_visible": null
+        },
+        {
+          "id": "C4",
+          "inicio": 46,
+          "dur": 3,
+          "veo": "medio",
+          "luz": "BARRIO",
+          "refs": [
+            "nino10-barrio-espalda"
+          ],
+          "encadena_con": null,
+          "imagen": "A ten year old boy seen from behind as a running silhouette in a flooded stone tunnel, shallow water, faint cold light far ahead",
+          "video": "He runs away from camera through the water, splashing. Camera tracks behind him. Face never visible.",
+          "dur_gen": 4,
+          "recorte": [
+            0,
+            3
+          ],
+          "escenario": "tunel",
+          "boca_visible": null
+        },
+        {
+          "id": "C5",
+          "inicio": 49,
+          "dur": 2,
+          "veo": "economico",
+          "luz": "BARRIO",
+          "refs": [],
+          "encadena_con": null,
+          "imagen": "Looking up into an enormous ancient forest canopy, violently overexposed daylight blazing between towering trunks",
+          "video": "Light shafts shift gently through the leaves. Camera locked. Stillness and brightness.",
+          "dur_gen": 4,
+          "recorte": [
+            0,
+            2
+          ],
+          "escenario": "bosque",
+          "boca_visible": null
+        },
+        {
+          "id": "D1",
+          "inicio": 51,
+          "dur": 3,
+          "veo": "medio",
+          "luz": "NOBLE",
+          "refs": [
+            "saharis-manos"
+          ],
+          "encadena_con": null,
+          "imagen": "Close shot of a clean adult male hand wearing a signet ring, signing a document with a quill, warm gold lamplight, polished dark wood desk",
+          "video": "The hand completes the signature and lifts. Camera locked. Steady, unhurried.",
+          "dur_gen": 4,
+          "recorte": [
+            0,
+            3
+          ],
+          "escenario": "despacho-noble",
+          "boca_visible": null
+        },
+        {
+          "id": "D2",
+          "inicio": 54,
+          "dur": 3,
+          "veo": "economico",
+          "luz": "NOBLE",
+          "refs": [],
+          "encadena_con": null,
+          "imagen": "High wide shot looking down into a noble hall, guests laughing with wine glasses raised, gold light, dust in the air, faces small and indistinct",
+          "video": "The crowd moves and laughs. Slow lateral pan across the hall from above.",
+          "dur_gen": 4,
+          "recorte": [
+            0,
+            3
+          ],
+          "escenario": "salon-noble",
+          "boca_visible": null
+        },
+        {
+          "id": "D3",
+          "inicio": 57,
+          "dur": 4,
+          "veo": "medio",
+          "luz": "NOBLE",
+          "refs": [
+            "saharis-noble-nuca"
+          ],
+          "encadena_con": "D4",
+          "imagen": "Medium shot from behind of a young man in immaculate dark noble clothing standing motionless among moving guests, only the back of his head and shoulders visible",
+          "video": "The guests move around him; he stays perfectly still. Camera pushes slowly toward the back of his head.",
+          "dur_gen": 4,
+          "recorte": [
+            0,
+            4
+          ],
+          "escenario": "salon-noble",
+          "boca_visible": null
+        },
+        {
+          "id": "D4",
+          "inicio": 61,
+          "dur": 4,
+          "veo": "calidad",
+          "luz": "NOBLE",
+          "refs": [
+            "saharis-noble-frontal",
+            "saharis-34"
+          ],
+          "encadena_con": "D5",
+          "imagen": "Extreme close up of a wine glass, a young man's face distorted and reddened in the curved reflection of the dark wine, gold lamplight around",
+          "video": "The wine tilts slightly and the reflected face warps. Slow push in on the glass.",
+          "dur_gen": 4,
+          "recorte": [
+            0,
+            4
+          ],
+          "escenario": "salon-noble",
+          "boca_visible": null
+        },
+        {
+          "id": "D5",
+          "inicio": 65,
+          "dur": 4,
+          "veo": "calidad",
+          "luz": "NOBLE",
+          "refs": [
+            "saharis-noble-frontal",
+            "saharis-ancla"
+          ],
+          "encadena_con": null,
+          "imagen": "Close up portrait of a seventeen year old man turning to face camera, half his face in warm gold light and half in complete shadow, red eyes, no expression, no smile",
+          "video": "He turns his head to camera and holds the look. Nothing else moves. Camera locked. He does not smile.",
+          "dur_gen": 4,
+          "recorte": [
+            0,
+            4
+          ],
+          "escenario": "salon-noble",
+          "boca_visible": "saharis"
+        },
+        {
+          "id": "E1",
+          "inicio": 69,
+          "dur": 3,
+          "veo": "medio",
+          "luz": "NOBLE",
+          "refs": [
+            "saharis-manos"
+          ],
+          "encadena_con": null,
+          "imagen": "Close shot of an adult male hand slowly opening, a long old ritual scar crossing the palm, warm gold light, dark background",
+          "video": "The fingers open fully to reveal the scarred palm. Camera locked. Total stillness.",
+          "dur_gen": 4,
+          "recorte": [
+            0,
+            3
+          ],
+          "escenario": "salon-noble",
+          "boca_visible": null
+        },
+        {
+          "id": "E2",
+          "inicio": 72,
+          "dur": 3,
+          "veo": "economico",
+          "luz": "CRIPTA",
+          "refs": [],
+          "encadena_con": null,
+          "imagen": "Wide shot of the same crypt altar years later, empty and dry, no torches, cold grey daylight falling through a collapsed section of the vault above, a single dried flower resting on the stone, recently placed",
+          "video": "Dust drifts slowly in the grey light. Camera locked. Nobody is there.",
+          "dur_gen": 4,
+          "recorte": [
+            0,
+            3
+          ],
+          "nota": "La misma flor seca que puso entre los dedos de su madre. Que esté recién puesta: dice que él volvió.",
+          "escenario": "cripta",
+          "boca_visible": null
+        },
+        {
+          "id": "E3",
+          "inicio": 75,
+          "dur": 3,
+          "veo": "economico",
+          "luz": "CRIPTA",
+          "refs": [],
+          "encadena_con": null,
+          "imagen": "Pure black frame",
+          "video": "Black. Title card composited in post, not generated.",
+          "dur_gen": 4,
+          "recorte": [
+            0,
+            3
+          ],
+          "escenario": null,
+          "boca_visible": null
+        }
+      ]
+    }
+  },
+  "musica": {
+    "modelo": {
+      "id": "lyria-3-pro-preview",
+      "protocolo": "generateContent",
+      "maximo_s": 180,
+      "nota": "Lyria 3 Pro llega a 3 minutos. Lyria 3 a secas se queda en 30 s."
+    },
+    "idioma_del_encargo": "EN — Lyria rechaza la peticion entera con 'Unsupported language detected'. El idioma de la LETRA es otra cosa y se pide dentro del encargo.",
+    "arquitectura": "Dos piezas separadas, no una. El lecho instrumental y el canto se generan aparte para poder colocar el canto al segundo exacto y mezclarlo a su propio nivel. Una sola pieza con la voz dentro no se puede ni mover ni bajar.",
+    "piezas": [
+      {
+        "id": "teaser-lecho",
+        "duracion_s": 78,
+        "pista": "instrumental",
+        "encargo": "Instrumental only, no vocals, no voice, no humming. Sparse dark orchestral score for a bleak animated drama. Low sustained strings with no clear harmony, slow and heavy, oppressive. A solo wooden flute enters around twenty seconds in with a simple broken folk melody that never completes its phrase. Around forty seconds a dry hand-drum pulse enters with no reverb, cold and steady, growing against the strings. A full stop into complete silence near the end, then one last flute fragment cut off mid-note. No percussion at the opening, no choir, no brass fanfare, no electronic elements, no resolution.",
+        "negativo": "vocals, singing, voice, choir, humming, lyrics, brass fanfare, electronic drums, synth pads, uplifting resolution",
+        "nota": "La prohibicion de voz viaja en el encargo Y en el negativo. Una voz colada aqui pisa el canto de la madre."
+      },
+      {
+        "id": "teaser-canto",
+        "duracion_s": 22,
+        "pista": "voz sola",
+        "encargo": "A solo female voice singing alone, completely unaccompanied, no instruments of any kind. Wordless vocalise, no lyrics. Young woman, low breathy mezzo range, exhausted and intimate, almost under her breath, as if singing to a child in a dark room. A simple folk melody, modal and slightly foreign, that circles back on itself and never resolves. Recorded close and dry, no reverb, no layering, no backing vocals.",
+        "negativo": "instruments, accompaniment, percussion, backing vocals, choir, harmony, reverb, lyrics, words, polished studio production",
+        "nota": "Sin letra a proposito. En el capitulo 2 el nino no entiende las palabras, entiende el tono. La letra se guarda para el episodio 10, que es donde por primera vez significa algo."
+      }
+    ],
+    "mezcla": {
+      "canto_entra_s": 18,
+      "nota": "El montador coloca el canto sobre el lecho en ese segundo y lo deja sonar por debajo el resto de la pieza. Ambas pistas se agachan bajo cada linea de voz."
+    },
+    "letra_mas_adelante": {
+      "idiomas_que_acepta_lyria": [
+        "en",
+        "de",
+        "es",
+        "fr",
+        "hi",
+        "ja",
+        "ko",
+        "pt"
+      ],
+      "decision_pendiente": "La cancion de la madre esta en un idioma que no se habla en ese mundo. Si el hablado de la serie es japones, su canto tiene que ir en otro de los ocho. Se decide en el episodio 10, no ahora."
+    }
+  },
+  "voces": {
+    "modelo": {
+      "id": "gemini-3.1-flash-tts",
+      "alternativo": "gemini-2.5-flash-tts"
+    },
+    "idioma": "ja-JP",
+    "por_que": "Se elige por expresividad. Chirp queda descartado de todo el proyecto: Chirp lee, este actua.",
+    "formato_salida": "PCM mono 16 bits a 24 kHz en WAV",
+    "seleccion": {
+      "como": "La pantalla de Salud lista las voces reales de la API. El usuario las escucha, elige una por personaje, y queda fijada aqui para siempre. El timbre NO deriva: es la voz elegida.",
+      "orden": "El reparto sale ordenado por volumen de dialogo. Seis personajes se llevan el 75%.",
+      "muestra": "Cada voz candidata se prueba con la frase MAS DIFICIL de ese personaje en toda la serie, con su intencion puesta. No con un saludo."
+    },
+    "reparto": [
+      {
+        "personaje": "saharis",
+        "lineas": 149,
+        "porcentaje": 37.7,
+        "episodios": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          10,
+          11,
+          12
+        ],
+        "voz_id": null,
+        "muestra": {
+          "ep": 1,
+          "escena": "3",
+          "texto": "Que la señora ya lo ha dicho mejor que yo.",
+          "intencion": "modesto, cálido, sin esfuerzo; devuelve el foco"
+        }
+      },
+      {
+        "personaje": "celebrante",
+        "lineas": 41,
+        "porcentaje": 10.4,
+        "episodios": [
+          1,
+          4,
+          5,
+          7,
+          8,
+          11
+        ],
+        "voz_id": null,
+        "muestra": {
+          "ep": 4,
+          "escena": "7",
+          "texto": "Se ofreció sin gritar. Fue... interesante.",
+          "intencion": "valoración técnica. Sin placer"
+        }
+      },
+      {
+        "personaje": "eira",
+        "lineas": 36,
+        "porcentaje": 9.1,
+        "episodios": [
+          5,
+          6,
+          11
+        ],
+        "voz_id": null,
+        "muestra": {
+          "ep": 6,
+          "escena": "15",
+          "texto": "¡Basta!",
+          "intencion": "grito de pánico"
+        }
+      },
+      {
+        "personaje": "livia",
+        "lineas": 26,
+        "porcentaje": 6.6,
+        "episodios": [
+          1,
+          2,
+          3,
+          4,
+          7,
+          8,
+          9,
+          12
+        ],
+        "voz_id": null,
+        "muestra": {
+          "ep": 2,
+          "escena": "6",
+          "texto": "Este es de los que hay que leer dos veces.",
+          "intencion": "juego, complicidad"
+        }
+      },
+      {
+        "personaje": "rothar",
+        "lineas": 17,
+        "porcentaje": 4.3,
+        "episodios": [
+          1,
+          3,
+          4,
+          9,
+          11
+        ],
+        "voz_id": null,
+        "muestra": {
+          "ep": 11,
+          "escena": "15",
+          "texto": "¡Miradle! ¡Miradle bien! ¡No sabéis lo que es!",
+          "intencion": "gritando, ya sin que nadie lo mire"
+        }
+      },
+      {
+        "personaje": "abuela",
+        "lineas": 14,
+        "porcentaje": 3.5,
+        "episodios": [
+          10
+        ],
+        "voz_id": null,
+        "muestra": {
+          "ep": 10,
+          "escena": "10",
+          "texto": "Aquel año se heló todo en mayo. Todo. No hubo grano ni para nosotros.",
+          "intencion": "recordando un mal año, sin culpa"
+        }
+      },
+      {
+        "personaje": "iven",
+        "lineas": 12,
+        "porcentaje": 3.0,
+        "episodios": [
+          1,
+          2,
+          3
+        ],
+        "voz_id": null,
+        "muestra": {
+          "ep": 1,
+          "escena": "6",
+          "texto": "...trescientos carros. Trescientos. Con la nieve hasta la rodilla y sin un solo",
+          "intencion": "alto y nostálgico, hablando ya para nadie"
+        }
+      },
+      {
+        "personaje": "madre",
+        "lineas": 11,
+        "porcentaje": 2.8,
+        "episodios": [
+          1,
+          2,
+          12
+        ],
+        "voz_id": null,
+        "muestra": {
+          "ep": 1,
+          "escena": "1",
+          "texto": "¡No!",
+          "intencion": "grito puro de terror"
+        }
+      },
+      {
+        "personaje": "acolita",
+        "lineas": 10,
+        "porcentaje": 2.5,
+        "episodios": [
+          1,
+          8,
+          9
+        ],
+        "voz_id": null,
+        "muestra": {
+          "ep": 8,
+          "escena": "24",
+          "texto": "No eras tú. Tú tardaste todavía un año en nacer.",
+          "intencion": "aclarando, servicial"
+        }
+      },
+      {
+        "personaje": "hombre",
+        "lineas": 9,
+        "porcentaje": 2.3,
+        "episodios": [
+          3,
+          4
+        ],
+        "voz_id": null,
+        "muestra": {
+          "ep": 4,
+          "escena": "3",
+          "texto": "Le felicito por el apellido. Elserath es un apellido bonito.",
+          "intencion": "cordial, como quien felicita de verdad"
+        }
+      },
+      {
+        "personaje": "deras",
+        "lineas": 9,
+        "porcentaje": 2.3,
+        "episodios": [
+          4,
+          6,
+          7,
+          8,
+          11
+        ],
+        "voz_id": null,
+        "muestra": {
+          "ep": 11,
+          "escena": "7",
+          "texto": "Voy a matarte.",
+          "intencion": "rabia sin control"
+        }
+      },
+      {
+        "personaje": "kael",
+        "lineas": 9,
+        "porcentaje": 2.3,
+        "episodios": [
+          5,
+          6
+        ],
+        "voz_id": null,
+        "muestra": {
+          "ep": 5,
+          "escena": "17",
+          "texto": "Vinieron detrás de él. Buscaban a uno que salió del canal y se llevaron por",
+          "intencion": "acusación pública, con la voz rota de rabia"
+        }
+      },
+      {
+        "personaje": "concejal",
+        "lineas": 9,
+        "porcentaje": 2.3,
+        "episodios": [
+          6,
+          7,
+          8,
+          11,
+          12
+        ],
+        "voz_id": null,
+        "muestra": {
+          "ep": 6,
+          "escena": "2",
+          "texto": "...y queda el asunto del campamento. Necesitamos a alguien que lo gestione.",
+          "intencion": "trámite"
+        }
+      },
+      {
+        "personaje": "vharn",
+        "lineas": 8,
+        "porcentaje": 2.0,
+        "episodios": [
+          4,
+          7,
+          8,
+          11
+        ],
+        "voz_id": null,
+        "muestra": {
+          "ep": 8,
+          "escena": "15",
+          "texto": "¡Tres meses! ¡Tres meses de mi casa en tus manos!",
+          "intencion": "grito de rabia de un padre"
+        }
+      },
+      {
+        "personaje": "anciano-academia",
+        "lineas": 7,
+        "porcentaje": 1.8,
+        "episodios": [
+          3
+        ],
+        "voz_id": null,
+        "muestra": {
+          "ep": 3,
+          "escena": "5",
+          "texto": "Bienvenido a la academia, pequeño monstruo.",
+          "intencion": "satisfecho, casi cariñoso"
+        }
+      },
+      {
+        "personaje": "invitado",
+        "lineas": 3,
+        "porcentaje": 0.8,
+        "episodios": [
+          1
+        ],
+        "voz_id": null,
+        "muestra": {
+          "ep": 1,
+          "escena": "8",
+          "texto": "Del río y de nosotros. Traemos por el paso bajo y por el vado, según el mes.",
+          "intencion": "soltándose, ya cómodo"
+        }
+      },
+      {
+        "personaje": "sacerdote",
+        "lineas": 3,
+        "porcentaje": 0.8,
+        "episodios": [
+          3
+        ],
+        "voz_id": null,
+        "muestra": {
+          "ep": 3,
+          "escena": "19",
+          "texto": "...y la esclava del demonio mayor sigue comiendo de balde.",
+          "intencion": "de pasada, sin malicia"
+        }
+      },
+      {
+        "personaje": "osk",
+        "lineas": 3,
+        "porcentaje": 0.8,
+        "episodios": [
+          3
+        ],
+        "voz_id": null,
+        "muestra": null
+      },
+      {
+        "personaje": "cocinero",
+        "lineas": 2,
+        "porcentaje": 0.5,
+        "episodios": [
+          1
+        ],
+        "voz_id": null,
+        "muestra": null
+      },
+      {
+        "personaje": "administrador",
+        "lineas": 2,
+        "porcentaje": 0.5,
+        "episodios": [
+          2
+        ],
+        "voz_id": null,
+        "muestra": null
+      },
+      {
+        "personaje": "escribano",
+        "lineas": 2,
+        "porcentaje": 0.5,
+        "episodios": [
+          2
+        ],
+        "voz_id": null,
+        "muestra": null
+      },
+      {
+        "personaje": "criado",
+        "lineas": 2,
+        "porcentaje": 0.5,
+        "episodios": [
+          3
+        ],
+        "voz_id": null,
+        "muestra": null
+      },
+      {
+        "personaje": "voz",
+        "lineas": 2,
+        "porcentaje": 0.5,
+        "episodios": [
+          5
+        ],
+        "voz_id": null,
+        "muestra": null
+      },
+      {
+        "personaje": "otro concejal",
+        "lineas": 2,
+        "porcentaje": 0.5,
+        "episodios": [
+          6,
+          12
+        ],
+        "voz_id": null,
+        "muestra": null
+      },
+      {
+        "personaje": "secretario",
+        "lineas": 2,
+        "porcentaje": 0.5,
+        "episodios": [
+          9
+        ],
+        "voz_id": null,
+        "muestra": null
+      },
+      {
+        "personaje": "posadero",
+        "lineas": 2,
+        "porcentaje": 0.5,
+        "episodios": [
+          10
+        ],
+        "voz_id": null,
+        "muestra": {
+          "ep": 10,
+          "escena": "5",
+          "texto": "Al final de la calle larga, la casa del tejado nuevo.",
+          "intencion": "servicial, sin bajar la voz"
+        }
+      },
+      {
+        "personaje": "invitada",
+        "lineas": 1,
+        "porcentaje": 0.3,
+        "episodios": [
+          1
+        ],
+        "voz_id": null,
+        "muestra": null
+      },
+      {
+        "personaje": "encargado",
+        "lineas": 1,
+        "porcentaje": 0.3,
+        "episodios": [
+          8
+        ],
+        "voz_id": null,
+        "muestra": null
+      },
+      {
+        "personaje": "nina-kadre",
+        "lineas": 1,
+        "porcentaje": 0.3,
+        "episodios": [
+          10
+        ],
+        "voz_id": null,
+        "muestra": null
+      }
+    ],
+    "deriva_de_tono": {
+      "problema": "Entre llamadas distintas, la ENTREGA cambia: tono, energia, ritmo. No se arregla con indicaciones. Es del modelo.",
+      "no_intentar": "Prompts cada vez mas detallados pidiendo consistencia. No funciona y ya se ha probado.",
+      "reducir_exposicion": [
+        "UNA llamada por escena, no por linea. Dentro de una llamada el tono se mantiene.",
+        "DOS hablantes en la misma llamada: el modelo admite dos. Un intercambio entre dos personajes se genera de una vez, con las dos voces. Quedan consistentes y ademas suena a conversacion, no a dos monologos pegados.",
+        "NUNCA regenerar una linea suelta. Si una queda mal se rehace el bloque entero de esa escena: una linea regenerada sola es la que canta.",
+        "La instruccion de estilo del personaje, identica caracter por caracter en todas sus llamadas. Guardada aqui, nunca reescrita a mano.",
+        "loudnorm en el montador. No toca el timbre, pero iguala volumen y brillo, que es buena parte de lo que el oido lee como 'otra persona'."
+      ],
+      "resto": "Entre escenas seguira habiendo variacion y no se elimina. Juegan a favor que va en japones para publico que lee subtitulos, y que en anime las escenas van separadas por cortes, musica y saltos de tiempo."
+    },
+    "expresividad": {
+      "control": "Direccion en lenguaje natural mas etiquetas en linea: [susurra], [grita], [con la voz rota].",
+      "donde_funciona": "Susurro, agotamiento, frialdad, tension contenida, amenaza en voz baja, voz que se quiebra. Es el 90% de esta serie, porque el registro es contenido.",
+      "donde_se_rompe": "El grito de verdad, el llanto mientras se habla, la rabia sostenida. Ningun TTS llega: sale de dibujo animado o sale plano.",
+      "las_de_riesgo": "10 lineas en toda la temporada, marcadas con riesgo 'alto' en guiones.json.",
+      "como_se_resuelven": "No se pelean. Fuera de cuadro, tapadas por otro sonido, cortadas sobre la imagen de quien escucha, o convertidas en un grito sin palabras generado como sonido y no como voz. Es lenguaje de anime normal.",
+      "honestidad": "Aqui es donde mas se va a notar la distancia con un seiyuu de verdad. No se cierra del todo."
+    }
+  },
+  "subtitulos": {
+    "idioma": "es",
+    "quemados": true,
+    "nota": "En pantalla solo hay espanol. El japones unicamente se oye.",
+    "como_se_sincronizan": "No con estimaciones. Se genera la voz con Gemini TTS, se mide, y el subtitulo espanol toma la entrada y la salida reales de esa linea.",
+    "caso_cruzado": "El audio va en japones y el subtitulo en espanol, asi que la alineacion PALABRA a palabra no sirve: el numero de palabras no coincide. Lo que hace falta es entrada y salida de cada LINEA, y eso sale de la duracion del propio archivo de audio.",
+    "cuando_haga_falta_stt": "En los episodios, con muchas lineas seguidas, Speech-to-Text con enableWordTimeOffsets y languageCode ja-JP da el principio y el final de cada intervencion. Esos tiempos se aplican al texto espanol a nivel de linea, nunca de palabra.",
+    "formato_del_audio": "Gemini TTS devuelve PCM mono de 16 bits a 24 kHz envuelto en WAV. Para STT: encoding LINEAR16 y sampleRateHertz 24000 explicito.",
+    "estilo": "sans serif de palo seco, blanco puro, sin caja, sombra suave, centrado abajo, dos lineas maximo"
+  },
+  "cartela": {
+    "toma": "E3",
+    "compuesta_en_montaje": true,
+    "generada": false,
+    "texto": "LA MIRADA QUE EL MUNDO TEMERÁ",
+    "estilo": "Fondo negro puro. Titulo centrado, mayusculas, sans serif estrecha, letra muy espaciada, blanco roto. Fundido de 0.5 s y se queda quieto. Sin efectos, sin brillo, sin movimiento.",
+    "nota": "Solo en espanol. En pantalla no hay japones en ningun momento: el japones es solo lo que se oye."
+  },
+  "rutas": {
+    "banco": "banco/{personaje}/{placa}.png",
+    "keyframe_intento": "keyframes/{toma}/{n}.png",
+    "keyframe_aprobado": "keyframes/{toma}/aprobado.png",
+    "clip_intento": "veo/{toma}/{n}.mp4",
+    "clip_elegido": "veo/{toma}/elegido.mp4",
+    "audio_musica": "audio/musica.wav",
+    "audio_voz": "audio/voz-{n}.wav",
+    "montaje": "montaje/teaser-{version}.mp4",
+    "estado": "estado.json"
+  },
+  "estado": {
+    "descripcion": "Vive en el bucket y es la unica verdad. El navegador solo tiene copia.",
+    "esquema": {
+      "banco": {
+        "{placa}": {
+          "aprobada": "ruta o null",
+          "intentos": [
+            "rutas"
+          ]
+        }
+      },
+      "tomas": {
+        "{toma}": {
+          "keyframe_aprobado": "ruta o null",
+          "clip_elegido": "ruta o null",
+          "intentos_keyframe": [
+            "rutas"
+          ],
+          "intentos_clip": [
+            "rutas"
+          ],
+          "operacion_en_curso": "nombre de operacion de Veo o null"
+        }
+      },
+      "audio": {
+        "musica": "ruta o null",
+        "voz": [
+          "rutas"
+        ]
+      },
+      "montajes": [
+        "rutas"
+      ]
+    },
+    "regla": "Ninguna toma puede generar video si keyframe_aprobado es null. La interfaz lo impide, no lo advierte."
+  },
+  "dialogo": {
+    "regla_dura": "Nunca se ve una boca en cuadro, quieta, mientras suena la voz de ESE personaje. Si su voz suena y su boca esta en cuadro, la boca se mueve.",
+    "por_que_no_hace_falta_sincronia": "El anime real no sincroniza fonema a fonema: usa tres formas de boca en bucle. Y al ir en japones con subtitulos, el espectador no lee labios. El liston es 'que se vea hablar', no 'que cuadre'.",
+    "como_se_consigue": "En el prompt de video se pide el movimiento explicitamente: 'the mouth keeps moving for as long as the character is speaking'. Veo genera boca en movimiento aunque no coincida con las palabras.",
+    "gramatica_de_una_escena_hablada": [
+      "De cada intercambio, solo uno o dos planos muestran la boca del que habla.",
+      "El resto van sobre reaccion del que escucha, manos, nucas, planos generales o escorzo. No es un truco: asi se monta el anime de verdad, y en un estudio real es lo que ahorra animacion.",
+      "El plano con boca visible dura entre 2 y 4 segundos. Nunca mas.",
+      "Se prefiere tres cuartos o perfil antes que frontal: la boca se lee con menos precision y el fallo no salta.",
+      "Nada de primerisimo plano de boca sosteniendo una frase larga. Una palabra como mucho.",
+      "La linea empieza despues de que arranque el plano, nunca en el fotograma uno."
+    ],
+    "duracion": "Una linea PUEDE cruzar un corte: la voz sigue sobre el plano siguiente y eso es gramatica normal. Lo que no puede es solaparse con un plano donde se vea la boca quieta de quien habla. Si no cabe, se corta a un plano de reaccion, de manos o de nuca. Nunca se estira el plano: un clip de Veo estirado se deshace.",
+    "si_algun_dia_no_basta": "Existen modelos de lipsync que reciben el clip y el audio. Quedan fuera de Google Cloud, asi que solo se plantean si en produccion de episodios el movimiento generado resulta insuficiente. Para el teaser no hacen falta.",
+    "verificacion": "Para cada linea, mirar todas las tomas que solapa: ninguna puede tener boca_visible igual al personaje que habla, salvo que esa toma lo muestre hablando."
+  },
+  "escenarios": {
+    "regla": "Un escenario se genera una vez, se aprueba, y su placa viaja como referencia de objeto/estilo en TODOS los planos que ocurren ahi. Sin esto, diez planos de 'la cripta' son diez criptas distintas.",
+    "ruta": "escenarios/{id}.png",
+    "placas": [
+      {
+        "id": "cripta",
+        "luz": "CRIPTA",
+        "descripcion": "Underground crypt sanctuary: low vaulted stone ceiling with ribbed arches, damp black walls, skulls set into niches, bones in patterns, a dark stone altar, a colossal many-armed idol with a goat skull head, iron torch brackets, thick smoke",
+        "encuadre": "Wide establishing shot of the whole space",
+        "escenas": 24
+      },
+      {
+        "id": "cripta-celda",
+        "luz": "BARRIO",
+        "descripcion": "Bare stone cell off the underground sanctuary: rough damp walls, a straw pallet, one high barred opening, a heavy wooden door ajar",
+        "encuadre": "Wide establishing shot of the whole space",
+        "escenas": 13
+      },
+      {
+        "id": "tuneles",
+        "luz": "BARRIO",
+        "descripcion": "A dry stone room under the city: a pallet, a table, one lantern, and a whole wall covered in pinned papers, maps, lists and cord",
+        "encuadre": "Wide establishing shot of the whole space",
+        "escenas": 46
+      },
+      {
+        "id": "academia",
+        "luz": "CRIPTA",
+        "descripcion": "Cult academy: a bare stone hall with rows of low desks, a blackened wall for writing, an altar at one end, torchlight",
+        "encuadre": "Wide establishing shot of the whole space",
+        "escenas": 5
+      },
+      {
+        "id": "barrio-humo",
+        "luz": "BARRIO",
+        "descripcion": "The low district: mud alleys, leaning shacks, open drains, doorways without doors, rain on broken cobbles",
+        "encuadre": "Wide establishing shot of the whole space",
+        "escenas": 18
+      },
+      {
+        "id": "calle",
+        "luz": "BARRIO",
+        "descripcion": "Feyrond street between districts: worn cobbles, shuttered shopfronts, spaced lamps, wet stone",
+        "encuadre": "Wide establishing shot of the whole space",
+        "escenas": 17
+      },
+      {
+        "id": "elserath-salon",
+        "luz": "NOBLE",
+        "descripcion": "Great hall of a declining noble house: tall windows, oil lamps, dark polished wood, faded tapestries, a long table, dust in warm gold light, quietly shabby under the gold",
+        "encuadre": "Wide establishing shot of the whole space",
+        "escenas": 18
+      },
+      {
+        "id": "elserath-despacho",
+        "luz": "NOBLE",
+        "descripcion": "Study of the noble house: heavy dark desk, ledgers, sealing wax, one oil lamp, shelves in shadow",
+        "encuadre": "Wide establishing shot of the whole space",
+        "escenas": 19
+      },
+      {
+        "id": "elserath-cocina",
+        "luz": "NOBLE",
+        "descripcion": "Service kitchen of a noble house: steam, copper, a long scrubbed table, low ceiling, no gold at all",
+        "encuadre": "Wide establishing shot of the whole space",
+        "escenas": 8
+      },
+      {
+        "id": "elserath-jardin",
+        "luz": "BARRIO",
+        "descripcion": "Walled garden of a noble house at night: clipped hedges gone slightly wild, gravel, cold moonlight, no lamps",
+        "encuadre": "Wide establishing shot of the whole space",
+        "escenas": 5
+      },
+      {
+        "id": "consejo",
+        "luz": "NOBLE",
+        "descripcion": "Council chamber of Feyrond: a shallow amphitheatre of dark benches, a speaker's floor, high windows, gold light and dust",
+        "encuadre": "Wide establishing shot of the whole space",
+        "escenas": 13
+      },
+      {
+        "id": "casa-renn",
+        "luz": "BARRIO",
+        "descripcion": "A modest merchant house of the tanners' quarter, and beneath it a small cellar shrine: the carved symbol, black candles, fresh offerings, swept clean and in daily use",
+        "encuadre": "Wide establishing shot of the whole space",
+        "escenas": 11
+      },
+      {
+        "id": "casa-vharn",
+        "luz": "NOBLE",
+        "descripcion": "Seat of a Great House: colder and richer than Elserath, marble, silver, no dust, nothing faded",
+        "encuadre": "Wide establishing shot of the whole space",
+        "escenas": 19
+      },
+      {
+        "id": "vharn-jardin",
+        "luz": "BARRIO",
+        "descripcion": "Formal garden of a Great House at night: paper lanterns, gravel paths, clipped stone, cold",
+        "encuadre": "Wide establishing shot of the whole space",
+        "escenas": 3
+      },
+      {
+        "id": "registros",
+        "luz": "CRIPTA",
+        "descripcion": "A vast record vault under a Great House: shelves from floor to ceiling, four centuries of ledgers, a single lantern in the dark",
+        "encuadre": "Wide establishing shot of the whole space",
+        "escenas": 10
+      },
+      {
+        "id": "bosque",
+        "luz": "BARRIO",
+        "descripcion": "Ancient forest of enormous trunks, canopy so high the sky is only a rumour, moss, shafts of daylight",
+        "encuadre": "Wide establishing shot of the whole space",
+        "escenas": 6
+      },
+      {
+        "id": "bosque-lago",
+        "luz": "BARRIO",
+        "descripcion": "A still black lake inside the forest at night, moonlight on the water, reeds",
+        "encuadre": "Wide establishing shot of the whole space",
+        "escenas": 2
+      },
+      {
+        "id": "bosque-cabana",
+        "luz": "BARRIO",
+        "descripcion": "A small wooden cabin raised among the trees: plain bed, herbs drying, green light through the window",
+        "encuadre": "Wide establishing shot of the whole space",
+        "escenas": 1
+      },
+      {
+        "id": "campamento",
+        "luz": "BARRIO",
+        "descripcion": "Refugee camp by the river outside the walls: hundreds of cloth and mud tents, small fires, smoke, churned ground",
+        "encuadre": "Wide establishing shot of the whole space",
+        "escenas": 9
+      },
+      {
+        "id": "orilla",
+        "luz": "BARRIO",
+        "descripcion": "The river bank below the camp: flat stones, reeds, grey water, the city wall far behind",
+        "encuadre": "Wide establishing shot of the whole space",
+        "escenas": 13
+      },
+      {
+        "id": "casa-juego",
+        "luz": "BARRIO",
+        "descripcion": "A gambling house: smoke, crowded tables, low lamps, spilled drink",
+        "encuadre": "Wide establishing shot of the whole space",
+        "escenas": 6
+      },
+      {
+        "id": "puerto",
+        "luz": "BARRIO",
+        "descripcion": "A port warehouse at night: stacked crates, one lantern, water noise outside",
+        "encuadre": "Wide establishing shot of the whole space",
+        "escenas": 1
+      },
+      {
+        "id": "camino-norte",
+        "luz": "BARRIO",
+        "descripcion": "The north road: bare hills, then stone, then snow. Cold grey light",
+        "encuadre": "Wide establishing shot of the whole space",
+        "escenas": 4
+      },
+      {
+        "id": "kadre",
+        "luz": "BARRIO",
+        "descripcion": "A northern village: dark timber houses under heavy snow, smoke from chimneys, the smell of bread",
+        "encuadre": "Wide establishing shot of the whole space",
+        "escenas": 4
+      },
+      {
+        "id": "casa-ilmen",
+        "luz": "NOBLE",
+        "descripcion": "A prosperous northern farmhouse: timber walls, a big hearth, a scrubbed table, boots by the door, warm firelight",
+        "encuadre": "Wide establishing shot of the whole space",
+        "escenas": 9
+      },
+      {
+        "id": "puerta-ciudad",
+        "luz": "BARRIO",
+        "descripcion": "The north gate of Feyrond: a queue of carts, guards, grey dawn",
+        "encuadre": "Wide establishing shot of the whole space",
+        "escenas": 3
+      },
+      {
+        "id": "ciudad",
+        "luz": "NOBLE",
+        "descripcion": "Feyrond seen working: the port, the gate, the grain carts, queues of people. Wide and functional",
+        "encuadre": "Wide establishing shot of the whole space",
+        "escenas": 2
+      }
+    ],
+    "derivado_de": "guiones.json — los 92 encabezados de localizacion de los guiones, reducidos a 27 escenarios canonicos. Toda escena tiene el suyo."
+  },
+  "limites_tecnicos": {
+    "tope": "4,5 MB de peticion Y de respuesta. El de la respuesta es el traicionero: parece un tiempo agotado.",
+    "pesos_reales": {
+      "imagen_2K_png": "~6,8 MB → ~9,1 MB en base64. NO CABE.",
+      "clip_8s_1080p": "~35 MB. No viaja nunca por la funcion.",
+      "voz_45s_pcm": "~2,1 MB → ~2,9 MB en base64. Cabe.",
+      "musica_30s": "~2,6 MB"
+    },
+    "solucion_imagen": "El master 2K en PNG se queda en el bucket y NUNCA viaja. Lo que se manda a Veo es una copia reducida a 1280 px de ancho y convertida a JPEG, hecha en el navegador antes de la peticion. Con lastFrame viajan dos, asi que las dos van reducidas.",
+    "solucion_video": "Veo escribe el MP4 directo al bucket con storageUri. El clip no pasa por la funcion jamas. La herramienta lista el prefijo al terminar la operacion para encontrar el archivo nuevo.",
+    "solucion_descargas": "Lo que no cabe se baja por trozos.",
+    "regla_413": "Un 413 NO se reintenta. Es tamano, y el tamano no cambia por insistir. Se muestra en pantalla que no cabe y cuanto pesaba.",
+    "prueba": "Hay que pesar las respuestas con material del tamano real, no razonar sobre ellas. La medida es la prueba.",
+    "fuentes_del_contenedor": "El montador necesita una fuente con acentos para el espanol. CJK ya no hace falta: no hay japones en pantalla."
+  },
+  "salud": {
+    "por_que": "Responde de una vez las incognitas que ningun documento puede responder: que modelos tiene permitidos esta cuenta y si el bucket responde.",
+    "devuelve": "Service account (enmascarada), project id, bucket, y por cada modelo su id, su region y la variable de entorno que lo sustituye.",
+    "comprueba": [
+      "credenciales",
+      "acceso al bucket (lectura y escritura)",
+      "una llamada minima a cada modelo de imagen de la lista",
+      "una llamada minima a cada nivel de Veo",
+      "una llamada minima a Lyria 3 Pro",
+      "una llamada minima a Gemini TTS en ja-JP y la lista de voces disponibles"
+    ],
+    "regla": "Nunca devuelve la clave privada ni el JSON de la service account. Solo los campos que identifican."
+  },
+  "piezas_nota": "Esta seccion contiene MUCHAS piezas. Hoy solo 'teaser'. Cuando se desglose un episodio se anade 'ep01' al lado, con la misma estructura: tomas, audio, acabado. La herramienta trabaja sobre la pieza activa y no distingue entre un teaser de 24 planos y un episodio de 400.",
+  "episodios": {
+    "escala": "~400 planos por episodio. La cola vive en el bucket y se reanuda sola: nada depende de que el navegador siga abierto.",
+    "musica": "Lyria no pasa de 3 minutos. Un episodio de 22 son varias piezas, una por acto o bloque, unidas con fundidos de 2,5 s. Con fundidos mas cortos el relevo se oye como un tajo.",
+    "subtitulos": "Decenas de lineas. Se alinean con Speech-to-Text (enableWordTimeOffsets, ja-JP) POR ESCENA, nunca por episodio: el limite de la v1 sincrona es ~1 minuto.",
+    "montaje": "Por capas y reanudable: escena, luego acto, luego episodio. Cada capa se guarda; si falla la tercera no se rehacen las dos primeras.",
+    "descarga": "Un episodio a 1080p pesa 1-2 GB. No pasa por ninguna funcion: URL firmada del bucket.",
+    "desglose": "Del guion a los planos con ayuda de la herramienta: propone, el usuario corrige y aprueba, y los planos aprobados se escriben en la pieza. Sin esto habria que escribir a mano unos 1.500 planos."
+  },
+  "personajes_figurantes": {
+    "ids": [
+      "administrador",
+      "concejal",
+      "criado",
+      "encargado",
+      "invitada",
+      "invitado",
+      "maestro",
+      "mozo",
+      "nino-portal",
+      "sacerdote",
+      "secretario",
+      "vendedora"
+    ],
+    "nota": "Figurantes. Una sola ancla generica cada uno, generada la primera vez que un plano los pide. No necesitan set de luces."
+  }
+}
