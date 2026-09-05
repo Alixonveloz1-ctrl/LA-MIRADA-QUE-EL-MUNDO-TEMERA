@@ -50,7 +50,10 @@
         "música: región «global» —ese era el 404— y máximo 184 s",
         "catálogo de 30 voces de Gemini (Chirp fuera)",
         "género puesto a 27 personajes, sacado de su identidad",
-        "frase de muestra sacada del guion para 11 personajes que no la tenían"
+        "frase de muestra sacada del guion para 11 personajes que no la tenían",
+        "género puesto a los 11 del reparto que no tienen ficha de personaje",
+        "11 personajes de 2 líneas o menos pueden compartir voz",
+        "sin género a propósito: voz —así lo dice el guion—"
       ]
     }
   },
@@ -2439,7 +2442,35 @@
           "escena": "3",
           "texto": "Que la señora ya lo ha dicho mejor que yo.",
           "intencion": "modesto, cálido, sin esfuerzo; devuelve el foco"
-        }
+        },
+        "genero": "masculina",
+        "comparte": false,
+        "con": [
+          "abuela",
+          "acolita",
+          "celebrante",
+          "cocinero",
+          "concejal",
+          "criado",
+          "deras",
+          "eira",
+          "encargado",
+          "escribano",
+          "hombre",
+          "invitada",
+          "invitado",
+          "iven",
+          "kael",
+          "livia",
+          "nina-kadre",
+          "osk",
+          "otro concejal",
+          "posadero",
+          "rothar",
+          "secretario",
+          "vharn",
+          "voz"
+        ]
       },
       {
         "personaje": "celebrante",
@@ -2459,7 +2490,15 @@
           "escena": "7",
           "texto": "Se ofreció sin gritar. Fue... interesante.",
           "intencion": "valoración técnica. Sin placer"
-        }
+        },
+        "genero": "masculina",
+        "comparte": false,
+        "con": [
+          "acolita",
+          "madre",
+          "saharis",
+          "vharn"
+        ]
       },
       {
         "personaje": "eira",
@@ -2476,7 +2515,12 @@
           "escena": "15",
           "texto": "¡Basta!",
           "intencion": "grito de pánico"
-        }
+        },
+        "genero": "femenina",
+        "comparte": false,
+        "con": [
+          "saharis"
+        ]
       },
       {
         "personaje": "livia",
@@ -2498,7 +2542,12 @@
           "escena": "6",
           "texto": "Este es de los que hay que leer dos veces.",
           "intencion": "juego, complicidad"
-        }
+        },
+        "genero": "femenina",
+        "comparte": false,
+        "con": [
+          "saharis"
+        ]
       },
       {
         "personaje": "rothar",
@@ -2517,7 +2566,13 @@
           "escena": "15",
           "texto": "¡Miradle! ¡Miradle bien! ¡No sabéis lo que es!",
           "intencion": "gritando, ya sin que nadie lo mire"
-        }
+        },
+        "genero": "masculina",
+        "comparte": false,
+        "con": [
+          "osk",
+          "saharis"
+        ]
       },
       {
         "personaje": "abuela",
@@ -2532,7 +2587,13 @@
           "escena": "10",
           "texto": "Aquel año se heló todo en mayo. Todo. No hubo grano ni para nosotros.",
           "intencion": "recordando un mal año, sin culpa"
-        }
+        },
+        "genero": "femenina",
+        "comparte": false,
+        "con": [
+          "nina-kadre",
+          "saharis"
+        ]
       },
       {
         "personaje": "iven",
@@ -2549,7 +2610,13 @@
           "escena": "6",
           "texto": "...trescientos carros. Trescientos. Con la nieve hasta la rodilla y sin un solo",
           "intencion": "alto y nostálgico, hablando ya para nadie"
-        }
+        },
+        "genero": "masculina",
+        "comparte": false,
+        "con": [
+          "administrador",
+          "saharis"
+        ]
       },
       {
         "personaje": "madre",
@@ -2566,7 +2633,12 @@
           "escena": "1",
           "texto": "¡No!",
           "intencion": "grito puro de terror"
-        }
+        },
+        "genero": "femenina",
+        "comparte": false,
+        "con": [
+          "celebrante"
+        ]
       },
       {
         "personaje": "acolita",
@@ -2583,7 +2655,13 @@
           "escena": "24",
           "texto": "No eras tú. Tú tardaste todavía un año en nacer.",
           "intencion": "aclarando, servicial"
-        }
+        },
+        "genero": "femenina",
+        "comparte": false,
+        "con": [
+          "celebrante",
+          "saharis"
+        ]
       },
       {
         "personaje": "hombre",
@@ -2599,7 +2677,12 @@
           "escena": "3",
           "texto": "Le felicito por el apellido. Elserath es un apellido bonito.",
           "intencion": "cordial, como quien felicita de verdad"
-        }
+        },
+        "genero": "masculina",
+        "comparte": false,
+        "con": [
+          "saharis"
+        ]
       },
       {
         "personaje": "deras",
@@ -2618,7 +2701,13 @@
           "escena": "7",
           "texto": "Voy a matarte.",
           "intencion": "rabia sin control"
-        }
+        },
+        "genero": "masculina",
+        "comparte": false,
+        "con": [
+          "concejal",
+          "saharis"
+        ]
       },
       {
         "personaje": "kael",
@@ -2634,7 +2723,12 @@
           "escena": "17",
           "texto": "Vinieron detrás de él. Buscaban a uno que salió del canal y se llevaron por",
           "intencion": "acusación pública, con la voz rota de rabia"
-        }
+        },
+        "genero": "masculina",
+        "comparte": false,
+        "con": [
+          "saharis"
+        ]
       },
       {
         "personaje": "concejal",
@@ -2653,7 +2747,15 @@
           "escena": "2",
           "texto": "...y queda el asunto del campamento. Necesitamos a alguien que lo gestione.",
           "intencion": "trámite"
-        }
+        },
+        "genero": "masculina",
+        "comparte": false,
+        "con": [
+          "deras",
+          "otro concejal",
+          "saharis",
+          "vharn"
+        ]
       },
       {
         "personaje": "vharn",
@@ -2671,7 +2773,14 @@
           "escena": "15",
           "texto": "¡Tres meses! ¡Tres meses de mi casa en tus manos!",
           "intencion": "grito de rabia de un padre"
-        }
+        },
+        "genero": "masculina",
+        "comparte": false,
+        "con": [
+          "celebrante",
+          "concejal",
+          "saharis"
+        ]
       },
       {
         "personaje": "anciano-academia",
@@ -2686,7 +2795,12 @@
           "escena": "5",
           "texto": "Bienvenido a la academia, pequeño monstruo.",
           "intencion": "satisfecho, casi cariñoso"
-        }
+        },
+        "genero": "masculina",
+        "comparte": false,
+        "con": [
+          "sacerdote"
+        ]
       },
       {
         "personaje": "invitado",
@@ -2701,7 +2815,12 @@
           "escena": "8",
           "texto": "Del río y de nosotros. Traemos por el paso bajo y por el vado, según el mes.",
           "intencion": "soltándose, ya cómodo"
-        }
+        },
+        "genero": "masculina",
+        "comparte": false,
+        "con": [
+          "saharis"
+        ]
       },
       {
         "personaje": "sacerdote",
@@ -2716,7 +2835,12 @@
           "escena": "19",
           "texto": "...y la esclava del demonio mayor sigue comiendo de balde.",
           "intencion": "de pasada, sin malicia"
-        }
+        },
+        "genero": "masculina",
+        "comparte": false,
+        "con": [
+          "anciano-academia"
+        ]
       },
       {
         "personaje": "osk",
@@ -2733,7 +2857,13 @@
           "intencion": "sorprendido",
           "del_guion": true,
           "porque": "Elegida por ser, de sus 3 líneas, la que lleva la intención más detallada."
-        }
+        },
+        "genero": "masculina",
+        "comparte": false,
+        "con": [
+          "rothar",
+          "saharis"
+        ]
       },
       {
         "personaje": "cocinero",
@@ -2750,7 +2880,12 @@
           "intencion": "desconfiado",
           "del_guion": true,
           "porque": "Elegida por ser, de sus 2 líneas, la que lleva la intención más detallada."
-        }
+        },
+        "genero": "masculina",
+        "comparte": true,
+        "con": [
+          "saharis"
+        ]
       },
       {
         "personaje": "administrador",
@@ -2767,7 +2902,12 @@
           "intencion": "neutro, funcionario",
           "del_guion": true,
           "porque": "Elegida por ser, de sus 2 líneas, la que lleva la intención más detallada."
-        }
+        },
+        "genero": "masculina",
+        "comparte": true,
+        "con": [
+          "iven"
+        ]
       },
       {
         "personaje": "escribano",
@@ -2784,7 +2924,12 @@
           "intencion": "objeción tímida",
           "del_guion": true,
           "porque": "Elegida por ser, de sus 2 líneas, la que lleva la intención más detallada."
-        }
+        },
+        "genero": "masculina",
+        "comparte": true,
+        "con": [
+          "saharis"
+        ]
       },
       {
         "personaje": "criado",
@@ -2801,7 +2946,12 @@
           "intencion": "soltándolo de golpe",
           "del_guion": true,
           "porque": "Elegida por ser, de sus 2 líneas, la que lleva la intención más detallada."
-        }
+        },
+        "genero": "masculina",
+        "comparte": true,
+        "con": [
+          "saharis"
+        ]
       },
       {
         "personaje": "voz",
@@ -2818,7 +2968,12 @@
           "intencion": "la misma voz, sin reproche. Y luego el silencio",
           "del_guion": true,
           "porque": "Elegida por ser, de sus 2 líneas, la que lleva la intención más detallada."
-        }
+        },
+        "genero": "sin decidir",
+        "comparte": true,
+        "con": [
+          "saharis"
+        ]
       },
       {
         "personaje": "otro concejal",
@@ -2836,7 +2991,13 @@
           "intencion": "preguntando por preguntar",
           "del_guion": true,
           "porque": "Elegida por ser, de sus 2 líneas, la que lleva la intención más detallada."
-        }
+        },
+        "genero": "masculina",
+        "comparte": true,
+        "con": [
+          "concejal",
+          "saharis"
+        ]
       },
       {
         "personaje": "secretario",
@@ -2853,7 +3014,12 @@
           "intencion": "sin poder ayudar",
           "del_guion": true,
           "porque": "Elegida por ser, de sus 2 líneas, la que lleva la intención más detallada."
-        }
+        },
+        "genero": "masculina",
+        "comparte": true,
+        "con": [
+          "saharis"
+        ]
       },
       {
         "personaje": "posadero",
@@ -2868,7 +3034,12 @@
           "escena": "5",
           "texto": "Al final de la calle larga, la casa del tejado nuevo.",
           "intencion": "servicial, sin bajar la voz"
-        }
+        },
+        "genero": "masculina",
+        "comparte": true,
+        "con": [
+          "saharis"
+        ]
       },
       {
         "personaje": "invitada",
@@ -2885,7 +3056,12 @@
           "intencion": "social, ligera, invitándolo a hablar",
           "del_guion": true,
           "porque": "Elegida por ser, de sus única línea, la que lleva la intención más detallada."
-        }
+        },
+        "genero": "femenina",
+        "comparte": true,
+        "con": [
+          "saharis"
+        ]
       },
       {
         "personaje": "encargado",
@@ -2902,7 +3078,12 @@
           "intencion": "empezando a excusarse",
           "del_guion": true,
           "porque": "Elegida por ser, de sus única línea, la que lleva la intención más detallada."
-        }
+        },
+        "genero": "masculina",
+        "comparte": true,
+        "con": [
+          "saharis"
+        ]
       },
       {
         "personaje": "nina-kadre",
@@ -2919,7 +3100,13 @@
           "intencion": "distraída",
           "del_guion": true,
           "porque": "Elegida por ser, de sus única línea, la que lleva la intención más detallada."
-        }
+        },
+        "genero": "femenina",
+        "comparte": true,
+        "con": [
+          "abuela",
+          "saharis"
+        ]
       }
     ],
     "deriva_de_tono": {
@@ -3093,7 +3280,12 @@
         "genero": "masculina",
         "caracter": "informal"
       }
-    ]
+    ],
+    "regla_de_voz": {
+      "lineas_para_compartir": 2,
+      "como": "Dos personajes pueden compartir voz solo si los dos tienen \"comparte\" y ninguno está en el \"con\" del otro. El que se oye de verdad tiene voz propia; el que dice una o dos líneas puede repetir timbre con alguien que no salga en ninguna de sus escenas.",
+      "por_que": "Con el género bien puesto hay 21 personajes masculinos y el catálogo de Gemini solo tiene 16 voces masculinas. No hay más voces: son treinta y son fijas."
+    }
   },
   "subtitulos": {
     "idioma": "es",

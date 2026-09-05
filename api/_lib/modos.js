@@ -501,7 +501,14 @@ async function modoVoces(cuerpo) {
  * más vale enseñar de más que esconder la voz buena.
  */
 function generoDelPersonaje(id) {
-  const ficha = serie.personajes && serie.personajes[id];
+  // Del REPARTO, no de serie.personajes. Once de los que hablan son figurantes y
+  // no tienen ficha de personaje —no necesitan identidad visual, les basta un
+  // ancla genérica— pero sí tienen voz, así que su género vive donde vive su
+  // voz. Lo pone ahí herramientas/parche-datos.mjs para todos, con ficha y sin
+  // ella; leerlo de serie.personajes dejaba a esos once sin filtrar, enseñándoles
+  // las treinta voces, que es justo lo que no se quería.
+  const reparto = (serie.voces && serie.voces.reparto) || [];
+  const ficha = reparto.find((r) => r && r.personaje === id);
   const genero = ficha && typeof ficha.genero === 'string' ? ficha.genero.trim() : '';
   return genero && genero !== 'sin decidir' ? genero : null;
 }
@@ -540,12 +547,13 @@ async function modoVozMuestra(cuerpo) {
   // y al fijarla saltaría el choque. Se dice antes de gastar y se dice de quién
   // es, que es lo único que hace falta para decidir.
   const deQuienEs = duenoDeLaVoz(leido.estado, vozId);
-  if (deQuienEs && deQuienEs !== idPersonaje) {
+  if (deQuienEs && deQuienEs !== idPersonaje && !puedenCompartir(idPersonaje, deQuienEs)) {
     throw new ErrorDeCara(
       `No se ha generado nada y no se ha gastado nada: la voz «${vozId}» ya está fijada en ` +
-        `«${deQuienEs}». Una voz es de un solo personaje, así que esta muestra no se podría ` +
-        'elegir aunque sonara bien. Elige otra de la lista, o ve a la tarjeta de ' +
-        `«${deQuienEs}» y dale a «Cambiar la voz elegida».`,
+        `«${deQuienEs}» y esos dos no pueden compartir timbre, así que esta muestra no se podría ` +
+        `elegir aunque sonara bien. ${porQueNoPuedenCompartir(idPersonaje, deQuienEs)} ` +
+        `Elige otra de la lista, o ve a la tarjeta de «${deQuienEs}» y dale a «Cambiar la voz ` +
+        'elegida».',
       { reintentable: false, http: 409 }
     );
   }
@@ -1260,25 +1268,88 @@ function comprobarQueNadieComparteVoz(estado) {
   const voces = esObjeto(estado.voces) ? estado.voces : null;
   if (!voces) return;
 
-  const dueno = new Map();
+  // Quién tiene cada voz. Puede ser más de uno: compartir está permitido entre
+  // los que no se llegan a reconocer, y `puedenCompartir` dice entre cuáles.
+  const quienes = new Map();
   for (const [personaje, dentro] of Object.entries(voces)) {
     if (!esObjeto(dentro)) continue;
     const vozId = soloTexto(dentro.voz_id);
     if (!vozId) continue;
-
-    const yaLaTiene = dueno.get(vozId);
-    if (yaLaTiene) {
-      throw new ErrorDeCara(
-        `No se ha guardado nada: la voz «${vozId}» estaría a la vez en «${yaLaTiene}» y en ` +
-          `«${personaje}», y una voz es de un solo personaje. Dos personajes con el mismo timbre ` +
-          'son el mismo personaje para quien lo oye, y en doce capítulos eso solo se arregla ' +
-          'volviendo a grabar. En la tarjeta de uno de los dos, «Cambiar la voz elegida», y ' +
-          'vuelve a elegir: hay treinta voces para veintinueve personajes, así que sitio hay.',
-        { reintentable: false, http: 409 }
-      );
-    }
-    dueno.set(vozId, personaje);
+    if (!quienes.has(vozId)) quienes.set(vozId, []);
+    quienes.get(vozId).push(personaje);
   }
+
+  for (const [vozId, deQuienes] of quienes) {
+    if (deQuienes.length < 2) continue;
+
+    for (let i = 0; i < deQuienes.length; i += 1) {
+      for (let j = i + 1; j < deQuienes.length; j += 1) {
+        const [uno, otro] = [deQuienes[i], deQuienes[j]];
+        if (puedenCompartir(uno, otro)) continue;
+
+        throw new ErrorDeCara(
+          `No se ha guardado nada: la voz «${vozId}» estaría a la vez en «${uno}» y en ` +
+            `«${otro}», y esos dos no pueden compartir timbre. ${porQueNoPuedenCompartir(uno, otro)} ` +
+            'En la tarjeta de uno de los dos, «Cambiar la voz elegida», y vuelve a elegir.',
+          { reintentable: false, http: 409 }
+        );
+      }
+    }
+  }
+}
+
+/**
+ * ¿Pueden dos personajes decir sus líneas con el mismo timbre?
+ *
+ * Solo si los dos dicen una o dos líneas en toda la serie Y no salen juntos en
+ * ninguna escena. Las dos condiciones hacen falta: alguien a quien se oye lo
+ * suficiente se reconoce aunque nunca coincida con el otro, y dos que coinciden
+ * se delatan aunque digan una línea cada uno —se oye seguido, en la misma
+ * escena, y suena a la misma persona hablando sola—.
+ *
+ * `comparte` y `con` los calcula herramientas/parche-datos.mjs desde el guion,
+ * que es quien sabe quién sale con quién. Aquí no se cuenta nada: se lee.
+ *
+ * @param {string} unId
+ * @param {string} otroId
+ * @returns {boolean}
+ */
+function puedenCompartir(unId, otroId) {
+  const reparto = (serie.voces && serie.voces.reparto) || [];
+  const uno = reparto.find((r) => r && r.personaje === unId);
+  const otro = reparto.find((r) => r && r.personaje === otroId);
+
+  // Quien no está en el reparto no comparte nada: no se sabe cuánto habla ni con
+  // quién sale, y ante esa duda manda la regla estricta.
+  if (!uno || !otro) return false;
+  if (uno.comparte !== true || otro.comparte !== true) return false;
+
+  const conUno = Array.isArray(uno.con) ? uno.con : [];
+  const conOtro = Array.isArray(otro.con) ? otro.con : [];
+  return !conUno.includes(otroId) && !conOtro.includes(unId);
+}
+
+/** Por qué dos personajes no pueden compartir voz, dicho para leerlo en el móvil. */
+function porQueNoPuedenCompartir(unId, otroId) {
+  const reparto = (serie.voces && serie.voces.reparto) || [];
+  const uno = reparto.find((r) => r && r.personaje === unId);
+  const otro = reparto.find((r) => r && r.personaje === otroId);
+
+  if (!uno || !otro) {
+    return 'Uno de los dos no está en el reparto de voces de datos/serie.json, así que no se sabe ' +
+      'cuánto habla ni con quién sale, y ante esa duda cada uno lleva la suya.';
+  }
+
+  const conUno = Array.isArray(uno.con) ? uno.con : [];
+  const conOtro = Array.isArray(otro.con) ? otro.con : [];
+  if (conUno.includes(otroId) || conOtro.includes(unId)) {
+    return 'Salen juntos en alguna escena: se oirían seguidos y sonaría a la misma persona ' +
+      'hablando sola, aunque digan una línea cada uno.';
+  }
+
+  const hablador = uno.comparte !== true ? uno : otro;
+  return `«${hablador.personaje}» dice ${hablador.lineas} líneas en la serie y a quien se oye eso ` +
+    'se le reconoce el timbre: solo pueden repetir voz los de una o dos líneas.';
 }
 
 /**

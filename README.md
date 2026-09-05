@@ -162,13 +162,23 @@ que se probaba un solo nombre— y por eso hoy se mide en vez de darse por hecho
    escribió la frase a mano y a los once figurantes se la saca del guion
    `npm run datos` —su línea de riesgo alto, o la de intención más detallada—,
    y la pantalla dice cuál de las dos cosas está oyendo.
-   **Una voz es de un solo personaje**: en cuanto queda fijada deja de ofrecerse
-   a los demás, ni siquiera se puede pagar su muestra, y el servidor rechaza
-   guardar un estado donde dos la compartan. Dos personajes con el mismo timbre
-   son el mismo personaje para el oído, y en doce capítulos eso solo se arregla
-   volviendo a grabar. El margen es estrecho —30 voces para 29 personajes—, así
-   que la pantalla avisa cuando quedan tres libres y `npm run invariantes` falla
-   si los números dejan de dar.
+   **El que se oye tiene voz propia.** En cuanto una voz queda fijada deja de
+   ofrecerse a los demás, ni siquiera se puede pagar su muestra, y el servidor
+   rechaza guardar un estado donde dos la compartan indebidamente: dos
+   personajes con el mismo timbre son el mismo personaje para el oído, y en doce
+   capítulos eso solo se arregla volviendo a grabar.
+
+   La excepción es la del doblaje de toda la vida, y hace falta: con el género
+   bien puesto salen **21 personajes masculinos y solo hay 16 voces masculinas**,
+   y las de Gemini son treinta y son fijas. Así que quien dice **una o dos
+   líneas** en toda la serie puede repetir timbre, pero solo con alguien que **no
+   salga en ninguna de sus escenas** — hoy son once, y ninguno coincide con otro
+   de los once. La pantalla lo dice antes de que elijas, con el nombre del otro.
+
+   Las dos condiciones hacen falta: a quien se oye lo suficiente se le reconoce
+   aunque nunca coincida, y dos que coinciden se delatan aunque digan una línea
+   cada uno. `comparte` y `con` los calcula `npm run datos` leyendo el guion, y
+   la misma regla la aplican la pantalla y el servidor.
 3. **Banco** — los personajes y los escenarios de toda la serie: generar, mirar,
    aprobar y regenerar, con las cadenas de ancla y de edad a la vista.
 4. **Desglose** — se elige un episodio y se convierte en planos, una llamada de

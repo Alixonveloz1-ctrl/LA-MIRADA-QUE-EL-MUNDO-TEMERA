@@ -424,6 +424,33 @@ for (const [id, ficha] of Object.entries(serie.personajes)) {
 }
 anota(`género puesto a ${conGenero} personajes, sacado de su identidad`);
 
+// EL GÉNERO DE LOS QUE HABLAN Y NO TIENEN FICHA.
+//
+// Once personajes del reparto NO están en `serie.personajes`: están en
+// `personajes_figurantes.ids`, que es una lista de ids pelados —sin identidad y
+// sin género, porque a un figurante le basta un ancla genérica—. El bucle de
+// arriba recorre `serie.personajes`, así que a estos no los miraba: se quedaban
+// sin género y la pantalla les enseñaba las treinta voces, que es exactamente lo
+// que no se quería.
+//
+// Se pone a mano y uno a uno, no con una regla sobre el nombre, porque la regla
+// se equivocaría en el que importa: «voz» es palabra femenina en español y el
+// guion dice de ella, literalmente, «voz interior, sin cuerpo, sin género
+// claro». Eso es una decisión de la historia y no se toca.
+const GENERO_FIGURANTE = {
+  hombre: 'masculina',          // ep3 y ep4: el guion lo trata en masculino
+  concejal: 'masculina',
+  'otro concejal': 'masculina',
+  invitado: 'masculina',
+  invitada: 'femenina',
+  sacerdote: 'masculina',
+  administrador: 'masculina',
+  criado: 'masculina',
+  secretario: 'masculina',
+  encargado: 'masculina',
+  voz: 'sin decidir',           // ep5/13: «voz interior, sin cuerpo, sin género claro»
+};
+
 // ---------------------------------------------------------------------------
 // LA FRASE DE MUESTRA DE TODO EL QUE HABLA.
 //
@@ -524,6 +551,94 @@ for (const ficha of serie.voces.reparto || []) {
 }
 anota(`frase de muestra sacada del guion para ${conMuestra} personajes que no la tenían`);
 if (mudos.length) anota(`sin frase de muestra (no hablan en los guiones): ${mudos.join(', ')}`);
+
+// ---------------------------------------------------------------------------
+// UNA VOZ, UN PERSONAJE — Y QUIÉN PUEDE SALTARSE ESA REGLA.
+//
+// La regla es que dos personajes no compartan timbre: para el oído serían el
+// mismo personaje, y en doce capítulos eso solo se arregla volviendo a grabar.
+//
+// PERO LOS NÚMEROS NO DAN. Con el género bien puesto salen 21 personajes
+// masculinos y el catálogo de Gemini tiene 16 voces masculinas. Faltan cinco, y
+// no hay más voces: son treinta y son fijas.
+//
+// LA SALIDA, que es la del doblaje de toda la vida: el que se oye de verdad
+// tiene voz propia; el que dice una o dos líneas puede compartir, pero SOLO con
+// alguien que no salga en ninguna de sus escenas. Dos personajes de dos líneas
+// en episodios distintos con el mismo timbre no los distingue nadie, porque
+// nadie los tiene los dos en la cabeza a la vez.
+//
+// Aquí se calcula lo que hace falta para poder aplicarla, y se calcula del
+// guion, que es quien sabe quién sale con quién:
+//
+//   genero    · de la ficha si la tiene, y de la tabla de arriba si no.
+//   lineas    · ya venía.
+//   comparte  · si dice una o dos líneas en toda la serie.
+//   con       · con quién comparte escena, aunque sea una sola.
+//
+// Con esos dos últimos la regla se escribe en una línea y vale igual en el
+// servidor y en la pantalla: dos personajes pueden compartir voz si los dos
+// tienen `comparte` y ninguno está en el `con` del otro.
+// ---------------------------------------------------------------------------
+
+/** Hasta cuántas líneas se considera que a alguien no se le llega a reconocer. */
+const LINEAS_PARA_COMPARTIR = 2;
+
+const conQuienSale = {};
+for (const episodio of guiones.guiones || []) {
+  for (const escena of (episodio && episodio.escenas) || []) {
+    const enEsta = new Set();
+    for (const linea of (escena && escena.dialogo) || []) {
+      if (linea && typeof linea.quien === 'string' && String(linea.texto || '').trim()) {
+        enEsta.add(linea.quien);
+      }
+    }
+    for (const uno of enEsta) {
+      for (const otro of enEsta) {
+        if (uno !== otro) (conQuienSale[uno] = conQuienSale[uno] || new Set()).add(otro);
+      }
+    }
+  }
+}
+
+let deLaTabla = 0;
+let comparten = 0;
+const sinGeneroNinguno = [];
+
+for (const ficha of serie.voces.reparto || []) {
+  const id = String(ficha.personaje);
+  const conFicha = serie.personajes[id];
+
+  if (conFicha && conFicha.genero) {
+    ficha.genero = conFicha.genero;
+  } else if (GENERO_FIGURANTE[id]) {
+    ficha.genero = GENERO_FIGURANTE[id];
+    deLaTabla += 1;
+  } else {
+    ficha.genero = 'sin decidir';
+  }
+  if (ficha.genero === 'sin decidir') sinGeneroNinguno.push(id);
+
+  ficha.comparte = Number(ficha.lineas || 0) <= LINEAS_PARA_COMPARTIR;
+  if (ficha.comparte) comparten += 1;
+
+  ficha.con = [...(conQuienSale[id] || [])].sort();
+}
+
+anota(`género puesto a los ${deLaTabla} del reparto que no tienen ficha de personaje`);
+anota(`${comparten} personajes de ${LINEAS_PARA_COMPARTIR} líneas o menos pueden compartir voz`);
+if (sinGeneroNinguno.length) {
+  anota(`sin género a propósito: ${sinGeneroNinguno.join(', ')} —así lo dice el guion—`);
+}
+
+serie.voces.regla_de_voz = {
+  lineas_para_compartir: LINEAS_PARA_COMPARTIR,
+  como: 'Dos personajes pueden compartir voz solo si los dos tienen "comparte" y ninguno está ' +
+        'en el "con" del otro. El que se oye de verdad tiene voz propia; el que dice una o dos ' +
+        'líneas puede repetir timbre con alguien que no salga en ninguna de sus escenas.',
+  por_que: 'Con el género bien puesto hay 21 personajes masculinos y el catálogo de Gemini solo ' +
+           'tiene 16 voces masculinas. No hay más voces: son treinta y son fijas.',
+};
 
 serie.meta.version_datos = (serie.meta.version_datos || 0) + 1;
 serie.meta.parche = {

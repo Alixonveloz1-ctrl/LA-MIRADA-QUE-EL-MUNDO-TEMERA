@@ -1656,46 +1656,85 @@ bloque('Datos · hay voces para todos, y cada uno la suya');
 
   const vocesDe = (g) => catalogo.filter((v) => v && v.genero === g).length;
 
+  // El género se lee del REPARTO, no de serie.personajes. Once de los que hablan
+  // no tienen ficha de personaje —son figurantes, y un figurante no necesita
+  // identidad visual— pero sí tienen voz, así que su género vive donde vive su
+  // voz. Lo pone ahí «npm run datos» para todos, con ficha y sin ella.
   const generoDe = (id) => {
-    const ficha = serie.personajes && serie.personajes[id];
+    const ficha = reparto.find((f) => f && f.personaje === id);
     const g = ficha && typeof ficha.genero === 'string' ? ficha.genero.trim() : '';
     return g && g !== 'sin decidir' ? g : null;
   };
 
-  const necesitan = { femenina: 0, masculina: 0, cualquiera: 0 };
+  // LA CUENTA VA SOBRE LOS QUE NECESITAN VOZ PROPIA, no sobre todos. Quien dice
+  // una o dos líneas y no sale con nadie que también comparta puede repetir
+  // timbre, así que no consume una voz para él solo. Sin esa distinción esto
+  // fallaría hoy —21 personajes masculinos y 16 voces masculinas— cuando el
+  // reparto sí es posible.
+  const propios = { femenina: 0, masculina: 0, cualquiera: 0 };
+  const comparten = { femenina: 0, masculina: 0, cualquiera: 0 };
+
   for (const ficha of reparto) {
     const g = generoDe(String(ficha.personaje));
-    if (g === 'femenina' || g === 'masculina') necesitan[g] += 1;
-    else necesitan.cualquiera += 1;
+    const casilla = g === 'femenina' || g === 'masculina' ? g : 'cualquiera';
+    if (ficha.comparte === true) comparten[casilla] += 1;
+    else propios[casilla] += 1;
   }
+
+  // Los que comparten necesitan AL MENOS una voz entre todos los de su género:
+  // no salen juntos, pero alguna tienen que decir.
+  const conUnaAlMenos = (casilla) => propios[casilla] + (comparten[casilla] > 0 ? 1 : 0);
 
   const quejas = [];
   const mira = (cuantos, cuantas, quienes, deQue) => {
     if (cuantos > cuantas) {
       quejas.push(
-        `Hay ${cuantos} ${quienes} y solo ${cuantas} ${deQue}. Una voz es de un solo personaje, ` +
-          `así que ${cuantos - cuantas} se quedarían sin ninguna. O se añaden voces al catálogo ` +
-          '(datos/voces-gemini.json), o se acepta que dos personajes compartan timbre, que es ' +
-          'justo lo que el servidor impide.',
+        `Hacen falta ${cuantos} ${deQue} para ${quienes} y solo hay ${cuantas}. Faltan ` +
+          `${cuantos - cuantas}. Las voces de Gemini son treinta y son fijas, así que no se ` +
+          'pueden añadir: o baja el reparto, o sube «lineas_para_compartir» en ' +
+          'herramientas/parche-datos.mjs para que más personajes puedan repetir timbre.',
       );
     }
   };
 
-  mira(necesitan.femenina, vocesDe('femenina'), 'personajes femeninos', 'voces femeninas');
-  mira(necesitan.masculina, vocesDe('masculina'), 'personajes masculinos', 'voces masculinas');
-  mira(reparto.length, catalogo.length, 'personajes en el reparto', 'voces en el catálogo');
+  mira(conUnaAlMenos('femenina'), vocesDe('femenina'), 'los personajes femeninos', 'voces femeninas');
+  mira(conUnaAlMenos('masculina'), vocesDe('masculina'), 'los personajes masculinos', 'voces masculinas');
+  mira(
+    conUnaAlMenos('femenina') + conUnaAlMenos('masculina') + conUnaAlMenos('cualquiera'),
+    catalogo.length,
+    'todo el reparto',
+    'voces en el catálogo',
+  );
 
-  comprobar('Cada personaje puede tener una voz distinta', quejas);
+  comprobar('Hay voces para repartir sin que se repita un timbre reconocible', quejas);
 
-  const sobran = catalogo.length - reparto.length;
+  // Y los que comparten tienen que poder compartir DE VERDAD: dos que salen
+  // juntos no pueden, por muy pocas líneas que digan cada uno.
+  const noPueden = [];
+  const queComparten = reparto.filter((f) => f.comparte === true);
+  for (const uno of queComparten) {
+    for (const otro of queComparten) {
+      if (uno === otro) continue;
+      const con = Array.isArray(uno.con) ? uno.con : [];
+      if (con.includes(String(otro.personaje)) && uno.personaje < otro.personaje) {
+        noPueden.push(
+          `«${uno.personaje}» y «${otro.personaje}» pueden compartir por líneas pero salen juntos ` +
+            'en alguna escena, así que entre ellos no. Con pocos así todavía hay reparto; con ' +
+            'muchos deja de haberlo y esta cuenta no lo vería.',
+        );
+      }
+    }
+  }
+  if (noPueden.length) noPueden.forEach((q) => avisar(q));
+
   avisar(
     `${catalogo.length} voces (${vocesDe('femenina')} femeninas, ${vocesDe('masculina')} ` +
-      `masculinas) para ${reparto.length} personajes: ${necesitan.femenina} femeninos, ` +
-      `${necesitan.masculina} masculinos y ${necesitan.cualquiera} sin género declarado, que ` +
-      `pueden coger cualquiera. Sobra${sobran === 1 ? '' : 'n'} ${sobran}. ` +
-      (sobran <= 2
-        ? 'Es MUY justo: un personaje más en el reparto y no hay reparto posible.'
-        : 'Hay margen, pero no mucho.'),
+      `masculinas) para ${reparto.length} personajes. Voz propia: ${propios.femenina} femeninos, ` +
+      `${propios.masculina} masculinos, ${propios.cualquiera} sin género declarado. ` +
+      `Pueden repetir timbre ${queComparten.length}, los de dos líneas o menos que no salen ` +
+      'juntos con nadie que también repita. Sin esa regla no habría reparto posible: con el ' +
+      `género bien puesto hay ${propios.masculina + comparten.masculina} personajes masculinos y ` +
+      `solo ${vocesDe('masculina')} voces masculinas.`,
   );
 }
 

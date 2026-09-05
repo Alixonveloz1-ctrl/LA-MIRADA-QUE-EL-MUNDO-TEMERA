@@ -462,18 +462,29 @@ export default {
       const suyo = generoDelPersonaje(serie, id);
       const puesto = generoElegido.get(id) || (suyo && generos.includes(suyo) ? suyo : 'todos');
 
-      // LAS QUE YA SON DE OTRO NO SE OFRECEN. Ni siquiera se puede pagar su
-      // muestra: generarla sería tirar el dinero en una voz que no se puede
-      // elegir. Pero tampoco desaparecen sin más —eso deja buscando una voz que
-      // se oyó ayer y ya no está—: se dicen abajo, con el nombre de quien la
-      // tiene, que es a donde hay que ir a soltarla si se la quiere quitar.
+      // LAS QUE YA SON DE OTRO NO SE OFRECEN, salvo que compartir con ese otro
+      // sea legal: los de una o dos líneas que no salen juntos en ninguna escena
+      // sí pueden repetir timbre, y sin eso los números no darían —con el género
+      // bien puesto hay 21 personajes masculinos y 16 voces masculinas—.
+      //
+      // Las que no se ofrecen no desaparecen sin más, que dejaría buscando una
+      // voz que se oyó ayer: se dicen abajo, con el nombre de quien la tiene,
+      // que es a donde hay que ir a recuperarla.
+      //
       // El mapa se arma UNA vez para toda la tarjeta. Preguntarlo voz a voz lo
       // reconstruía treinta veces por personaje, y en un teléfono con
       // veintinueve tarjetas eso se nota al desplazar.
       const dueno = duenosDeLasVoces();
       const deOtro = (voz) => {
         const suyo = dueno.get(voz.id);
-        return suyo && suyo !== id ? suyo : null;
+        if (!suyo || suyo === id) return null;
+        return puedenCompartir(id, suyo) ? null : suyo;
+      };
+
+      /** Con quién se compartiría esta voz, cuando compartir sí está permitido. */
+      const compartidaCon = (voz) => {
+        const suyo = dueno.get(voz.id);
+        return suyo && suyo !== id && puedenCompartir(id, suyo) ? suyo : null;
       };
 
       const deSuGenero = puesto === 'todos'
@@ -519,7 +530,13 @@ export default {
       }
 
       const rejilla = h('div', { clase: 'rejilla', estilo: { 'margin-top': '10px' } });
-      for (const voz of lista) rejilla.appendChild(pintarCandidata(ficha, voz));
+      // Las libres del todo primero y las que se repetirían después: si hay una
+      // voz que no suena en ningún otro sitio, es la que hay que oír antes.
+      const ordenadas = lista.slice().sort((a, b) =>
+        (compartidaCon(a) ? 1 : 0) - (compartidaCon(b) ? 1 : 0));
+      for (const voz of ordenadas) {
+        rejilla.appendChild(pintarCandidata(ficha, voz, compartidaCon(voz)));
+      }
       panel.appendChild(rejilla);
 
       if (tomadas.length) panel.appendChild(pintarLasTomadas(tomadas, dueno));
@@ -554,10 +571,12 @@ export default {
       return h('div', { estilo: { 'margin-top': '10px' } },
         h('p', { clase: 'tenue', estilo: { margin: '0', 'font-size': '13px' } },
           `${tomadas.length === 1 ? 'Una voz no se ofrece' : `${tomadas.length} voces no se ofrecen`} ` +
-          'porque ya están fijadas en otro personaje: ', h('span', { clase: 'mono' }, dichas), '. ' +
-          'Dos personajes con el mismo timbre son el mismo personaje para el oído, y eso no se ' +
-          'arregla después sin volver a grabar. Para recuperar una, ve a la tarjeta de quien la ' +
-          'tiene y dale a «Cambiar la voz elegida».'));
+          'porque ya están fijadas en otro personaje que no puede compartir timbre con este: ',
+          h('span', { clase: 'mono' }, dichas), '. ' +
+          'Solo repiten voz los que dicen una o dos líneas en toda la serie y además no salen ' +
+          'juntos en ninguna escena; a los demás se les reconoce, y eso no se arregla después sin ' +
+          'volver a grabar. Para recuperar una, ve a la tarjeta de quien la tiene y dale a ' +
+          '«Cambiar la voz elegida».'));
     }
 
     /**
@@ -566,7 +585,7 @@ export default {
      * @param {{id:string, genero:string}} voz
      * @returns {HTMLElement}
      */
-    function pintarCandidata(ficha, voz) {
+    function pintarCandidata(ficha, voz, conQuienSeComparte = null) {
       const id = String(ficha.personaje);
       const clave = `${id}|${voz.id}`;
       const oible = muestraOible(id, voz.id);
@@ -615,6 +634,15 @@ export default {
           h('p', { clase: 'suave', estilo: { margin: '2px 0 0', 'font-size': '13px' } },
             `Género: ${generoDe(voz)}`,
             dura ? ` · dura ${segundos(dura)}` : ''),
+          // Se dice ANTES de elegirla, no después: quien la fije tiene que saber
+          // que ese timbre ya suena en otro sitio de la serie, aunque aquí esté
+          // permitido porque los dos dicen dos líneas y no coinciden nunca.
+          conQuienSeComparte
+            ? h('p', { clase: 'tenue', estilo: { margin: '4px 0 0', 'font-size': '12px' } },
+                `Ya es la voz de ${nombreEnPantalla(conQuienSeComparte)}. Se puede repetir aquí ` +
+                'porque los dos dicen una o dos líneas y no salen juntos en ninguna escena, así ' +
+                'que nadie los va a tener los dos en la cabeza a la vez.')
+            : null,
           trabajando ? espera('Diciendo la frase con esta voz…') : null),
         acciones,
       });
@@ -685,13 +713,14 @@ export default {
       // móvil— puede haberse fijado esta misma voz. El panel de al lado no se
       // entera solo.
       const otro = yaEsDeOtro(vozId, id);
-      if (otro) {
+      if (otro && !puedenCompartir(id, otro)) {
         recados.set(id, {
           tono: 'error',
           mensaje:
             `${nombreCortoDeVoz(vozId)} ya es la voz de ${nombreEnPantalla(otro)}. Se ha fijado ` +
-            'mientras este panel estaba abierto. Una voz es de un solo personaje: elige otra, o ' +
-            `ve a la tarjeta de ${nombreEnPantalla(otro)} y dale a «Cambiar la voz elegida».`,
+            'mientras este panel estaba abierto, y esos dos no pueden compartir timbre: elige ' +
+            `otra, o ve a la tarjeta de ${nombreEnPantalla(otro)} y dale a «Cambiar la voz ` +
+            'elegida».',
           detalle: null,
         });
         refrescar(id);
@@ -823,6 +852,43 @@ export default {
     function yaEsDeOtro(vozId, salvo) {
       const dueno = duenosDeLasVoces().get(String(vozId ?? '').trim());
       return dueno && dueno !== salvo ? dueno : null;
+    }
+
+    /**
+     * ¿Pueden dos personajes decir sus líneas con el mismo timbre?
+     *
+     * Solo si los dos dicen una o dos líneas en toda la serie Y no salen juntos
+     * en ninguna escena. Las dos condiciones hacen falta: a quien se oye lo
+     * suficiente se le reconoce el timbre aunque nunca coincida con el otro, y
+     * dos que coinciden se delatan aunque digan una línea cada uno, porque se
+     * oyen seguidos y suena a la misma persona hablando sola.
+     *
+     * `comparte` y `con` los calcula `npm run datos` desde el guion. Aquí no se
+     * cuenta nada: se lee. Y es la MISMA regla que aplica el servidor, así que
+     * la pantalla no ofrece nada que después vaya a rechazarse.
+     *
+     * @param {string} unId
+     * @param {string} otroId
+     * @returns {boolean}
+     */
+    function puedenCompartir(unId, otroId) {
+      const uno = delReparto(unId);
+      const otro = delReparto(otroId);
+
+      // Quien no está en el reparto no comparte: no se sabe cuánto habla ni con
+      // quién sale, y ante esa duda manda la regla estricta.
+      if (!uno || !otro) return false;
+      if (uno.comparte !== true || otro.comparte !== true) return false;
+
+      const conUno = Array.isArray(uno.con) ? uno.con : [];
+      const conOtro = Array.isArray(otro.con) ? otro.con : [];
+      return !conUno.includes(otroId) && !conOtro.includes(unId);
+    }
+
+    /** La entrada del reparto de un personaje, o null. */
+    function delReparto(id) {
+      const reparto = (serie && serie.voces && serie.voces.reparto) || [];
+      return reparto.find((r) => r && r.personaje === id) || null;
     }
 
     /** La voz ya elegida de un personaje, o null. */
@@ -1442,8 +1508,12 @@ function loQueDijo(fallo) {
  * esconder la voz buena.
  */
 function generoDelPersonaje(serie, id) {
-  const fichas = serie && typeof serie.personajes === 'object' ? serie.personajes : null;
-  const ficha = fichas ? fichas[id] : null;
+  // Del REPARTO, no de serie.personajes. Once de los que hablan son figurantes y
+  // no tienen ficha de personaje —no necesitan identidad visual, les basta un
+  // ancla genérica— pero sí tienen voz, así que su género vive donde vive su
+  // voz. Lo pone ahí «npm run datos» para todos, con ficha y sin ella.
+  const reparto = (serie && serie.voces && serie.voces.reparto) || [];
+  const ficha = reparto.find((f) => f && f.personaje === id);
   const genero = ficha && typeof ficha.genero === 'string' ? ficha.genero.trim() : '';
   return genero && genero !== 'sin decidir' ? genero : null;
 }
