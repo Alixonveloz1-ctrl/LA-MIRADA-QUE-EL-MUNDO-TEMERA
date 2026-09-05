@@ -1,0 +1,432 @@
+// El entorno: lo único que sabe de la cuenta.
+//
+// Aquí no hay ni un project id, ni un bucket, ni un correo, ni una clave
+// escritos. Todo sale de variables de entorno, y el project id sale SIEMPRE de
+// `sa.project_id`, nunca de una constante ni de otra variable.
+//
+// Tampoco hay ni un id de modelo escrito a mano: la tabla de modelos se arma
+// leyendo datos/serie.json y dejando que IMAGE_MODEL, VEO_MODEL, TTS_MODEL,
+// MUSIC_MODEL, STT_MODEL y TEXTO_MODEL sustituyan lo que haga falta sin tocar
+// el código.
+//
+// Se lee una vez y se cachea. Si alguna de las variables cambia (las
+// herramientas de herramientas/ las cambian a mano para medir), se vuelve a
+// leer: la huella de abajo lo detecta sin volver a parsear nada caro.
+//
+// Este módulo NO importa datos.js a propósito: datos.js necesita esta tabla de
+// modelos, y dos módulos que se importan el uno al otro no arrancan.
+
+import { readFileSync } from 'node:fs';
+import { Buffer } from 'node:buffer';
+import { ErrorDeCara } from './errores.js';
+
+/** datos/serie.json, desde api/_lib/. vercel.json ya incluye datos/** en la función. */
+const RUTA_SERIE = new URL('../../datos/serie.json', import.meta.url);
+
+const REGION_POR_DEFECTO = 'us-central1';
+const CONCURRENCIA_POR_DEFECTO = 3;
+const CONCURRENCIA_MAXIMA = 20;
+const NIVELES = ['calidad', 'medio', 'economico'];
+
+/** Lo mismo que pone el censor. Un valor tachado se lee igual en todas partes. */
+const TACHADO = '«tachado»';
+
+/** Las variables que mira este módulo, en el orden en que se documentan. */
+const VARIABLES = [
+  'GCP_SERVICE_ACCOUNT', 'GCS_BUCKET', 'GCS_PREFIX', 'GCP_LOCATION',
+  'IMAGE_MODEL', 'VEO_MODEL', 'TTS_MODEL', 'MUSIC_MODEL', 'STT_MODEL', 'TEXTO_MODEL',
+  'MONTAJE_JOB', 'MONTAJE_REGION', 'CONCURRENCIA', 'CLAVE_ACCESO',
+  'GCP_PROJECT_NUMBER',
+];
+
+let cacheHuella = null;
+let cacheValor = null;
+let cacheSerie = null;
+
+// ---------------------------------------------------------------------------
+// La puerta del módulo
+// ---------------------------------------------------------------------------
+
+/**
+ * → { sa, bucket, prefijo, region, modelos, montajeJob, montajeRegion,
+ *     concurrencia, clave, numeroProyecto }
+ *
+ * `sa` es el JSON de la service account ya parseado. `modelos` es
+ * { imagen:{calidad,medio,economico}, veo:{calidad,medio,economico},
+ *   tts, musica, stt, texto }, y cada modelo es { id, region, variable }.
+ */
+export function entorno() {
+  const huella = huellaDelEntorno();
+  if (cacheValor && cacheHuella === huella) return cacheValor;
+
+  const sa = leerServiceAccount();
+  const bucket = leerBucket();
+  const prefijo = leerPrefijo();
+  const region = (process.env.GCP_LOCATION || '').trim() || REGION_POR_DEFECTO;
+
+  const valor = {
+    sa,
+    bucket,
+    prefijo,
+    region,
+    modelos: tablaDeModelos(serie(), region),
+    montajeJob: (process.env.MONTAJE_JOB || '').trim() || null,
+    montajeRegion: (process.env.MONTAJE_REGION || '').trim() || region,
+    concurrencia: leerConcurrencia(),
+    clave: (process.env.CLAVE_ACCESO || '').trim(),
+    // FALTA EN EL CONTRATO: el censor tiene que tachar «el número de proyecto»
+    // (§3) y ese número no viene en el JSON de la service account, que solo trae
+    // el project_id. Se lee de GCP_PROJECT_NUMBER si alguien la pone; si no,
+    // queda en null y el censor lo caza igualmente por el patrón
+    // «projects/<dígitos>», que es como aparece en todo lo que dice Google.
+    numeroProyecto: (process.env.GCP_PROJECT_NUMBER || '').trim() || null,
+  };
+
+  cacheHuella = huella;
+  cacheValor = valor;
+  return valor;
+}
+
+/**
+ * Deja ver lo justo para reconocer un valor sin revelarlo: tres primeros
+ * caracteres, «…», tres últimos. Lo que mide menos de 8 caracteres sale entero
+ * tachado, porque con tan poco enseñar seis de ocho es enseñarlo todo.
+ *
+ * (El ejemplo de docs/contrato.md §12 escribe "mi-proyecto-4711" → "mi-…-711"
+ * con un guion de más: los tres últimos caracteres de esa cadena son "711". Se
+ * aplica la regla escrita, que es la que se puede comprobar.)
+ */
+export function enmascarar(v) {
+  if (v === null || v === undefined) return null;
+  const s = String(v);
+  if (s === '') return '';          // el prefijo vacío se enseña vacío: significa «sin prefijo»
+  if (s.length < 8) return TACHADO;
+  return `${s.slice(0, 3)}…${s.slice(-3)}`;
+}
+
+// ---------------------------------------------------------------------------
+// La service account
+// ---------------------------------------------------------------------------
+
+function leerServiceAccount() {
+  const crudo = (process.env.GCP_SERVICE_ACCOUNT || '').trim();
+  if (!crudo) {
+    throw new ErrorDeCara(
+      'Falta la variable de entorno GCP_SERVICE_ACCOUNT. Tiene que contener el JSON completo ' +
+      'de la service account, tal y como lo descarga Google: el que lleva dentro "project_id", ' +
+      '"client_email" y "private_key". Si el panel no deja pegar saltos de línea, vale el mismo ' +
+      'JSON codificado en base64.',
+      { http: 500 },
+    );
+  }
+
+  const texto = crudo.startsWith('{') ? crudo : deBase64(crudo);
+
+  let sa;
+  try {
+    sa = JSON.parse(texto);
+  } catch (e) {
+    throw new ErrorDeCara(
+      'GCP_SERVICE_ACCOUNT está puesta pero lo que hay dentro no es un JSON válido. Tiene que ' +
+      'ser el archivo entero de la service account, desde la primera llave hasta la última ' +
+      '(o ese mismo archivo en base64). Cuidado al pegarlo: si el panel parte las líneas de la ' +
+      'private_key, el JSON se rompe.',
+      { detalle: e.message, http: 500 },
+    );
+  }
+
+  if (!sa || typeof sa !== 'object' || Array.isArray(sa)) {
+    throw new ErrorDeCara(
+      'GCP_SERVICE_ACCOUNT no contiene un objeto JSON. Se espera el archivo de la service ' +
+      'account, con sus campos "project_id", "client_email" y "private_key".',
+      { http: 500 },
+    );
+  }
+
+  for (const campo of ['project_id', 'client_email', 'private_key']) {
+    if (!sa[campo] || typeof sa[campo] !== 'string') {
+      throw new ErrorDeCara(
+        `El JSON de GCP_SERVICE_ACCOUNT no trae el campo "${campo}", o viene vacío. Falta medio ` +
+        'archivo: hay que pegar el que descarga Google entero, sin recortar. El project id sale ' +
+        'de ahí y de ningún otro sitio.',
+        { http: 500 },
+      );
+    }
+  }
+
+  // Muchos paneles guardan la clave con los saltos de línea escapados. Sin
+  // deshacerlos, la firma del token no vale y Google contesta un 401 que parece
+  // otra cosa.
+  if (sa.private_key.includes('\\n')) sa.private_key = sa.private_key.replace(/\\n/g, '\n');
+
+  if (!sa.private_key.includes('-----BEGIN')) {
+    throw new ErrorDeCara(
+      'La "private_key" de GCP_SERVICE_ACCOUNT no parece una clave: le falta la línea ' +
+      '"-----BEGIN PRIVATE KEY-----". Se copia entera, con esa línea, con la de "-----END ' +
+      'PRIVATE KEY-----" y con todo lo de en medio.',
+      { http: 500 },
+    );
+  }
+
+  return sa;
+}
+
+function deBase64(crudo) {
+  let texto;
+  try {
+    texto = Buffer.from(crudo, 'base64').toString('utf8').trim();
+  } catch {
+    texto = '';
+  }
+  if (!texto.startsWith('{')) {
+    throw new ErrorDeCara(
+      'GCP_SERVICE_ACCOUNT no empieza por "{" y tampoco es base64 de un JSON. Se admiten las dos ' +
+      'formas: el JSON de la service account tal cual, o ese mismo JSON codificado en base64 ' +
+      '(que es lo cómodo cuando el panel no deja pegar saltos de línea).',
+      { http: 500 },
+    );
+  }
+  return texto;
+}
+
+// ---------------------------------------------------------------------------
+// El almacén
+// ---------------------------------------------------------------------------
+
+function leerBucket() {
+  let bucket = (process.env.GCS_BUCKET || '').trim();
+  if (!bucket) {
+    throw new ErrorDeCara(
+      'Falta la variable de entorno GCS_BUCKET. Tiene que contener el nombre del bucket a ' +
+      'secas, sin "gs://" y sin barras: por ejemplo "mirada-produccion". La carpeta de dentro, ' +
+      'si la hay, va en GCS_PREFIX.',
+      { http: 500 },
+    );
+  }
+
+  if (bucket.startsWith('gs://')) bucket = bucket.slice('gs://'.length);
+  bucket = bucket.replace(/\/+$/, '');
+
+  if (bucket.includes('/')) {
+    throw new ErrorDeCara(
+      'GCS_BUCKET lleva una barra dentro: eso ya no es el nombre del bucket, es una ruta. En ' +
+      'GCS_BUCKET va solo el nombre (por ejemplo "mirada-produccion") y la carpeta de dentro va ' +
+      'aparte, en GCS_PREFIX.',
+      { http: 500 },
+    );
+  }
+
+  if (bucket.length < 3 || bucket.length > 222 || /\s/.test(bucket)) {
+    throw new ErrorDeCara(
+      'GCS_BUCKET no parece un nombre de bucket: tiene que medir entre 3 y 222 caracteres y no ' +
+      'llevar espacios. Se copia tal y como aparece en la consola de Google Cloud, sin "gs://".',
+      { http: 500 },
+    );
+  }
+
+  return bucket;
+}
+
+/** El prefijo se guarda normalizado, sin barras al principio ni al final. */
+function leerPrefijo() {
+  const crudo = (process.env.GCS_PREFIX || '').trim();
+  return crudo.replace(/^\/+/, '').replace(/\/+$/, '');
+}
+
+function leerConcurrencia() {
+  const crudo = (process.env.CONCURRENCIA || '').trim();
+  if (!crudo) return CONCURRENCIA_POR_DEFECTO;
+
+  const n = Number(crudo);
+  if (!Number.isInteger(n) || n < 1) {
+    throw new ErrorDeCara(
+      `CONCURRENCIA está puesta como "${crudo}" y tiene que ser un número entero de 1 en ` +
+      'adelante: cuántas generaciones se lanzan a la vez como máximo. Si se deja sin poner, ' +
+      `son ${CONCURRENCIA_POR_DEFECTO}. Subirla mucho no va más rápido: satura la cuota de ` +
+      'Vertex y devuelve errores que parecen falta de acceso.',
+      { http: 500 },
+    );
+  }
+  // Por encima del tope la cuota de Vertex empieza a devolver 429 en cadena.
+  return Math.min(n, CONCURRENCIA_MAXIMA);
+}
+
+// ---------------------------------------------------------------------------
+// La tabla de modelos
+// ---------------------------------------------------------------------------
+
+function tablaDeModelos(datos, region) {
+  const m = (datos && datos.modelos) || {};
+
+  const modelos = {
+    imagen: familia(m.imagen, 'modelos.imagen', 'IMAGE_MODEL', region),
+    veo: familia(m.video, 'modelos.video', 'VEO_MODEL', region),
+    tts: suelto(datos && datos.voces && datos.voces.modelo, 'voces.modelo', 'TTS_MODEL', region),
+    musica: suelto(datos && datos.musica && datos.musica.modelo, 'musica.modelo', 'MUSIC_MODEL', region),
+    // FALTA EN EL CONTRATO: ni docs/contrato.md ni datos/serie.json dicen qué
+    // modelo usa Speech-to-Text. La v1 de `speech:recognize` elige el suyo si no
+    // se manda el campo `model`, así que aquí el id queda en null —nunca escrito
+    // a mano— y quien llame omite ese campo. Si algún día hace falta uno
+    // concreto se declara en serie.json o se pone en STT_MODEL.
+    stt: suelto(datos && datos.subtitulos && datos.subtitulos.modelo, null, 'STT_MODEL', region),
+    texto: suelto(m.texto, 'modelos.texto', 'TEXTO_MODEL', region),
+  };
+
+  sustituirFamilia(modelos.imagen, process.env.IMAGE_MODEL, 'IMAGE_MODEL', region);
+  sustituirFamilia(modelos.veo, process.env.VEO_MODEL, 'VEO_MODEL', region);
+  sustituirSuelto(modelos.tts, process.env.TTS_MODEL, region);
+  sustituirSuelto(modelos.musica, process.env.MUSIC_MODEL, region);
+  sustituirSuelto(modelos.stt, process.env.STT_MODEL, region);
+  sustituirSuelto(modelos.texto, process.env.TEXTO_MODEL, region);
+
+  return modelos;
+}
+
+/** Las tres calidades de una familia (imagen y vídeo), tal como vienen del dato. */
+function familia(nudo, donde, variable, region) {
+  const salida = {};
+  for (const nivel of NIVELES) {
+    const dato = nudo && nudo[nivel];
+    if (!dato || !dato.id) {
+      throw new ErrorDeCara(
+        `datos/serie.json no declara el modelo del nivel "${nivel}" en ${donde}. Los ids de ` +
+        'modelo salen de ese archivo y de ninguna otra parte: no se escriben en el código. ' +
+        `Mientras tanto se puede poner uno con la variable ${variable}.`,
+        { http: 500 },
+      );
+    }
+    salida[nivel] = { id: String(dato.id), region: regionDe(dato.id, dato.region, region), variable };
+  }
+  return salida;
+}
+
+/** Un modelo sin niveles. `donde` en null significa que el dato puede no existir. */
+function suelto(nudo, donde, variable, region) {
+  const id = nudo && nudo.id ? String(nudo.id) : null;
+  if (!id && donde) {
+    throw new ErrorDeCara(
+      `datos/serie.json no declara ningún modelo en ${donde}. Los ids de modelo salen de ese ` +
+      `archivo, nunca del código. Mientras tanto se puede poner uno con la variable ${variable}.`,
+      { http: 500 },
+    );
+  }
+  const declarada = nudo && nudo.region ? String(nudo.region) : null;
+  return { id, region: id ? regionDe(id, declarada, region) : region, variable };
+}
+
+/**
+ * La región de un modelo: la que declare el dato; si no la declara, «global»
+ * para los Gemini 3.x —solo se sirven desde ahí, y pedirlos a una región
+ * concreta devuelve un 404 que parece falta de acceso— y la región por defecto
+ * para todo lo demás.
+ */
+function regionDe(id, declarada, porDefecto) {
+  if (declarada) return String(declarada);
+  if (/^gemini-3(\.\d+)?[-.]/i.test(String(id))) return 'global';
+  return porDefecto;
+}
+
+/**
+ * Sustituye una familia entera desde su variable de entorno. Formas aceptadas:
+ *
+ *   IMAGE_MODEL=gemini-3-pro-image                 → los tres niveles
+ *   IMAGE_MODEL=gemini-2.5-flash-image@us-central1 → con región explícita
+ *   IMAGE_MODEL=calidad:otro-modelo, medio:otro@global   → nivel a nivel
+ *
+ * Si se da solo el id, la región se recalcula con la regla de arriba: así, al
+ * cambiar un nivel a un Gemini 3.x, no se queda pidiéndolo a us-central1.
+ */
+function sustituirFamilia(destino, crudo, variable, region) {
+  const texto = (crudo || '').trim();
+  if (!texto) return;
+
+  let general = null;
+  const porNivel = {};
+
+  for (const trozo of texto.split(/[;,]/).map((t) => t.trim()).filter(Boolean)) {
+    const conNivel = /^([A-Za-zÁÉÍÓÚáéíóúÑñ]+)\s*[:=]\s*(.+)$/.exec(trozo);
+    if (conNivel) {
+      const nivel = conNivel[1].toLowerCase();
+      if (!NIVELES.includes(nivel)) {
+        throw new ErrorDeCara(
+          `La variable ${variable} nombra un nivel que no existe: "${conNivel[1]}". Los niveles ` +
+          `son ${NIVELES.join(', ')}. Se escribe así: ${variable}=calidad:mi-modelo, ` +
+          'medio:otro-modelo; o solo el id del modelo, y entonces vale para los tres niveles.',
+          { http: 500 },
+        );
+      }
+      porNivel[nivel] = conNivel[2].trim();
+    } else {
+      general = trozo;
+    }
+  }
+
+  if (general) for (const nivel of NIVELES) aplicar(destino[nivel], general, variable, region);
+  for (const [nivel, valor] of Object.entries(porNivel)) {
+    aplicar(destino[nivel], valor, variable, region);
+  }
+}
+
+function sustituirSuelto(destino, crudo, region) {
+  const texto = (crudo || '').trim();
+  if (!texto) return;
+  aplicar(destino, texto, destino.variable, region);
+}
+
+/** Aplica «id» o «id@region» sobre una entrada de la tabla. */
+function aplicar(entrada, valor, variable, region) {
+  const corte = valor.lastIndexOf('@');
+  const id = (corte === -1 ? valor : valor.slice(0, corte)).trim();
+  const regionPedida = corte === -1 ? '' : valor.slice(corte + 1).trim();
+
+  if (!id || /\s/.test(id)) {
+    throw new ErrorDeCara(
+      `La variable ${variable} no trae un id de modelo utilizable ("${valor}"). Se pone el id ` +
+      'tal y como lo escribe Google, sin espacios, y si hace falta una región distinta se ' +
+      'añade detrás con una arroba: mi-modelo@global.',
+      { http: 500 },
+    );
+  }
+
+  entrada.id = id;
+  entrada.region = regionPedida || regionDe(id, null, region);
+}
+
+// ---------------------------------------------------------------------------
+// Los datos y la huella del entorno
+// ---------------------------------------------------------------------------
+
+/** datos/serie.json, leído una sola vez por proceso. */
+function serie() {
+  if (cacheSerie) return cacheSerie;
+  let texto;
+  try {
+    texto = readFileSync(RUTA_SERIE, 'utf8');
+  } catch (e) {
+    throw new ErrorDeCara(
+      'No se ha podido leer datos/serie.json, que es de donde salen los ids de los modelos. Si ' +
+      'esto pasa en la nube, el archivo no se ha subido con la función: vercel.json tiene que ' +
+      'incluir datos/** en la función api/g.js.',
+      { detalle: e.message, http: 500 },
+    );
+  }
+  try {
+    cacheSerie = JSON.parse(texto);
+  } catch (e) {
+    throw new ErrorDeCara(
+      'datos/serie.json existe pero no es un JSON válido, así que no se puede saber qué modelos ' +
+      'usa la serie. Se regenera con "npm run datos" desde datos/serie.base.json.',
+      { detalle: e.message, http: 500 },
+    );
+  }
+  return cacheSerie;
+}
+
+/**
+ * Cadena que cambia si cambia cualquiera de las variables. Sirve para no volver
+ * a parsear el JSON de la service account en cada llamada y, a la vez, no
+ * quedarse con un valor viejo cuando una herramienta cambia el entorno a mano.
+ */
+function huellaDelEntorno() {
+  return VARIABLES.map((v) => `${v}=${process.env[v] ?? ''}`).join('');
+}

@@ -519,3 +519,23 @@ APIs a habilitar: `aiplatform.googleapis.com`, `storage.googleapis.com`,
 - El código y los comentarios van en español. Solo van en inglés los prompts a
   los modelos de imagen y vídeo, y los encargos a Lyria porque no admite otra
   cosa.
+
+---
+
+## 16. Despliegue
+
+Está en `PARCHE-despliegue.md`, en detalle y con las trampas que ya costaron
+horas en otros despliegues del mismo autor. Lo esencial:
+
+- **Vercel** despliega solo desde el repo. **Cloud Run** se despliega a mano una
+  vez. **Google Cloud** solo se configura.
+- **Cloud Shell no deja pegar desde el móvil**, y aquí solo hay móvil: la
+  instalación del montador tiene que caber en **dos líneas tecleables**, y todo
+  lo demás lo hace un `instalar.sh` del repositorio.
+- El montador va como **Cloud Run Job**, no como servicio: un servicio se queda
+  sin CPU a mitad del trabajo.
+- **Vercel no aplica variables nuevas sin Redeploy.** Tiene que decirlo la propia
+  pantalla de Salud.
+- El montador se ejecuta con la cuenta de compute, no con la de Vercel: necesita
+  permiso propio sobre el bucket.
+- Sin **CORS en el bucket** las imágenes no se ven y el error no menciona CORS.

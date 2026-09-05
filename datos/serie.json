@@ -15,6 +15,7 @@
         "escenario \"salon-noble\" → \"elserath-salon\" en 5 tomas",
         "escenario \"despacho-noble\" → \"elserath-despacho\" en 1 tomas",
         "escenario nuevo \"tunel\"",
+        "aviso de no fusionar puesto en \"tuneles\" y en \"tunel\"",
         "referencia \"nino5-cripta\" → \"saharis-5-cripta\" en 1 tomas",
         "referencia \"nino5-barrio\" → \"saharis-5-barrio\" en 1 tomas",
         "referencia \"nino5-manos\" → \"saharis-5-manos\" en 2 tomas",
@@ -652,37 +653,49 @@
         "id": "saharis-noble-nuca",
         "personaje": "saharis",
         "luz": "NOBLE",
-        "encuadre": "Medium shot from directly behind: back of the head and shoulders only, immaculate dark noble coat with a high collar, face not visible"
+        "encuadre": "Medium shot from directly behind: back of the head and shoulders only, immaculate dark noble coat with a high collar, face not visible",
+        "detalle": true,
+        "instruccion_referencia": "CHARACTER ANCHOR above: this is Saharis. This new plate shows ONLY the back of his head and shoulders. Copy from the anchor exactly: the exact hair colour, the short neat cut and its hairline at the nape, the head and shoulder proportions, the build, the collar and cut of the charcoal noble coat. Do NOT draw his face, his eyes or any part of the front of his head — it is not in frame in this plate. Do NOT copy the pose, the framing, the scale or the background: redraw them as this plate describes."
       },
       {
         "id": "saharis-manos",
         "personaje": "saharis",
         "luz": "NOBLE",
-        "encuadre": "Close detail of both adult male hands only, clean, a silver signet ring, a long old ritual scar across the left palm, no face in frame"
+        "encuadre": "Close detail of both adult male hands only, clean, a silver signet ring, a long old ritual scar across the left palm, no face in frame",
+        "detalle": true,
+        "instruccion_referencia": "CHARACTER ANCHOR above: this is Saharis. This new plate shows ONLY his hands. Copy from the anchor exactly: the exact skin tone (pale olive), the age and build of the hands, the silver signet ring and the long old ritual scar across the left palm. Do NOT draw his face, his head or his body — it is not in frame in this plate. Do NOT copy the pose, the framing, the scale or the background: redraw them as this plate describes."
       },
       {
         "id": "saharis-5-manos",
         "personaje": "saharis-5",
         "luz": "CRIPTA",
-        "encuadre": "Close detail of a small five year old child's hands only, filthy and thin, dirt in every crease, no face in frame"
+        "encuadre": "Close detail of a small five year old child's hands only, filthy and thin, dirt in every crease, no face in frame",
+        "detalle": true,
+        "instruccion_referencia": "CHARACTER ANCHOR above: this is Saharis at five. This new plate shows ONLY his hands. Copy from the anchor exactly: the exact skin tone (pale olive), how thin and undernourished the hands are, the size and proportions of a five year old's hands, the dirt worked into every crease. Do NOT draw his face, his head or his body — it is not in frame in this plate. Do NOT copy the pose, the framing, the scale or the background: redraw them as this plate describes."
       },
       {
         "id": "saharis-10-espalda",
         "personaje": "saharis-10",
         "luz": "BARRIO",
-        "encuadre": "Medium shot from directly behind: a ten year old boy in thin scavenged dark clothing, face not visible"
+        "encuadre": "Medium shot from directly behind: a ten year old boy in thin scavenged dark clothing, face not visible",
+        "detalle": true,
+        "instruccion_referencia": "CHARACTER ANCHOR above: this is Saharis at ten. This new plate shows ONLY his back, seen from behind. Copy from the anchor exactly: the exact hair colour and its length to the jaw, the wiry build and height of a ten year old, the thin scavenged dark clothing and the cloth wraps on his feet. Do NOT draw his face or any part of the front of his head — it is not in frame in this plate. Do NOT copy the pose, the framing, the scale or the background: redraw them as this plate describes."
       },
       {
         "id": "madre-manos",
         "personaje": "madre",
         "luz": "BARRIO",
-        "encuadre": "Close detail of both adult female hands only, very thin, old and fresh scars across both wrists, no face in frame"
+        "encuadre": "Close detail of both adult female hands only, very thin, old and fresh scars across both wrists, no face in frame",
+        "detalle": true,
+        "instruccion_referencia": "CHARACTER ANCHOR above: this is the mother. This new plate shows ONLY her hands. Copy from the anchor exactly: the exact skin tone (pale olive), how very thin and worn the hands are, and the old and fresh scars across both wrists. Do NOT draw her face, her head or her body — it is not in frame in this plate. Do NOT copy the pose, the framing, the scale or the background: redraw them as this plate describes."
       },
       {
         "id": "madre-espalda",
         "personaje": "madre",
         "luz": "BARRIO",
-        "encuadre": "Medium shot from directly behind: a gaunt young woman sitting, long matted dark brown hair, torn undyed linen shift, face not visible"
+        "encuadre": "Medium shot from directly behind: a gaunt young woman sitting, long matted dark brown hair, torn undyed linen shift, face not visible",
+        "detalle": true,
+        "instruccion_referencia": "CHARACTER ANCHOR above: this is the mother. This new plate shows ONLY her back, seen from behind. Copy from the anchor exactly: the exact hair colour and its long matted unwashed texture, the gaunt build and narrow shoulders, and the torn undyed linen shift. Do NOT draw her face or any part of the front of her head — it is not in frame in this plate. Do NOT copy the pose, the framing, the scale or the background: redraw them as this plate describes."
       }
     ],
     "nota_serie": "El banco es de la SERIE, no de una pieza. Crece con cada episodio que se desglosa: Eira, Kael, Deras, Livia, Rothar, el Celebrante, la abuela, Sura. Y escenarios: el Consejo, Casa Vharn, Kadre, el campamento, la academia.",
@@ -1841,7 +1854,9 @@
         "luz": "BARRIO",
         "descripcion": "A dry stone room under the city: a pallet, a table, one lantern, and a whole wall covered in pinned papers, maps, lists and cord",
         "encuadre": "Wide establishing shot of the whole space",
-        "escenas": 46
+        "escenas": 46,
+        "no_fusionar_con": "tunel",
+        "nota": "OJO: \"tuneles\" y \"tunel\" son DOS SITIOS DISTINTOS con nombres casi iguales. Este es la habitación de Saharis bajo la ciudad: seca, con catre, mesa, un farol y la pared entera cubierta de papeles, mapas, listas y cordel. Se habita, no se cruza. No se fusionan nunca, por parecido que suene el nombre."
       },
       {
         "id": "academia",
@@ -2017,7 +2032,9 @@
         "descripcion": "A flooded stone service tunnel under the city: shallow standing water over worn flagstones, dripping vaulted brick, iron grates, faint cold daylight far ahead",
         "encuadre": "Wide establishing shot of the whole space",
         "escenas": 1,
-        "origen": "parche: la huida de C4 no ocurre en ninguno de los 27 escenarios del guion"
+        "origen": "parche: la huida de C4 no ocurre en ninguno de los 27 escenarios del guion",
+        "no_fusionar_con": "tuneles",
+        "nota": "OJO: \"tunel\" y \"tuneles\" son DOS SITIOS DISTINTOS con nombres casi iguales. Este es el canal inundado por el que Saharis escapa a los diez años: agua, ladrillo, rejas, se cruza corriendo. No tiene nada dentro. No se fusionan nunca, por parecido que suene el nombre."
       }
     ],
     "derivado_de": "guiones.json — los 92 encabezados de localizacion de los guiones, reducidos a 27 escenarios canonicos. Toda escena tiene el suyo."

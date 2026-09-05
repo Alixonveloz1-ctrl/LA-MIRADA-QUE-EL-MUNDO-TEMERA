@@ -780,3 +780,120 @@ red. Sale con 1 y una lista en español si algo falla.
 Fabrica material del **tamaño real** (PNG 2K, JPEG de 1280, WAV de 45 s, listas
 de 400 tomas), serializa la respuesta de cada modo y comprueba que cabe en
 4,5 MB. La medida es la prueba: ese fallo no se ve razonando sobre el código.
+
+---
+
+## 13. Enmiendas
+
+Posteriores a §1–§12. **Mandan sobre lo anterior** donde se contradigan.
+
+### 13.1 Las placas de detalle encadenan a su ancla, y dicen qué copiar
+
+Las placas de manos, nuca, espalda y escorzo (`detalle: true` en el banco) se
+generan **exactamente igual que cualquier otra placa no-ancla**: con el ancla de
+su personaje adjunta como referencia de personaje. Si `saharis-manos` se generase
+suelta, las manos no serían las mismas manos.
+
+La cadena es doble donde toca: `saharis-5-manos` → `saharis-5-ancla` →
+`saharis-ancla`. La edad encadena al linaje y el detalle encadena a la edad.
+
+Pero la instrucción genérica de `instrucciones_referencia.banco` habla de cara,
+pelo y ojos, y en una placa de manos no hay cara. Una referencia sin propósito
+hace que el modelo copie el encuadre en vez de la identidad —trampa ya pagada—,
+así que estas placas traen **`instruccion_referencia` propia** que dice qué
+copiar (tono de piel, complexión, cicatrices, color y corte de pelo) y, sobre
+todo, **qué no dibujar** (la cara, que no está en cuadro).
+
+`promptPlaca()` usa `placa.instruccion_referencia` cuando existe, y
+`instrucciones_referencia.banco` cuando no. Nada más cambia.
+
+Comprobado por `parche-datos.mjs` y por `invariantes.mjs`: una placa de detalle
+nunca es ancla, su personaje siempre tiene ancla, y siempre dice qué copiar.
+
+### 13.2 `tunel` y `tuneles` son dos sitios distintos
+
+Dos lugares diferentes con nombres casi iguales. **No se fusionan nunca**, por
+parecido que suene el nombre:
+
+| id | Qué es | Cómo se usa |
+|---|---|---|
+| `tuneles` | La habitación de Saharis bajo la ciudad: seca, catre, mesa, un farol, y la pared entera cubierta de papeles, mapas, listas y cordel | Se **habita**. 46 escenas de la serie |
+| `tunel` | El canal inundado por el que escapa a los diez años: agua somera, ladrillo goteando, rejas de hierro | Se **cruza corriendo**. La toma C4 del teaser |
+
+Ambas placas llevan `no_fusionar_con` apuntando a la otra y una `nota` que lo
+explica desde su lado, para que quien lea cualquiera de las dos vea que la otra
+existe. `invariantes.mjs` falla si una desaparece o si acaban con la misma
+descripción.
+
+### 13.3 El desglose es UNA llamada de texto POR ESCENA
+
+Ni una por episodio, ni una por plano. Son 24 llamadas por episodio y 289 en toda
+la serie, pequeñas e independientes.
+
+Esto **no es una preferencia de rendimiento y no se optimiza**:
+
+- Una llamada por episodio no cabe en la ventana ni en los 60 s de la función, y
+  cuando falla se pierden las 24 escenas, no una.
+- Una llamada por plano no puede decidir cuántos planos tiene la escena, que es
+  justo lo que se le está pidiendo. Y multiplica el gasto por diecisiete.
+
+Cómo queda impuesto por la forma del código, no por un comentario:
+
+- `desglosarEscena(episodio, escena)` recibe **una** escena y no acepta una lista.
+  No existe `desglosarEpisodio()` en `api/_lib/texto.js`.
+- El modo `desglosar-escena` lleva la escena en el cuerpo. No hay modo
+  `desglosar-episodio`.
+- La pantalla de Desglose encola **una tarea por escena**; el episodio es solo el
+  botón que las encola todas.
+- `invariantes.mjs` falla si aparece una llamada al modelo de texto que reciba
+  más de una escena, o un modo de desglose por episodio.
+
+### 13.4 Despliegue: lo que cambia por `docs/parche-despliegue.md`
+
+Las instrucciones de montaje se despliegan a mano y siempre van por detrás del
+repositorio. De ahí sale todo lo siguiente.
+
+**La instalación del montador cabe en dos líneas tecleables.** El terminal de
+Cloud Shell no deja pegar desde el móvil, y aquí solo hay móvil:
+
+```
+git clone https://github.com/<usuario>/<repo>.git
+bash <repo>/montador/instalar.sh
+```
+
+Todo lo demás lo hace `montador/instalar.sh`, que vive en el repositorio: enseña
+el proyecto activo y espera un Enter (único momento de darse cuenta de que se
+está en la cuenta equivocada), detecta el bucket —si hay varios, el usuario
+escribe **un número**, no un nombre—, habilita las APIs que falten, genera la
+clave del montador con `openssl rand -hex 24`, construye y despliega, da los
+permisos de bucket, e **imprime al final en un recuadro las variables con su
+nombre y su valor exactos** para llevarlas a Vercel. Tarda entre cinco y ocho
+minutos y hay que decirlo.
+
+**Cloud Run Job, nunca servicio.** Un servicio se queda sin CPU a mitad del
+trabajo y el vídeo se corta sin error claro. Parámetros:
+`--memory 2Gi --cpu 2 --task-timeout 3600 --max-retries 0`. El `--max-retries 0`
+es a propósito: un montaje que falla no mejora repitiéndose solo, y repetirlo
+cuesta dinero.
+
+**Dos variables nuevas**, que salen del instalador: `MONTAJE_URL` (la dirección
+del montador recién creado) y `MONTAJE_KEY` (la clave que solo comparten el
+endpoint y el montador). `_lib/montaje.js` usa `MONTAJE_URL` si está, y si no la
+compone desde `MONTAJE_JOB` y `MONTAJE_REGION`; la clave viaja al contenedor y el
+montador la comprueba antes de trabajar.
+
+**Permisos: no basta con la service account de Vercel.** El montador se ejecuta
+con la cuenta de compute del proyecto
+(`<PROJECT_NUMBER>-compute@developer.gserviceaccount.com`), no con la de Vercel.
+Sin permiso propio sobre el bucket, el montaje falla **al escribir el resultado,
+después de haber hecho todo el trabajo**. Y la cuenta de Vercel necesita Cloud
+Run Invoker para lanzar el job. El instalador hace las dos cosas.
+
+**Vercel no aplica una variable nueva a un despliegue ya construido.** Hay que ir
+a Deployments → los tres puntos del último → Redeploy. Y esto **tiene que
+decirlo la propia pantalla de Salud**, junto a cada variable que falte:
+*«¿la acabas de añadir? Vercel necesita un Redeploy.»* Sin esa frase se busca el
+fallo donde no está.
+
+**La versión de Node va fijada en `package.json`**, no a merced del valor por
+defecto de la plataforma.

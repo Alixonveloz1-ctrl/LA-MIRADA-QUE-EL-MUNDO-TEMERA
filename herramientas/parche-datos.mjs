@@ -44,6 +44,23 @@ const ESCENARIO_NUEVO = {
   encuadre: 'Wide establishing shot of the whole space',
   escenas: 1,
   origen: 'parche: la huida de C4 no ocurre en ninguno de los 27 escenarios del guion',
+  no_fusionar_con: 'tuneles',
+  nota:
+    'OJO: "tunel" y "tuneles" son DOS SITIOS DISTINTOS con nombres casi iguales. ' +
+    'Este es el canal inundado por el que Saharis escapa a los diez años: agua, ' +
+    'ladrillo, rejas, se cruza corriendo. No tiene nada dentro. ' +
+    'No se fusionan nunca, por parecido que suene el nombre.',
+};
+
+// El gemelo del anterior. Lleva la misma advertencia por el otro lado, para que
+// quien lea cualquiera de los dos vea que el otro existe y es diferente.
+const NOTA_TUNELES = {
+  no_fusionar_con: 'tunel',
+  nota:
+    'OJO: "tuneles" y "tunel" son DOS SITIOS DISTINTOS con nombres casi iguales. ' +
+    'Este es la habitación de Saharis bajo la ciudad: seca, con catre, mesa, un ' +
+    'farol y la pared entera cubierta de papeles, mapas, listas y cordel. Se ' +
+    'habita, no se cruza. No se fusionan nunca, por parecido que suene el nombre.',
 };
 
 // ---------------------------------------------------------------------------
@@ -70,6 +87,21 @@ const RENOMBRA_REF = {
   'madre-barrio-espalda': 'madre-espalda',
 };
 
+// Las placas de detalle encadenan a su ancla EXACTAMENTE IGUAL que las demás:
+// no son ancla, así que promptPlaca() les adjunta el ancla de su personaje. Si
+// saharis-manos se generase suelta, las manos no serían las mismas manos.
+//
+// Pero la instrucción genérica del banco habla de cara, pelo y ojos, y en una
+// placa de manos o de nuca no hay cara. Una referencia sin propósito hace que el
+// modelo copie el encuadre en vez de la identidad —es una de las trampas ya
+// pagadas—, así que cada placa de detalle lleva su propia línea diciendo qué
+// copiar del ancla y, sobre todo, qué NO dibujar.
+const DETALLE = (nombre, queCopiar, queNoDibujar) =>
+  `CHARACTER ANCHOR above: this is ${nombre}. This new plate shows ONLY ${queNoDibujar.parte}. ` +
+  `Copy from the anchor exactly: ${queCopiar}. ` +
+  `Do NOT draw ${queNoDibujar.nada} — it is not in frame in this plate. ` +
+  `Do NOT copy the pose, the framing, the scale or the background: redraw them as this plate describes.`;
+
 const PLACAS_NUEVAS = [
   {
     id: 'saharis-34',
@@ -88,36 +120,72 @@ const PLACAS_NUEVAS = [
     personaje: 'saharis',
     luz: 'NOBLE',
     encuadre: 'Medium shot from directly behind: back of the head and shoulders only, immaculate dark noble coat with a high collar, face not visible',
+    detalle: true,
+    instruccion_referencia: DETALLE(
+      'Saharis',
+      'the exact hair colour, the short neat cut and its hairline at the nape, the head and shoulder proportions, the build, the collar and cut of the charcoal noble coat',
+      { parte: 'the back of his head and shoulders', nada: 'his face, his eyes or any part of the front of his head' },
+    ),
   },
   {
     id: 'saharis-manos',
     personaje: 'saharis',
     luz: 'NOBLE',
     encuadre: 'Close detail of both adult male hands only, clean, a silver signet ring, a long old ritual scar across the left palm, no face in frame',
+    detalle: true,
+    instruccion_referencia: DETALLE(
+      'Saharis',
+      'the exact skin tone (pale olive), the age and build of the hands, the silver signet ring and the long old ritual scar across the left palm',
+      { parte: 'his hands', nada: 'his face, his head or his body' },
+    ),
   },
   {
     id: 'saharis-5-manos',
     personaje: 'saharis-5',
     luz: 'CRIPTA',
     encuadre: 'Close detail of a small five year old child\'s hands only, filthy and thin, dirt in every crease, no face in frame',
+    detalle: true,
+    instruccion_referencia: DETALLE(
+      'Saharis at five',
+      'the exact skin tone (pale olive), how thin and undernourished the hands are, the size and proportions of a five year old\'s hands, the dirt worked into every crease',
+      { parte: 'his hands', nada: 'his face, his head or his body' },
+    ),
   },
   {
     id: 'saharis-10-espalda',
     personaje: 'saharis-10',
     luz: 'BARRIO',
     encuadre: 'Medium shot from directly behind: a ten year old boy in thin scavenged dark clothing, face not visible',
+    detalle: true,
+    instruccion_referencia: DETALLE(
+      'Saharis at ten',
+      'the exact hair colour and its length to the jaw, the wiry build and height of a ten year old, the thin scavenged dark clothing and the cloth wraps on his feet',
+      { parte: 'his back, seen from behind', nada: 'his face or any part of the front of his head' },
+    ),
   },
   {
     id: 'madre-manos',
     personaje: 'madre',
     luz: 'BARRIO',
     encuadre: 'Close detail of both adult female hands only, very thin, old and fresh scars across both wrists, no face in frame',
+    detalle: true,
+    instruccion_referencia: DETALLE(
+      'the mother',
+      'the exact skin tone (pale olive), how very thin and worn the hands are, and the old and fresh scars across both wrists',
+      { parte: 'her hands', nada: 'her face, her head or her body' },
+    ),
   },
   {
     id: 'madre-espalda',
     personaje: 'madre',
     luz: 'BARRIO',
     encuadre: 'Medium shot from directly behind: a gaunt young woman sitting, long matted dark brown hair, torn undyed linen shift, face not visible',
+    detalle: true,
+    instruccion_referencia: DETALLE(
+      'the mother',
+      'the exact hair colour and its long matted unwashed texture, the gaunt build and narrow shoulders, and the torn undyed linen shift',
+      { parte: 'her back, seen from behind', nada: 'her face or any part of the front of her head' },
+    ),
   },
 ];
 
@@ -152,6 +220,12 @@ for (const [viejo, nuevo] of Object.entries(RENOMBRA_ESCENARIO)) {
 if (!serie.escenarios.placas.some((e) => e.id === ESCENARIO_NUEVO.id)) {
   serie.escenarios.placas.push(ESCENARIO_NUEVO);
   anota(`escenario nuevo "${ESCENARIO_NUEVO.id}"`);
+}
+
+const tuneles = serie.escenarios.placas.find((e) => e.id === 'tuneles');
+if (tuneles && !tuneles.no_fusionar_con) {
+  Object.assign(tuneles, NOTA_TUNELES);
+  anota('aviso de no fusionar puesto en "tuneles" y en "tunel"');
 }
 
 for (const [viejo, nuevo] of Object.entries(RENOMBRA_REF)) {
@@ -205,6 +279,24 @@ for (const [idPieza, pieza] of Object.entries(serie.piezas)) {
 for (const placa of serie.banco.placas) {
   if (!serie.personajes[placa.personaje]) quejas.push(`placa "${placa.id}": el personaje "${placa.personaje}" no existe`);
   if (placa.encadena_a && !placas.has(placa.encadena_a)) quejas.push(`placa "${placa.id}": encadena a "${placa.encadena_a}", que no existe`);
+
+  // Una placa de detalle que fuera ancla se generaría solo con texto y sin
+  // referencia: las manos no serían las mismas manos. Que no pueda pasar.
+  if (placa.detalle) {
+    if (placa.ancla) quejas.push(`placa "${placa.id}": es de detalle y está marcada como ancla; una placa de detalle nunca es ancla`);
+    const ancla = serie.banco.placas.find((p) => p.personaje === placa.personaje && p.ancla);
+    if (!ancla) quejas.push(`placa "${placa.id}": es de detalle y su personaje "${placa.personaje}" no tiene ancla a la que encadenar`);
+    if (!placa.instruccion_referencia) quejas.push(`placa "${placa.id}": es de detalle y no dice qué copiar del ancla`);
+  }
+}
+
+// Los dos sitios de nombre casi igual siguen siendo dos.
+const tunelSuelto = serie.escenarios.placas.find((e) => e.id === 'tunel');
+const tunelesRoom = serie.escenarios.placas.find((e) => e.id === 'tuneles');
+if (!tunelSuelto || !tunelesRoom) {
+  quejas.push('han desaparecido "tunel" o "tuneles": son dos sitios distintos y los dos tienen que existir');
+} else if (tunelSuelto.descripcion === tunelesRoom.descripcion) {
+  quejas.push('"tunel" y "tuneles" han acabado con la misma descripción: alguien los ha fusionado');
 }
 
 if (quejas.length) {
