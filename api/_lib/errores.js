@@ -230,10 +230,11 @@ function mensaje404(donde, ctx, textoCrudo, cual) {
 }
 
 function mensaje413(donde, ctx) {
+  const tope = conComa(LIMITE_CUERPO / 1024 / 1024);
   const pesaba = ctx.bytes != null && Number.isFinite(Number(ctx.bytes))
     ? `y esto pesaba ${peso(Number(ctx.bytes))}`
     : 'y no se ha podido medir cuánto pesaba esto';
-  return `${donde}No cabe: el límite es de 4,5 MB por petición y por respuesta, ${pesaba}. ` +
+  return `${donde}No cabe: el límite es de ${tope} MB por petición y por respuesta, ${pesaba}. ` +
     'No se reintenta, porque el tamaño no cambia por insistir. El master en 2K se queda en el ' +
     'bucket y no viaja nunca: a Veo va una copia reducida a 1280 px en JPEG, y lo demás se mira ' +
     'por URL firmada.';
@@ -383,7 +384,7 @@ function peso(bytes) {
   const kb = n / 1024;
   if (kb < 1024) return `${conComa(kb)} KB`;
   const mb = kb / 1024;
-  if (mb < 1024) return `${conComa(mb)} MB (el tope son ${conComa(LIMITE_CUERPO / 1024 / 1024)} MB)`;
+  if (mb < 1024) return `${conComa(mb)} MB`;
   return `${conComa(mb / 1024)} GB`;
 }
 

@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+
+<!-- viewport-fit=cover: sin esto, en un iPhone con muesca queda una franja negra
+     arriba y otra abajo, y la barra de pestañas —que va fija abajo, que es donde
+     llega el pulgar— se sube por encima de la franja del sistema en vez de
+     crecer por debajo. El hueco lo reparte estilo.css con env(safe-area-inset-*). -->
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+
+<title>LA MIRADA QUE EL MUNDO TEMERÁ</title>
+<meta name="description" content="Estudio de producción del animé «La mirada que el mundo temerá». Se trabaja desde el teléfono.">
+
+<!-- La herramienta es oscura a propósito (ver la cabecera de app/estilo.css): aquí
+     se juzgan keyframes de noche, criptas y faroles, y un marco claro alrededor de
+     una imagen oscura hace que se apruebe y se rechace mal. Se le dice también al
+     navegador, para que sus propios controles —el reproductor de audio y de vídeo,
+     las barras de desplazamiento— salgan oscuros y no den un fogonazo blanco. -->
+<meta name="color-scheme" content="dark">
+<meta name="theme-color" content="#0b0d10">
+
+<!-- Añadida a la pantalla de inicio se abre como una aplicación: sin barra de
+     direcciones, a pantalla completa, con su nombre y su color. Es lo que hace que
+     una tirada de 400 planos se pueda vigilar desde el móvil sin pelearse con el
+     navegador. La barra de estado va translúcida porque el contenido pasa por
+     debajo gracias al viewport-fit de arriba. -->
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="La mirada">
+<meta name="application-name" content="La mirada">
+
+<!-- Nada de convertir en teléfonos los números que salen en pantalla: aquí un
+     número es una duración, un peso o una cuenta de planos, nunca una llamada. -->
+<meta name="format-detection" content="telephone=no">
+
+<!-- El repositorio es público y la aplicación habla con el bucket del usuario:
+     no tiene ningún sentido que la indexe nadie. -->
+<meta name="robots" content="noindex, nofollow">
+
+<!-- El icono va escrito aquí dentro, no en un archivo aparte: un ojo, que es de lo
+     que va la serie. Sin descargas, sin CDN y sin una petición más al arrancar. -->
+<link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%2032%2032'%3E%3Crect%20width='32'%20height='32'%20rx='7'%20fill='%230b0d10'/%3E%3Cpath%20d='M4%2016s4.6-7%2012-7%2012%207%2012%207-4.6%207-12%207-12-7-12-7z'%20fill='none'%20stroke='%235f8fd9'%20stroke-width='2'/%3E%3Ccircle%20cx='16'%20cy='16'%20r='3.4'%20fill='%235f8fd9'/%3E%3C/svg%3E">
+
+<link rel="stylesheet" href="app/estilo.css">
+
+<!-- Módulo nativo: sin empaquetador, sin paso de compilación y sin CDN. Va en la
+     cabecera porque type="module" ya espera al documento por su cuenta. -->
+<script type="module" src="app/main.js"></script>
+</head>
+
+<body>
+
+<!-- Aquí dentro pinta app/main.js: primero la bitácora del arranque y después la
+     pantalla que diga location.hash. La clase la lee app/estilo.css; el id lo usa
+     main.js para encontrarla. -->
+<div id="pantalla" class="contenido">
+  <noscript>
+    <div style="margin:24px auto;max-width:640px;padding:16px;border:1px solid #39424e;border-left:4px solid #c8635a;border-radius:8px;background:#14171c;color:#e9ecef;font:16px/1.45 -apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif">
+      <p style="margin:0">Este estudio se pinta entero desde el navegador, así que sin JavaScript no hay nada que ver: ni el banco, ni las tomas, ni la cola. Actívalo en los ajustes del navegador y vuelve a cargar la página.</p>
+    </div>
+  </noscript>
+</div>
+
+<!-- Las ocho pestañas, fijas abajo, al alcance del pulgar. Las rellena main.js en
+     cuanto sabe qué pantallas han cargado. -->
+<nav id="pestanas" class="pestanas" aria-label="Pantallas del estudio"></nav>
+
+</body>
+</html>

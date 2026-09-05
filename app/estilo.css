@@ -1,0 +1,1030 @@
+/* La hoja de la herramienta.
+ *
+ * Oscura, y no por gusto: aquí se juzgan keyframes y clips de un animé de noche,
+ * criptas, túneles y faroles. Una interfaz clara alrededor de una imagen oscura
+ * hace que la imagen parezca más oscura y más sucia de lo que es, y entonces se
+ * aprueba y se rechaza mal. El marco tiene que desaparecer.
+ *
+ * Todo lo demás sale de la misma restricción: se trabaja SOLO desde un teléfono,
+ * a una mano, con el pulgar y a menudo con mala luz.
+ *
+ *   · Las pestañas van FIJAS ABAJO, que es donde llega el pulgar. Arriba no.
+ *   · Nada que se pulse baja de 48 px de alto (--toque), y la barra de abajo
+ *     tiene 56 px de área táctil (--alto-pestanas).
+ *   · El contenido reserva sitio debajo para no quedar tapado por la barra, y
+ *     respeta env(safe-area-inset-bottom) por la franja del iPhone.
+ *   · Rejilla de tarjetas: una columna de pie, dos en horizontal.
+ *   · Imagen y vídeo siempre 16:9, object-fit cover y fondo negro. Un marco de
+ *     otra proporción mentiría sobre el encuadre que se está aprobando.
+ *   · Nada de animaciones largas: solo el latido del punto «en curso» y la
+ *     rueda de espera, y las dos se paran con prefers-reduced-motion.
+ *   · Tipografía del sistema. Sin CDN, sin fuentes que descargar, sin esperas.
+ *   · Los estados se distinguen por color, por FORMA y por su palabra escrita:
+ *     nunca solo por el color.
+ *
+ * Estructura que espera esta hoja (la pintan index.html y app/main.js):
+ *
+ *   <body>
+ *     <main class="contenido">   … lo que devuelve pantalla() …   </main>
+ *     <nav class="pestanas">
+ *       <a class="pestana activa" href="#salud">
+ *         <span class="pestana-icono">…</span><span class="pestana-texto">Salud</span>
+ *       </a>
+ *       …ocho…
+ *     </nav>
+ *   </body>
+ *
+ * FALTA EN EL CONTRATO: §9 nombra las ocho pantallas y dice que la navegación
+ * va por pestañas abajo, pero no fija los nombres de clase de esa barra. Se
+ * usan los más obvios en español —.pestanas, .pestana, .activa, .contenido— y
+ * además se aceptan las variantes razonables (nav sin clase, aria-current,
+ * aria-selected, role="tablist") para que la barra salga bien pintada aunque
+ * main.js las escriba de otra manera.
+ *
+ * Las clases del resto las escribe app/ui.js y están todas aquí.
+ */
+
+/* ========================================================================== */
+/* 1. Variables                                                               */
+/* ========================================================================== */
+
+:root {
+  /* Que los controles del sistema (audio, vídeo, scroll) salgan en oscuro. */
+  color-scheme: dark;
+
+  /* --- Color: fondos --- */
+  --fondo: #0b0d10;          /* el papel */
+  --fondo-hundido: #07080a;  /* lo que está por debajo: campos, huecos */
+  --fondo-alto: #14171c;     /* la tarjeta */
+  --fondo-alto-2: #1b1f26;   /* pastillas, detalles, cabeceras */
+  --negro: #000;             /* el marco de la imagen y del vídeo, siempre */
+
+  /* --- Color: bordes --- */
+  --borde: #262c35;
+  --borde-fuerte: #39424e;
+
+  /* --- Color: texto --- */
+  --texto: #e9ecef;
+  --texto-suave: #a4adb8;
+  --texto-tenue: #6f7987;
+
+  /* --- Color: acento --- */
+  --acento: #5f8fd9;
+  --acento-hundido: #4c76b4;
+  --sobre-acento: #07080a;   /* texto encima del acento */
+
+  /* --- Color: estados. Apagados a propósito: el que tiene que brillar es el
+         material, no la interfaz. --- */
+  --pendiente: #7c8794;      /* gris */
+  --en-curso: #d3a04a;       /* ámbar */
+  --listo: #5f9e6e;          /* verde apagado */
+  --fallido: #c8635a;        /* rojo apagado */
+  --detenido: #7d8aa3;       /* gris azulado, distinto del pendiente */
+
+  --fallido-fondo: rgba(200, 99, 90, 0.10);
+  --listo-fondo: rgba(95, 158, 110, 0.10);
+  --en-curso-fondo: rgba(211, 160, 74, 0.10);
+
+  /* --- Espacio --- */
+  --espacio-1: 4px;
+  --espacio-2: 8px;
+  --espacio-3: 12px;
+  --espacio-4: 16px;
+  --espacio-5: 24px;
+  --espacio-6: 32px;
+
+  /* --- Formas --- */
+  --radio: 12px;
+  --radio-chico: 8px;
+  --radio-pastilla: 999px;
+
+  /* --- Medidas del dedo --- */
+  --toque: 48px;             /* mínimo de cualquier cosa que se pulse */
+  --alto-pestanas: 56px;     /* área táctil de la barra de abajo */
+  /* La franja del iPhone. Se declara a cero y solo se cambia si el navegador
+     entiende env(): metido directo en la variable, un navegador que no lo
+     entienda dejaría en nada todos los calc() que la usan, y la última tarjeta
+     acabaría debajo de las pestañas, que es justo lo que no puede pasar. */
+  --hueco-seguro: 0px;
+
+  /* --- Tipografía del sistema: cero descargas, cero saltos de fuente --- */
+  --tipo: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+          "Helvetica Neue", Arial, "Noto Sans", sans-serif;
+  --tipo-mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas,
+               "Liberation Mono", monospace;
+
+  --sombra: 0 1px 0 rgba(255, 255, 255, 0.02) inset,
+            0 6px 18px rgba(0, 0, 0, 0.35);
+}
+
+@supports (padding: env(safe-area-inset-bottom)) {
+  :root {
+    --hueco-seguro: env(safe-area-inset-bottom, 0px);
+  }
+}
+
+/* ========================================================================== */
+/* 2. Base                                                                    */
+/* ========================================================================== */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--fondo);
+  color: var(--texto);
+  font-family: var(--tipo);
+  font-size: 16px;
+  line-height: 1.45;
+  /* El toque no tiene que esperar a ver si es doble, y no deja destello gris. */
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  overscroll-behavior-y: contain;
+}
+
+h1, h2, h3, h4 {
+  margin: 0;
+  font-weight: 600;
+  line-height: 1.25;
+}
+
+p {
+  margin: 0;
+}
+
+a {
+  color: var(--acento);
+  text-decoration: none;
+}
+
+img,
+video {
+  max-width: 100%;
+  display: block;
+}
+
+/* Nada de 16 px hacia abajo en un campo: iOS hace zoom solo y ya no se vuelve. */
+input,
+select,
+textarea,
+button {
+  font: inherit;
+  font-size: 16px;
+  color: inherit;
+}
+
+pre,
+code {
+  font-family: var(--tipo-mono);
+  font-size: 13px;
+}
+
+::selection {
+  background: var(--acento);
+  color: var(--sobre-acento);
+}
+
+/* ========================================================================== */
+/* 3. Armazón: contenido y pantalla                                           */
+/* ========================================================================== */
+
+.contenido,
+body > main {
+  display: block;
+  padding: var(--espacio-4) var(--espacio-4) 0;
+  /* Sitio para la barra de abajo, su franja segura y un respiro: sin esto, la
+     última tarjeta queda debajo de las pestañas y no se puede pulsar. */
+  padding-bottom: calc(var(--alto-pestanas) + var(--hueco-seguro) + var(--espacio-6));
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+.pantalla {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espacio-5);
+}
+
+.pantalla-titulo {
+  font-size: 22px;
+  letter-spacing: 0.01em;
+}
+
+.seccion {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espacio-3);
+}
+
+.seccion-titulo {
+  font-size: 15px;
+  color: var(--texto-suave);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  font-weight: 600;
+}
+
+/* La rejilla de tarjetas: una columna de pie. Las dos columnas de horizontal
+   están abajo, en la consulta de medios. */
+.seccion-cuerpo,
+.rejilla {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--espacio-3);
+  align-items: start;
+}
+
+/* Lo que no es tarjeta —un aviso, una barra, un filtro— ocupa el ancho entero
+   aunque haya dos columnas. Media barra de progreso no es media barra. */
+.seccion-cuerpo > :not(.tarjeta),
+.rejilla > :not(.tarjeta) {
+  grid-column: 1 / -1;
+}
+
+/* ========================================================================== */
+/* 4. La barra de pestañas, fija abajo                                        */
+/* ========================================================================== */
+
+.pestanas,
+body > nav {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 20;
+  display: flex;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scrollbar-width: none;
+  /* Opaco primero, por si el navegador no entiende la mezcla: la barra nunca
+     puede quedar transparente con una tarjeta debajo. */
+  background: var(--fondo-alto);
+  background: color-mix(in srgb, var(--fondo-alto) 92%, transparent);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-top: 1px solid var(--borde);
+  /* La franja del iPhone: la barra crece por debajo, no se mete debajo. */
+  padding-bottom: var(--hueco-seguro);
+  overscroll-behavior-x: contain;
+}
+
+.pestanas::-webkit-scrollbar,
+body > nav::-webkit-scrollbar {
+  display: none;
+}
+
+.pestana,
+.pestanas a,
+.pestanas button,
+body > nav a,
+body > nav button {
+  position: relative;
+  flex: 1 0 auto;
+  /* Con ocho pestañas caben todas en un teléfono de 320 px; si algún día son
+     nueve, la barra se arrastra de lado en vez de aplastarlas. */
+  min-width: 12.5%;
+  min-height: var(--alto-pestanas);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  padding: var(--espacio-1) 2px;
+  background: none;
+  border: 0;
+  color: var(--texto-tenue);
+  font-size: 10px;
+  text-decoration: none;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.pestana-icono {
+  font-size: 18px;
+  line-height: 1;
+}
+
+.pestana-texto {
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  letter-spacing: -0.01em;
+}
+
+/* La pestaña activa se distingue por color Y por la barra de arriba: en un
+   teléfono al sol el color solo no basta. */
+.pestana.activa,
+.pestana[aria-current="page"],
+.pestana[aria-selected="true"],
+.pestanas a[aria-current="page"],
+body > nav a[aria-current="page"] {
+  color: var(--texto);
+}
+
+.pestana.activa::before,
+.pestana[aria-current="page"]::before,
+.pestana[aria-selected="true"]::before,
+.pestanas a[aria-current="page"]::before,
+body > nav a[aria-current="page"]::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 12%;
+  right: 12%;
+  height: 3px;
+  border-radius: 0 0 3px 3px;
+  background: var(--acento);
+}
+
+/* ========================================================================== */
+/* 5. La tarjeta                                                              */
+/* ========================================================================== */
+
+.tarjeta {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espacio-3);
+  padding: var(--espacio-3);
+  background: var(--fondo-alto);
+  border: 1px solid var(--borde);
+  border-radius: var(--radio);
+  box-shadow: var(--sombra);
+  min-width: 0;
+}
+
+.tarjeta-cabecera {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--espacio-2);
+  min-width: 0;
+}
+
+.tarjeta-titulo {
+  font-size: 16px;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+/* El marco de lo que se mira: 16:9 y negro, siempre. Es la proporción de toda
+   la serie (formato.proporcion), así que una imagen bien generada lo llena
+   entero y una mal generada se nota enseguida. */
+.tarjeta-media {
+  position: relative;
+  aspect-ratio: 16 / 9;
+  background: var(--negro);
+  border-radius: var(--radio-chico);
+  overflow: hidden;
+}
+
+.tarjeta-media > img,
+.tarjeta-media > video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  background: var(--negro);
+}
+
+/* El audio no tiene forma: no se le pone marco 16:9, se le da la fila entera. */
+.tarjeta-media.media-audio {
+  aspect-ratio: auto;
+  background: transparent;
+  border-radius: 0;
+}
+
+.tarjeta-media.media-audio > audio {
+  width: 100%;
+  display: block;
+}
+
+.tarjeta-pie {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espacio-1);
+  color: var(--texto-suave);
+  font-size: 14px;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.tarjeta-texto {
+  margin: 0;
+}
+
+.tarjeta-acciones {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--espacio-2);
+}
+
+.tarjeta-acciones > .boton {
+  flex: 1 1 auto;
+  min-width: 120px;
+}
+
+/* ========================================================================== */
+/* 6. Botones                                                                 */
+/* ========================================================================== */
+
+.boton {
+  min-height: var(--toque);       /* un dedo, no un ratón */
+  padding: 0 var(--espacio-4);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--espacio-2);
+  border: 1px solid var(--borde-fuerte);
+  border-radius: var(--radio-chico);
+  background: var(--fondo-alto-2);
+  color: var(--texto);
+  font-size: 15px;
+  font-weight: 600;
+  text-align: center;
+  cursor: pointer;
+  transition: background-color 0.12s ease, border-color 0.12s ease;
+}
+
+.boton:active {
+  background: var(--borde);
+}
+
+.boton-principal {
+  background: var(--acento);
+  border-color: var(--acento);
+  color: var(--sobre-acento);
+}
+
+.boton-principal:active {
+  background: var(--acento-hundido);
+  border-color: var(--acento-hundido);
+}
+
+/* Perfilado, no relleno: lo que borra o lo que gasta un euro no se pulsa por
+   inercia, y la forma ya avisa antes que el color. */
+.boton-peligro {
+  background: transparent;
+  border-color: var(--fallido);
+  color: var(--fallido);
+}
+
+.boton-peligro:active {
+  background: var(--fallido-fondo);
+}
+
+.boton-suave {
+  background: var(--fondo-alto-2);
+}
+
+/* Apagado: borde de puntos —forma, no solo color— y el motivo en el title y en
+   el aria-label. Sigue siendo pulsable a propósito: al tocarlo dice por qué no
+   se puede, en un anuncio abajo. Ver app/ui.js, boton(). */
+.boton-desactivado,
+.boton[aria-disabled="true"] {
+  background: transparent;
+  border-style: dashed;
+  border-color: var(--borde-fuerte);
+  color: var(--texto-tenue);
+  font-weight: 500;
+}
+
+.boton-desactivado:active {
+  background: transparent;
+}
+
+/* ========================================================================== */
+/* 7. Avisos                                                                  */
+/* ========================================================================== */
+
+.aviso {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espacio-2);
+  padding: var(--espacio-3);
+  border: 1px solid var(--borde);
+  border-left-width: 4px;
+  border-radius: var(--radio-chico);
+  background: var(--fondo-alto);
+  font-size: 15px;
+}
+
+.aviso-frase {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--espacio-2);
+  overflow-wrap: anywhere;
+}
+
+/* La palabra que marca el tono. El color dice lo mismo, pero el color solo no
+   se ve con luz mala ni se lee en voz alta. */
+.aviso-marca {
+  flex: 0 0 auto;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 2px var(--espacio-2);
+  border-radius: var(--radio-pastilla);
+}
+
+.aviso-texto {
+  flex: 1 1 200px;
+  min-width: 0;
+}
+
+.aviso-error {
+  border-left-color: var(--fallido);
+  background: var(--fallido-fondo);
+}
+
+.aviso-error .aviso-marca {
+  background: var(--fallido);
+  color: var(--fondo);
+}
+
+.aviso-bien {
+  border-left-color: var(--listo);
+  background: var(--listo-fondo);
+}
+
+.aviso-bien .aviso-marca {
+  background: var(--listo);
+  color: var(--fondo);
+}
+
+.aviso-nota {
+  border-left-color: var(--borde-fuerte);
+}
+
+.aviso-nota .aviso-marca {
+  background: var(--fondo-alto-2);
+  color: var(--texto-suave);
+}
+
+/* El detalle de Google va plegado: primero la frase en español, que es lo que
+   dice qué hacer. Quien quiera el original lo abre de un toque. */
+.aviso-resumen {
+  min-height: var(--toque);
+  display: flex;
+  align-items: center;
+  color: var(--texto-suave);
+  font-size: 14px;
+  cursor: pointer;
+  list-style: none;
+}
+
+.aviso-resumen::-webkit-details-marker {
+  display: none;
+}
+
+.aviso-resumen::before {
+  content: "▸";
+  margin-right: var(--espacio-2);
+  color: var(--texto-tenue);
+}
+
+.aviso-detalle[open] > .aviso-resumen::before {
+  content: "▾";
+}
+
+.aviso-crudo {
+  margin: 0;
+  padding: var(--espacio-3);
+  background: var(--fondo-hundido);
+  border-radius: var(--radio-chico);
+  color: var(--texto-suave);
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  max-height: 45vh;
+  overflow: auto;
+}
+
+/* ========================================================================== */
+/* 8. Barra de progreso                                                       */
+/* ========================================================================== */
+
+.barra {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espacio-2);
+}
+
+.barra-linea {
+  height: 8px;
+  border-radius: var(--radio-pastilla);
+  background: var(--fondo-hundido);
+  border: 1px solid var(--borde);
+  overflow: hidden;
+}
+
+.barra-relleno {
+  display: block;
+  height: 100%;
+  background: var(--acento);
+  transition: width 0.12s linear;
+}
+
+.barra-pie {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--espacio-2);
+  font-size: 14px;
+  color: var(--texto-suave);
+}
+
+.barra-etiqueta {
+  flex: 1 1 auto;
+  min-width: 0;
+  color: var(--texto);
+}
+
+/* La cuenta manda sobre el porcentaje: «12 de 400» dice cuánto queda, «3 %» no. */
+.barra-cuenta {
+  font-variant-numeric: tabular-nums;
+  color: var(--texto);
+  font-weight: 600;
+}
+
+.barra-porcentaje {
+  font-variant-numeric: tabular-nums;
+  color: var(--texto-tenue);
+}
+
+/* ========================================================================== */
+/* 9. Filtro de pastillas                                                     */
+/* ========================================================================== */
+
+.filtro {
+  position: relative;          /* para poder centrar la pastilla activa */
+  display: flex;
+  gap: var(--espacio-2);
+  overflow-x: auto;
+  overflow-y: hidden;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-x: contain;
+  padding-bottom: var(--espacio-1);
+}
+
+.filtro::-webkit-scrollbar {
+  display: none;
+}
+
+.pastilla {
+  flex: 0 0 auto;
+  min-height: var(--toque);
+  display: inline-flex;
+  align-items: center;
+  gap: var(--espacio-2);
+  padding: 0 var(--espacio-4);
+  border: 1px solid var(--borde);
+  border-radius: var(--radio-pastilla);
+  background: var(--fondo-alto);
+  color: var(--texto-suave);
+  font-size: 14px;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.pastilla.activa {
+  background: var(--acento);
+  border-color: var(--acento);
+  color: var(--sobre-acento);
+  font-weight: 600;
+}
+
+.pastilla-cuenta {
+  padding: 1px var(--espacio-2);
+  border-radius: var(--radio-pastilla);
+  background: var(--fondo-hundido);
+  color: var(--texto-suave);
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+}
+
+.pastilla.activa .pastilla-cuenta {
+  background: rgba(7, 8, 10, 0.25);
+  color: var(--sobre-acento);
+}
+
+/* ========================================================================== */
+/* 10. Estados: color, forma y palabra                                        */
+/* ========================================================================== */
+
+.estado {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--espacio-2);
+  padding: 2px var(--espacio-2);
+  border-radius: var(--radio-pastilla);
+  background: var(--fondo-alto-2);
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+.estado-punto {
+  width: 10px;
+  height: 10px;
+  flex: 0 0 auto;
+  border-radius: 50%;
+  background: var(--texto-tenue);
+}
+
+.estado-texto {
+  color: var(--texto-suave);
+}
+
+/* Pendiente: aro hueco, gris. Todavía no ha empezado nada. */
+.estado-pendiente .estado-punto {
+  background: transparent;
+  border: 2px solid var(--pendiente);
+}
+
+.estado-pendiente .estado-texto {
+  color: var(--pendiente);
+}
+
+/* En curso: disco ámbar que late despacio. La única animación larga que hay, y
+   se para sola con prefers-reduced-motion. */
+.estado-en-curso .estado-punto {
+  background: var(--en-curso);
+  animation: latido 1.6s ease-in-out infinite alternate;
+}
+
+.estado-en-curso .estado-texto {
+  color: var(--en-curso);
+}
+
+.estado-en-curso {
+  background: var(--en-curso-fondo);
+}
+
+/* Listo: disco verde macizo. */
+.estado-listo .estado-punto {
+  background: var(--listo);
+}
+
+.estado-listo .estado-texto {
+  color: var(--listo);
+}
+
+.estado-listo {
+  background: var(--listo-fondo);
+}
+
+/* Fallido: cuadrado rojo. Distinta forma, no solo distinto color. */
+.estado-fallido .estado-punto {
+  background: var(--fallido);
+  border-radius: 2px;
+}
+
+.estado-fallido .estado-texto {
+  color: var(--fallido);
+}
+
+.estado-fallido {
+  background: var(--fallido-fondo);
+}
+
+/* Detenido: una barra, como el botón de pausa. */
+.estado-detenido .estado-punto {
+  width: 10px;
+  height: 4px;
+  border-radius: 1px;
+  background: var(--detenido);
+}
+
+.estado-detenido .estado-texto {
+  color: var(--detenido);
+}
+
+/* Cualquier estado que no esté en la tabla: gris, con su palabra escrita. */
+.estado-otro .estado-punto {
+  background: var(--texto-tenue);
+}
+
+@keyframes latido {
+  from { opacity: 0.35; }
+  to   { opacity: 1; }
+}
+
+/* ========================================================================== */
+/* 11. Espera                                                                 */
+/* ========================================================================== */
+
+.espera {
+  display: flex;
+  align-items: center;
+  gap: var(--espacio-3);
+  padding: var(--espacio-3);
+  color: var(--texto-suave);
+  font-size: 15px;
+}
+
+.espera-rueda {
+  width: 16px;
+  height: 16px;
+  flex: 0 0 auto;
+  border-radius: 50%;
+  border: 2px solid var(--borde-fuerte);
+  border-top-color: var(--acento);
+  animation: gira 0.9s linear infinite;
+}
+
+@keyframes gira {
+  to { transform: rotate(360deg); }
+}
+
+/* ========================================================================== */
+/* 12. Confirmar                                                              */
+/* ========================================================================== */
+
+.confirmar {
+  border: 0;
+  padding: 0;
+  background: transparent;
+  color: var(--texto);
+  max-width: min(420px, calc(100vw - 2 * var(--espacio-4)));
+  width: 100%;
+}
+
+.confirmar::backdrop {
+  background: rgba(0, 0, 0, 0.65);
+}
+
+/* Navegador sin <dialog> modal: se centra a mano y el fondo se hace con una
+   sombra enorme, que es la forma de tener velo sin añadir otro elemento. */
+.confirmar.sin-modal {
+  position: fixed;
+  inset: auto var(--espacio-4) auto var(--espacio-4);
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 50;
+  box-shadow: 0 0 0 100vmax rgba(0, 0, 0, 0.65);
+}
+
+.confirmar-caja {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espacio-4);
+  padding: var(--espacio-5) var(--espacio-4);
+  background: var(--fondo-alto);
+  border: 1px solid var(--borde-fuerte);
+  border-radius: var(--radio);
+  box-shadow: var(--sombra);
+}
+
+.confirmar-pregunta {
+  font-size: 17px;
+  line-height: 1.4;
+  overflow-wrap: anywhere;
+}
+
+.confirmar-acciones {
+  display: flex;
+  gap: var(--espacio-3);
+}
+
+.confirmar-acciones > .boton {
+  flex: 1 1 0;
+}
+
+/* ========================================================================== */
+/* 13. Anuncio (el motivo de un botón apagado)                                */
+/* ========================================================================== */
+
+.anuncio {
+  position: fixed;
+  left: var(--espacio-4);
+  right: var(--espacio-4);
+  /* Encima de las pestañas: donde ya está mirando el pulgar. */
+  bottom: calc(var(--alto-pestanas) + var(--hueco-seguro) + var(--espacio-3));
+  z-index: 30;
+  margin: 0 auto;
+  max-width: 560px;
+  padding: var(--espacio-3) var(--espacio-4);
+  background: var(--fondo-alto-2);
+  color: var(--texto);
+  border: 1px solid var(--borde-fuerte);
+  border-left: 4px solid var(--en-curso);
+  border-radius: var(--radio-chico);
+  box-shadow: var(--sombra);
+  font-size: 14px;
+  line-height: 1.4;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(6px);
+  transition: opacity 0.12s ease, transform 0.12s ease, visibility 0.12s;
+  pointer-events: none;
+}
+
+.anuncio.visible {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+}
+
+/* ========================================================================== */
+/* 14. Utilidades                                                             */
+/* ========================================================================== */
+
+.suave {
+  color: var(--texto-suave);
+}
+
+.tenue {
+  color: var(--texto-tenue);
+}
+
+.mono {
+  font-family: var(--tipo-mono);
+  overflow-wrap: anywhere;
+}
+
+.numero {
+  font-variant-numeric: tabular-nums;
+}
+
+.oculto {
+  display: none !important;
+}
+
+/* ========================================================================== */
+/* 15. Consultas de medios                                                    */
+/* ========================================================================== */
+
+/* En horizontal (y en cualquier pantalla que dé de sí), dos columnas de
+   tarjetas. Ni una más: a la tercera, el keyframe se ve tan pequeño que ya no
+   se puede juzgar, y juzgar es para lo que está. */
+@media (min-width: 560px) {
+  .seccion-cuerpo,
+  .rejilla {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .contenido,
+  body > main {
+    padding: var(--espacio-5) var(--espacio-5) 0;
+    padding-bottom: calc(var(--alto-pestanas) + var(--hueco-seguro) + var(--espacio-6));
+  }
+}
+
+/* Teléfono tumbado: hay ancho pero falta alto. Se recorta lo vertical y las
+   pestañas siguen abajo, que es donde está el pulgar también así. */
+@media (orientation: landscape) and (max-height: 480px) {
+  .pantalla {
+    gap: var(--espacio-4);
+  }
+
+  .pantalla-titulo {
+    font-size: 19px;
+  }
+
+  .contenido,
+  body > main {
+    padding-top: var(--espacio-3);
+  }
+}
+
+/* Quien pide menos movimiento se queda sin latido y sin rueda girando: el
+   estado se sigue distinguiendo por la forma y por la palabra. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  .estado-en-curso .estado-punto {
+    opacity: 1;
+  }
+
+  .espera-rueda {
+    border-top-color: var(--acento);
+  }
+}
+
+/* Sistemas con contraste alto: se sube el borde, que es lo que se pierde. */
+@media (prefers-contrast: more) {
+  :root {
+    --borde: #48515e;
+    --borde-fuerte: #6d7683;
+    --texto-suave: #c3cad3;
+    --texto-tenue: #97a1ad;
+  }
+}
