@@ -141,6 +141,23 @@ function esObjeto(valor) {
 }
 
 /**
+ * Un texto limpio, o cadena vacía. Vale para null, para números y para basura.
+ *
+ * Se usa para los nombres de operación de Veo, que en el estado pueden estar
+ * como texto —el nombre de verdad, en el bucket— o como `true` —lo que ve el
+ * navegador, con el nombre quitado para que el censor no lo destroce—. Preguntar
+ * «¿esto es un texto con algo dentro?» es lo que distingue los dos casos.
+ *
+ * ESTABA USADA EN SIETE SITIOS DE ESTE ARCHIVO Y NO ESTABA ESCRITA EN NINGUNO.
+ * Existía solo en los archivos del navegador, y de ahí no se importa nada: cada
+ * llamada lanzaba «soloTexto is not defined» y tumbaba el modo entero. Como leer
+ * el estado pasa por aquí, se caían los ocho pantallas a la vez.
+ */
+function soloTexto(valor) {
+  return typeof valor === 'string' ? valor.trim() : valor == null ? '' : String(valor).trim();
+}
+
+/**
  * Un campo de texto obligatorio. Un número también vale: los ids de escena del
  * guion son cadenas («3») pero llegan como número más veces de las que parece.
  * @param {object} cuerpo

@@ -320,7 +320,7 @@ function esJavaScript(relativo) {
  * @param {{ tambienCadenas?: boolean }} [opciones]
  * @returns {string}
  */
-function soloCodigo(fuente, { tambienCadenas = false } = {}) {
+function soloCodigo(fuente, { tambienCadenas = false, tambienRegex = false } = {}) {
   const salida = fuente.split('');
   const n = fuente.length;
   const pila = [{ tipo: 'codigo', llaves: 0 }];
@@ -425,6 +425,11 @@ function soloCodigo(fuente, { tambienCadenas = false } = {}) {
         else if (e === '/' && !dentroDeClase) break;
         j += 1;
       }
+      // Lo de dentro de una regex no es código: «/audio\/l(\d+)/» no llama a
+      // ninguna función «l()», y «/\B(?=(\d{3})+)/» no llama a ninguna «B()».
+      // Se vacía con `tambienRegex` porque hay comprobaciones que buscan
+      // llamadas y se creerían esas.
+      if (tambienRegex) borrar(i + 1, j);
       i = Math.min(n, j + 1);
       while (i < n && /[a-z]/.test(fuente[i])) i += 1; // banderas: g, i, m…
       previo = '/';
@@ -1539,6 +1544,129 @@ bloque('Código · ningún id de modelo a mano');
       );
     }
   }
+}
+
+// ===========================================================================
+// CÓDIGO · Nada llama a algo que no existe
+// ===========================================================================
+//
+// POR QUÉ EXISTE. `soloTexto()` se usaba en SIETE sitios de api/_lib/modos.js y
+// no estaba escrita en ninguno: existía solo en los archivos del navegador, y de
+// ahí no se importa nada. Cada llamada lanzaba «soloTexto is not defined». Como
+// leer el estado del bucket pasa por ahí, se caían las ocho pantallas a la vez,
+// y el mensaje que salía era el genérico —«se ha roto algo que no estaba
+// previsto»—, que no dice dónde.
+//
+// Nada lo cazaba. `node --check` mira la sintaxis y esto es sintaxis válida;
+// los invariantes miraban los datos y el estilo; y desplegado no se ve hasta que
+// alguien abre la pantalla. Aquí se mira lo único que importa: que todo lo que
+// se LLAMA esté escrito o importado EN ESE MISMO ARCHIVO.
+//
+// No es un analizador de JavaScript y no pretende serlo. Se equivoca hacia el
+// lado seguro: si un nombre aparece definido de cualquier forma reconocible en
+// el archivo, se calla. Prefiere no cazar una de más que cantar una falsa.
+
+bloque('Código · nada llama a algo que no existe');
+
+{
+  /** Lo que trae el propio JavaScript y no hace falta escribir. */
+  const DEL_LENGUAJE = new Set([
+    'Array', 'Boolean', 'Number', 'String', 'Object', 'Symbol', 'BigInt', 'Function',
+    'JSON', 'Math', 'Date', 'RegExp', 'Promise', 'Proxy', 'Reflect', 'Intl',
+    'Map', 'Set', 'WeakMap', 'WeakSet', 'WeakRef', 'FinalizationRegistry',
+    'Error', 'TypeError', 'RangeError', 'SyntaxError', 'ReferenceError', 'EvalError', 'URIError',
+    'Uint8Array', 'Uint16Array', 'Uint32Array', 'Int8Array', 'Int16Array', 'Int32Array',
+    'Float32Array', 'Float64Array', 'BigInt64Array', 'BigUint64Array', 'ArrayBuffer', 'DataView',
+    'URL', 'URLSearchParams', 'TextEncoder', 'TextDecoder', 'AbortController', 'AbortSignal',
+    'Buffer', 'Blob', 'File', 'FormData', 'Headers', 'Request', 'Response', 'Event', 'EventTarget',
+    'parseInt', 'parseFloat', 'isNaN', 'isFinite', 'encodeURIComponent', 'decodeURIComponent',
+    'encodeURI', 'decodeURI', 'btoa', 'atob', 'fetch', 'structuredClone', 'queueMicrotask',
+    'setTimeout', 'clearTimeout', 'setInterval', 'clearInterval', 'requestAnimationFrame',
+    'cancelAnimationFrame', 'require', 'import', 'console', 'process', 'globalThis',
+    // El navegador. Solo lo de app/; en api/ no se usa ninguno y no estorba.
+    'document', 'window', 'navigator', 'location', 'history', 'alert', 'confirm', 'prompt',
+    'Audio', 'Image', 'Node', 'Element', 'HTMLElement', 'CustomEvent', 'MutationObserver',
+    'IntersectionObserver', 'ResizeObserver', 'localStorage', 'sessionStorage', 'getComputedStyle',
+    'crypto', 'performance', 'matchMedia', 'FileReader', 'AbortError', 'createImageBitmap',
+    'OffscreenCanvas', 'ImageData', 'DOMParser', 'MediaRecorder', 'AudioContext',
+  ]);
+
+  /** Palabras del idioma que van seguidas de un paréntesis y no son llamadas. */
+  const NO_SON_LLAMADAS = new Set([
+    'if', 'for', 'while', 'switch', 'catch', 'return', 'typeof', 'instanceof', 'void', 'delete',
+    'function', 'async', 'await', 'new', 'do', 'else', 'of', 'in', 'yield', 'super', 'this',
+    'case', 'with', 'throw', 'constructor', 'get', 'set', 'static', 'export', 'default',
+  ]);
+
+  /**
+   * ¿Este archivo escribe o importa este nombre, de la forma que sea?
+   *
+   * Se pregunta sobre el archivo entero y con reglas anchas a propósito: una
+   * declaración, una desestructuración, un import, un parámetro, una propiedad
+   * de objeto o una asignación. Basta cualquiera para callarse.
+   */
+  const loTiene = (codigo, nombre) => {
+    const n = nombre.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    return (
+      new RegExp(`\\b(?:function|class)\\s*\\*?\\s+${n}\\b`).test(codigo) ||
+      new RegExp(`\\b(?:const|let|var)\\s+${n}\\b`).test(codigo) ||
+      // Desestructuración e imports: { a, nombre } / { nombre: otro } / [a, nombre]
+      new RegExp(`[{,[]\\s*${n}\\s*[,}\\]=:]`).test(codigo) ||
+      new RegExp(`\\bas\\s+${n}\\b`).test(codigo) ||
+      // Parámetros: (a, nombre) / (nombre) => / nombre =>
+      new RegExp(`[(,]\\s*\\.{0,3}${n}\\s*[,)=]`).test(codigo) ||
+      new RegExp(`\\b${n}\\s*=>`).test(codigo) ||
+      // Propiedad, método o asignación: nombre: … / nombre = … / nombre(…) {
+      new RegExp(`\\b${n}\\s*[:=][^=]`).test(codigo) ||
+      new RegExp(`^\\s*(?:async\\s+)?\\*?\\s*${n}\\s*\\([^)]*\\)\\s*\\{`, 'm').test(codigo)
+    );
+  };
+
+  const quejas = [];
+  const mirados = [];
+
+  for (const rel of archivos) {
+    if (!esJavaScript(rel)) continue;
+    if (!rel.startsWith('api/') && !rel.startsWith('app/') && !rel.startsWith('montador/')) continue;
+
+    const fuente = fuenteDe(rel);
+    if (fuente === null) continue;
+
+    // Sin comentarios, sin cadenas y sin lo de dentro de las expresiones
+    // regulares. Las tres cosas se parecen a una llamada y no lo son: un nombre
+    // escrito en un mensaje en español no llama a nada, y «/audio\/l(\d+)/» no
+    // llama a ninguna función «l()».
+    const codigo = soloCodigo(fuente, { tambienCadenas: true, tambienRegex: true });
+    mirados.push(rel);
+
+    const yaDicho = new Set();
+    codigo.split('\n').forEach((linea, i) => {
+      // Un nombre seguido de «(» que no venga detrás de un punto —eso sería un
+      // método de otro objeto, y de esos no se responde aquí— ni de «function».
+      const patron = /(^|[^.\w$])([A-Za-z_$][\w$]*)\s*\(/g;
+      let hallazgo;
+      while ((hallazgo = patron.exec(linea))) {
+        const nombre = hallazgo[2];
+        if (NO_SON_LLAMADAS.has(nombre) || DEL_LENGUAJE.has(nombre)) continue;
+        if (yaDicho.has(nombre)) continue;
+        if (loTiene(codigo, nombre)) continue;
+        yaDicho.add(nombre);
+        quejas.push(
+          `${rel}:${i + 1} llama a «${nombre}()» y en ese archivo no está escrita ni importada. ` +
+            'Es sintaxis válida, así que ni «node --check» ni el despliegue dicen nada: revienta ' +
+            'la primera vez que se ejecuta esa línea, con un «is not defined» que no dice dónde.',
+        );
+      }
+    });
+  }
+
+  comprobar('Todo lo que se llama está escrito o importado', quejas);
+  avisar(
+    `Se han mirado ${mirados.length} archivos de api/, app/ y montador/. Lo que se comprueba es ` +
+      'que cada nombre que se LLAMA esté escrito o importado en su propio archivo. No es un ' +
+      'analizador de JavaScript: se equivoca hacia el lado seguro, así que caza lo que falta del ' +
+      'todo y se calla ante cualquier definición reconocible.',
+  );
 }
 
 // ===========================================================================
