@@ -35,7 +35,7 @@ import { Buffer } from 'node:buffer';
 import { entorno } from './entorno.js';
 import { serie } from './datos.js';
 import { ErrorDeCara } from './errores.js';
-import { llamar, urlModelo, urlServicio } from './vertex.js';
+import { llamar, urlModelo, urlServicio, conGrafias } from './vertex.js';
 
 // Los dos servicios de Google que no son Vertex y que este módulo usa. Son
 // puertas públicas: no identifican ninguna cuenta.
@@ -121,11 +121,12 @@ export async function musica({ texto, negativo = null, durS } = {}) {
   // devuelve un error habiendo esperado, y el arreglo no es reintentar.
   if (segundos > maximo) {
     throw new ErrorDeCara(
-      `Se han pedido ${formatearSegundos(segundos)} de música y Lyria no pasa de ` +
-      `${formatearSegundos(maximo)} —tres minutos— por pieza. Un episodio de veintidós minutos no ` +
-      'es una pieza larga: son varias piezas, una por acto o por bloque, que se unen en el ' +
-      'montaje con fundidos de dos segundos y medio (los fundidos cortos suenan a tajo). Parte ' +
-      'esta pieza en varias dentro de «musica.piezas» de datos/serie.json y pídelas por separado.',
+      `Se han pedido ${formatearSegundos(segundos)} de música y este modelo no pasa de ` +
+      `${formatearSegundos(maximo)} por pieza. No es algo que se arregle insistiendo: Lyria 2 ni ` +
+      'siquiera admite el campo de duración, así que pedir de más no devuelve un error, devuelve ' +
+      'treinta segundos y ya. Una pieza más larga se compone de varios trozos que se unen en el ' +
+      'montaje con fundidos de dos segundos y medio (los cortos suenan a tajo). Parte esta pieza ' +
+      'en varias dentro de «musica.piezas» de datos/serie.json y pídelas por separado.',
       { reintentable: false, http: 400 }
     );
   }
@@ -135,42 +136,58 @@ export async function musica({ texto, negativo = null, durS } = {}) {
   const modelo = modeloDeMusica();
   const ent = entorno();
 
+  // LYRIA NO ES UN GEMINI Y NO SE LE HABLA IGUAL.
+  //
+  // Se pide con `:predict`, no con `:generateContent`: el encargo va en
+  // `instances[0].prompt` y lo que NO se quiere en `instances[0].negative_prompt`
+  // —un campo propio, que es mejor que meterlo en el prompt: nombrar ahí lo que
+  // no se quiere es pedirlo—. `sample_count` va en `parameters`.
+  //
+  // Y NO ADMITE DURACIÓN. Pidiéndole dos minutos devuelve treinta segundos igual.
+  // Por eso la duración no viaja en la petición: se pide, se mide lo que vuelve,
+  // y una pieza más larga se compone de varios trozos unidos con fundidos.
   const cuerpo = {
-    contents: [
+    instances: [
       {
-        role: 'user',
-        // Todo en inglés. `:generateContent` no tiene campo de negativo ni de
-        // duración, así que las dos cosas viajan dentro del encargo, redactadas
-        // en inglés desde los mismos datos.
-        parts: [{ text: componerEncargo(encargo, negativo, segundos) }]
+        prompt: componerEncargo(encargo, null, null),
+        ...(negativo ? { negative_prompt: String(negativo) } : {})
       }
     ],
-    generationConfig: {
-      // Se pide audio y solo audio: sin esto el modelo puede contestar con un
-      // texto describiendo la música que compondría.
-      responseModalities: ['AUDIO']
-    }
+    parameters: { sample_count: 1 }
   };
 
   let respuesta;
   try {
-    respuesta = await llamar(urlModelo(modelo, 'generateContent', ent.sa.project_id), cuerpo, {
-      metodo: 'POST',
-      limiteMs: LIMITE_MS,
-      contexto: {
-        que: 'generar la música',
-        modelo: modelo.id,
-        region: modelo.region,
-        variable: modelo.variable
-      }
-    });
+    respuesta = await conGrafias(modelo, (id) =>
+      llamar(urlModelo({ ...modelo, id }, 'predict', ent.sa.project_id), cuerpo, {
+        metodo: 'POST',
+        limiteMs: LIMITE_MS,
+        contexto: {
+          que: 'generar la música',
+          modelo: id,
+          region: modelo.region,
+          variable: modelo.variable
+        }
+      }),
+    );
   } catch (fallo) {
     // Si la queja de Google es el idioma, se explica en español lo que hay que
     // hacer, que no es reintentar.
     throw quizaEsElIdioma(fallo);
   }
 
-  const { datos, mime } = sacarAudio(respuesta, modelo, 'la música');
+  // `:predict` contesta en `predictions[0]`, no en `candidates[0].content.parts`.
+  const prediccion = Array.isArray(respuesta?.predictions) ? respuesta.predictions[0] : null;
+  const datos = prediccion?.bytesBase64Encoded || prediccion?.audioContent || null;
+  const mime = prediccion?.mimeType || 'audio/wav';
+  if (!datos) {
+    throw new ErrorDeCara(
+      'El modelo de música ha contestado pero no ha devuelto ningún audio. Suele ser el filtro de ' +
+        'contenido, que se queda con la pieza y da la petición por buena igualmente: hay que ' +
+        'cambiar el encargo en «musica.piezas» de datos/serie.json.',
+      { detalle: recorte(comoTexto(respuesta)), reintentable: false, http: 502 }
+    );
+  }
 
   // Lyria no siempre entrega WAV: cuando manda PCM crudo, el muestreo viene en
   // el propio mimeType («audio/L16;codec=pcm;rate=48000») y de ahí se lee. No se

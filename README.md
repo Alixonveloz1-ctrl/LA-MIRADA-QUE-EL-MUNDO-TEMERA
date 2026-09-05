@@ -98,6 +98,11 @@ canta exactamente lo que se le pide, así que la pantalla de Audio deja darle al
 play y tocar un botón cuando entra cada verso. Un verso sin marcar no se quema
 como subtítulo.
 
+**Cada canción son tres trozos, no uno.** El modelo de música disponible
+(`lyria-002`) da unos 30 segundos por generación y no admite duración: pedirle
+noventa devuelve treinta igual. Así que una pieza de 90 s se compone de tres
+trozos que el montaje une con fundidos de 2,5 s — los cortos suenan a tajo.
+
 ### Lo que hay que poner a mano
 
 Dos variables en Vercel, y ninguna más:

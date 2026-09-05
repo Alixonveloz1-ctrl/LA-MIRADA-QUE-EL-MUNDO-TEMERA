@@ -392,3 +392,65 @@ function recorte(texto, maximo = 2000) {
   const t = String(texto);
   return t.length <= maximo ? t : `${t.slice(0, maximo)}… (recortado: eran ${t.length} caracteres)`;
 }
+
+// ---------------------------------------------------------------------------
+// Las grafías de un modelo
+// ---------------------------------------------------------------------------
+
+/** La grafía que contestó la última vez, por modelo. Se recuerda por proceso. */
+const GRAFIA_BUENA = new Map();
+
+/**
+ * Llama a un modelo probando sus GRAFÍAS en orden hasta que una conteste.
+ *
+ * POR QUÉ ESTO EXISTE, y costó un despliegue entero descubrirlo: Vertex publica
+ * el mismo modelo con DOS nombres —el de preview y el definitivo—. Los dos son
+ * reales, y cuál de ellos contesta depende del proyecto. Pedir solo uno y
+ * recibir un 404 se lee como «tu cuenta no tiene ese modelo», y es mentira: lo
+ * tiene, con el otro nombre.
+ *
+ * Solo se pasa a la siguiente grafía ante 404 y 403, que son los dos que
+ * significan «este nombre no, prueba otro». Cualquier otro error se lanza tal
+ * cual: un 429 es cuota, un 400 es el cuerpo, y probar más nombres no arregla
+ * ninguno de los dos y además gasta.
+ *
+ * La que funciona se recuerda y se prueba primero la próxima vez.
+ *
+ * @param {{id:string, ids?:string[], region:string, variable:string}} modelo
+ * @param {(id:string) => Promise<any>} hacer qué hacer con cada grafía
+ * @returns {Promise<any>}
+ */
+export async function conGrafias(modelo, hacer) {
+  const grafias = Array.isArray(modelo.ids) && modelo.ids.length ? modelo.ids : [modelo.id];
+  const memoria = `${modelo.variable || ''}:${grafias[0]}`;
+  const recordada = GRAFIA_BUENA.get(memoria);
+  const orden = recordada
+    ? [recordada, ...grafias.filter((g) => g !== recordada)]
+    : grafias.slice();
+
+  let ultimo = null;
+  for (const id of orden) {
+    try {
+      const salida = await hacer(id);
+      GRAFIA_BUENA.set(memoria, id);
+      return salida;
+    } catch (fallo) {
+      const http = Number(fallo && fallo.http);
+      if (http !== 404 && http !== 403) throw fallo;
+      ultimo = fallo;
+    }
+  }
+
+  // Se acabaron las grafías. El mensaje dice CUÁLES se probaron: sin eso, quien
+  // lo lea no sabe si el problema es el nombre o el acceso.
+  throw new ErrorDeCara(
+    `Ninguna de las formas conocidas de este modelo contesta en tu proyecto. Se ha probado como: ` +
+      `${orden.join(', ')}. Si el modelo existe con otro nombre, se pone en la variable ` +
+      `${modelo.variable || 'de entorno'} y se sustituye sin tocar código.`,
+    {
+      detalle: ultimo && ultimo.detalle ? ultimo.detalle : (ultimo && ultimo.mensaje) || null,
+      reintentable: false,
+      http: (ultimo && ultimo.http) || 404,
+    },
+  );
+}

@@ -295,6 +295,155 @@ if (!serie.episodios.opening_ending) {
   anota('episodios.opening_ending: la regla de generarlos una vez');
 }
 
+// ---------------------------------------------------------------------------
+// 5. Las GRAFÍAS de cada modelo, y los ids que de verdad existen.
+//
+// Esto sale de un despliegue real: Salud dio 404 en voz, música y texto, con el
+// mismo mensaje —«not found or your project does not have access to it»— aunque
+// la cuenta estaba bien y las voces de TTS sí se listaron.
+//
+// Dos causas, las dos comprobadas contra un proyecto del mismo autor que ya
+// funciona en producción (Prisma-Negro):
+//
+//   a) VERTEX PUBLICA EL MISMO MODELO CON DOS GRAFÍAS: la de preview y la
+//      definitiva. Las dos existen, y cuál contesta depende del proyecto. Pedir
+//      solo una y recibir 404 se lee como «no lo tienes», y es mentira. Así que
+//      cada modelo pasa a tener una LISTA de grafías que se prueban en orden.
+//
+//   b) TRES IDS ESTABAN SENCILLAMENTE MAL. El de música era el peor: se pedía
+//      «lyria-3-pro-preview», que no existe. El que hay es «lyria-002», y no es
+//      el mismo trato: usa `:predict` en vez de `:generateContent` y NO ADMITE
+//      DURACIÓN — devuelve unos 30 s pase lo que pase.
+// ---------------------------------------------------------------------------
+
+const GRAFIAS = {
+  'imagen.calidad':   ['gemini-3-pro-image', 'gemini-3-pro-image-preview'],
+  'imagen.medio':     ['gemini-3.1-flash-image', 'gemini-3.1-flash-image-preview'],
+  'imagen.economico': ['gemini-2.5-flash-image', 'gemini-2.5-flash-image-preview'],
+  'video.calidad':    ['veo-3.1-generate-001', 'veo-3.1-generate-preview'],
+  'video.medio':      ['veo-3.1-fast-generate-001', 'veo-3.1-fast-generate-preview'],
+  'video.economico':  ['veo-3.1-lite-generate-001', 'veo-3.1-lite-generate-preview'],
+};
+
+for (const [camino, ids] of Object.entries(GRAFIAS)) {
+  const [familia, nivel] = camino.split('.');
+  const entrada = serie.modelos[familia] && serie.modelos[familia][nivel];
+  if (!entrada || entrada.ids) continue;
+  entrada.ids = ids;
+  if (entrada.id !== ids[0]) entrada.id = ids[0];
+  anota(`grafías de ${camino}: ${ids.join(', ')}`);
+}
+
+// Voz: la de preview es la que contesta en los proyectos nuevos.
+if (!serie.voces.modelo.ids) {
+  serie.voces.modelo.ids = ['gemini-3.1-flash-tts-preview', 'gemini-3.1-flash-tts',
+                            'gemini-2.5-flash-preview-tts', 'gemini-2.5-flash-tts'];
+  anota('grafías de voz: 4, empezando por la de preview');
+}
+
+// Texto: «gemini-3-pro» no existe. El que hay es «gemini-3.1-pro».
+if (serie.modelos.texto && !serie.modelos.texto.ids) {
+  serie.modelos.texto.ids = ['gemini-3.1-pro-preview', 'gemini-3.1-pro', 'gemini-2.5-pro'];
+  serie.modelos.texto.id = 'gemini-3.1-pro-preview';
+  anota('modelo de texto: gemini-3-pro no existe → gemini-3.1-pro(-preview)');
+}
+
+// Música: otro modelo, otro protocolo y otro límite.
+if (serie.musica.modelo.id !== 'lyria-002') {
+  serie.musica.modelo = {
+    id: 'lyria-002',
+    ids: ['lyria-002'],
+    protocolo: 'predict',
+    maximo_s: 30,
+    nota:
+      'Lyria 2. Se pide con «:predict» —instances[{prompt, negative_prompt}] y ' +
+      'parameters{sample_count}—, NO con generateContent. Y NO admite duración: ' +
+      'pidiéndole 120 s devuelve 30. Una pieza más larga se compone de varios ' +
+      'trozos unidos con fundidos en el montaje.',
+  };
+  anota('música: lyria-3-pro-preview no existe → lyria-002 (:predict, ~30 s)');
+}
+
+// ---------------------------------------------------------------------------
+// 6. Partir las piezas de música que ya no caben.
+//
+// Con lyria-3-pro (3 minutos) una pieza de 90 s era una sola generación. Con
+// lyria-002 el tope real son ~30 s y NO admite duración: pedirle 90 devuelve 30
+// sin decir nada. Así que cada pieza larga pasa a ser varios TROZOS que el
+// montaje une con fundidos de 2,5 s —los cortos suenan a tajo—.
+//
+// A cada trozo se le dice en qué punto de la pieza está y qué le tocaba sonar
+// ahí, para que el encargo siga teniendo sentido por sí solo: un trozo que no
+// sabe que es el estribillo suena a introducción.
+//
+// La letra se reparte: cada trozo canta los versos que caen dentro de él.
+// ---------------------------------------------------------------------------
+
+const TOPE = serie.musica.modelo.maximo_s || 30;
+
+const TRAMOS = {
+  'teaser-lecho': [
+    [0, 26, 'the opening third: low sustained strings alone, oppressive, no percussion at all'],
+    [26, 52, 'the middle third: the solo wooden flute carries its broken folk melody over the strings, and a dry hand-drum pulse with no reverb enters and grows'],
+    [52, 78, 'the final third: the drum and strings build, then stop dead into complete silence, and one last flute fragment is cut off mid-note'],
+  ],
+  'opening-tema': [
+    [0, 30, 'the opening third: solo wooden flute alone with a broken folk melody, low strings entering underneath, the female vocal beginning'],
+    [30, 60, 'the middle third: a dry hand-drum pulse with no reverb driving underneath, the vocal in full verse, building toward the chorus'],
+    [60, 90, 'the final third: the chorus, full ensemble, the vocal exhausted rather than triumphant, ending on an unresolved chord that hangs'],
+  ],
+  'ending-tema': [
+    [0, 30, 'the opening third: a solo female voice almost unaccompanied, close and dry, a single sustained low string joining underneath'],
+    [30, 60, 'the middle third: the same voice and the same unmoving string, no build of any kind'],
+    [60, 90, 'the final third: a wooden flute answers the voice once, quietly, does not finish its phrase, and everything fades to nothing'],
+  ],
+};
+
+const piezasDeMusica = [];
+const renombra = {};
+
+for (const pieza of serie.musica.piezas) {
+  const tramos = TRAMOS[pieza.id];
+  if (!tramos || pieza.duracion_s <= TOPE) { piezasDeMusica.push(pieza); continue; }
+
+  const letra = (serie.piezas[pieza.id.replace(/-tema$/, '')] || {}).letra || [];
+  renombra[pieza.id] = [];
+
+  tramos.forEach(([desde, hasta, queSuena], i) => {
+    const mios = letra.filter((l) => l.t >= desde && l.t < hasta);
+    const versos = mios.map((l) => l.ja).join('\n');
+    const id = `${pieza.id}-${i + 1}`;
+
+    piezasDeMusica.push({
+      ...pieza,
+      id,
+      duracion_s: Math.min(TOPE, hasta - desde),
+      parte: { de: pieza.id, n: i + 1, total: tramos.length, desde, hasta, fundido_s: 2.5 },
+      encargo:
+        `${pieza.encargo.split('The song is sung in JAPANESE')[0].trim()}\n\n` +
+        `THIS IS PART ${i + 1} OF ${tramos.length} of a ninety-second piece, covering seconds ` +
+        `${desde} to ${hasta}. Write ONLY ${queSuena}. It must start and end so that it can be ` +
+        `cross-faded into the neighbouring parts.` +
+        (versos ? `\n\nSung in JAPANESE, with these exact lyrics and no others:\n${versos}` : '') +
+        '\n\nClear diction. No English anywhere in the vocal.',
+      nota:
+        `Trozo ${i + 1} de ${tramos.length} de «${pieza.id}». Lyria 2 da unos 30 s por generación ` +
+        'y no admite duración, así que la pieza se compone de trozos unidos con fundidos de 2,5 s.',
+    });
+    renombra[pieza.id].push(id);
+  });
+  anota(`música «${pieza.id}» (${pieza.duracion_s} s) partida en ${tramos.length} trozos de ${TOPE} s`);
+}
+
+serie.musica.piezas = piezasDeMusica;
+
+// Las piezas que la nombraban pasan a nombrar sus trozos, en orden.
+for (const pieza of Object.values(serie.piezas)) {
+  const lista = pieza.audio && Array.isArray(pieza.audio.musica) ? pieza.audio.musica : null;
+  if (!lista) continue;
+  pieza.audio.musica = lista.flatMap((id) => renombra[id] || [id]);
+}
+
 serie.meta.version_datos = (serie.meta.version_datos || 0) + 1;
 serie.meta.parche = {
   de: 'datos/serie.base.json',

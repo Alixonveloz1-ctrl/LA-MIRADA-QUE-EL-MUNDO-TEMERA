@@ -21,7 +21,7 @@ import { Buffer } from 'node:buffer';
 import { entorno } from './entorno.js';
 import { nivelImagen } from './datos.js';
 import { ErrorDeCara } from './errores.js';
-import { llamar, urlModelo } from './vertex.js';
+import { llamar, urlModelo, conGrafias } from './vertex.js';
 
 // Formato de la serie. El 16:9 tiene que coincidir con el `aspectRatio` de Veo
 // o el clip recorta la imagen que se aprobó.
@@ -65,45 +65,57 @@ export async function generar({ texto, negativo = null, referencias = [], nivel 
   const modelo = nivelImagen(nivel);
   const ent = entorno();
 
-  const cuerpo = {
-    contents: [
-      {
-        role: 'user',
-        parts: componerPartes(refs, conNegativo(prompt, negativo))
-      }
-    ],
-    generationConfig: {
-      // Se pide imagen y solo imagen: sin esto el modelo puede contestar con
-      // texto describiendo lo que dibujaría.
-      responseModalities: ['IMAGE'],
-      imageConfig: {
-        aspectRatio: PROPORCION,
-        // La K en MAYÚSCULA. En minúscula lo rechaza.
-        //
-        // docs/contrato.md §12 nombra este campo `resolution`; la API de Vertex
-        // lo llama `imageSize` dentro de `imageConfig`. Si la cuenta devolviera
-        // un error por el NOMBRE del campo, ese error de Google se ve tal cual
-        // en pantalla —llega literal en `detalle`— y aquí no se sustituye nada
-        // en silencio: se cambia esta línea a conciencia y se anota en el
-        // contrato. Cambiar de campo o de modelo por nuestra cuenta haría que el
-        // resultado saliera distinto sin que nadie supiera por qué.
-        imageSize: TAMANO
-      }
-    }
-  };
+  const partes = componerPartes(refs, conNegativo(prompt, negativo));
 
-  const respuesta = await llamar(urlModelo(modelo, 'generateContent', ent.sa.project_id), cuerpo, {
-    metodo: 'POST',
-    limiteMs: LIMITE_MS,
-    contexto: {
-      que: 'generar la imagen',
-      modelo: modelo.id,
-      region: modelo.region,
-      variable: modelo.variable
-    }
-  });
+  // Se prueban las grafías del modelo en orden: Vertex publica el mismo modelo
+  // con el nombre de preview y el definitivo, y cuál contesta depende del
+  // proyecto. Pedir solo uno y recibir 404 se lee como «no lo tienes».
+  const respuesta = await conGrafias(modelo, (id) =>
+    llamar(urlModelo({ ...modelo, id }, 'generateContent', ent.sa.project_id), cuerpoPara(id, partes), {
+      metodo: 'POST',
+      limiteMs: LIMITE_MS,
+      contexto: {
+        que: 'generar la imagen',
+        modelo: id,
+        region: modelo.region,
+        variable: modelo.variable
+      }
+    }),
+  );
 
   return sacarImagen(respuesta, modelo);
+}
+
+/**
+ * El cuerpo de la petición, que NO es el mismo para las dos familias.
+ *
+ * Las dos diferencias las paga quien no las sabe, porque el error que devuelve
+ * Google no dice que sea por esto:
+ *
+ *   · `responseModalities`: la familia 3 EXIGE ['TEXT','IMAGE']. El 2.5 solo
+ *     acepta ['IMAGE']. Con el valor equivocado la petición se rechaza.
+ *   · `imageSize`: solo lo acepta la familia 3. Mandárselo al 2.5 es un error.
+ *
+ * @param {string} id la grafía concreta que se está probando
+ * @param {object[]} partes
+ * @returns {object}
+ */
+function cuerpoPara(id, partes) {
+  const familia3 = /^gemini-3/i.test(String(id));
+  const imageConfig = { aspectRatio: PROPORCION };
+
+  // La K en MAYÚSCULA. En minúscula lo rechaza. docs/contrato.md §12 nombra este
+  // campo `resolution`; la API de Vertex lo llama `imageSize` dentro de
+  // `imageConfig`, y solo en la familia 3.
+  if (familia3) imageConfig.imageSize = TAMANO;
+
+  return {
+    contents: [{ role: 'user', parts: partes }],
+    generationConfig: {
+      responseModalities: familia3 ? ['TEXT', 'IMAGE'] : ['IMAGE'],
+      imageConfig
+    }
+  };
 }
 
 // ---------------------------------------------------------------------------
