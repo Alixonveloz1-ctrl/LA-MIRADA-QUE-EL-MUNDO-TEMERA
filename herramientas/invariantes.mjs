@@ -1789,11 +1789,30 @@ bloque('Código · los tiempos cuadran de arriba abajo');
         'también aquí: sin esta comprobación se vuelven a separar sin que nadie lo vea.',
     );
   } else {
-    if (enPuerta !== enVercel) {
+    // El plazo que la función se cree suyo NUNCA puede pasar del que pide
+    // vercel.json. Si pasara, volvería a morir cortada sin dejar rastro, que es
+    // el fallo que este plazo existe para impedir. Por debajo sí puede ir, y de
+    // hecho va: `maxDuration` se PIDE, pero quien concede es la plataforma según
+    // el plan, y ese número no se puede apostar.
+    if (enPuerta > enVercel) {
       quejas.push(
-        `api/g.js se cree con ${enPuerta / 1000} s de plazo y vercel.json le da ` +
-          `${enVercel / 1000}. Si sobra, la función vuelve a morir cortada sin dejar rastro; si ` +
-          'falta, se rinde antes de tiempo. Tienen que ser el mismo número.',
+        `api/g.js se cree con ${enPuerta / 1000} s de plazo y vercel.json solo pide ` +
+          `${enVercel / 1000}. Creerse con más tiempo del que se ha pedido es volver al error ` +
+          'mudo: la plataforma corta la función y no queda ni rastro de por qué.',
+      );
+    }
+
+    // Y tampoco puede pasar del suelo que da el plan gratuito de Vercel sin nada
+    // especial, porque `maxDuration` puede concederse recortado y aquí no hay
+    // forma de enterarse: lo único que se ve es que la función deja de contestar.
+    const SUELO_DEL_PLAN_GRATUITO = 60_000;
+    if (enPuerta >= SUELO_DEL_PLAN_GRATUITO) {
+      quejas.push(
+        `api/g.js se cree con ${enPuerta / 1000} s, que es igual o más que los ` +
+          `${SUELO_DEL_PLAN_GRATUITO / 1000} s que da el plan gratuito. Pedir más en vercel.json ` +
+          'no garantiza que se conceda, y si no se concede la función muere cortada otra vez. ' +
+          'Para subirlo hay que comprobar antes, con una generación de verdad que tarde más de un ' +
+          'minuto, que la plataforma lo está concediendo.',
       );
     }
     if (enNavegador <= enVercel) {
@@ -1810,9 +1829,11 @@ bloque('Código · los tiempos cuadran de arriba abajo');
 
   if (!quejas.length) {
     avisar(
-      `La plataforma da ${enVercel / 1000} s, la función se los cree suyos y se reserva un margen ` +
-        `para poder contestar, y el navegador espera ${enNavegador / 1000} s, que es más. Así, ` +
-        'pase lo que pase, quien explica lo que ha ocurrido es la función y no un 504 mudo.',
+      `vercel.json pide ${enVercel / 1000} s, pero la función solo cuenta con ` +
+        `${enPuerta / 1000}, que es lo que da el plan gratuito menos un margen: pedir no es ` +
+        'obtener, y este número no puede ser una apuesta. Si la plataforma concede más, no se ' +
+        `usa y no pasa nada. El navegador espera ${enNavegador / 1000} s, más que cualquiera de ` +
+        'los dos, para que quien explique lo ocurrido sea siempre la función y no un 504 mudo.',
     );
   }
 }

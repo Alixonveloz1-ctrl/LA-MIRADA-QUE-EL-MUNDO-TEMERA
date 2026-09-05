@@ -227,10 +227,16 @@ se pasaban, y cuando eso ocurre no hay error ni excepción ni una línea en los
 registros: la plataforma corta la función y devuelve un 504 en bruto. En pantalla
 se lee «se ha roto algo» y en el servidor no aparece nada. Ahora la puerta abre
 un plazo al empezar y cada llamada espera lo que le dejen; cuando se acaba,
-contesta en español diciendo qué estaba haciendo. Los tres tiempos —el de la
-plataforma, el que la función se cree suyo y el que el navegador espera— los ata
-`npm run invariantes`, porque viven en tres archivos distintos y uno de ellos ni
-siquiera es código.
+contesta en español diciendo qué estaba haciendo.
+
+Ese plazo son **55 s y no los 300 que pide `vercel.json`**, y la diferencia es
+deliberada: `maxDuration` se **pide**, pero quien concede es la plataforma según
+el plan, y ese número no puede ser una apuesta. Si la función se creyera con más
+tiempo del que le dan, volvería a morir cortada en silencio — el fallo que este
+plazo existe para impedir. 55 s es el suelo seguro del plan gratuito menos un
+margen; si el plan concede más, no se usa y no pasa nada. Para subirlo hay que
+comprobar antes, con una generación real que tarde más de un minuto, que la
+plataforma lo está concediendo. `npm run invariantes` no deja subirlo a ciegas.
 
 El hueco se cuenta sobre el estado del **bucket**, no sobre la pestaña que
 tienes delante, así que «una cada vez» vale para todo el estudio aunque dejes
