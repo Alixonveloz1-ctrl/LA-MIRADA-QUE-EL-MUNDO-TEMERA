@@ -1341,19 +1341,35 @@ function dos(n) {
  *
  * @returns {{grafo:string[], etiqueta:string}}
  */
-function grafoDeAudio(plan, { conBase, medida }) {
+function grafoDeAudio(plan, { conBase, medida, baseCapas }) {
   const grafo = [];
   const pistas = [];
 
-  // La capa que solo concatena trae dentro el audio de lo ya montado, y ese
-  // audio es la base sobre la que se pone lo que toque en esta capa.
-  if (conBase) {
-    grafo.push(
-      `[0:a]aresample=${MUESTREO},aformat=sample_fmts=fltp:channel_layouts=stereo:` +
-        `sample_rates=${MUESTREO}[base]`,
-    );
-    pistas.push('[base]');
-  }
+  // LA BASE NO SALE DEL CONCAT, y esto costó medirlo.
+  //
+  // El demuxer «concat» ignora la lista de edición de cada MP4, así que el
+  // relleno que el codificador AAC mete al final de cada capa —invisible dentro
+  // del archivo suelto— reaparece y SE ACUMULA: 32 ms por capa. La imagen sale
+  // exacta y la voz se va retrasando. Con las 24 escenas de un episodio son
+  // 0,74 s, y como los subtítulos van quemados en la imagen, se quedan con ella
+  // mientras la voz se aleja de la boca.
+  //
+  // Medido: seis capas de 4,000 s exactos daban pitidos en 0,021 · 4,053 ·
+  // 8,085 · 12,117 · 16,149 · 20,181 en vez de 0 · 4 · 8 · 12 · 16 · 20.
+  //
+  // Así que el vídeo sí sale del concat —ahí no hay deriva, y copiarlo es lo que
+  // hace que montar un episodio sean segundos— pero el audio se reconstruye
+  // capa a capa, cada una con su `adelay` en su segundo real medido.
+  const capas = conBase ? (baseCapas || []) : [];
+  capas.forEach((capa, i) => {
+    const filtros = [
+      `aresample=${MUESTREO}`,
+      `aformat=sample_fmts=fltp:channel_layouts=stereo:sample_rates=${MUESTREO}`,
+    ];
+    if (capa.en > 0) filtros.push(`adelay=${Math.round(capa.en * 1000)}:all=1`);
+    grafo.push(`[${capa.entrada}:a]${filtros.join(',')}[base${i}]`);
+    pistas.push(`[base${i}]`);
+  });
 
   const tramosDeVoz = plan.audio
     .filter((una) => una.pista === 'voz')
@@ -1374,8 +1390,9 @@ function grafoDeAudio(plan, { conBase, medida }) {
 
   plan.audio.forEach((una, i) => {
     // La entrada 0 es siempre el vídeo (los planos pegados o las capas ya
-    // montadas), así que las pistas de audio empiezan a contar en la 1.
-    const entrada = `${i + 1}:a`;
+    // montadas). Detrás van las capas previas, que entran otra vez solo por su
+    // audio, y solo después las pistas de este manifiesto.
+    const entrada = `${1 + capas.length + i}:a`;
     const filtros = [
       `atrim=start=${num(una.desde)}:end=${num(una.hasta)}`,
       `asetpts=N/SR/TB`,
@@ -1539,7 +1556,11 @@ function filtroLoudnorm(medida) {
  * poder afinar el volumen sería mucho peor.
  */
 async function medirElVolumen(entradas, plan, carpeta) {
-  const { grafo, etiqueta } = grafoDeAudio(plan, { conBase: entradas.conBase, medida: 'analizar' });
+  const { grafo, etiqueta } = grafoDeAudio(plan, {
+    conBase: entradas.conBase,
+    medida: 'analizar',
+    baseCapas: entradas.capasDeAudio || [],
+  });
   const guion = path.join(carpeta, 'medida.txt');
   await writeFile(guion, grafo.join(';\n'), 'utf8');
 
@@ -1639,6 +1660,8 @@ async function montar(plan, ent) {
   // 4. La pasada final.
   const salida = path.join(carpeta, `salida${extension(plan.salida) || '.mp4'}`);
   await pasadaFinal(plan, {
+    trozos: pegado.trozos,
+    offsets: pegado.offsets,
     lista: pegado.lista,
     duracion: pegado.duracion,
     audios,
@@ -1735,6 +1758,7 @@ async function montarLosPlanos(plan, ent, { material, intermedios }) {
 /** Las capas ya montadas, que se concatenan tal cual y no se rehacen. */
 async function traerLasCapasPrevias(plan, ent, material) {
   const trozos = [];
+  const duraciones = [];
   let duracion = 0;
 
   for (const [i, ruta] of plan.previas.entries()) {
@@ -1745,12 +1769,28 @@ async function traerLasCapasPrevias(plan, ent, material) {
     // Lo que dura cada capa está dentro del archivo, no en el manifiesto: hay
     // que preguntárselo para saber hasta dónde llega la pieza.
     const dura = await duracionDeArchivo(destino);
+    duraciones.push(dura);
     duracion += dura;
     console.log(`  ${megas(bytes)} · ${segundos(dura)}`);
     trozos.push(destino);
   }
 
-  return { lista: await escribirLaLista(trozos, path.join(material, 'lista.txt')), duracion };
+  // Los offsets se calculan sobre las duraciones REALES medidas, no sobre lo que
+  // diga el manifiesto: el audio de cada capa se va a volver a colocar aquí, y
+  // si el offset no es exacto la voz se separa de la boca.
+  let acumulado = 0;
+  const offsets = [];
+  for (const dura of duraciones) {
+    offsets.push(acumulado);
+    acumulado += dura;
+  }
+
+  return {
+    lista: await escribirLaLista(trozos, path.join(material, 'lista.txt')),
+    duracion,
+    trozos,
+    offsets,
+  };
 }
 
 /** La lista del demuxer «concat». */
@@ -1773,11 +1813,22 @@ async function escribirLaLista(trozos, destino) {
  *   · Si además no hay audio nuevo que mezclar, se copia también el audio y la
  *     pasada entera es una concatenación sin recodificar nada.
  */
-async function pasadaFinal(plan, { lista, duracion, audios, rotulos, salida, carpeta }) {
+async function pasadaFinal(plan, { lista, duracion, audios, rotulos, salida, carpeta, trozos, offsets }) {
   const copiarVideo = !rotulos;
   const conBase = plan.previas.length > 0;   // lo concatenado ya trae su audio
   const hayAudioNuevo = plan.audio.length > 0;
-  const copiarTodo = copiarVideo && conBase && !hayAudioNuevo;
+
+  // Cada capa previa entra DOS veces: una en la lista del concat, que da la
+  // imagen, y otra suelta, que da su audio para volver a colocarlo en su
+  // segundo exacto. Sin lo segundo, el relleno del codificador AAC se acumula
+  // 32 ms por capa y la voz se separa de la boca (ver grafoDeAudio).
+  const capasDeAudio = conBase && Array.isArray(trozos)
+    ? trozos.map((archivo, i) => ({ archivo, en: (offsets && offsets[i]) || 0, entrada: 1 + i }))
+    : [];
+
+  // Copiar entero solo vale cuando NO hay nada que acumular: una sola capa no
+  // tiene de qué derivar. Con dos o más hay que rehacer el audio.
+  const copiarTodo = copiarVideo && conBase && !hayAudioNuevo && capasDeAudio.length <= 1;
 
   const entradas = ['-f', 'concat', '-safe', '0', '-i', lista];
 
@@ -1794,6 +1845,7 @@ async function pasadaFinal(plan, { lista, duracion, audios, rotulos, salida, car
     return;
   }
 
+  for (const capa of capasDeAudio) entradas.push('-i', capa.archivo);
   for (const uno of audios) entradas.push('-i', uno);
 
   // Sin ninguna pista y sin base, hace falta una de silencio: todo lo que sale
@@ -1807,7 +1859,7 @@ async function pasadaFinal(plan, { lista, duracion, audios, rotulos, salida, car
   let medida = null;
   if (hayAudioNuevo || conBase) {
     paso('medir el volumen de la mezcla');
-    medida = await medirElVolumen({ argumentos: entradas, conBase }, plan, carpeta);
+    medida = await medirElVolumen({ argumentos: entradas, conBase, capasDeAudio }, plan, carpeta);
   }
 
   const grafo = [];
@@ -1822,7 +1874,7 @@ async function pasadaFinal(plan, { lista, duracion, audios, rotulos, salida, car
   }
 
   if (hayAudioNuevo || conBase) {
-    const audio = grafoDeAudio(plan, { conBase, medida: medida || 'dinamico' });
+    const audio = grafoDeAudio(plan, { conBase, medida: medida || 'dinamico', baseCapas: capasDeAudio });
     // El audio se rellena con silencio hasta donde llega la imagen y se corta
     // ahí: una pista que se queda corta no recorta la pieza, y una que se pasa
     // no la alarga. Se hace con `apad` y `atrim` y no con `-shortest` a
@@ -1851,7 +1903,7 @@ async function pasadaFinal(plan, { lista, duracion, audios, rotulos, salida, car
     argumentos.push('-map', etiquetaAudio);
   } else {
     // La entrada del silencio es la última que se ha añadido.
-    argumentos.push('-map', `${audios.length + 1}:a`);
+    argumentos.push('-map', `${capasDeAudio.length + audios.length + 1}:a`);
   }
 
   if (copiarVideo) {
