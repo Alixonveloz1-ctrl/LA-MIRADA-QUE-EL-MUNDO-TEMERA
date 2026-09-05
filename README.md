@@ -55,7 +55,7 @@ planos, al volver a entrar se reanuda sola.
 |---|---|
 | `app/` | La aplicación del navegador: cola, estado, progreso y las ocho pantallas, en módulos ES nativos sin build ni framework. |
 | `api/` | La puerta única `POST /api/g` y su `_lib/`: firma el token, compone los prompts, habla con Vertex y con el bucket, y censura toda respuesta. |
-| `datos/` | `guiones.json` (la serie), `serie.base.json` (cómo se produce, tal y como llegó), `opening-ending.json` (las dos piezas fijas y sus canciones) y `serie.json` (el que lee la herramienta, generado por el parche). |
+| `datos/` | `guiones.json` (la serie), `serie.base.json` (cómo se produce, tal y como llegó), `opening-ending.json` (las dos piezas fijas y sus canciones), `voces-gemini.json` (las treinta voces de Gemini, sin Chirp) y `serie.json` (el que lee la herramienta, generado por el parche). |
 | `docs/` | El contrato interno, el plan de construcción, las decisiones, la guía de despliegue y la explicación del parche de datos. |
 | `herramientas/` | Lo que se ejecuta sin red: el parche de datos, los invariantes y el pesaje de las respuestas. |
 | `montador/` | El contenedor de ffmpeg que corre como Job de Cloud Run: recorta, concatena, aplica el acabado, mezcla el audio y quema los subtítulos. |
@@ -126,7 +126,8 @@ que no ayuda a nadie y una cosa más que puede escribirse mal.
    si cada modelo contesta y cuánto pesan las respuestas, todo comprobado de
    verdad y antes de gastar un céntimo.
 2. **Voces** — los personajes ordenados por volumen de diálogo, cada uno con las
-   voces reales de la API diciendo su frase más difícil, para elegir escuchando.
+   voces de Gemini **de su género** diciendo su frase más difícil, para elegir
+   escuchando. Chirp queda fuera de todo el proyecto: Chirp lee, Gemini actúa.
 3. **Banco** — los personajes y los escenarios de toda la serie: generar, mirar,
    aprobar y regenerar, con las cadenas de ancla y de edad a la vista.
 4. **Desglose** — se elige un episodio y se convierte en planos, una llamada de

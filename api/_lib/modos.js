@@ -468,8 +468,25 @@ async function modoSalud() {
  * Devuelve las voces que Google tiene de verdad para el idioma de la serie. NO
  * inventa ni un id y NO elige ninguna: la voz se elige escuchándola.
  */
-async function modoVoces() {
-  return { voces: await listarVoces() };
+async function modoVoces(cuerpo) {
+  // Con `personaje`, solo las voces de su género: un personaje masculino no
+  // enseña voces femeninas. Sin él, las treinta.
+  const idPersonaje = textoSiViene(cuerpo || {}, 'personaje');
+  const genero = idPersonaje ? generoDelPersonaje(idPersonaje) : null;
+  return { voces: await listarVoces({ genero }), genero };
+}
+
+/**
+ * El género de un personaje, para filtrar sus voces candidatas.
+ *
+ * Sale de datos/serie.json, donde el parche lo deduce de la propia identidad del
+ * personaje. Un personaje que no esté en la ficha —un figurante— no filtra nada:
+ * más vale enseñar de más que esconder la voz buena.
+ */
+function generoDelPersonaje(id) {
+  const ficha = serie.personajes && serie.personajes[id];
+  const genero = ficha && typeof ficha.genero === 'string' ? ficha.genero.trim() : '';
+  return genero && genero !== 'sin decidir' ? genero : null;
 }
 
 // ---------------------------------------------------------------------------

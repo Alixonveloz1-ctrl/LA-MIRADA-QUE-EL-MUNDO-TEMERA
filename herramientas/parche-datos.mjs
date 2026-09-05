@@ -348,101 +348,70 @@ if (serie.modelos.texto && !serie.modelos.texto.ids) {
   anota('modelo de texto: gemini-3-pro no existe → gemini-3.1-pro(-preview)');
 }
 
-// Música: otro modelo, otro protocolo y otro límite.
-if (serie.musica.modelo.id !== 'lyria-002') {
-  serie.musica.modelo = {
-    id: 'lyria-002',
-    ids: ['lyria-002'],
-    protocolo: 'predict',
-    maximo_s: 30,
-    nota:
-      'Lyria 2. Se pide con «:predict» —instances[{prompt, negative_prompt}] y ' +
-      'parameters{sample_count}—, NO con generateContent. Y NO admite duración: ' +
-      'pidiéndole 120 s devuelve 30. Una pieza más larga se compone de varios ' +
-      'trozos unidos con fundidos en el montaje.',
-  };
-  anota('música: lyria-3-pro-preview no existe → lyria-002 (:predict, ~30 s)');
+// Música: el modelo estaba BIEN. Lo que estaba mal era la REGIÓN.
+//
+// serie.base.json declara la música sin región, así que se pedía a la de por
+// defecto (us-central1) y Vertex contestaba 404 — el mismo 404 que dan los
+// Gemini 3.x fuera de «global», y que se lee como «tu cuenta no lo tiene».
+//
+// Lyria 3 Pro se sirve SOLO desde «global». Y no tiene endpoint propio: se pide
+// como un Gemini, con «:generateContent» y responseModalities ['AUDIO','TEXT'].
+// La duración no es un parámetro: se pide en prosa dentro del propio encargo.
+//
+// Comprobado contra studio.LegadodeHierro, del mismo autor, que genera piezas de
+// 80 s con este modelo en producción. Llega a 184 s.
+if (!serie.musica.modelo.region) {
+  serie.musica.modelo.region = 'global';
+  serie.musica.modelo.protocolo = 'generateContent';
+  serie.musica.modelo.maximo_s = 184;
+  serie.musica.modelo.modalidades = ['AUDIO', 'TEXT'];
+  serie.musica.modelo.nota =
+    'Lyria 3 Pro. SOLO se sirve desde la región «global»: pedirlo a una región ' +
+    'concreta devuelve un 404 que parece falta de acceso y no lo es. Se pide como ' +
+    'un Gemini, con :generateContent y responseModalities [AUDIO, TEXT]. La ' +
+    'duración no es un parámetro: va en prosa dentro del encargo. Llega a 184 s.';
+  anota('música: región «global» —ese era el 404— y máximo 184 s');
 }
 
+
 // ---------------------------------------------------------------------------
-// 6. Partir las piezas de música que ya no caben.
+// 6. Las voces de Gemini, y el género de cada personaje.
 //
-// Con lyria-3-pro (3 minutos) una pieza de 90 s era una sola generación. Con
-// lyria-002 el tope real son ~30 s y NO admite duración: pedirle 90 devuelve 30
-// sin decir nada. Así que cada pieza larga pasa a ser varios TROZOS que el
-// montaje une con fundidos de 2,5 s —los cortos suenan a tajo—.
+// El plan descarta Chirp de todo el proyecto —«Chirp lee, este actúa»— y sin
+// embargo la pantalla enseñaba voces «ja-JP-Chirp3-HD-…». La causa: las voces se
+// pedían a texttospeech.googleapis.com, que es el servicio de Cloud TTS y
+// devuelve justo las que no se quieren. Las de Gemini NO se listan por API: son
+// treinta, fijas, y viven en datos/voces-gemini.json.
 //
-// A cada trozo se le dice en qué punto de la pieza está y qué le tocaba sonar
-// ahí, para que el encargo siga teniendo sentido por sí solo: un trozo que no
-// sabe que es el estribillo suena a introducción.
-//
-// La letra se reparte: cada trozo canta los versos que caen dentro de él.
+// Y el género del personaje, para no enseñar voces femeninas a un personaje
+// masculino. Sale de su propia identidad, que ya lo dice en la primera línea.
 // ---------------------------------------------------------------------------
 
-const TOPE = serie.musica.modelo.maximo_s || 30;
+serie.voces.catalogo = JSON.parse(
+  readFileSync(join(raiz, 'datos/voces-gemini.json'), 'utf8'),
+).voces;
+anota(`catálogo de ${serie.voces.catalogo.length} voces de Gemini (Chirp fuera)`);
 
-const TRAMOS = {
-  'teaser-lecho': [
-    [0, 26, 'the opening third: low sustained strings alone, oppressive, no percussion at all'],
-    [26, 52, 'the middle third: the solo wooden flute carries its broken folk melody over the strings, and a dry hand-drum pulse with no reverb enters and grows'],
-    [52, 78, 'the final third: the drum and strings build, then stop dead into complete silence, and one last flute fragment is cut off mid-note'],
-  ],
-  'opening-tema': [
-    [0, 30, 'the opening third: solo wooden flute alone with a broken folk melody, low strings entering underneath, the female vocal beginning'],
-    [30, 60, 'the middle third: a dry hand-drum pulse with no reverb driving underneath, the vocal in full verse, building toward the chorus'],
-    [60, 90, 'the final third: the chorus, full ensemble, the vocal exhausted rather than triumphant, ending on an unresolved chord that hangs'],
-  ],
-  'ending-tema': [
-    [0, 30, 'the opening third: a solo female voice almost unaccompanied, close and dry, a single sustained low string joining underneath'],
-    [30, 60, 'the middle third: the same voice and the same unmoving string, no build of any kind'],
-    [60, 90, 'the final third: a wooden flute answers the voice once, quietly, does not finish its phrase, and everything fades to nothing'],
-  ],
+const GENERO = {
+  femenina: /\b(woman|girl|female|her daughter|mother)\b/i,
+  masculina: /\b(man|boy|male|priest|clerk|infant)\b/i,
 };
 
-const piezasDeMusica = [];
-const renombra = {};
-
-for (const pieza of serie.musica.piezas) {
-  const tramos = TRAMOS[pieza.id];
-  if (!tramos || pieza.duracion_s <= TOPE) { piezasDeMusica.push(pieza); continue; }
-
-  const letra = (serie.piezas[pieza.id.replace(/-tema$/, '')] || {}).letra || [];
-  renombra[pieza.id] = [];
-
-  tramos.forEach(([desde, hasta, queSuena], i) => {
-    const mios = letra.filter((l) => l.t >= desde && l.t < hasta);
-    const versos = mios.map((l) => l.ja).join('\n');
-    const id = `${pieza.id}-${i + 1}`;
-
-    piezasDeMusica.push({
-      ...pieza,
-      id,
-      duracion_s: Math.min(TOPE, hasta - desde),
-      parte: { de: pieza.id, n: i + 1, total: tramos.length, desde, hasta, fundido_s: 2.5 },
-      encargo:
-        `${pieza.encargo.split('The song is sung in JAPANESE')[0].trim()}\n\n` +
-        `THIS IS PART ${i + 1} OF ${tramos.length} of a ninety-second piece, covering seconds ` +
-        `${desde} to ${hasta}. Write ONLY ${queSuena}. It must start and end so that it can be ` +
-        `cross-faded into the neighbouring parts.` +
-        (versos ? `\n\nSung in JAPANESE, with these exact lyrics and no others:\n${versos}` : '') +
-        '\n\nClear diction. No English anywhere in the vocal.',
-      nota:
-        `Trozo ${i + 1} de ${tramos.length} de «${pieza.id}». Lyria 2 da unos 30 s por generación ` +
-        'y no admite duración, así que la pieza se compone de trozos unidos con fundidos de 2,5 s.',
-    });
-    renombra[pieza.id].push(id);
-  });
-  anota(`música «${pieza.id}» (${pieza.duracion_s} s) partida en ${tramos.length} trozos de ${TOPE} s`);
+let conGenero = 0;
+for (const [id, ficha] of Object.entries(serie.personajes)) {
+  if (ficha.genero) continue;
+  const texto = String(ficha.identidad || '');
+  // Se mira femenino primero: «young woman» y «man» conviven en más de una
+  // identidad, y quien manda es el sujeto, que va al principio.
+  const primeraF = texto.search(GENERO.femenina);
+  const primeraM = texto.search(GENERO.masculina);
+  ficha.genero =
+    primeraF >= 0 && (primeraM < 0 || primeraF < primeraM) ? 'femenina'
+    : primeraM >= 0 ? 'masculina'
+    : 'sin decidir';
+  conGenero += 1;
 }
-
-serie.musica.piezas = piezasDeMusica;
-
-// Las piezas que la nombraban pasan a nombrar sus trozos, en orden.
-for (const pieza of Object.values(serie.piezas)) {
-  const lista = pieza.audio && Array.isArray(pieza.audio.musica) ? pieza.audio.musica : null;
-  if (!lista) continue;
-  pieza.audio.musica = lista.flatMap((id) => renombra[id] || [id]);
-}
+anota(`género puesto a ${conGenero} personajes, sacado de su identidad`);
 
 serie.meta.version_datos = (serie.meta.version_datos || 0) + 1;
 serie.meta.parche = {

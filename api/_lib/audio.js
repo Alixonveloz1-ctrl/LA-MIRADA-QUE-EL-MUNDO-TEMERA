@@ -121,12 +121,11 @@ export async function musica({ texto, negativo = null, durS } = {}) {
   // devuelve un error habiendo esperado, y el arreglo no es reintentar.
   if (segundos > maximo) {
     throw new ErrorDeCara(
-      `Se han pedido ${formatearSegundos(segundos)} de música y este modelo no pasa de ` +
-      `${formatearSegundos(maximo)} por pieza. No es algo que se arregle insistiendo: Lyria 2 ni ` +
-      'siquiera admite el campo de duración, así que pedir de más no devuelve un error, devuelve ' +
-      'treinta segundos y ya. Una pieza más larga se compone de varios trozos que se unen en el ' +
-      'montaje con fundidos de dos segundos y medio (los cortos suenan a tajo). Parte esta pieza ' +
-      'en varias dentro de «musica.piezas» de datos/serie.json y pídelas por separado.',
+      `Se han pedido ${formatearSegundos(segundos)} de música y Lyria no pasa de ` +
+      `${formatearSegundos(maximo)} por pieza. Un episodio de veintidós minutos no es una pieza ` +
+      'larga: son varias, una por acto o por bloque, que se unen en el montaje con fundidos de dos ' +
+      'segundos y medio (los cortos suenan a tajo). Parte esta pieza en varias dentro de ' +
+      '«musica.piezas» de datos/serie.json y pídelas por separado.',
       { reintentable: false, http: 400 }
     );
   }
@@ -136,30 +135,33 @@ export async function musica({ texto, negativo = null, durS } = {}) {
   const modelo = modeloDeMusica();
   const ent = entorno();
 
-  // LYRIA NO ES UN GEMINI Y NO SE LE HABLA IGUAL.
+  // LYRIA SE PIDE COMO UN GEMINI, Y SIEMPRE DESDE «global».
   //
-  // Se pide con `:predict`, no con `:generateContent`: el encargo va en
-  // `instances[0].prompt` y lo que NO se quiere en `instances[0].negative_prompt`
-  // —un campo propio, que es mejor que meterlo en el prompt: nombrar ahí lo que
-  // no se quiere es pedirlo—. `sample_count` va en `parameters`.
+  // No tiene endpoint propio ni usa `:predict`: es `:generateContent` con
+  // responseModalities ['AUDIO','TEXT']. Y la región es la trampa: pedirlo a una
+  // región concreta devuelve un 404 idéntico al de «no tienes ese modelo». La
+  // región sale de datos/serie.json, donde está escrita como «global».
   //
-  // Y NO ADMITE DURACIÓN. Pidiéndole dos minutos devuelve treinta segundos igual.
-  // Por eso la duración no viaja en la petición: se pide, se mide lo que vuelve,
-  // y una pieza más larga se compone de varios trozos unidos con fundidos.
+  // La duración NO es un parámetro: se pide en prosa dentro del encargo, que es
+  // lo que hace componerEncargo().
   const cuerpo = {
-    instances: [
+    contents: [
       {
-        prompt: componerEncargo(encargo, null, null),
-        ...(negativo ? { negative_prompt: String(negativo) } : {})
+        role: 'user',
+        parts: [{ text: componerEncargo(encargo, negativo, segundos) }]
       }
     ],
-    parameters: { sample_count: 1 }
+    generationConfig: {
+      // ['AUDIO','TEXT'], no ['AUDIO'] a secas: con solo AUDIO la petición se
+      // rechaza, y el error no dice que sea por esto.
+      responseModalities: modalidadesDeMusica()
+    }
   };
 
   let respuesta;
   try {
     respuesta = await conGrafias(modelo, (id) =>
-      llamar(urlModelo({ ...modelo, id }, 'predict', ent.sa.project_id), cuerpo, {
+      llamar(urlModelo({ ...modelo, id }, 'generateContent', ent.sa.project_id), cuerpo, {
         metodo: 'POST',
         limiteMs: LIMITE_MS,
         contexto: {
@@ -176,18 +178,7 @@ export async function musica({ texto, negativo = null, durS } = {}) {
     throw quizaEsElIdioma(fallo);
   }
 
-  // `:predict` contesta en `predictions[0]`, no en `candidates[0].content.parts`.
-  const prediccion = Array.isArray(respuesta?.predictions) ? respuesta.predictions[0] : null;
-  const datos = prediccion?.bytesBase64Encoded || prediccion?.audioContent || null;
-  const mime = prediccion?.mimeType || 'audio/wav';
-  if (!datos) {
-    throw new ErrorDeCara(
-      'El modelo de música ha contestado pero no ha devuelto ningún audio. Suele ser el filtro de ' +
-        'contenido, que se queda con la pieza y da la petición por buena igualmente: hay que ' +
-        'cambiar el encargo en «musica.piezas» de datos/serie.json.',
-      { detalle: recorte(comoTexto(respuesta)), reintentable: false, http: 502 }
-    );
-  }
+  const { datos, mime } = sacarAudio(respuesta, modelo, 'la música');
 
   // Lyria no siempre entrega WAV: cuando manda PCM crudo, el muestreo viene en
   // el propio mimeType («audio/L16;codec=pcm;rate=48000») y de ahí se lee. No se
@@ -605,54 +596,42 @@ function vozDeFicha(valor) {
  *
  * @returns {Promise<Array<{id:string, genero:string, idiomas:string[]}>>}
  */
-export async function listarVoces() {
-  const idioma = idiomaDeLaSerie();
+export async function listarVoces({ genero = null } = {}) {
+  // NO se le pregunta a texttospeech.googleapis.com.
+  //
+  // Ese servicio es Cloud TTS y devuelve las Chirp3-HD y las Studio, que es
+  // justo lo que el plan descarta de todo el proyecto: «Chirp lee, este actúa».
+  // Las voces de Gemini no se listan por API —son treinta, fijas— y viven en
+  // datos/voces-gemini.json, de donde el parche las mete en serie.voces.catalogo.
+  //
+  // Preguntarle a Cloud TTS era además engañoso de la peor manera: los nombres
+  // coinciden (hay una «Achernar» en las dos familias), así que la pantalla
+  // parecía correcta y lo que se habría grabado era otra cosa.
+  const catalogo = Array.isArray((serie.voces || {}).catalogo) ? serie.voces.catalogo : [];
 
-  const respuesta = await llamar(
-    urlServicio(HOST_VOZ, `v1/voices?languageCode=${encodeURIComponent(idioma)}`),
-    null,
-    {
-      metodo: 'GET',
-      limiteMs: LIMITE_MS,
-      contexto: { que: `pedir a Google la lista de voces de ${idioma}` }
-    }
-  );
-
-  const crudas = Array.isArray(respuesta && respuesta.voices) ? respuesta.voices : [];
-  const voces = [];
-
-  for (const cruda of crudas) {
-    if (!cruda || typeof cruda !== 'object') continue;
-
-    const id = String(cruda.name ?? '').trim();
-    if (!id) continue;
-
-    const idiomas = (Array.isArray(cruda.languageCodes) ? cruda.languageCodes : [])
-      .map((c) => String(c).trim())
-      .filter(Boolean);
-
-    // La consulta ya pide solo las del idioma, pero se vuelve a comprobar: lo
-    // que se enseña en pantalla tiene que servir de verdad para lo que se va a
-    // grabar, y una voz de otro idioma diría el japonés con acento de otro sitio.
-    if (!sirveParaIdioma(idiomas, idioma)) continue;
-
-    voces.push({ id, genero: generoEnEspanol(cruda.ssmlGender), idiomas });
-  }
-
-  if (!voces.length) {
+  if (!catalogo.length) {
     throw new ErrorDeCara(
-      `Google no ha devuelto ninguna voz para ${idioma}. Sin lista no se puede elegir voz, y los ` +
-      'ids no se inventan. Suele ser que falte habilitar la API de síntesis de voz ' +
-      '(texttospeech.googleapis.com) en el proyecto, o que la service account no tenga permiso ' +
-      'sobre ella. La pantalla de Salud lo comprueba y lo dice.',
-      { detalle: comoTexto(respuesta), reintentable: false, http: 502 }
+      'No hay ninguna voz en el catálogo. Las de Gemini no se piden a Google: están escritas en ' +
+        'datos/voces-gemini.json y el parche de datos las mete en serie.json. Ejecuta ' +
+        '«npm run datos» y vuelve a desplegar.',
+      { reintentable: false, http: 500 }
     );
   }
 
-  // Ordenadas por id: la pantalla las enseña en una lista y una lista que cambia
-  // de orden en cada carga no se puede recorrer con el pulgar.
-  voces.sort((a, b) => a.id.localeCompare(b.id, 'es'));
-  return voces;
+  const quiere = genero ? String(genero).trim().toLowerCase() : null;
+
+  return catalogo
+    // Un personaje masculino no enseña voces femeninas: escuchar lo que no se va
+    // a elegir es tiempo perdido. «sin decidir» las enseña todas.
+    .filter((una) => !quiere || quiere === 'sin decidir' || una.genero === quiere)
+    .map((una) => ({
+      id: String(una.id),
+      genero: String(una.genero || 'sin decidir'),
+      caracter: String(una.caracter || ''),
+      // El idioma no lo elige la voz: las de Gemini valen para cualquiera, y el
+      // que se habla lo dice serie.voces.idioma.
+      idiomas: [idiomaDeLaSerie()]
+    }));
 }
 
 /** ¿Sirve esta voz para el idioma de la serie? Vale «ja-JP» y vale «ja». */
@@ -1284,4 +1263,15 @@ function recorte(texto, maximo = 600) {
 
 function primeraMayuscula(t) {
   return t.length ? t[0].toUpperCase() + t.slice(1) : t;
+}
+
+/**
+ * Las modalidades que acepta Lyria. Salen de los datos, no del código.
+ *
+ * Con ['AUDIO'] a secas la petición se rechaza y el error no dice que sea por
+ * esto: hay que pedir ['AUDIO','TEXT'].
+ */
+function modalidadesDeMusica() {
+  const escritas = ((serie.musica || {}).modelo || {}).modalidades;
+  return Array.isArray(escritas) && escritas.length ? escritas : ['AUDIO', 'TEXT'];
 }

@@ -489,7 +489,18 @@ export default {
     function pintarCandidatas(ficha) {
       const id = String(ficha.personaje);
       const generos = generosDisponibles();
-      const puesto = generoElegido.get(id) || 'todos';
+
+      // POR DEFECTO, SOLO LAS DE SU GÉNERO. Un personaje masculino no enseña
+      // voces femeninas: escuchar treinta candidatas cuando la mitad no se van a
+      // elegir es tiempo perdido, y con seis personajes que se llevan el 75% del
+      // diálogo ese tiempo es real. El género sale de datos/serie.json, donde el
+      // parche lo deduce de la propia identidad del personaje.
+      //
+      // Se puede quitar el filtro a mano: la pastilla «todas» sigue ahí, porque
+      // una voz de otro género puede ser justo la que quede bien y esconderla
+      // sería peor que enseñarla.
+      const suyo = generoDelPersonaje(serie, id);
+      const puesto = generoElegido.get(id) || (suyo && generos.includes(suyo) ? suyo : 'todos');
       const lista = puesto === 'todos'
         ? candidatas
         : candidatas.filter((v) => generoDe(v) === puesto);
@@ -1365,4 +1376,19 @@ function loQueDijo(fallo) {
   if (typeof fallo === 'string') return fallo;
   if (fallo.message) return String(fallo.message);
   return String(fallo);
+}
+
+/**
+ * El género de un personaje, de datos/serie.json.
+ *
+ * El parche de datos lo deduce de la primera línea de su identidad —«young
+ * woman», «man of fifty», «girl of twelve»— porque es donde está el sujeto. Un
+ * figurante que no esté en la ficha no filtra nada: más vale enseñar de más que
+ * esconder la voz buena.
+ */
+function generoDelPersonaje(serie, id) {
+  const fichas = serie && typeof serie.personajes === 'object' ? serie.personajes : null;
+  const ficha = fichas ? fichas[id] : null;
+  const genero = ficha && typeof ficha.genero === 'string' ? ficha.genero.trim() : '';
+  return genero && genero !== 'sin decidir' ? genero : null;
 }
