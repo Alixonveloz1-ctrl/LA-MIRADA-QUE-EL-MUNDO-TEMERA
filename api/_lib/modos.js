@@ -1230,22 +1230,6 @@ function sinNombresDeOperacion(estado) {
 }
 
 /**
- * Se niega a guardar un estado en el que dos personajes tengan la misma voz.
- *
- * POR QUÉ NO SE COMPARTE UNA VOZ. Dos personajes con el mismo timbre son el
- * mismo personaje para el oído, por mucho que el guion los llame distinto. En
- * doce capítulos eso no se arregla después: habría que volver a grabar todo lo
- * del segundo. Y no es un problema de sitio: hay treinta voces y veintinueve
- * personajes, así que cada uno puede tener la suya.
- *
- * SE NIEGA, PERO NO ENCIERRA. Soltar una voz —dejarla en null— quita el choque,
- * así que un estado que ya viniera mal siempre se puede arreglar: se suelta una
- * de las dos y se vuelve a guardar. Si esto rechazara cualquier escritura
- * mientras hubiera un duplicado, no habría manera de deshacerlo.
- *
- * @param {object} estado el que manda el navegador
- */
-/**
  * De qué personaje es ya una voz, según el estado del bucket.
  * @param {object} estado
  * @param {string} vozId
@@ -1264,12 +1248,21 @@ function duenoDeLaVoz(estado, vozId) {
   return null;
 }
 
-function comprobarQueNadieComparteVoz(estado) {
-  const voces = esObjeto(estado.voces) ? estado.voces : null;
-  if (!voces) return;
+/**
+ * Las parejas de personajes que comparten voz SIN poder hacerlo.
+ *
+ * Se devuelven como «a|b» con los dos nombres ordenados, para poder comparar dos
+ * estados por diferencia. La voz no entra en la clave a propósito: mover un
+ * choque de una voz a otra no lo empeora, y bloquear eso sería otro callejón.
+ *
+ * @param {object} estado
+ * @returns {Set<string>}
+ */
+function parejasQueNoPueden(estado) {
+  const voces = esObjeto(estado) && esObjeto(estado.voces) ? estado.voces : null;
+  const salida = new Set();
+  if (!voces) return salida;
 
-  // Quién tiene cada voz. Puede ser más de uno: compartir está permitido entre
-  // los que no se llegan a reconocer, y `puedenCompartir` dice entre cuáles.
   const quienes = new Map();
   for (const [personaje, dentro] of Object.entries(voces)) {
     if (!esObjeto(dentro)) continue;
@@ -1279,22 +1272,76 @@ function comprobarQueNadieComparteVoz(estado) {
     quienes.get(vozId).push(personaje);
   }
 
-  for (const [vozId, deQuienes] of quienes) {
-    if (deQuienes.length < 2) continue;
-
+  for (const deQuienes of quienes.values()) {
     for (let i = 0; i < deQuienes.length; i += 1) {
       for (let j = i + 1; j < deQuienes.length; j += 1) {
         const [uno, otro] = [deQuienes[i], deQuienes[j]];
         if (puedenCompartir(uno, otro)) continue;
-
-        throw new ErrorDeCara(
-          `No se ha guardado nada: la voz «${vozId}» estaría a la vez en «${uno}» y en ` +
-            `«${otro}», y esos dos no pueden compartir timbre. ${porQueNoPuedenCompartir(uno, otro)} ` +
-            'En la tarjeta de uno de los dos, «Cambiar la voz elegida», y vuelve a elegir.',
-          { reintentable: false, http: 409 }
-        );
+        salida.add([uno, otro].sort().join('|'));
       }
     }
+  }
+  return salida;
+}
+
+/**
+ * Se niega a guardar un estado que EMPEORE el reparto de voces.
+ *
+ * POR QUÉ NO SE COMPARTE UNA VOZ. Dos personajes con el mismo timbre son el
+ * mismo personaje para el oído, por mucho que el guion los llame distinto. En
+ * doce capítulos eso no se arregla después: habría que volver a grabar todo lo
+ * del segundo.
+ *
+ * POR QUÉ SE COMPARA CON EL BUCKET EN VEZ DE MIRAR SOLO LO QUE LLEGA. Porque
+ * esta comprobación está en la ÚNICA puerta por la que escriben las ocho
+ * pantallas, y mirar solo lo que llega convertía un dato de voces en un cerrojo
+ * para todo:
+ *
+ *   · Con un choque ya guardado en el bucket, la Cola no podía apuntar un
+ *     trabajo, Audio no podía guardar un bloque y Montaje no podía dejar un
+ *     manifiesto. Ninguna de las tres habla de voces, y el mensaje que salía
+ *     tampoco: el navegador toma cualquier 409 por una carrera de escritura.
+ *   · Con DOS choques, arreglarlo era imposible: soltar una voz deja el otro
+ *     choque dentro, así que esa escritura también se rechazaba. No había
+ *     ninguna secuencia de acciones en la aplicación que lo deshiciera; había
+ *     que editar el estado a mano en el bucket.
+ *
+ * Y un choque heredado no es una hipótesis: hasta que se puso esta regla, la
+ * pantalla ofrecía a todos las treinta voces.
+ *
+ * Comparando, lo que se prohíbe es EMPEORAR: meter a alguien en un choque o
+ * inventarse uno nuevo. Un choque que ya venía y que no crece pasa, así que
+ * soltar una voz entra siempre, haya un choque o haya cinco, y la Cola sigue
+ * guardando. El caso por el que se puso esto —dos pestañas eligiendo la misma
+ * voz a la vez— sigue tapado: esa segunda pestaña SÍ está creando la pareja.
+ *
+ * La lectura del bucket no cuesta una petición de más: `modoEstadoEscribir` ya
+ * la hacía para conservar los nombres de operación de Veo.
+ *
+ * @param {object} propuesta el estado que se quiere guardar
+ * @param {object} enElBucket el que hay ahora mismo
+ */
+function comprobarQueNadieComparteVoz(propuesta, enElBucket) {
+  const antes = parejasQueNoPueden(enElBucket);
+  const ahora = parejasQueNoPueden(propuesta);
+
+  for (const pareja of ahora) {
+    if (antes.has(pareja)) continue;
+
+    const [uno, otro] = pareja.split('|');
+    const vozId = soloTexto((((propuesta.voces || {})[uno]) || {}).voz_id);
+
+    throw new ErrorDeCara(
+      `No se ha guardado nada: este cambio pondría la voz «${vozId}» a la vez en «${uno}» y en ` +
+        `«${otro}», y esos dos no pueden compartir timbre. ${porQueNoPuedenCompartir(uno, otro)} ` +
+        'En la tarjeta de uno de los dos, «Cambiar la voz elegida», y vuelve a elegir.',
+      // 400 y NO 409, aunque «conflicto» suene a esto. El navegador trata todo
+      // 409 del estado como una carrera de escritura: lo reintenta cinco veces
+      // y acaba diciendo «suele ser otra pestaña abierta; ciérrala», que aquí es
+      // mentira y esconde la única frase que explica cómo arreglarlo. Con 400
+      // el mensaje sube tal cual a la tarjeta.
+      { reintentable: false, http: 400 }
+    );
   }
 }
 
@@ -1375,13 +1422,6 @@ async function modoEstadoEscribir(cuerpo) {
       'hecho desde otro sitio'
   );
 
-  // UNA VOZ, UN PERSONAJE. Se comprueba AQUÍ, en la única puerta por la que
-  // pasan todos los cambios de estado, y no solo en la pantalla: dos pestañas
-  // pueden elegir la misma voz a la vez, y en una carrera de las que se
-  // resuelven con 409 el que pierde vuelve a aplicar su cambio encima del bueno
-  // —que es lo correcto para todo lo demás— y colaría el duplicado.
-  comprobarQueNadieComparteVoz(estado);
-
   try {
     // Los nombres de operación se conservan de lo que hay en el bucket: el
     // navegador nunca los ha tenido —viajan como `true`— así que lo que mande en
@@ -1390,6 +1430,17 @@ async function modoEstadoEscribir(cuerpo) {
     // recoger nunca.
     const enElBucket = await leerElEstado();
     const aGuardar = conNombresDeOperacion(estado, enElBucket.estado);
+
+    // UNA VOZ, UN PERSONAJE —salvo entre los que no se reconocen—. Se comprueba
+    // AQUÍ, en la única puerta por la que pasan todos los cambios de estado, y
+    // no solo en la pantalla: dos pestañas pueden elegir la misma voz a la vez,
+    // y en una carrera de las que se resuelven con 409 el que pierde vuelve a
+    // aplicar su cambio encima del bueno —que es lo correcto para todo lo
+    // demás— y colaría el choque.
+    //
+    // Va DESPUÉS de leer el bucket porque compara con lo que hay: lo que se
+    // prohíbe es empeorar, no arrastrar. Ver la cabecera de la función.
+    comprobarQueNadieComparteVoz(aGuardar, enElBucket.estado);
 
     const guardado = await escribirElEstado(aGuardar, generacion);
     return { generacion: guardado.generacion };

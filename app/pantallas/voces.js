@@ -274,11 +274,68 @@ export default {
           'diálogo: son en los que merece la pena gastar tiempo escuchando candidatas. El orden ' +
           'es el del reparto de datos/serie.json, que ya viene por volumen de diálogo.'),
         barra(elegidas, fichas.length, { etiqueta: 'Voces elegidas' }),
+        pintarLosChoquesQueYaHay(),
         h('p', { clase: 'tenue' },
           'La voz elegida se guarda en el estado, en el bucket, y es la que dirá todas las líneas ' +
           'de ese personaje. El timbre no deriva entre llamadas: es la voz elegida. Lo que sí ' +
           'cambia de una llamada a otra es la entrega, y contra eso lo que se hace es generar cada ' +
           'escena de una sola vez, no línea a línea.'));
+    }
+
+    /**
+     * Los timbres repetidos que YA están guardados y no deberían estarlo.
+     *
+     * POR QUÉ HACE FALTA ENSEÑARLOS. El servidor solo rechaza los cambios que
+     * EMPEORAN el reparto, no los que arrastran un choque de antes; si no fuera
+     * así, un choque ya guardado dejaría a la Cola, a Audio y a Montaje sin poder
+     * guardar nada, y con dos no habría forma de deshacerlo desde aquí. Pero eso
+     * quiere decir que un choque heredado se queda ahí, callado, hasta que se
+     * monte el episodio y dos personajes suenen igual. Así que se dice arriba, la
+     * primera vez que se abre la pantalla, con los nombres.
+     *
+     * Es un caso de verdad: hasta que se puso esta regla, esta misma pantalla
+     * ofrecía a todos las treinta voces.
+     *
+     * @returns {HTMLElement|null}
+     */
+    function pintarLosChoquesQueYaHay() {
+      // No se usa `duenosDeLasVoces()`: ese mapa se queda con UN personaje por
+      // voz, y aquí lo que hace falta es justo lo contrario —todos los que
+      // tienen cada voz—, que es donde se ven los choques.
+      const estado = elEstado();
+      const deCadaVoz = new Map();
+      for (const [personaje, dentro] of Object.entries((estado && estado.voces) || {})) {
+        if (!dentro || typeof dentro !== 'object') continue;
+        const vozId = typeof dentro.voz_id === 'string' ? dentro.voz_id.trim() : '';
+        if (!vozId) continue;
+        if (!deCadaVoz.has(vozId)) deCadaVoz.set(vozId, []);
+        deCadaVoz.get(vozId).push(personaje);
+      }
+
+      const choques = [];
+      for (const [vozId, quienes] of deCadaVoz) {
+        for (let i = 0; i < quienes.length; i += 1) {
+          for (let j = i + 1; j < quienes.length; j += 1) {
+            if (puedenCompartir(quienes[i], quienes[j])) continue;
+            choques.push(
+              `${nombreCortoDeVoz(vozId)}: ${nombreEnPantalla(quienes[i])} y ` +
+              `${nombreEnPantalla(quienes[j])}`,
+            );
+          }
+        }
+      }
+
+      if (!choques.length) return null;
+
+      return aviso(
+        `${choques.length === 1 ? 'Hay un timbre repetido' : `Hay ${choques.length} timbres repetidos`} ` +
+        'entre personajes que no pueden compartirlo, de antes de que existiera esta regla: ' +
+        `${choques.join('; ')}. Se dejan guardados a propósito —bloquearlos dejaría a la Cola y a ` +
+        'Audio sin poder guardar nada— pero hay que deshacerlos antes de grabar: al montar el ' +
+        'episodio esos dos van a sonar igual. En la tarjeta de uno de los dos, «Cambiar la voz ' +
+        'elegida».',
+        { tono: 'error' },
+      );
     }
 
     /**

@@ -179,6 +179,18 @@ que se probaba un solo nombre— y por eso hoy se mide en vez de darse por hecho
    aunque nunca coincida, y dos que coinciden se delatan aunque digan una línea
    cada uno. `comparte` y `con` los calcula `npm run datos` leyendo el guion, y
    la misma regla la aplican la pantalla y el servidor.
+
+   El servidor rechaza lo que **empeora** el reparto, no lo que arrastra. La
+   comprobación está en la única puerta por la que escriben las ocho pantallas,
+   así que mirar solo lo que llega convertía un dato de voces en un cerrojo para
+   todo: con un timbre repetido ya guardado, la Cola no podía apuntar un trabajo
+   ni Audio guardar un bloque; y con dos, soltar una voz dejaba el otro dentro y
+   tampoco entraba — no había forma de deshacerlo sin editar el bucket a mano.
+   Comparando con lo que hay, soltar una voz entra siempre y las demás pantallas
+   siguen guardando, mientras que meter a alguien en un choque o inventarse uno
+   nuevo se rechaza igual. Los repetidos que ya estuvieran guardados se avisan
+   arriba en Voces, con nombres: se toleran para no bloquear nada, pero hay que
+   deshacerlos antes de grabar.
 3. **Banco** — los personajes y los escenarios de toda la serie: generar, mirar,
    aprobar y regenerar, con las cadenas de ancla y de edad a la vista.
 4. **Desglose** — se elige un episodio y se convierte en planos, una llamada de
