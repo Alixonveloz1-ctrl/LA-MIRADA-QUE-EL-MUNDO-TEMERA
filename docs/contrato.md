@@ -536,3 +536,247 @@ audio/musica/{id}.wav                  audio/voz/{pieza}/{bloque}.wav
 muestras/{personaje}/{voz_id}.wav      montaje/{trabajo}/…
 montaje/{pieza}-{version}.mp4          estado.json
 ```
+
+---
+
+## 12. Firmas exactas
+
+Nadie inventa una firma. Si hace falta una que no está, se añade **aquí** antes
+de escribirla. Todo es ESM (`"type":"module"`), sin dependencias externas ni
+paso de compilación: la función corre en Node 20+ y el navegador carga módulos
+nativos.
+
+### `api/_lib/entorno.js`
+```js
+export function entorno()      // → { sa, bucket, prefijo, region, modelos, montajeJob, montajeRegion, concurrencia, clave }
+                               //   sa = objeto de la service account ya parseado
+                               //   modelos = { imagen:{calidad,medio,economico}, veo:{...}, tts, musica, stt, texto }
+                               //   cada modelo = { id, region, variable }
+export function enmascarar(v)  // "mi-proyecto-4711" → "mi-…-711"; null → null
+```
+Lanza `ErrorDeCara` con mensaje en español si falta `GCP_SERVICE_ACCOUNT` o
+`GCS_BUCKET`, o si el JSON no parsea. El `project_id` sale **siempre** de
+`sa.project_id`, nunca de una constante ni de otra variable.
+
+### `api/_lib/errores.js`
+```js
+export class ErrorDeCara extends Error {
+  constructor(mensaje, { detalle = null, reintentable = false, http = 500 } = {})
+  // campos: .mensaje .detalle .reintentable .http
+}
+export function deGoogle(http, cuerpoTexto, contexto)  // → ErrorDeCara con el texto de Google literal en .detalle
+export function esReintentable(http)                   // 408/429/5xx → true; cualquier 4xx → false; 413 → false siempre
+export function comoRespuesta(err)                     // → { ok:false, error:{mensaje,detalle,reintentable,http} }
+```
+
+### `api/_lib/censor.js`
+```js
+export function instalarCensor(res, ent)   // sobrescribe res.json y res.end. Primera línea del handler.
+export function tachar(valor, secretos)    // recursivo sobre cadenas/arrays/objetos/claves. Exportada para poder medirla.
+export function esUrlFirmada(s)            // true solo si es una URL V4 de storage.googleapis.com
+```
+
+### `api/_lib/gcs.js`
+```js
+export async function leer(ruta)        // → { texto, generacion, bytes } | null
+export async function leerBytes(ruta)   // → { datos:Buffer, generacion, bytes } | null
+export async function escribir(ruta, datos, { tipo, generacion })  // → { ruta, generacion, bytes }
+export async function listar(prefijo)   // → [{ ruta, bytes, actualizado }]
+export async function borrar(ruta)      // → boolean
+export async function firmar(rutas, { minutos = 360 })  // → { "<ruta>": "<url>" }
+export function gsUri(ruta)             // → "gs://{bucket}/{prefijo}/{ruta}"
+export function desdeGsUri(uri)         // → ruta lógica, o null si no es de este bucket
+```
+`escribir` con `generacion` usa `ifGenerationMatch`; un 412 sale como
+`ErrorDeCara` con `http:409`. `generacion:0` significa «solo si no existe».
+Las rutas que entran y salen son **lógicas**: el prefijo lo pone y lo quita este
+módulo y nadie más.
+
+### `api/_lib/datos.js`
+```js
+export const serie, guiones
+export function pieza(id)                    // lanza si no existe
+export function toma(idPieza, idToma)
+export function placa(idPlaca)
+export function escenario(id)
+export function personaje(id)
+export function escenaDeGuion(episodio, escena)
+export function bloquesDeVoz(idPieza)        // → [{ id, personajes:[..], lineas:[{quien,ja,es,t,hasta,intencion}] }]
+export function nivelImagen(nivel)           // → { id, region, variable }
+export function nivelVeo(nivel)              // → { id, variable }
+export function rutaPlaca(idPlaca)           // → "banco/{personaje}/{placa}.png"
+export function anclaDePersonaje(idPersonaje)// → idPlaca del ancla, o null
+export function placasDePersonaje(idPersonaje)
+export function lineasDeVoz(idPieza)         // → [{quien, ja, es, t, hasta}] en orden
+```
+
+### `api/_lib/prompt.js`
+```js
+export function promptPlaca(idPlaca)            // → { texto, negativo, referencias:[{placa, instruccion, cupo}] }
+export function promptEscenario(id)             // → { texto, negativo, referencias:[] }
+export function promptKeyframe(idPieza, idToma) // → { texto, negativo, referencias:[{placa|escenario, instruccion, cupo}] }
+export function promptVideo(idPieza, idToma)    // → { texto, negativo }
+export function encargoMusica(idPieza, idMusica)// → { texto, negativo, durS }   (en inglés, literal de serie.json)
+export function guionDeVoz(idPieza, idBloque)   // → { partes:[{quien, texto_ja, direccion}], instruccion }
+export function comprobarCupos(referencias, idModelo)  // lanza ErrorDeCara si se pasa de cupo
+export function sellar(texto)                   // devuelve texto + estilo.bloque + "negativo: …". Lanza si ya lo lleva.
+```
+`sellar()` es el único sitio donde se pega `estilo.bloque`, y **toda** función de
+prompt termina llamándolo. `cupo` es `"personaje"` u `"objeto"`.
+
+### `api/_lib/vertex.js`
+```js
+export async function llamar(url, cuerpo, { metodo = 'POST', limiteMs = 45000 })  // → json
+export function urlModelo({ id, region }, verbo, proyecto)  // → URL completa de Vertex
+export function urlServicio(host, ruta)                     // texttospeech / speech / run
+```
+`llamar` traduce cualquier respuesta no-2xx con `deGoogle(...)`. Lleva su propio
+`AbortController` con `limiteMs` por debajo del límite de la plataforma: sin él
+la función se apaga sin excepción y el activo se queda «generando» para siempre.
+
+### `api/_lib/imagen.js`
+```js
+export async function generar({ texto, negativo, referencias, nivel })
+// referencias: [{ datos:Buffer, mime, instruccion, cupo }]
+// → { b64, mime, bytes }
+```
+`generateContent`, `aspectRatio:"16:9"`, `resolution:"2K"` (la K en mayúscula).
+Cada referencia va como `inlineData` seguida **inmediatamente** de un `text` con
+su instrucción: sin esa línea el modelo copia el encuadre en vez de la identidad.
+
+### `api/_lib/veo.js`
+```js
+export async function lanzar({ texto, negativo, imagenB64, lastFrameB64, nivel, durGen, storageUri })
+// → { operacion, avisoSinLastFrame:boolean }
+export async function consultar(operacion, nivel)   // → { hecho, error }
+```
+
+### `api/_lib/audio.js`
+```js
+export async function musica({ texto, negativo, durS })   // → { wav:Buffer, durS }
+export async function voz({ partes, instruccion, voces }) // → { wav:Buffer, durS }
+export async function listarVoces()                       // → [{ id, genero, idiomas }]
+export async function alinear(wav, lineas)                // → [{ inicio, fin }]
+export function duracionWav(buf)                          // → segundos, leídos de la cabecera
+export function envolverWav(pcm, { hz = 24000, canales = 1, bits = 16 })  // → Buffer
+```
+
+### `api/_lib/texto.js`
+```js
+export async function generar(prompt, { json = false, limiteMs })  // → string | objeto
+export async function traducirAJapones(textoEs, intencion)         // → string
+export async function desglosarEscena(episodio, escena)            // → { planos:[...] }  ya validado contra §6
+```
+
+### `api/_lib/estado.js`
+```js
+export const ESTADO_VACIO
+export async function leer()                          // → { estado, generacion }
+export async function escribir(estado, generacion)    // → { generacion }
+export function asegurar(estado)                      // rellena desde serie.json lo que falte; idempotente
+export function rutaAprobada(estado, tipo, id)        // tipo: "banco"|"escenario"|"keyframe"|"clip"
+export function exigirAprobada(estado, tipo, id, porQue)  // devuelve la ruta o lanza ErrorDeCara diciendo qué falta
+export function reprobarCadena(estado, idPlacaAncla)  // pone aprobada:null en todas las placas que dependen de esa ancla
+```
+
+### `api/_lib/montaje.js`
+```js
+export async function lanzar(manifiesto)     // → { ejecucion, manifiestoRuta }
+export async function estado(ejecucion)      // → { hecho, bien, queja, salidas }
+```
+
+### `api/_lib/salud.js`
+```js
+export async function salud()   // → el objeto de §2
+```
+
+### `api/_lib/modos.js`
+```js
+export const MODOS   // { "<modo>": async (cuerpo) => datos }
+```
+
+### `api/g.js`
+```js
+export default async function handler(req, res)
+```
+Orden obligatorio: `instalarCensor(res, ent)` → método → clave → `modo` →
+despacho → `X-Peso-Respuesta` → `res.json`.
+
+### `app/api.js`
+```js
+export class ErrorDeCara extends Error   // .mensaje .detalle .reintentable .http
+export async function llamar(modo, campos = {})   // → datos; lanza ErrorDeCara
+export function pesos()                            // → { "<modo>": bytesMax }
+```
+
+### `app/estado.js`
+```js
+export async function cargar()        // → estado
+export function actual()              // → estado en memoria (nunca null tras cargar)
+export async function cambiar(fn)     // aplica fn(estado) y escribe; ante 409 recarga, reaplica y reintenta (5 veces)
+export function alCambiar(cb)         // → función para desuscribirse
+export function anotarGasto(estado, tipo, clave, cantidad)
+```
+
+### `app/cola.js`
+```js
+export function encolar(tipo, args)          // → id; no duplica un trabajo idéntico ya pendiente
+export function encolarVarios(trabajos)      // → [id]
+export async function arrancar()             // idempotente: si ya corre, no hace nada
+export function detener()                    // pendiente → detenido; no aborta lo que ya está en curso
+export function reanudar()
+export function corriendo()                  // → boolean
+export function resumen()                    // → { pendientes, enCurso, hechas, fallidas, detenidas }
+export async function recuperarOperaciones() // consulta toda operacion_en_curso ANTES de lanzar nada nuevo
+export const EJECUTORES                      // { "<tipo>": async (args, trabajo) => void }
+```
+
+### `app/imagen.js`
+```js
+export async function reducirParaVeo(url)   // → { b64, ancho, alto, bytes }
+export const ANCHO_VEO = 1280
+```
+
+### `app/ui.js`
+```js
+export function h(etiqueta, props, ...hijos)
+export function pantalla(titulo, ...secciones)
+export function seccion(titulo, ...hijos)
+export function tarjeta({ titulo, media, pie, acciones, estado })
+export function boton(texto, alAccionar, { tono, desactivado } = {})
+export function aviso(mensaje, { tono = 'nota', detalle } = {})
+export function barra(hechas, total, { etiqueta } = {})
+export function filtro(opciones, valor, alCambiar)
+export function espera(texto)
+export async function confirmar(pregunta)   // → boolean
+export function vaciar(nodo)
+```
+
+### `app/formato.js`
+```js
+export function segundos(s), bytes(n), fecha(iso), porcentaje(a, b), plural(n, uno, varios)
+```
+
+### `app/pantallas/*.js`
+```js
+export default { id, titulo, icono, async montar(raiz) }   // montar pinta dentro de raiz y se suscribe a alCambiar
+```
+
+### `app/main.js`
+Arranca: `cargar()` → `recuperarOperaciones()` → pinta pestañas → monta la
+pantalla guardada en `location.hash` (por defecto Salud).
+
+### `montador/montador.mjs`
+Recibe la ruta del manifiesto en `MANIFIESTO` y el bucket en `GCS_BUCKET`.
+Descarga lo que el manifiesto nombre, monta, sube la salida, y escribe
+`montaje/{trabajo}/queja.txt` **antes** de salir con error. Un código de salida
+no es un mensaje de error.
+
+### `herramientas/invariantes.mjs`
+Comprueba los 13 invariantes sobre `datos/serie.json` y el árbol de código, sin
+red. Sale con 1 y una lista en español si algo falla.
+
+### `herramientas/pesar.mjs`
+Fabrica material del **tamaño real** (PNG 2K, JPEG de 1280, WAV de 45 s, listas
+de 400 tomas), serializa la respuesta de cada modo y comprueba que cabe en
+4,5 MB. La medida es la prueba: ese fallo no se ve razonando sobre el código.
