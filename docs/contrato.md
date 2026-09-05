@@ -1030,3 +1030,19 @@ Esto **no** rompe la regla de que el usuario solo decide sobre lo que percibe:
 no está juzgando un texto, está oyendo una canción y diciendo cuándo entra cada
 verso. Lo que ve es la línea en español que va a salir en pantalla; lo que
 decide es un instante.
+
+### 13.8 El README se actualiza con cada cambio
+
+Regla de trabajo, no de código: **cada cosa que se cambia se refleja en el
+README**. Un README viejo es peor que ninguno — manda a quien lo lee a buscar
+cosas que ya no están y le esconde las que sí.
+
+Y como acordarse no funciona, `herramientas/invariantes.mjs` lo comprueba: el
+README tiene que **nombrar** cada pieza de `serie.json`, cada carpeta del
+repositorio, las ocho pantallas, `npm run comprobar` e `instalar.sh`. Si mañana se
+añade una pieza y el README no la nombra, `npm run comprobar` falla y dice cuál
+falta.
+
+Lo que la comprobación **no** hace, y conviene saberlo: no lee la prosa. Puede
+decir que el README nombra el `ending`; no puede decir si lo que cuenta de él es
+verdad. Eso sigue siendo de quien escribe.

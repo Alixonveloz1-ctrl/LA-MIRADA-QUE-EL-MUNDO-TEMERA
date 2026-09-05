@@ -864,6 +864,63 @@ bloque('Datos · la regla de la boca');
 // DATOS · Lo que se ve en pantalla
 // ===========================================================================
 
+bloque('El README, al día');
+
+{
+  // El README se queda viejo solo, y un README viejo es peor que ninguno: manda
+  // a quien lo lee a buscar cosas que ya no están y a no enterarse de las que
+  // sí. Así que no se confía en acordarse: se comprueba.
+  //
+  // No se comprueba la prosa —eso no se puede— sino que NOMBRE lo que existe:
+  // cada pieza, cada carpeta, cada pantalla y cada herramienta. Si mañana se
+  // añade una pieza y el README no la nombra, esto falla y hay que escribirla.
+  const readme = textoDe('README.md') || '';
+  const faltan = [];
+
+  const nombra = (aguja) => readme.includes(aguja);
+
+  // La pieza tiene que aparecer como `id` entre comillas invertidas, no suelta
+  // dentro de otra palabra: buscar «ending» a secas casaría con
+  // «opening-ending.json» y la comprobación no valdría para nada.
+  for (const idPieza of Object.keys(serie.piezas || {})) {
+    if (!nombra(`\`${idPieza}\``)) faltan.push(`la pieza «${idPieza}»`);
+  }
+
+  for (const carpeta of ['app/', 'api/', 'datos/', 'docs/', 'herramientas/', 'montador/', 'despliegue/']) {
+    if (!nombra(carpeta)) faltan.push(`la carpeta «${carpeta}»`);
+  }
+
+  for (const pantalla of ['Salud', 'Voces', 'Banco', 'Desglose', 'Tomas', 'Audio', 'Cola', 'Montaje']) {
+    if (!nombra(`**${pantalla}**`)) faltan.push(`la pantalla «${pantalla}»`);
+  }
+
+  for (const orden of ['npm run comprobar', 'instalar.sh']) {
+    if (!nombra(orden)) faltan.push(`«${orden}»`);
+  }
+
+  comprobar(
+    'El README nombra todo lo que existe',
+    faltan.length
+      ? [
+          `README.md no nombra ${listaCorta(faltan, 6)}. El README se actualiza con CADA cambio: ` +
+            'uno viejo manda a buscar cosas que ya no están y esconde las que sí.',
+        ]
+      : [],
+  );
+
+  // Y que no nombre lo que ya no existe.
+  const fantasmas = [];
+  for (const idPieza of ['ep01', 'ep02']) {
+    if (nombra(`\`${idPieza}\``) && !serie.piezas[idPieza]) {
+      fantasmas.push(`la pieza «${idPieza}», que el README nombra y no existe todavía`);
+    }
+  }
+  comprobar(
+    'El README no promete lo que no hay',
+    fantasmas.length ? [`README.md nombra ${listaCorta(fantasmas, 4)}.`] : [],
+  );
+}
+
 bloque('Datos · lo que se ve en pantalla');
 
 {

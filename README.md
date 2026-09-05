@@ -55,13 +55,48 @@ planos, al volver a entrar se reanuda sola.
 |---|---|
 | `app/` | La aplicación del navegador: cola, estado, progreso y las ocho pantallas, en módulos ES nativos sin build ni framework. |
 | `api/` | La puerta única `POST /api/g` y su `_lib/`: firma el token, compone los prompts, habla con Vertex y con el bucket, y censura toda respuesta. |
-| `datos/` | `guiones.json` (la serie), `serie.base.json` (cómo se produce, tal y como llegó) y `serie.json` (el que lee la herramienta, generado por el parche). |
+| `datos/` | `guiones.json` (la serie), `serie.base.json` (cómo se produce, tal y como llegó), `opening-ending.json` (las dos piezas fijas y sus canciones) y `serie.json` (el que lee la herramienta, generado por el parche). |
 | `docs/` | El contrato interno, el plan de construcción, las decisiones, la guía de despliegue y la explicación del parche de datos. |
 | `herramientas/` | Lo que se ejecuta sin red: el parche de datos, los invariantes y el pesaje de las respuestas. |
 | `montador/` | El contenedor de ffmpeg que corre como Job de Cloud Run: recorta, concatena, aplica el acabado, mezcla el audio y quema los subtítulos. |
+| `despliegue/` | Lo que Google Cloud necesita, como archivos y no como comandos que alguien dicte: `apis.txt`, `cors.json`, `permisos.txt` y el tutorial de Cloud Shell. `instalar.sh` los lee. |
 
-En la raíz, `index.html` (lo único que se sirve), `package.json`, `vercel.json` y
-este archivo.
+En la raíz, `index.html` (lo único que se sirve), `instalar.sh` (todo lo de Google
+Cloud en un comando), `package.json`, `vercel.json` y este archivo.
+
+---
+
+## Las piezas
+
+Una pieza es cualquier cosa que se produce de principio a fin. La herramienta no
+distingue entre un teaser de 24 planos y un episodio de 400.
+
+| Pieza | Planos | Duración | Se genera |
+|---|---|---|---|
+| `teaser` | 24 | 78 s | Una vez. Ya venía desglosada: se puede generar el primer día. |
+| `opening` | 27 | 90 s | **Una vez para toda la serie.** Se pega como capa en los doce episodios. |
+| `ending` | 15 | 90 s | **Una vez para toda la serie.** Igual. |
+| `epNN` | ~400 | 22 min | Por episodio, con el desglose. Se añaden al lado. |
+
+El montaje de un episodio queda `opening + actos + ending`, todo pegado como capa
+ya montada. Regenerar el opening en cada episodio serían 504 planos tirados y doce
+openings ligeramente distintos, que es lo que hace que una serie parezca hecha a
+trozos.
+
+### Las canciones
+
+El opening y el ending llevan **canción con letra, cantada en japonés y
+subtitulada en español**, como cualquier animé. La letra está en
+`datos/opening-ending.json`.
+
+No hay que confundirla con **la canción de la madre**, que es un elemento de la
+historia, va en un idioma que no se habla en ese mundo, y esa decisión es del
+episodio 10.
+
+Los tiempos del subtítulo **se marcan oyendo la canción, no se estiman**: Lyria no
+canta exactamente lo que se le pide, así que la pantalla de Audio deja darle al
+play y tocar un botón cuando entra cada verso. Un verso sin marcar no se quema
+como subtítulo.
 
 ---
 
@@ -79,7 +114,8 @@ este archivo.
 5. **Tomas** — la lista de la pieza activa filtrable por estado: keyframe,
    aprobar, clip, intentos, elegir.
 6. **Audio** — la música de cada pieza y las voces de cada bloque, con
-   reproductor: nada entra en un montaje sin haber sonado antes aquí.
+   reproductor: nada entra en un montaje sin haber sonado antes aquí. Y el
+   marcador de letra, para poner los subtítulos de las canciones oyéndolas.
 7. **Cola** — qué se está generando ahora, qué falló y por qué, el botón de
    detener y el contador de gasto.
 8. **Montaje** — montar por escenas, actos y episodio, y reproducir o descargar
