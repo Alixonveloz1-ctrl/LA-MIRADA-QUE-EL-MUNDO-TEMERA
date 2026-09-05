@@ -24,6 +24,10 @@
 set -euo pipefail
 
 AQUI="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+# El nombre del Job sale de despliegue/montador.txt, el MISMO archivo que lee la
+# función para saber a quién lanzar. Una sola fuente: así no hay que poner
+# MONTAJE_JOB en Vercel.
+NOMBRE_JOB="${NOMBRE_JOB:-$(sed -n 's/^job=//p' "$AQUI/despliegue/montador.txt" 2>/dev/null | head -1)}"
 NOMBRE_JOB="${NOMBRE_JOB:-montador-mirada}"
 NOMBRE_SA="${NOMBRE_SA:-mirada-app}"
 SOLO="${1:-}"
@@ -391,13 +395,23 @@ VARS="$HOME/mirada-variables.txt"
 {
   echo "GCP_SERVICE_ACCOUNT=$CLAVE_B64"
   echo "GCS_BUCKET=$BUCKET"
-  echo "GCP_LOCATION=$REGION"
-  [ -n "$MONTAJE_URL" ] && echo "MONTAJE_URL=$MONTAJE_URL"
-  [ -n "$MONTAJE_URL" ] && echo "MONTAJE_KEY=$CLAVE_MONTAJE"
-  echo "MONTAJE_JOB=$NOMBRE_JOB"
-  echo "MONTAJE_REGION=$REGION"
 } > "$VARS"
 chmod 600 "$VARS"
+
+# Lo demás se guarda aparte, porque NO hace falta ponerlo en Vercel y mezclarlo
+# con lo que sí hace falta es la forma más fácil de que alguien copie de más.
+{
+  echo "# NO hacen falta en Vercel. La función ya sabe todo esto:"
+  echo "#   · la región sale de GCP_LOCATION, que por defecto ya es la del bucket"
+  echo "#   · el nombre del Job sale de despliegue/montador.txt, en el repositorio"
+  echo "#   · la dirección del Job se compone sola con proyecto + región + nombre"
+  echo "# Están aquí solo por si algún día hace falta cambiar algo a mano."
+  echo "MONTAJE_JOB=$NOMBRE_JOB"
+  echo "MONTAJE_REGION=$REGION"
+  echo "MONTAJE_KEY=$CLAVE_MONTAJE"
+  [ -n "$MONTAJE_URL" ] && echo "MONTAJE_URL=$MONTAJE_URL"
+} > "$HOME/mirada-extras.txt"
+chmod 600 "$HOME/mirada-extras.txt"
 
 echo
 echo "======================================================"
@@ -411,28 +425,25 @@ echo "  Cuenta:    $CORREO_APP"
 [ -n "$MONTAJE_URL" ] && echo "  Montador:  $NOMBRE_JOB"
 echo
 echo "------------------------------------------------------"
-echo "  FALTA VERCEL, Y ESO SÍ ES A MANO"
+echo "  EN VERCEL SOLO HAY QUE PONER DOS VARIABLES"
 echo "------------------------------------------------------"
 echo
-echo "  Las variables están escritas aquí:"
+echo "  Están escritas aquí:"
 echo
 echo "    $VARS"
 echo
 echo "  Ábrelo con:  cat $VARS"
 echo
-echo "  GCP_SERVICE_ACCOUNT va en UNA SOLA LÍNEA,"
-echo "  en base64, para que se pueda copiar en un"
-echo "  móvil sin que se rompa. La aplicación la"
-echo "  acepta así."
+echo "    GCP_SERVICE_ACCOUNT   (la línea larga)"
+echo "    GCS_BUCKET"
 echo
-echo "  Ve a Vercel → tu proyecto → Settings →"
-echo "  Environment Variables, y pega cada una."
-if [ "${CLAVE_ES_NUEVA:-0}" -eq 1 ] && [ "${JOB_YA_ESTABA:-0}" -eq 1 ]; then
-  echo
-  echo "  OJO: MONTAJE_KEY ES NUEVA en esta pasada."
-  echo "  Si no la cambias en Vercel, el montaje"
-  echo "  fallará y el error no dirá que es por esto."
-fi
+echo "  Y nada más. La región, el nombre del Job y su"
+echo "  dirección la función ya los sabe: el nombre está"
+echo "  en el propio repositorio y la región por defecto"
+echo "  ya es la de tu bucket."
+echo
+echo "  (En ~/mirada-extras.txt quedan las de más, por si"
+echo "   algún día hay que cambiar algo a mano.)"
 echo
 echo "------------------------------------------------------"
 echo "  Y DESPUÉS, SIN FALTA:"
@@ -441,15 +452,11 @@ echo
 echo "  VERCEL NO APLICA UNA VARIABLE NUEVA A UN"
 echo "  DESPLIEGUE YA CONSTRUIDO."
 echo
-echo "  Deployments → los tres puntos del último"
-echo "  → Redeploy"
-echo
-echo "  Si no lo haces, la pantalla de Salud seguirá"
-echo "  diciendo que falta algo que ya está puesto,"
-echo "  y buscarás el fallo donde no está."
+echo "  Deployments -> los tres puntos del ultimo"
+echo "  -> Redeploy"
 echo
 echo "======================================================"
 echo
-echo "Luego abre la aplicación y ve a Salud."
-echo "Hasta que no esté todo en verde, no sigas."
+echo "Luego abre la aplicacion y ve a Salud."
+echo "Hasta que no este todo en verde, no sigas."
 echo

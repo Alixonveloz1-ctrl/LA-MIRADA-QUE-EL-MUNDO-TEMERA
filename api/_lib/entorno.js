@@ -57,7 +57,7 @@ export const FICHA_DE_VARIABLES = [
   { nombre: 'GCS_PREFIX', obligatoria: false,
     para: 'La carpeta del proyecto dentro del bucket. Vacío significa la raíz del bucket.' },
   { nombre: 'GCP_LOCATION', obligatoria: false,
-    para: 'La región por defecto. Sin ella, us-central1. Los Gemini 3.x van siempre por «global» pase lo que pase.' },
+    para: 'NO hace falta ponerla si el bucket está en us-central1, que es el valor por defecto. El JSON de la service account NO trae región: ese campo no existe en él. Los Gemini 3.x van siempre por «global» pase lo que pase.' },
   { nombre: 'IMAGE_MODEL', obligatoria: false, para: 'Sustituye el modelo de imagen sin tocar código.' },
   { nombre: 'VEO_MODEL', obligatoria: false, para: 'Sustituye el modelo de vídeo sin tocar código.' },
   { nombre: 'TTS_MODEL', obligatoria: false, para: 'Sustituye el modelo de voz sin tocar código.' },
@@ -65,13 +65,13 @@ export const FICHA_DE_VARIABLES = [
   { nombre: 'STT_MODEL', obligatoria: false, para: 'Sustituye el modelo de alineación sin tocar código.' },
   { nombre: 'TEXTO_MODEL', obligatoria: false, para: 'Sustituye el modelo de texto del desglose sin tocar código.' },
   { nombre: 'MONTAJE_JOB', obligatoria: false,
-    para: 'El nombre del Job de Cloud Run. Sin él —y sin MONTAJE_URL— no se puede montar, pero todo lo demás funciona.' },
+    para: 'NO hace falta ponerla: el nombre del Job sale de despliegue/montador.txt, que es el mismo archivo que usa el instalador para crearlo. Solo si le pusiste otro nombre.' },
   { nombre: 'MONTAJE_REGION', obligatoria: false,
-    para: 'La región del Job de Cloud Run. Sin ella se usa la de GCP_LOCATION.' },
+    para: 'NO hace falta ponerla: se usa la de GCP_LOCATION, que por defecto es us-central1. Solo si desplegaste el montador en otra región.' },
   { nombre: 'MONTAJE_URL', obligatoria: false,
-    para: 'La dirección del montador, tal y como la imprime montador/instalar.sh. Si está, manda sobre MONTAJE_JOB.' },
+    para: 'NO hace falta ponerla: la dirección se compone sola con el proyecto, la región y el nombre del Job. Solo si el montador está en otro sitio.' },
   { nombre: 'MONTAJE_KEY', obligatoria: false,
-    para: 'La clave que solo comparten esta función y el montador. Sin ella el montador trabaja igual, pero acepta el encargo de cualquiera.' },
+    para: 'La clave que solo comparten esta función y el montador. Sin ella el montaje funciona igual: lanzar el Job ya exige las credenciales de la cuenta. Es un cinturón de más, no un requisito.' },
   { nombre: 'CONCURRENCIA', obligatoria: false,
     para: 'Cuántas generaciones a la vez como máximo. Sin ella, 3. Saturar las cuotas de Vertex devuelve errores que parecen falta de acceso.' },
   { nombre: 'CLAVE_ACCESO', obligatoria: false,
@@ -123,7 +123,12 @@ export function entorno() {
     prefijo,
     region,
     modelos: tablaDeModelos(serie(), region),
-    montajeJob: (process.env.MONTAJE_JOB || '').trim() || null,
+    // El nombre del Job NO hace falta ponerlo en Vercel: lo crea el instalador de
+    // este mismo repositorio y el nombre está en despliegue/montador.txt, que
+    // leen los dos. Poner a mano una variable cuyo valor ya conoce el
+    // repositorio es trabajo que no ayuda a nadie y una cosa más que puede
+    // escribirse mal. MONTAJE_JOB sigue mandando si alguien la pone.
+    montajeJob: (process.env.MONTAJE_JOB || '').trim() || nombreDelJob(),
     montajeRegion: (process.env.MONTAJE_REGION || '').trim() || region,
     // Las dos que imprime montador/instalar.sh al terminar. Ninguna es
     // obligatoria: sin ellas no se puede montar, pero todo lo demás del estudio
@@ -488,4 +493,24 @@ function serie() {
  */
 function huellaDelEntorno() {
   return VARIABLES.map((v) => `${v}=${process.env[v] ?? ''}`).join('');
+}
+
+/**
+ * El nombre del Job de Cloud Run del montador, leído de despliegue/montador.txt.
+ *
+ * Una sola fuente para los dos que lo necesitan: `instalar.sh`, que lo crea, y
+ * este módulo, que lo lanza. Si el archivo no está —porque alguien desplegó solo
+ * la carpeta `api/`— se cae al nombre que pone el instalador, que es el mismo.
+ */
+let cacheJob = null;
+function nombreDelJob() {
+  if (cacheJob !== null) return cacheJob;
+  try {
+    const texto = readFileSync(new URL('../../despliegue/montador.txt', import.meta.url), 'utf8');
+    const linea = texto.split('\n').find((una) => una.trim().startsWith('job='));
+    cacheJob = linea ? linea.split('=')[1].trim() : 'montador-mirada';
+  } catch {
+    cacheJob = 'montador-mirada';
+  }
+  return cacheJob;
 }

@@ -367,7 +367,8 @@ si no parecen magia negra:
   desplegar o modificar el job desde esa cuenta, y no lo necesitas, porque el job
   lo despliega el instalador con tu propio usuario de Cloud Shell.
 
-Cuando termine: copia `MONTAJE_URL` y `MONTAJE_KEY` (o `MONTAJE_JOB` y
+Cuando termine no hay que copiar nada más: la función ya sabe el nombre del
+Job y su región. Lo que sobra queda en `~/mirada-extras.txt` (era: `MONTAJE_URL`, `MONTAJE_KEY`, `MONTAJE_JOB` y
 `MONTAJE_REGION`, según lo que imprima) a las variables de Vercel, y **Redeploy**.
 
 ---

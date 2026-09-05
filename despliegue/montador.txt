@@ -1,0 +1,6 @@
+# El nombre y la región del Job de Cloud Run del montador.
+# Una sola fuente: lo lee instalar.sh cuando lo crea, y api/_lib/entorno.js
+# cuando hay que lanzarlo. Así no hay que poner MONTAJE_JOB en Vercel: la
+# función ya sabe cómo se llama, porque lo crea el mismo repositorio.
+# Se puede seguir sustituyendo con MONTAJE_JOB / MONTAJE_REGION si hiciera falta.
+job=montador-mirada

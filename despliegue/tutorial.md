@@ -69,7 +69,8 @@ Al terminar, el instalador deja las variables escritas en un archivo. Ábrelo:
 cat ~/mirada-variables.txt
 ```
 
-Son seis o siete líneas. La primera, `GCP_SERVICE_ACCOUNT`, es la clave de la
+Son DOS líneas, y no hace falta ninguna más: la región, el nombre del Job y su
+dirección la función ya los sabe. La primera, `GCP_SERVICE_ACCOUNT`, es la clave de la
 cuenta de servicio **en base64 y en una sola línea**: son dos kilobytes de JSON y
 en un móvil no se copian de otra forma sin que se rompan. La aplicación la acepta
 así.
@@ -87,7 +88,7 @@ Esta parte no se puede automatizar: hay que entrar en Vercel.
 
 1. Abre tu proyecto en **vercel.com**.
 2. **Settings → Environment Variables**.
-3. Pega cada línea del archivo: el nombre a la izquierda, el valor a la derecha.
+3. Pega las dos: `GCP_SERVICE_ACCOUNT` y `GCS_BUCKET`. Nada más.
 
 Y después, **sin falta**:
 

@@ -98,6 +98,21 @@ canta exactamente lo que se le pide, así que la pantalla de Audio deja darle al
 play y tocar un botón cuando entra cada verso. Un verso sin marcar no se quema
 como subtítulo.
 
+### Lo que hay que poner a mano
+
+Dos variables en Vercel, y ninguna más:
+
+| Variable | De dónde sale |
+|---|---|
+| `GCP_SERVICE_ACCOUNT` | El JSON de la service account, en base64. Lo deja el instalador. |
+| `GCS_BUCKET` | El nombre del bucket. Lo deja el instalador. |
+
+Todo lo demás lo sabe la propia herramienta: la región por defecto es
+`us-central1`, y el nombre del Job del montador está en
+`despliegue/montador.txt`, que es el mismo archivo con el que `instalar.sh` lo
+crea. Poner a mano una variable cuyo valor ya conoce el repositorio es trabajo
+que no ayuda a nadie y una cosa más que puede escribirse mal.
+
 ---
 
 ## Las ocho pantallas
