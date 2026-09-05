@@ -1739,6 +1739,85 @@ bloque('Datos · hay voces para todos, y cada uno la suya');
 }
 
 // ===========================================================================
+// CÓDIGO · Los tiempos cuadran de arriba abajo
+// ===========================================================================
+//
+// POR QUÉ EXISTE. Cada paso de una generación tenía su límite —45 s para Vertex,
+// 45 s para el bucket— y ninguno sabía del techo de la plataforma, que eran 60 s.
+// Sumados se pasaban, y cuando eso ocurre no hay error ni excepción ni una línea
+// en los registros: la plataforma corta la función y devuelve un 504 en bruto.
+// En pantalla se lee «se ha roto algo» y en el servidor no aparece NADA. Se
+// comprobó en los registros de producción: siete 504 seguidos y cero errores.
+// TODAS las generaciones fallaban, y el sitio donde mirar no existía.
+//
+// Aquí se atan los tres números que tienen que cuadrar y que viven en archivos
+// distintos —uno de ellos ni siquiera es código—, que es exactamente por lo que
+// se separaron sin que nadie se diera cuenta.
+
+bloque('Código · los tiempos cuadran de arriba abajo');
+
+{
+  const numeroDe = (rel, patron) => {
+    const fuente = fuenteDe(rel);
+    if (fuente === null) return null;
+    const hallado = patron.exec(fuente);
+    if (!hallado) return null;
+    return Number(String(hallado[1]).replace(/[_\s]/g, ''));
+  };
+
+  const enVercel = (() => {
+    const crudo = fuenteDe('vercel.json');
+    if (crudo === null) return null;
+    try {
+      const json = JSON.parse(crudo);
+      const g = json.functions && json.functions['api/g.js'];
+      return g && Number.isFinite(Number(g.maxDuration)) ? Number(g.maxDuration) * 1000 : null;
+    } catch {
+      return null;
+    }
+  })();
+
+  const enPuerta = numeroDe('api/g.js', /const PRESUPUESTO_MS = ([\d_]+);/);
+  const enNavegador = numeroDe('app/api.js', /const LIMITE_MS = ([\d_]+);/);
+
+  const quejas = [];
+
+  if (enVercel === null || enPuerta === null || enNavegador === null) {
+    quejas.push(
+      'No se han podido leer los tres tiempos: maxDuration en vercel.json, PRESUPUESTO_MS en ' +
+        'api/g.js y LIMITE_MS en app/api.js. Si se les ha cambiado el nombre, hay que cambiarlo ' +
+        'también aquí: sin esta comprobación se vuelven a separar sin que nadie lo vea.',
+    );
+  } else {
+    if (enPuerta !== enVercel) {
+      quejas.push(
+        `api/g.js se cree con ${enPuerta / 1000} s de plazo y vercel.json le da ` +
+          `${enVercel / 1000}. Si sobra, la función vuelve a morir cortada sin dejar rastro; si ` +
+          'falta, se rinde antes de tiempo. Tienen que ser el mismo número.',
+      );
+    }
+    if (enNavegador <= enVercel) {
+      quejas.push(
+        `El navegador corta a los ${enNavegador / 1000} s y la función tiene ${enVercel / 1000}. ` +
+          'Cortar antes que la función no ahorra dinero: la generación sigue viva en Google, se ' +
+          'cobra igual, el archivo queda en el bucket y aquí se cuenta como fallo. El navegador ' +
+          'tiene que esperar MÁS que la función, para que quien dé la explicación sea ella.',
+      );
+    }
+  }
+
+  comprobar('El plazo de la función, el de la plataforma y el del navegador cuadran', quejas);
+
+  if (!quejas.length) {
+    avisar(
+      `La plataforma da ${enVercel / 1000} s, la función se los cree suyos y se reserva un margen ` +
+        `para poder contestar, y el navegador espera ${enNavegador / 1000} s, que es más. Así, ` +
+        'pase lo que pase, quien explica lo que ha ocurrido es la función y no un 504 mudo.',
+    );
+  }
+}
+
+// ===========================================================================
 // CÓDIGO · Nada llama a algo que no existe
 // ===========================================================================
 //

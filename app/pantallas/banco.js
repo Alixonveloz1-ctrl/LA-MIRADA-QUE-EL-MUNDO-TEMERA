@@ -36,7 +36,7 @@
 // escenarios. Lanzarlos de golpe satura las cuotas de Vertex, y cuando eso pasa
 // los errores que llegan parecen falta de acceso al modelo aunque la cuenta lo
 // tenga (plan §8). Todo pasa por `encolarVarios()`, que escribe una sola vez y
-// deja que la cola los saque de tres en tres.
+// deja que la cola los saque de uno en uno.
 //
 // POR QUÉ LOS GRUPOS DE PERSONAJE SE ABREN UNO A UNO. Son veintisiete personajes
 // y ciento una placas con su imagen. Pintarlas todas a la vez en un teléfono es
@@ -913,8 +913,8 @@ function seccionCabecera(ctx) {
     h(
       'p',
       { clase: 'tarjeta-texto tenue' },
-      'Los dos botones encolan: no lanzan nada de golpe. La cola los saca de tres en tres —o de ' +
-        'las que digas en la pantalla de Cola—, porque saturar las cuotas de Vertex devuelve ' +
+      'Los dos botones encolan: no lanzan nada de golpe. La cola los saca de UNO EN UNO ' +
+        'porque saturar las cuotas de Vertex devuelve ' +
         'errores que parecen falta de acceso al modelo. «Generar el resto» solo encola lo que ' +
         'todavía no tiene ninguna imagen que mirar; para pedir otra versión de algo que ya la ' +
         'tiene, está el botón de su tarjeta.'

@@ -23,7 +23,7 @@
 //      cabe ni en la ventana del modelo ni en los sesenta segundos de la
 //      función, y cuando falla se pierden las veinticuatro escenas en vez de
 //      una. Por eso el botón «Desglosar» de un episodio no llama a nada: encola
-//      veinticuatro trabajos y se va. Quien los hace, de tres en tres y desde el
+//      veinticuatro trabajos y se va. Quien los hace, de uno en uno y desde el
 //      bucket, es `app/cola.js`; si se cierra el móvil a mitad, al volver a
 //      abrir siguen ahí.
 //

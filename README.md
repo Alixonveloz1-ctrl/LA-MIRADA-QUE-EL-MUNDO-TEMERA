@@ -221,6 +221,17 @@ contesta un 429 que en pantalla se lee como falta de acceso al modelo, y se
 acaba buscando el fallo en los permisos, que es donde nunca está. La variable
 `CONCURRENCIA` también se ha quitado — no la leía nadie.
 
+**Y la función tiene un plazo.** Cada paso tenía su propio límite —45 s para
+Vertex, 45 s para el bucket— y ninguno sabía del techo de la plataforma. Sumados
+se pasaban, y cuando eso ocurre no hay error ni excepción ni una línea en los
+registros: la plataforma corta la función y devuelve un 504 en bruto. En pantalla
+se lee «se ha roto algo» y en el servidor no aparece nada. Ahora la puerta abre
+un plazo al empezar y cada llamada espera lo que le dejen; cuando se acaba,
+contesta en español diciendo qué estaba haciendo. Los tres tiempos —el de la
+plataforma, el que la función se cree suyo y el que el navegador espera— los ata
+`npm run invariantes`, porque viven en tres archivos distintos y uno de ellos ni
+siquiera es código.
+
 El hueco se cuenta sobre el estado del **bucket**, no sobre la pestaña que
 tienes delante, así que «una cada vez» vale para todo el estudio aunque dejes
 otra ventana abierta. Para poder distinguir «lo está haciendo otro» de «lo cogió

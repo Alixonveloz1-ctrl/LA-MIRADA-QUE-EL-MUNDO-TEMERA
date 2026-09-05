@@ -9,6 +9,7 @@ import { Buffer } from 'node:buffer';
 import { entorno } from './entorno.js';
 import { ErrorDeCara, deGoogle, esReintentable } from './errores.js';
 import { token, AMBITOS, clavePrivada } from './auth.js';
+import { plazoPara } from './plazo.js';
 
 // El host de las URLs firmadas y de la API. No identifica ninguna cuenta.
 const ANFITRION = 'storage.googleapis.com';
@@ -377,7 +378,13 @@ async function pedir(url, opciones, contexto) {
   const acceso = await token(AMBITOS.almacen);
 
   const aborto = new AbortController();
-  const reloj = setTimeout(() => aborto.abort(), LIMITE_MS);
+  // Como en Vertex: lo que pida, pero nunca más de lo que le quede a la función.
+  // Subir un PNG de siete megas después de una generación larga es justo el paso
+  // que se pasaba del techo y hacía que la plataforma cortara sin decir nada.
+  const reloj = setTimeout(
+    () => aborto.abort(),
+    plazoPara(LIMITE_MS, `hablando con el bucket para ${(contexto && contexto.que) || 'esto'}`)
+  );
   try {
     return await fetch(url, {
       ...opciones,

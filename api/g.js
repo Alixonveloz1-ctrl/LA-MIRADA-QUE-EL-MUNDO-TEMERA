@@ -39,6 +39,18 @@ import { instalarCensor, tachar } from './_lib/censor.js';
 import { entorno } from './_lib/entorno.js';
 import { ErrorDeCara, comoRespuesta } from './_lib/errores.js';
 import { MODOS } from './_lib/modos.js';
+import { abrirPlazo } from './_lib/plazo.js';
+
+/**
+ * Lo que la plataforma le da a esta función, en milisegundos.
+ *
+ * TIENE QUE SER EL MISMO NÚMERO QUE `maxDuration` EN vercel.json. Si aquí
+ * sobrara, la función se creería con más tiempo del que tiene y volvería a morir
+ * cortada; si faltara, se rendiría antes de tiempo. Se escribe en los dos sitios
+ * porque vercel.json no es código y no se puede importar, y los invariantes
+ * comprueban que coinciden.
+ */
+const PRESUPUESTO_MS = 300_000;
 
 /** Lo que la puerta admite. Cualquier otra cosa es un 405 con palabras. */
 const METODOS = ['POST', 'OPTIONS'];
@@ -56,6 +68,17 @@ const LIMITE_CUERPO = 4.5 * 1024 * 1024;
  */
 export default async function handler(req, res) {
   const secretos = instalarCensor(res, entornoSiSePuede()); // ← LA PRIMERA LÍNEA
+
+  // El plazo, lo SEGUNDO. A partir de aquí ninguna llamada de dentro puede
+  // esperar más de lo que le quede a la función, y cuando se acaba se contesta
+  // con palabras en vez de dejar que la plataforma corte por lo sano.
+  //
+  // Sin esto, una imagen de 2K que tarde 45 s en Vertex más los siete megas de
+  // subida al bucket se pasaban del techo, y lo que llegaba era un 504 en bruto:
+  // sin mensaje, sin excepción y sin una sola línea en los registros del
+  // servidor. Se comprobó en producción —siete 504 seguidos, cero errores—, y es
+  // lo que hacía que TODAS las generaciones fallaran sin decir por qué.
+  abrirPlazo(PRESUPUESTO_MS);
 
   try {
     // 2. El método. El preflight se contesta sin abrir nada.

@@ -47,7 +47,7 @@
 // POR QUÉ LOS BOTONES DE TANDA ENCOLAN Y NO LANZAN. Saturar las cuotas de Vertex
 // devuelve errores que parecen falta de acceso al modelo (plan §8). Todo pasa
 // por `encolarVarios()`, que escribe el estado una sola vez y deja que la cola
-// los saque de tres en tres. Y el de los clips pregunta antes, con el número
+// los saque de uno en uno. Y el de los clips pregunta antes, con el número
 // delante: veinte clips son veinte euros.
 
 import { llamar, ErrorDeCara } from '../api.js';
@@ -1030,8 +1030,8 @@ function seccionCabecera(ctx) {
     h(
       'p',
       { clase: 'tarjeta-texto tenue' },
-      'Los dos botones encolan: no lanzan nada de golpe. La cola los saca de tres en tres —o de ' +
-        'las que digas en la pantalla de Cola—, porque saturar las cuotas de Vertex devuelve ' +
+      'Los dos botones encolan: no lanzan nada de golpe. La cola los saca de UNO EN UNO ' +
+        'porque saturar las cuotas de Vertex devuelve ' +
         'errores que parecen falta de acceso al modelo. Solo encolan lo que no tiene nada todavía; ' +
         'para pedir otra versión de algo que ya se puede mirar está el botón de su tarjeta.'
     )
@@ -2069,7 +2069,7 @@ async function encolarLosClips(trabajos, ctx) {
   const pregunta =
     `Vas a encolar ${plural(trabajos.length, 'clip', 'clips')}. Cada uno cuesta cerca de un euro, ` +
     `así que esto son alrededor de ${trabajos.length} euros. Todos tienen su keyframe aprobado, ` +
-    'así que no se gasta a ciegas. La cola los saca de tres en tres y se puede detener en la ' +
+    'así que no se gasta a ciegas. La cola los saca de uno en uno y se puede detener en la ' +
     'pantalla de Cola. ¿Los encolo?';
   if (!(await confirmar(pregunta))) return;
 

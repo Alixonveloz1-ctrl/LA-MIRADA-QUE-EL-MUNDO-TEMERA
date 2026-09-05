@@ -20,6 +20,7 @@ import { Buffer } from 'node:buffer';
 import { entorno } from './entorno.js';
 import { token, AMBITOS } from './auth.js';
 import { ErrorDeCara, deGoogle } from './errores.js';
+import { plazoPara } from './plazo.js';
 
 // Por debajo de los 60 s de la plataforma, con quince segundos de margen para
 // que dé tiempo a componer la respuesta y a escribirla.
@@ -91,7 +92,10 @@ export async function llamar(url, cuerpo, { metodo = 'POST', limiteMs = LIMITE_M
 
   const acceso = await token(AMBITOS.plataforma);
 
-  const espera = acotarLimite(limiteMs);
+  // El límite de esta llamada, pero nunca más de lo que le queda a la función.
+  // Si ya no queda nada, `plazoPara` lanza con un mensaje en español en vez de
+  // dejar que la plataforma corte la función y devuelva un 504 mudo.
+  const espera = acotarLimite(plazoPara(limiteMs, `llamando a Google para ${ctx.que || 'esto'}`));
   const aborto = new AbortController();
   const reloj = setTimeout(() => aborto.abort(), espera);
 

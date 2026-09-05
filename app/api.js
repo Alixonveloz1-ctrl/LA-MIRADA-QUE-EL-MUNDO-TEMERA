@@ -33,12 +33,17 @@ const RUTA = '/api/g';
 const LLAVE_GUARDADA = 'la-mirada.clave';
 
 /**
- * Lo que se espera como mucho por una llamada. Va por encima de los 60 s de la
- * plataforma a propósito: si la función se apaga sola, quien contesta es ella con
- * su mensaje. Este límite es solo para que una petición que se queda colgada no
- * bloquee la cola para siempre.
+ * Lo que se espera como mucho por una llamada. Va por encima del plazo de la
+ * función a propósito —ella se apaga sola y contesta con su mensaje—, y este
+ * límite es solo para que una petición colgada no bloquee la cola para siempre.
+ *
+ * ESTABA EN 90 s Y ERA UN PROBLEMA, no un seguro. La función tiene 300 s de
+ * plazo, así que a los 90 el navegador abandonaba una generación que seguía
+ * viva: Google la terminaba, se cobraba, el archivo quedaba en el bucket y aquí
+ * se contaba como fallo. Cortar antes que la función no ahorra dinero, lo tira.
+ * Ahora va por encima, y quien manda el mensaje es siempre la función.
  */
-const LIMITE_MS = 90000;
+const LIMITE_MS = 320000;
 
 /** Cuántos caracteres del cuerpo se enseñan cuando no se entiende lo que llegó. */
 const MUESTRA_DETALLE = 300;
