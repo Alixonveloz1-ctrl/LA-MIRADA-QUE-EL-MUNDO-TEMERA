@@ -925,3 +925,34 @@ fallo donde no está.
 
 **La versión de Node va fijada en `package.json`**, no a merced del valor por
 defecto de la plataforma.
+
+### 13.5 El nombre de la operación de Veo no viaja nunca
+
+Un nombre de operación es `projects/{project_id}/locations/…/operations/…`:
+**lleva el project id dentro**. Y el censor tacha el project id de toda respuesta,
+que es exactamente su trabajo.
+
+Las dos cosas juntas rompían la cadena de vídeo entera: el navegador recibía
+`projects/«tachado»/…`, preguntaba por una operación que no existe, y al guardar
+el estado ese nombre tachado pisaba en el bucket el único ejemplar bueno. Ningún
+clip se podía recoger jamás.
+
+La salida **no** es hacerle un hueco al nombre en el censor. Es que no viaje:
+
+- `veo-lanzar` devuelve `lanzada: true`, nunca el nombre.
+- El nombre se escribe en el estado, en el bucket, por la función.
+- `estado-leer` lo cambia por `true` antes de contestar. El navegador solo
+  necesita saber **que** hay vídeo en vuelo, no cómo se llama.
+- `estado-escribir` conserva el nombre que hay en el bucket y no acepta ninguno
+  del navegador. Sí acepta que diga que ya no hay operación: limpiar es suyo.
+- `veo-consultar` recibe `{pieza, toma}` y busca el nombre él mismo.
+
+**Y un segundo apunte, por el invariante de que ninguna operación queda
+huérfana.** El estado se guarda con generación y puede fallar por conflicto justo
+después de lanzar. Así que `veo-lanzar` escribe además el nombre en
+`veo/{pieza}/{toma}/{intento}/operacion.txt`, un archivo que no compite con
+nadie, y `veo-consultar` lo rescata de ahí cuando el estado no lo tiene. Una
+operación lanzada y perdida es un clip pagado que nadie recoge.
+
+Ningún mensaje de error lleva el nombre dentro: saldría tachado y no serviría de
+nada. Se nombra el prefijo, que sí es útil y no identifica la cuenta.

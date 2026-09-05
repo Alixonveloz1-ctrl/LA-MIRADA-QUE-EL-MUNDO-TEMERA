@@ -778,8 +778,24 @@ async function modoVeoLanzar(cuerpo) {
     storageUri: gsUri(prefijo)
   });
 
-  // ANTES de contestar. Si el navegador se cierra en este instante, la operación
-  // sigue apuntada y se recoge al volver a abrir.
+  // PRIMER APUNTE, y el que de verdad garantiza que ninguna operación quede
+  // huérfana: el nombre se escribe en un archivo suyo, al lado de donde Veo va a
+  // dejar el MP4.
+  //
+  // El estado se guarda con generación y puede fallar por conflicto; este
+  // archivo no compite con nadie, así que si el estado no llega a escribirse el
+  // nombre sigue existiendo y `veo-consultar` lo encuentra. Una operación
+  // lanzada y perdida es un clip pagado que nadie recoge.
+  const apunte = `${prefijo}operacion.txt`;
+  try {
+    await escribirEnElBucket(apunte, lanzado.operacion, { tipo: 'text/plain; charset=utf-8' });
+  } catch {
+    // Que no se pueda dejar el apunte no es motivo para tirar el clip lanzado:
+    // queda el estado, que es el camino normal.
+  }
+
+  // SEGUNDO APUNTE, y ANTES de contestar. Si el navegador se cierra en este
+  // instante, la operación sigue apuntada y se recoge al volver a abrir.
   try {
     await cambiarElEstado((estado) => {
       const entrada = entradaDeToma(estado, clave);
@@ -791,11 +807,14 @@ async function modoVeoLanzar(cuerpo) {
       entrada.operacion_prefijo = prefijo;
     }, leido);
   } catch (fallo) {
+    // El nombre de la operación NO se pone en este mensaje: lleva el project id
+    // dentro, el censor lo tacharía y quedaría un «tachado» que no sirve de
+    // nada. No hace falta: está apuntado en el bucket y la aplicación lo
+    // encuentra sola.
     throw new ErrorDeCara(
-      'El clip se ha lanzado y se está generando, pero no se ha podido apuntar en el estado, así ' +
-        'que la aplicación no sabrá sola que existe. Para no perderlo, apunta esto: la operación ' +
-        `es «${lanzado.operacion}» y el vídeo aparecerá en «${prefijo}». Vuelve a abrir la ` +
-        'aplicación dentro de un momento: si el estado se guarda ya, la recogerá. Debajo está el ' +
+      'El clip se ha lanzado y se está generando, pero no se ha podido apuntar en el estado. No se ' +
+        `pierde: ha quedado apuntado en el bucket, en «${prefijo}», y el vídeo aparecerá ahí. ` +
+        'Vuelve a abrir la aplicación dentro de un momento y lo recogerá sola. Debajo está el ' +
         'motivo exacto del fallo.',
       {
         detalle: fallo && fallo.mensaje ? fallo.mensaje : String(fallo),
@@ -805,8 +824,20 @@ async function modoVeoLanzar(cuerpo) {
     );
   }
 
+  // El nombre de la operación NO sale de aquí, y no es un descuido.
+  //
+  // Ese nombre lleva el project id dentro («projects/{id}/locations/…»), así que
+  // al salir por la puerta el censor lo tacha —hace lo que tiene que hacer— y el
+  // navegador se queda con un nombre roto con el que ningún clip se puede
+  // recoger jamás. Peor todavía: al guardar el estado, ese nombre tachado
+  // pisaría en el bucket el único ejemplar bueno.
+  //
+  // Así que el nombre se queda donde tiene sentido que esté: en el estado, en el
+  // bucket, escrito por la función. El navegador solo necesita SABER que hay una
+  // operación en vuelo, no cómo se llama, y `veo-consultar` la busca él mismo
+  // por pieza y toma.
   return {
-    operacion: lanzado.operacion,
+    lanzada: true,
     prefijo,
     intento,
     aviso_sin_lastframe: Boolean(lanzado.avisoSinLastFrame)
@@ -826,9 +857,36 @@ async function modoVeoLanzar(cuerpo) {
 async function modoVeoConsultar(cuerpo) {
   const idPieza = exigirTexto(cuerpo, 'pieza', 'de qué pieza es la toma');
   const idToma = exigirTexto(cuerpo, 'toma', 'qué toma se estaba generando');
-  const operacion = exigirTexto(cuerpo, 'operacion', 'por qué operación de Veo se pregunta');
   const laToma = tomaDeLaPieza(idPieza, idToma);
   const clave = `${idPieza}/${idToma}`;
+
+  // El nombre de la operación se lee del estado, NO de lo que mande el
+  // navegador: lleva el project id dentro y por eso nunca ha viajado hasta allí.
+  const antesDeConsultar = await leerElEstado();
+  const enEstado = entradaDeToma(antesDeConsultar.estado, clave);
+  let operacion = soloTexto(enEstado.operacion_en_curso);
+  let prefijoApuntado = soloTexto(enEstado.operacion_prefijo);
+
+  // Si el estado no lo tiene —porque su escritura falló justo después de
+  // lanzar—, se busca el apunte que `veo-lanzar` deja en el bucket. Es lo que
+  // impide que una operación lanzada y pagada se quede sin nadie que la recoja.
+  if (!operacion) {
+    const rescatado = await buscarOperacionApuntada(idPieza, idToma);
+    if (rescatado) {
+      operacion = rescatado.operacion;
+      prefijoApuntado = rescatado.prefijo;
+    }
+  }
+
+  if (!operacion) {
+    return {
+      hecho: false,
+      sin_operacion: true,
+      aviso:
+        `No hay ninguna generación de vídeo en curso para ${idToma}. O ya terminó y se recogió, ` +
+        'o nunca llegó a lanzarse.'
+    };
+  }
 
   const finDelPlazo = Date.now() + PLAZO_DE_CONSULTA_MS;
 
@@ -853,7 +911,11 @@ async function modoVeoConsultar(cuerpo) {
   }
 
   const leido = await leerElEstado();
-  const prefijo = textoSiViene(cuerpo, 'prefijo') || prefijoGuardado(leido.estado, clave);
+  // El prefijo se busca en tres sitios, en este orden: el que ya se conocía al
+  // empezar (del estado o del apunte del bucket), el del estado ahora mismo, y
+  // como último recurso la carpeta de la toma entera. Nunca sale del cuerpo de
+  // la petición: el navegador no tiene por qué saber dónde escribe Veo.
+  const prefijo = prefijoApuntado || prefijoGuardado(leido.estado, clave);
   const carpeta = prefijo || carpetaDeClips(idPieza, idToma);
 
   const objetos = await listarElBucket(carpeta);
@@ -1084,7 +1146,29 @@ async function modoDesglosarEscena(cuerpo) {
  */
 async function modoEstadoLeer() {
   const { estado, generacion } = await leerElEstado();
-  return { estado, generacion };
+  return { estado: sinNombresDeOperacion(estado), generacion };
+}
+
+/**
+ * El estado tal y como puede verlo el navegador: igual, pero con el nombre de
+ * cada operación de Veo cambiado por `true`.
+ *
+ * El nombre lleva el project id dentro. Si viajara, el censor lo tacharía —que
+ * es su trabajo— y el navegador se quedaría con un nombre roto que además
+ * acabaría pisando el bueno en el bucket al guardar. Con `true` el navegador
+ * sabe lo único que necesita saber: que esa toma tiene vídeo en vuelo.
+ *
+ * @param {object} estado
+ * @returns {object} una copia; el original no se toca
+ */
+function sinNombresDeOperacion(estado) {
+  const copia = JSON.parse(JSON.stringify(estado));
+  for (const entrada of Object.values(copia.tomas || {})) {
+    if (!esObjeto(entrada)) continue;
+    if (soloTexto(entrada.operacion_en_curso)) entrada.operacion_en_curso = true;
+    if (soloTexto(entrada.operacion_prefijo)) entrada.operacion_prefijo = true;
+  }
+  return copia;
 }
 
 /**
@@ -1111,7 +1195,15 @@ async function modoEstadoEscribir(cuerpo) {
   );
 
   try {
-    const guardado = await escribirElEstado(estado, generacion);
+    // Los nombres de operación se conservan de lo que hay en el bucket: el
+    // navegador nunca los ha tenido —viajan como `true`— así que lo que mande en
+    // ese campo no puede mandar sobre el original. Sin esto, guardar el estado
+    // borraría el único ejemplar bueno del nombre y el clip no se podría
+    // recoger nunca.
+    const enElBucket = await leerElEstado();
+    const aGuardar = conNombresDeOperacion(estado, enElBucket.estado);
+
+    const guardado = await escribirElEstado(aGuardar, generacion);
     return { generacion: guardado.generacion };
   } catch (fallo) {
     if (!(fallo instanceof ErrorDeCara) || fallo.http !== 409) throw fallo;
@@ -1285,3 +1377,79 @@ export const MODOS = {
   montar: modoMontar,
   'montaje-estado': modoMontajeEstado
 };
+
+/**
+ * Devuelve el estado que manda el navegador con los nombres de operación de Veo
+ * puestos de vuelta desde el bucket, que es donde viven de verdad.
+ *
+ * El navegador puede decir que una operación TERMINÓ —manda `null` o `false` y
+ * eso se respeta, porque limpiar es suyo—, pero no puede inventarse un nombre ni
+ * cambiar el que hay: si sigue habiendo operación, el nombre es el del bucket.
+ *
+ * @param {object} delNavegador
+ * @param {object} delBucket
+ * @returns {object}
+ */
+function conNombresDeOperacion(delNavegador, delBucket) {
+  const copia = JSON.parse(JSON.stringify(delNavegador));
+  const tomasBucket = esObjeto(delBucket) && esObjeto(delBucket.tomas) ? delBucket.tomas : {};
+
+  for (const [clave, entrada] of Object.entries(copia.tomas || {})) {
+    if (!esObjeto(entrada)) continue;
+    const original = tomasBucket[clave];
+    const nombre = esObjeto(original) ? soloTexto(original.operacion_en_curso) : '';
+    const prefijoOriginal = esObjeto(original) ? soloTexto(original.operacion_prefijo) : '';
+
+    // Si el navegador dice que ya no hay operación, se le hace caso: la ha
+    // terminado él o la ha dado por perdida, y esa decisión es suya.
+    if (!entrada.operacion_en_curso) {
+      entrada.operacion_en_curso = null;
+      entrada.operacion_prefijo = null;
+      continue;
+    }
+
+    entrada.operacion_en_curso = nombre || null;
+    entrada.operacion_prefijo = prefijoOriginal || null;
+  }
+  return copia;
+}
+
+/**
+ * Busca el nombre de una operación de Veo en los apuntes que `veo-lanzar` deja
+ * en el bucket, para cuando el estado no lo tiene.
+ *
+ * Se mira el intento más alto, que es el último lanzado. Existe por el
+ * invariante de que ninguna operación queda huérfana: si la escritura del estado
+ * falló justo después de lanzar, este archivo es lo único que queda entre un
+ * clip pagado y nadie que lo recoja.
+ *
+ * @param {string} idPieza
+ * @param {string} idToma
+ * @returns {Promise<{operacion:string, prefijo:string}|null>}
+ */
+async function buscarOperacionApuntada(idPieza, idToma) {
+  const carpeta = carpetaDeClips(idPieza, idToma);
+  let objetos;
+  try {
+    objetos = await listarElBucket(carpeta);
+  } catch {
+    return null;
+  }
+
+  const apuntes = objetos
+    .map((uno) => soloTexto(uno && uno.ruta))
+    .filter((ruta) => ruta && ruta.endsWith('/operacion.txt'))
+    .sort();
+  if (!apuntes.length) return null;
+
+  const ultimo = apuntes[apuntes.length - 1];
+  try {
+    const leido = await leerBytes(ultimo);
+    if (!leido) return null;
+    const operacion = Buffer.from(leido.datos).toString('utf8').trim();
+    if (!operacion) return null;
+    return { operacion, prefijo: ultimo.slice(0, -'operacion.txt'.length) };
+  } catch {
+    return null;
+  }
+}

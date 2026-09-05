@@ -429,8 +429,11 @@ const NORMALIZADORES = {
   'clip-consultar'(crudos) {
     const pieza = exigirArg(crudos, ['pieza'], 'de qué pieza es la toma');
     const id = exigirArg(crudos, ['id', 'toma'], 'de qué toma se consulta el clip');
-    const operacion = exigirArg(crudos, ['operacion'], 'qué operación de Veo se consulta');
-    const args = { pieza, id, operacion };
+    // El nombre de la operación NO viaja hasta aquí: lleva el project id dentro,
+    // el censor lo tacharía —hace su trabajo— y quedaría un nombre roto con el
+    // que ningún clip se puede recoger. Vive en el bucket y lo busca la función
+    // por pieza y toma.
+    const args = { pieza, id };
     return { args, identidad: args };
   },
 
@@ -1243,7 +1246,7 @@ export async function recuperarOperaciones() {
 /**
  * Todas las tomas que tienen una operación de Veo apuntada.
  * @param {object} estado
- * @returns {{pieza:string, toma:string, operacion:string}[]}
+ * @returns {{pieza:string, toma:string}[]}
  */
 function operacionesEnCurso(estado) {
   const tomas = estado && typeof estado.tomas === 'object' && estado.tomas ? estado.tomas : {};
@@ -1251,14 +1254,15 @@ function operacionesEnCurso(estado) {
 
   for (const [clave, entrada] of Object.entries(tomas)) {
     if (!entrada || typeof entrada !== 'object') continue;
-    const operacion = soloTexto(entrada.operacion_en_curso);
-    if (!operacion) continue;
+    // `operacion_en_curso` llega como `true` desde la función, no como el nombre:
+    // basta para saber que esa toma tiene vídeo en vuelo, que es lo único que el
+    // navegador necesita saber.
+    if (!entrada.operacion_en_curso) continue;
     const corte = String(clave).indexOf('/');
     if (corte <= 0) continue;
     encontradas.push({
       pieza: String(clave).slice(0, corte),
-      toma: String(clave).slice(corte + 1),
-      operacion
+      toma: String(clave).slice(corte + 1)
     });
   }
 
@@ -1270,22 +1274,20 @@ function operacionesEnCurso(estado) {
  * Sea cual sea el resultado, queda un trabajo de consulta en la cola con el mismo
  * id que habría creado el lanzamiento: así no salen dos consultas para el mismo
  * clip.
- * @param {{pieza:string, toma:string, operacion:string}} una
+ * @param {{pieza:string, toma:string}} una
  * @returns {Promise<'terminada'|'fallida'|'enVuelo'>}
  */
 async function recogerOperacion(una) {
   const { id, cambio } = prepararEncolado('clip-consultar', {
     pieza: una.pieza,
-    id: una.toma,
-    operacion: una.operacion
+    id: una.toma
   });
 
   let respuesta;
   try {
     respuesta = await llamar('veo-consultar', {
       pieza: una.pieza,
-      toma: una.toma,
-      operacion: una.operacion
+      toma: una.toma
     });
   } catch (fallo) {
     // No se ha podido preguntar ahora. La consulta se queda encolada y el bucle
@@ -1465,8 +1467,7 @@ export const EJECUTORES = {
     // aplicación la operación está apuntada y la consulta está encolada.
     const consulta = prepararEncolado('clip-consultar', {
       pieza: idPieza,
-      id: idToma,
-      operacion: lanzado.operacion
+      id: idToma
     });
 
     const aviso = lanzado.aviso_sin_lastframe
@@ -1478,18 +1479,20 @@ export const EJECUTORES = {
     await cambiar((estado) => {
       const suyo = buscarEnCola(estado, trabajo.id);
       if (suyo) {
-        suyo.operacion = lanzado.operacion;
+        suyo.operacion = true;
         suyo.aviso = aviso;
         suyo.actualizado = ahoraIso();
       }
       consulta.cambio(estado);
 
-      // La función ya lo apuntó antes de contestar; esto solo deja la copia del
-      // navegador al día y cubre el caso de que su escritura llegara después.
+      // La función ya apuntó el NOMBRE en el bucket antes de contestar, y ese
+      // nombre no viaja hasta aquí. Esto solo deja la copia del navegador
+      // marcando que hay vídeo en vuelo; al guardar, la función conserva el
+      // nombre bueno y no acepta ninguno de los que mande el navegador.
       const suya = entradaDeToma(estado, clave);
-      if (!soloTexto(suya.operacion_en_curso)) suya.operacion_en_curso = lanzado.operacion;
-      if (!soloTexto(suya.operacion_prefijo) && soloTexto(lanzado.prefijo)) {
-        suya.operacion_prefijo = lanzado.prefijo;
+      suya.operacion_en_curso = true;
+      if (!suya.operacion_prefijo && soloTexto(lanzado.prefijo)) {
+        suya.operacion_prefijo = true;
       }
     });
   },

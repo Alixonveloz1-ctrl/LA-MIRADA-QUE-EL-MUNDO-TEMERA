@@ -628,8 +628,9 @@ function operacionesEnVuelo(estado, trabajos) {
 
   for (const [clave, entrada] of Object.entries(tomas)) {
     if (!entrada || typeof entrada !== 'object') continue;
-    const operacion = texto(entrada.operacion_en_curso);
-    if (!operacion) continue;
+    // Llega como `true`, no como el nombre: el nombre lleva el project id dentro
+    // y se queda en el bucket. Aquí basta con saber que hay vídeo en vuelo.
+    if (!entrada.operacion_en_curso) continue;
 
     const corte = String(clave).indexOf('/');
     if (corte <= 0) continue;
@@ -724,7 +725,7 @@ async function consultarYa(unas, ctx) {
     encolarVarios(
       unas.map((una) => ({
         tipo: 'clip-consultar',
-        args: { pieza: una.pieza, id: una.toma, operacion: una.operacion }
+        args: { pieza: una.pieza, id: una.toma }
       }))
     );
     queja = null;
@@ -1398,7 +1399,7 @@ function porQueNoSeQuita(trabajo, estado) {
     const clave = `${texto(args.pieza)}/${texto(args.id)}`;
     const tomas = estado && typeof estado.tomas === 'object' && estado.tomas ? estado.tomas : {};
     const entrada = tomas[clave];
-    if (entrada && texto(entrada.operacion_en_curso)) {
+    if (entrada && entrada.operacion_en_curso) {
       return (
         `La toma ${texto(args.id)} todavía tiene una operación de Veo apuntada: Google está ` +
         'generando ese clip y ya está pagado. Esta consulta es lo único que va a recogerlo, así ' +

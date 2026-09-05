@@ -560,7 +560,9 @@ function leerToma(estado, clave) {
     intentosKeyframe: soloRutas(entrada.intentos_keyframe),
     clip: rutaSiVale(entrada.clip_elegido),
     intentosClip: soloRutas(entrada.intentos_clip),
-    operacion: soloTexto(entrada.operacion_en_curso) || null
+    // `true` cuando hay vídeo en vuelo. El nombre de la operación no viaja hasta
+    // el navegador: lleva el project id dentro y vive en el bucket.
+    operacion: Boolean(entrada.operacion_en_curso)
   };
 }
 
