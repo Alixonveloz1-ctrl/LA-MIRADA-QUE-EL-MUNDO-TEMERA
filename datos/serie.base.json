@@ -3376,6 +3376,9 @@
         "16:9"
       ],
       "formato_por_defecto": "9:16",
+      "nivel": "calidad",
+      "nota_nivel": "Los posters se generan SIEMPRE con el modelo de imagen bueno, sin mirar lo que este elegido en Salud. Son trece imagenes en toda la serie y son la unica que va a ver alguien que no ha visto nada: ahorrar ahi no ahorra nada. Ademas es el que admite mas imagenes de referencia, y un poster lleva el sitio Y las caras a la vez.",
+      "regla_referencias": "Un poster lleva DOS clases de referencia y son cupos distintos que no compiten: 'escenarios' viaja como objeto y 'refs' como personaje. Sin la placa del sitio, el modelo dibuja UNA cripta y no LA cripta; y la placa del sitio trae dentro sus objetos, asi que es tambien la unica manera de que salga EL idolo y no uno parecido.",
       "nota_formato": "Se elige al generar. 9:16 es lo vertical —el poster de toda la vida, y lo que piden las plataformas de movil—; 16:9 es lo que pide una miniatura de YouTube. Cada uno se genera con su proporcion desde el principio: recortar uno para hacer el otro deja la cabeza fuera.",
       "titulo_en_la_imagen": true,
       "nota_titulo": "El titulo va DENTRO de la imagen, pedido en el prompt. Es una decision de quien paga, tomada a sabiendas: los modelos de imagen escriben mal las tildes y las enies, asi que «LA MIRADA QUE EL MUNDO TEMERA» puede salir con letras inventadas. Se mira y se rehace hasta que salga; por eso el boton de rehacer esta siempre a mano.",
@@ -3384,17 +3387,23 @@
         {
           "id": "poster-oficial",
           "nombre": "Poster oficial de la serie",
-          "refs": [
-            "saharis-ancla"
+          "escenarios": [
+            "cripta"
           ],
-          "encargo": "A young man's head fills the upper half, cropped by the right edge, near profile, ragged black hair, his one red eye slid to the corner, holding us. Most of him is black; one band of orange torchlight from far below rims brow, jaw, eye. Ash drifts past him, breath visible in the cold. Under his shoulder the frame opens down-left onto a ribbed vault: a stair falls steeply to the torch pool that rims him, where one robed figure stands, a fortieth of the frame tall, face lifted toward him; behind it a mass of hooded backs, faceless, one turned three-quarters, a leather mask cheek catching that rim. A colossal many-armed carving looms unlit behind them. No other warm source anywhere; embers climb only the right edge. Bottom third: crushed black under banked smoke, the torch pool well above, no spill, no object or figure entering: the title band, tall condensed heavy capitals, wide letterspacing, feet bitten by smoke, a hairline rule beneath.",
+          "refs": [
+            "saharis-ancla",
+            "celebrante-mascara"
+          ],
+          "encargo": "A young man's head fills the upper half, cropped by the right edge, near profile, ragged black hair, his one red eye slid to the corner, holding us. Most of him is black; one band of orange torchlight from far below rims brow, jaw, eye. Ash drifts past him, breath visible in the cold. Under his shoulder the frame opens down-left onto a ribbed vault: a stair falls steeply to the torch pool that rims him, where one robed figure stands, a fortieth of the frame tall, face lifted toward him; behind it a mass of hooded backs, faceless, one turned three-quarters, a leather mask cheek catching that rim. The crypt's own colossal many-armed idol looms unlit behind them, exactly the one in the location reference. No other warm source anywhere; embers climb only the right edge. Bottom third: crushed black under banked smoke, the torch pool well above, no spill, no object or figure entering: the title band, tall condensed heavy capitals, wide letterspacing, feet bitten by smoke, a hairline rule beneath.",
           "uso": "El poster de la serie: el que va en la ficha del canal y en cualquier sitio donde se anuncie.",
-          "titulo_en": "El tercio inferior del cuadro, reescrito para vertical 9:16: negro aplastado con un banco de humo posado encima, con el charco de antorcha sujeto muy por encima de esa banda y sin un solo rebote de luz, objeto ni figura que entre en ella. Las brasas suben unicamente por el borde derecho, por encima de la banda, para que no ensucien las letras. El titulo se asienta ahi —mayusculas altas, condensadas, de peso fuerte, muy espaciadas, los pies de las letras mordidos por el humo y una linea fina de regla debajo—, nunca sobre la cara, que ocupa la mitad superior y el borde derecho.",
-          "nota_refs": "Solo el ancla del protagonista, y a proposito. El enmascarado del fondo ocupa una cuarentava parte del cuadro y su cara no se lee a ese tamano: la mascara la dibuja el encargo con palabras. Cada referencia de mas es una placa mas que hay que tener aprobada antes de poder generar, y este es el poster con el que se anuncia la serie: es el que menos puede quedarse esperando a nada."
+          "titulo_en": "El tercio inferior del cuadro, reescrito para vertical 9:16: negro aplastado con un banco de humo posado encima, con el charco de antorcha sujeto muy por encima de esa banda y sin un solo rebote de luz, objeto ni figura que entre en ella. Las brasas suben unicamente por el borde derecho, por encima de la banda, para que no ensucien las letras. El titulo se asienta ahi —mayusculas altas, condensadas, de peso fuerte, muy espaciadas, los pies de las letras mordidos por el humo y una linea fina de regla debajo—, nunca sobre la cara, que ocupa la mitad superior y el borde derecho."
         },
         {
           "id": "miniatura-ep01",
           "nombre": "Miniatura del episodio 1: El que no llora",
+          "escenarios": [
+            "barrio-humo"
+          ],
           "refs": [
             "saharis-ancla"
           ],
@@ -3405,6 +3414,9 @@
         {
           "id": "miniatura-ep02",
           "nombre": "Miniatura del episodio 2: El precio del apellido",
+          "escenarios": [
+            "elserath-despacho"
+          ],
           "refs": [
             "saharis-ancla",
             "iven-ancla"
@@ -3416,6 +3428,9 @@
         {
           "id": "miniatura-ep03",
           "nombre": "Miniatura del episodio 3: La Prueba del Fuego",
+          "escenarios": [
+            "tuneles"
+          ],
           "refs": [
             "saharis-ancla"
           ],
@@ -3426,6 +3441,9 @@
         {
           "id": "miniatura-ep04",
           "nombre": "Miniatura del episodio 4: Lo que no se apagó",
+          "escenarios": [
+            "casa-vharn"
+          ],
           "refs": [
             "saharis-ancla",
             "celebrante-ancla"
@@ -3437,6 +3455,9 @@
         {
           "id": "miniatura-ep05",
           "nombre": "Miniatura del episodio 5: El bosque no está",
+          "escenarios": [
+            "orilla"
+          ],
           "refs": [
             "saharis-ancla",
             "eira-ancla"
@@ -3448,6 +3469,9 @@
         {
           "id": "miniatura-ep06",
           "nombre": "Miniatura del episodio 6: Admiración, temor, pérdida",
+          "escenarios": [
+            "orilla"
+          ],
           "refs": [
             "saharis-ancla",
             "eira-ancla"
@@ -3459,6 +3483,9 @@
         {
           "id": "miniatura-ep07",
           "nombre": "Miniatura del episodio 7: El sistema de las Siete Casas",
+          "escenarios": [
+            "registros"
+          ],
           "refs": [
             "saharis-ancla"
           ],
@@ -3469,6 +3496,9 @@
         {
           "id": "miniatura-ep08",
           "nombre": "Miniatura del episodio 8: El heredero",
+          "escenarios": [
+            "cripta"
+          ],
           "refs": [
             "saharis-ancla"
           ],
@@ -3479,6 +3509,9 @@
         {
           "id": "miniatura-ep09",
           "nombre": "Miniatura del episodio 9: El nombre",
+          "escenarios": [
+            "registros"
+          ],
           "refs": [
             "saharis-ancla"
           ],
@@ -3489,6 +3522,9 @@
         {
           "id": "miniatura-ep10",
           "nombre": "Miniatura del episodio 10: La que me vio",
+          "escenarios": [
+            "casa-ilmen"
+          ],
           "refs": [
             "saharis-ancla",
             "abuela-ancla"
@@ -3500,8 +3536,12 @@
         {
           "id": "miniatura-ep11",
           "nombre": "Miniatura del episodio 11: El altar vacío",
+          "escenarios": [
+            "cripta"
+          ],
           "refs": [
-            "saharis-ancla"
+            "saharis-ancla",
+            "celebrante-mascara"
           ],
           "encargo": "Wide low view of a vast crypt, the figure small inside it. Immediate foreground, out of focus, cut by the bottom edge: an empty leather mask moulded into a grin, face up on the wet step. Behind it, small at lower right, a young man with ragged black hair sits on the edge of a broad stone altar, three-quarter from behind, hands on his knees, head turned so one red eye catches the light. One torch out of frame left cuts a hard orange diagonal across the slab and his shoulder; the rest is black. Far behind, a colossal many-armed stone idol with a goat skull head rises from the dark, its arms a standing crowd. Smoke drifts, water drips, breath shows in the cold. Keep the top band empty black smoke and vaulting, idol head below it, nothing competing, reserved for the title: tall condensed capitals, heavy weight, wide spacing, a thin rule beneath, lower edges bitten by smoke. Reads at thumbnail size: one silhouette, one light.",
           "uso": "La miniatura con la que se sube el episodio 11, «El altar vacío».",
@@ -3510,6 +3550,9 @@
         {
           "id": "miniatura-ep12",
           "nombre": "Miniatura del episodio 12: La mirada que el mundo temerá",
+          "escenarios": [
+            "tuneles"
+          ],
           "refs": [
             "saharis-ancla"
           ],

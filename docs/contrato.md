@@ -135,8 +135,15 @@ Cómo compone la función, según `tipo`:
   Si falta cualquier referencia aprobada, falla y **dice cuál**.
 - **poster**: `difusion.posters.piezas[id]`. Prompt = `encargo` + la frase de la
   proporción + el título **dentro** de la imagen si
-  `difusion.posters.titulo_en_la_imagen` es `true` (y si no, la orden de no
-  escribir nada). Adjunta cada `refs` como referencia de **personaje**.
+  `difusion.posters.titulo_en_la_imagen` es `true` (y si no, la orden de dejar
+  vacía la banda que el encargo ya reserva).
+  Adjunta cada `escenarios` como referencia de **objeto** con
+  `instrucciones_referencia.escenario`, y cada `refs` como referencia de
+  **personaje** con `instrucciones_referencia.toma`. Son dos cupos distintos y no
+  compiten: un póster lleva el sitio Y las caras.
+  Si el título va dentro, el negativo va **sin las palabras de texto**: el
+  negativo de la serie lleva `text`, y mandarlo junto a «escribe este título» es
+  pedir y prohibir lo mismo en la misma llamada.
   La `proporcion` solo se acepta si está en `difusion.posters.formatos`, y viaja
   al modelo como `imageConfig.aspectRatio`: **no se recorta después**.
   Se guarda en `difusion/posters/{id}/{formato}/{n}.png` y se apunta en

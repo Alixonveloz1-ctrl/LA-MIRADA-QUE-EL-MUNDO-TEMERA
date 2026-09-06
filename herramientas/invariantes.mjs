@@ -2907,29 +2907,58 @@ bloque('Datos · los pósters y las miniaturas');
     comprobar('Cada póster se genera contra placas del banco que existen', quejas);
   }
 
-  // 1.b Y esas placas son ANCLAS. Lo que una referencia aporta es la IDENTIDAD
-  //     —la misma cara, el mismo pelo, la misma edad—, y eso es exactamente lo
-  //     que un ancla es. La pose, la ropa y el sitio los describe el encargo.
-  //     Poner una placa que no es ancla no mejora el póster y sí lo bloquea: esa
-  //     placa hay que aprobarla ella, y para generarla hace falta aprobar antes
-  //     su ancla. Son dos imágenes más antes de poder pulsar un botón, y el
-  //     póster es lo primero que quiere ver cualquiera.
+  // 1.b El SITIO también es una referencia, y es el que faltaba. Un póster que
+  //     dibuja «una cripta» y no LA cripta no es de esta serie. La placa de un
+  //     escenario trae dentro sus objetos —la de la cripta lleva escrito el
+  //     ídolo colosal de muchos brazos con cabeza de calavera de cabra—, así que
+  //     adjuntarla es la única manera de que salgan ESOS y no unos parecidos.
   {
     const quejas = [];
-    const porId = new Map(((serie.banco && serie.banco.placas) || []).map((una) => [una.id, una]));
+    const sitios = new Set(
+      ((serie.escenarios && serie.escenarios.placas) || []).map((una) => una && una.id)
+    );
     for (const uno of piezas) {
       if (!uno || !uno.id) continue;
-      for (const ref of Array.isArray(uno.refs) ? uno.refs : []) {
-        const laPlaca = porId.get(ref);
-        if (!laPlaca || laPlaca.ancla === true) continue;
-        quejas.push(
-          `El póster «${uno.id}» referencia «${ref}», que no es un ancla. Antes de poder ` +
-            `generarlo habría que aprobar «${ref}» Y el ancla de ${laPlaca.personaje}: dos ` +
-            `imágenes más. Se pone «${laPlaca.personaje}-ancla» y lo demás lo dice el encargo.`
-        );
+      for (const ref of Array.isArray(uno.escenarios) ? uno.escenarios : []) {
+        if (!sitios.has(ref)) {
+          quejas.push(
+            `El póster «${uno.id}» dice ocurrir en «${ref}», que no está en escenarios.placas ` +
+              'de datos/serie.json. Eso no falla al guardarlo: falla al pulsar generar.'
+          );
+        }
       }
     }
-    comprobar('Y todas ellas son anclas, que es lo que se aprueba primero', quejas);
+    comprobar('Los sitios que referencia cada póster existen', quejas);
+  }
+
+  // 1.c Cuánto cuesta encender cada botón. NO es un fallo: es el precio, y se
+  //     enseña para que sea una decisión y no una sorpresa.
+  //
+  //     Cada referencia obliga a tener esa placa APROBADA antes de generar, y
+  //     una placa de personaje que no es ancla necesita además su ancla: son dos
+  //     aprobaciones en vez de una. A veces vale la pena —la máscara del
+  //     celebrante ES su identidad visual, y su ancla es el mismo hombre sin
+  //     ella—, y a veces no. Por eso esto avisa y no tumba nada.
+  {
+    const porId = new Map(((serie.banco && serie.banco.placas) || []).map((una) => [una.id, una]));
+    const caros = [];
+    for (const uno of piezas) {
+      if (!uno || !uno.id) continue;
+      const sinAncla = (Array.isArray(uno.refs) ? uno.refs : []).filter((ref) => {
+        const laPlaca = porId.get(ref);
+        return laPlaca && laPlaca.ancla !== true;
+      });
+      if (sinAncla.length) caros.push(`${uno.id} (${sinAncla.join(', ')})`);
+    }
+    comprobar('Se sabe lo que cuesta encender cada póster', []);
+    if (caros.length) {
+      avisar(
+        `${caros.length} póster${caros.length === 1 ? '' : 's'} referencia${caros.length === 1 ? '' : 'n'} ` +
+          'placas que no son anclas, y cada una obliga a aprobar también el ancla de su ' +
+          `personaje: ${listaCorta(caros, 4)}. Está bien si ese diseño es lo que se ve —una ` +
+          'máscara no se hereda de una cara—, pero es una aprobación más antes de generar.'
+      );
+    }
   }
 
   // 1.c Trece composiciones, no una plantilla repetida trece veces. Este es el

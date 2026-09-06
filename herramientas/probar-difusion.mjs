@@ -307,17 +307,27 @@ di(dif.rutaQueSeMira('miniatura-ep01', '9:16', dif.posterGuardado(conDos, 'minia
 
 // Las referencias. Sin la placa aprobada, no hay botón.
 const elOficial = losPosters.find((uno) => uno.id === 'poster-oficial');
-const sinBanco = { banco: {} };
+const todasSuyas = [...(elOficial.escenarios || []), ...(elOficial.refs || [])];
+const sinBanco = { banco: {}, escenarios: {} };
 const conBanco = {
   banco: Object.fromEntries(
     (elOficial.refs || []).map((una) => [una, { aprobada: `banco/${una}.png`, intentos: [] }])
+  ),
+  escenarios: Object.fromEntries(
+    (elOficial.escenarios || []).map((una) => [una, { aprobada: `escenarios/${una}.png`, intentos: [] }])
   )
 };
-di(dif.refsQueFaltan({ estado: sinBanco }, elOficial).length === (elOficial.refs || []).length,
-  'Con el banco vacío, faltan todas las placas del póster oficial',
-  (elOficial.refs || []).join(', '));
+di(dif.refsQueFaltan({ estado: sinBanco }, elOficial).length === todasSuyas.length,
+  'Sin nada aprobado, faltan TODAS las del póster oficial: el sitio y las caras',
+  todasSuyas.join(', '));
 di(dif.refsQueFaltan({ estado: conBanco }, elOficial).length === 0,
-  'Y con ellas aprobadas, no falta ninguna');
+  'Y con todas aprobadas, no falta ninguna');
+// La del sitio cuenta igual que la de una cara: sin la placa de la cripta el
+// modelo dibuja UNA cripta, y ese era el fallo que se veía en la imagen.
+di(dif.refsQueFaltan({ estado: { ...conBanco, escenarios: {} } }, elOficial).length ===
+     (elOficial.escenarios || []).length,
+  'Y si falta solo la placa del sitio, también lo dice: sin ella sale otra cripta',
+  (elOficial.escenarios || []).join(', '));
 
 di(typeof dif.porQueNoSeGeneraElPoster(['saharis-ancla'], false) === 'string',
   'Sin la placa aprobada NO se puede generar, y se dice cuál falta');
@@ -337,6 +347,7 @@ di(typeof dif.porQueNoSeGeneraElPoster([], true) === 'string',
 console.log('\n  EL PROMPT DEL PÓSTER NO SE CONTRADICE A SÍ MISMO\n');
 
 const placasPorId = Object.fromEntries(serie.banco.placas.map((una) => [una.id, una]));
+const sitiosPorId = Object.fromEntries(serie.escenarios.placas.map((una) => [una.id, una]));
 
 const prm = await suelto(
   'api/_lib/prompt.js',
@@ -345,8 +356,14 @@ const serie = ${JSON.stringify(serie)};
 const guiones = { guiones: [] };
 class ErrorDeCara extends Error { constructor(m, o = {}) { super(m); this.mensaje = m; Object.assign(this, o); } }
 const placa = (id) => (${JSON.stringify(placasPorId)})[id];
+const escenario = (id) => {
+  const suyo = (${JSON.stringify(sitiosPorId)})[id];
+  if (!suyo) throw new ErrorDeCara('no existe el escenario ' + id);
+  return suyo;
+};
 `,
-  'promptPoster, posterDeDifusion'
+  'promptPoster, posterDeDifusion',
+  ['escenario']
 );
 
 const conTitulo = serie.difusion.posters.titulo_en_la_imagen === true;
@@ -392,6 +409,75 @@ const sinBanda = trece.filter((una) => !/\bband\b|\bthird\b|\bstrip\b/i.test(una
 di(sinBanda.length === 0,
   'Todos reservan a propósito la banda donde se va a asentar el título',
   sinBanda.length ? sinBanda.map((u) => u.id).join(', ') : 'los trece');
+
+// ── EL SITIO VIAJA COMO REFERENCIA, Y POR SU PROPIO CUPO ───────────────────
+//
+// Este era el fallo que se veía en la imagen: el póster salía con UNA cripta, no
+// con LA cripta, porque solo se le adjuntaba la cara del protagonista. La placa
+// de un escenario trae dentro sus objetos —la de la cripta lleva escrito el
+// ídolo colosal de muchos brazos con cabeza de calavera de cabra—, así que
+// adjuntarla es la única manera de que salgan ESOS y no unos parecidos.
+console.log('\n  EL SITIO TAMBIÉN VIAJA, Y NO LE QUITA HUECO A LAS CARAS\n');
+
+const conSitio = trece.filter((una) => (una.escenarios || []).length);
+di(conSitio.length > 0,
+  'Hay pósters que dicen en qué sitio de la serie ocurren',
+  `${conSitio.length} de ${trece.length}`);
+
+if (conSitio.length) {
+  const cual = conSitio[0];
+  const compuesto = prm.promptPoster(cual.id, '9:16');
+  const deObjeto = compuesto.referencias.filter((una) => una.cupo === 'objeto');
+  const dePersonaje = compuesto.referencias.filter((una) => una.cupo === 'personaje');
+
+  di(deObjeto.length === cual.escenarios.length,
+    `«${cual.id}» adjunta su sitio como referencia de OBJETO`,
+    deObjeto.map((una) => una.escenario).join(', '));
+  di(dePersonaje.length === (cual.refs || []).length,
+    'Y las caras siguen yendo por el cupo de PERSONAJE, que es otro y no compite',
+    dePersonaje.map((una) => una.placa).join(', ') || 'ninguna');
+  di(deObjeto.every((una) => /LOCATION REFERENCE/i.test(una.instruccion)),
+    'Cada sitio va con su línea de «copia el LUGAR, no el encuadre»');
+  di(deObjeto.every((una) => /IGNORE THEM COMPLETELY/i.test(una.instruccion)),
+    'Y con la que evita que se hereden los figurantes que salgan en la placa');
+
+  // Y los cupos del modelo, comprobados de verdad contra el número escrito.
+  const cupos = await suelto(
+    'api/_lib/prompt.js',
+    `
+const serie = ${JSON.stringify(serie)};
+const guiones = { guiones: [] };
+class ErrorDeCara extends Error { constructor(m, o = {}) { super(m); this.mensaje = m; Object.assign(this, o); } }
+const placa = (id) => (${JSON.stringify(placasPorId)})[id];
+const escenario = (id) => (${JSON.stringify(sitiosPorId)})[id];
+`,
+    'comprobarCupos',
+    ['escenario']
+  );
+
+  const modelo = serie.modelos.imagen.calidad.id;
+  let pasa = true;
+  let porque = '';
+  for (const una of trece) {
+    try {
+      cupos.comprobarCupos(prm.promptPoster(una.id, '9:16').referencias, modelo);
+    } catch (fallo) {
+      pasa = false;
+      porque = `${una.id}: ${fallo.mensaje}`;
+      break;
+    }
+  }
+  di(pasa, 'Ninguno de los trece se pasa de los cupos del modelo', porque || modelo);
+}
+
+// Y que un sitio que no existe se rechace al componer, no al pagar la llamada.
+try {
+  prm.promptPoster('no-existe-esta-pieza', '9:16');
+  di(false, 'Una pieza que no existe se rechaza');
+} catch (fallo) {
+  di(/No existe el póster/.test(fallo.mensaje || ''),
+    'Una pieza que no existe se rechaza con palabras y con la lista de las que hay');
+}
 
 console.log(mal === 0 ? '\nTodo bien.\n' : `\n${mal} MAL.\n`);
 process.exit(mal ? 1 : 0);

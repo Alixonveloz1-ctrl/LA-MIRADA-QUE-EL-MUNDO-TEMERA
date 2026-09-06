@@ -943,17 +943,61 @@ que traer, y lo que se comprueba:
 ninguno empieza igual que otro y que ninguno baja de 80 palabras: un encargo
 corto no compone.
 
-#### Todas las referencias son anclas
+#### El sitio también es una referencia
 
-Una referencia existe para llevar la **identidad** —la misma cara, el mismo pelo,
-la misma edad—, y eso es justo lo que un ancla es. La pose, la ropa y el sitio los
-describe el encargo.
+Este era el fallo de fondo, y se veía en la imagen: el póster salía precioso pero
+la cripta **no era la cripta**, el ídolo no era el ídolo y los encapuchados no
+eran los acólitos. Solo viajaba una referencia, la cara del protagonista.
 
-Poner una placa que no es ancla no mejora el póster y sí lo bloquea: habría que
-aprobar esa placa **y** el ancla de su personaje, dos imágenes más antes de poder
-pulsar un botón. El póster oficial lleva **una sola** referencia por eso mismo: es
-lo primero que quiere ver cualquiera y es lo que menos puede quedarse esperando.
-Un invariante lo comprueba.
+Un póster lleva ahora **dos clases de referencia**, y son cupos distintos que no
+compiten entre sí:
+
+| Campo | Va como | Qué aporta |
+|---|---|---|
+| `escenarios` | referencia de **objeto** | El sitio: la arquitectura, los materiales, los objetos y dónde están. |
+| `refs` | referencia de **personaje** | La cara: el mismo rostro, el mismo pelo, la misma edad. |
+
+La regla que ya gobernaba los keyframes vale igual aquí, y por el mismo motivo
+—*«sin la placa, diez planos de la cripta son diez criptas distintas»*—, solo que
+en un póster pesa más: es la única imagen que va a ver alguien que no ha visto
+nada.
+
+Y hay algo que solo hace la placa del sitio: **trae sus objetos dentro**. La de
+`cripta` lleva escrito, en sus propias palabras, el ídolo colosal de muchos brazos
+con cabeza de calavera de cabra, el altar de piedra oscura, los nichos con
+calaveras y los brazaletes de antorcha. Adjuntarla es la única forma de que salgan
+**esos** y no unos parecidos.
+
+Las trece piezas dicen dónde ocurren: la cripta el póster oficial y los episodios
+8 y 11, los túneles el 3 y el 12, el archivo de la casa el 7 y el 9, la orilla el
+5 y el 6, y cada uno de los demás el suyo.
+
+#### Preferencia por las anclas, no obligación
+
+Una referencia de personaje existe para llevar la **identidad**, y eso es lo que
+un ancla es; la pose y el encuadre los describe el encargo. Así que casi todas
+son anclas.
+
+Pero no es una regla dura, porque a veces el diseño **es** lo que se ve: el
+póster oficial y el episodio 11 llevan `celebrante-mascara` y no
+`celebrante-ancla`, porque esa máscara de cuero es su identidad visual en la
+cripta y el ancla es el mismo hombre sin ella. Una máscara no se hereda de una
+cara.
+
+Eso tiene un precio y los invariantes lo **avisan** en vez de tumbarlo: una placa
+que no es ancla obliga a aprobarla a ella *y* al ancla de su personaje, dos
+imágenes antes de que el botón se encienda. La pantalla dice cuáles faltan, por su
+nombre.
+
+#### Los pósters se generan con el modelo bueno, siempre
+
+`difusion.posters.nivel` es `calidad`, y no mira lo que esté elegido en Salud.
+
+Son **trece imágenes en toda la serie**, y son las únicas que va a ver alguien que
+no ha visto nada: ahorrar ahí no ahorra nada. Y hay una razón técnica encima:
+`gemini-3-pro-image` es el que admite más imágenes de referencia (6 de objeto + 5
+de personaje), que es justo lo que hace falta para llevar el sitio **y** las caras
+en la misma llamada.
 
 El botón de generar **no se enciende** mientras falte una de esas placas por
 aprobar, y dice cuál falta. Lo comprueba también la función, que es quien manda:

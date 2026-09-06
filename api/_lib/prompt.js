@@ -1107,6 +1107,30 @@ export function promptPoster(id, proporcion = null) {
   }
 
   const referencias = [];
+
+  // LOS SITIOS, COMO OBJETO. Esto faltaba, y era el fallo de fondo: un póster
+  // que dibuja «una cripta» y no LA cripta no es de esta serie. La misma regla
+  // que gobierna los keyframes vale aquí y por el mismo motivo —«sin la placa,
+  // once planos de la cripta son once criptas distintas»—, y en un póster pesa
+  // todavía más: es la única imagen que va a ver alguien que no ha visto nada.
+  //
+  // La placa de un escenario trae dentro sus objetos: la de la cripta lleva
+  // escrito el ídolo colosal de muchos brazos con cabeza de calavera de cabra,
+  // el altar de piedra oscura, los nichos con calaveras y los brazaletes de
+  // antorcha. Adjuntarla es la manera de que salgan ESOS y no unos parecidos.
+  //
+  // Van por el cupo de OBJETO, que es distinto del de personaje y no compite con
+  // él: se pueden llevar los sitios Y las caras a la vez.
+  for (const idRef of Array.isArray(laPieza.escenarios) ? laPieza.escenarios : []) {
+    const suEscenario = escenario(idRef);
+    ponerReferencia(referencias, {
+      escenario: suEscenario.id,
+      instruccion: instruccionDeEscenario(),
+      cupo: 'objeto'
+    });
+  }
+
+  // Y las caras, como personaje.
   for (const idRef of Array.isArray(laPieza.refs) ? laPieza.refs : []) {
     const laPlaca = placa(idRef);
     ponerReferencia(referencias, {

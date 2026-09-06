@@ -932,6 +932,9 @@ function tarjetaDePoster(ctx, elPoster) {
     pie.appendChild(h('p', { clase: 'tarjeta-texto suave' }, soloTexto(elPoster.uso)));
   }
 
+  // Lo que le falta para poder generarse: las placas de sitio y las de cara que
+  // todavía no están aprobadas. Se dice con nombres, porque un botón apagado sin
+  // explicación se lee como un fallo del estudio.
   const faltan = refsQueFaltan(ctx, elPoster);
   if (faltan.length) {
     pie.appendChild(
@@ -939,8 +942,8 @@ function tarjetaDePoster(ctx, elPoster) {
         'p',
         { clase: 'tarjeta-texto' },
         faltan.length === 1
-          ? `Para generarlo hace falta la placa ${faltan[0]} aprobada, y todavía no lo está. Se ` +
-            'aprueba en la pantalla del Banco, mirándola.'
+          ? `Para generarlo hace falta «${faltan[0]}» aprobada, y todavía no lo está. Se aprueba ` +
+            'en la pantalla del Banco, mirándola.'
           : `Para generarlo hacen falta ${plural(faltan.length, 'placa', 'placas')} aprobadas que ` +
             `todavía no lo están: ${enumerarCorto(faltan)}. Se aprueban en la pantalla del Banco, ` +
             'mirándolas.'
@@ -1061,10 +1064,22 @@ function comoVaElPoster(guardado, enMarcha) {
  */
 function refsQueFaltan(ctx, elPoster) {
   const banco = esObjeto(ctx.estado.banco) ? ctx.estado.banco : {};
-  const refs = Array.isArray(elPoster.refs) ? elPoster.refs : [];
-  return refs
-    .map((una) => soloTexto(una))
-    .filter((una) => una && !soloTexto(esObjeto(banco[una]) ? banco[una].aprobada : ''));
+  const escenarios = esObjeto(ctx.estado.escenarios) ? ctx.estado.escenarios : {};
+
+  const sinAprobar = (mapa) => (una) =>
+    Boolean(una) && !soloTexto(esObjeto(mapa[una]) ? mapa[una].aprobada : '');
+
+  // Las dos clases de referencia, y las dos hacen falta: la cara sale del banco
+  // y el sitio de los escenarios. Un póster de la cripta sin la placa de la
+  // cripta dibuja UNA cripta, no LA cripta.
+  return [
+    ...(Array.isArray(elPoster.escenarios) ? elPoster.escenarios : [])
+      .map((una) => soloTexto(una))
+      .filter(sinAprobar(escenarios)),
+    ...(Array.isArray(elPoster.refs) ? elPoster.refs : [])
+      .map((una) => soloTexto(una))
+      .filter(sinAprobar(banco))
+  ];
 }
 
 /** Lo guardado de un póster en un formato, con la forma del contrato §5. */
@@ -1207,8 +1222,14 @@ async function armarElReel(ctx, laPieza, armado) {
 
 /** Encola un póster o una miniatura en el formato elegido. */
 function generarPoster(ctx, id, forma) {
+  // CON EL MODELO BUENO, SIEMPRE, y sin mirar lo que esté elegido en Salud. Son
+  // trece imágenes en toda la serie y son las únicas que va a ver alguien que no
+  // ha visto nada: ahorrar aquí no ahorra nada. Y es además el modelo que más
+  // referencias admite, que es lo que hace falta para llevar el sitio Y las
+  // caras a la vez. El nivel sale de los datos, no está escrito aquí.
+  const nivel = soloTexto(ajustesDePoster(ctx.serie).nivel);
   try {
-    encolar('poster', { id, proporcion: forma });
+    encolar('poster', nivel ? { id, proporcion: forma, nivel } : { id, proporcion: forma });
     queja = null;
   } catch (fallo) {
     queja = comoErrorDeCara(fallo);
