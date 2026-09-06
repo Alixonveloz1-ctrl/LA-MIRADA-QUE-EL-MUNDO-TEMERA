@@ -43,9 +43,18 @@ const PROPORCION = '16:9';
 const RESOLUCIONES = ['1K', '2K'];
 const SIN_DECIR = 'auto';
 
-// Generar una imagen 2K puede llevar su tiempo; el límite sigue por debajo del
-// de la plataforma, que es lo único que importa.
-const LIMITE_MS = 45_000;
+// Lo que se le deja tardar a una imagen.
+//
+// Estuvo en 45 s mientras el plazo de la función era de 55, y era la causa de
+// que las imágenes buenas se cortaran: una imagen con referencias se pasa de
+// cuarenta y cinco segundos con normalidad. Medido el techo real de la
+// plataforma —240 s, ver api/g.js— el plazo subió a 200 y esto sube con él.
+//
+// No es «todo el plazo» a propósito: detrás de la imagen quedan la subida al
+// bucket y las dos escrituras del estado, y `plazoPara` recorta esto a lo que
+// quede si el plazo va más apurado. Que sobre tiempo aquí no cuesta nada; que
+// falte cuesta una imagen pagada y perdida.
+const LIMITE_MS = 170_000;
 
 // Firmas de archivo, para poner el tipo cuando no viene dicho. Se miran los
 // primeros bytes: es lo único que no miente sobre lo que es un archivo.

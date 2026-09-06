@@ -44,24 +44,27 @@ import { abrirPlazo } from './_lib/plazo.js';
 /**
  * Con cuánto tiempo cuenta esta función, en milisegundos.
  *
- * POR QUÉ 55 s Y NO LOS 300 QUE PIDE vercel.json. Porque este número no puede
- * ser una apuesta. `maxDuration` se pide, pero quien decide cuánto concede es la
- * plataforma según el plan, y si concede menos de lo que aquí se cree, la
- * función vuelve a morir cortada: sin mensaje, sin excepción y sin una línea en
- * los registros. Eso es exactamente el fallo que este plazo existe para impedir,
- * así que sería absurdo hacerlo depender de una suposición.
+ * ESTE NÚMERO ESTÁ MEDIDO, NO SUPUESTO, Y ESA ES TODA LA HISTORIA.
  *
- * 55 s es el suelo seguro: es lo que da el plan gratuito de Vercel sin nada
- * especial, menos un margen. Si el plan concede más —Fluid Compute, un plan de
- * pago—, esta función simplemente no lo usa y no pasa nada. Si concede 60, cabe.
- * Equivocarse por abajo cuesta una generación que se rinde con su explicación en
- * español; equivocarse por arriba cuesta volver al error mudo.
+ * `maxDuration` se pide en vercel.json, pero quien decide cuánto concede es la
+ * plataforma según el plan. Y si aquí se cree tener más de lo que hay, la función
+ * muere cortada a media generación —ya pagada—: sin mensaje, sin excepción y sin
+ * una línea en los registros. Eso es justo el fallo que este plazo existe para
+ * impedir, así que durante un tiempo estuvo en 55 s, que es el suelo seguro de
+ * cualquier plan. Equivocarse por abajo cuesta una generación que se rinde
+ * explicándose; por arriba, volver al error mudo.
  *
- * SI HACE FALTA MÁS TIEMPO, se sube aquí y en vercel.json a la vez, y se
- * comprueba con una generación de verdad que la plataforma lo concede: que
- * termine algo que tarde más de un minuto es la única prueba que vale.
+ * Pero 55 s se le quedan cortos a una imagen con referencias, y entonces la
+ * pregunta dejó de ser académica. Ni la documentación de Vercel ni su API dicen
+ * el techo por plan —se buscó en las dos—, así que se midió: el modo `aguante`
+ * espera los segundos que se le pidan y contesta cuántos esperó, sin llamar a
+ * ningún modelo y sin gastar un céntimo. En la cuenta de este proyecto sobrevivió
+ * a 240 segundos.
+ *
+ * 200 s es ese 240 medido menos un margen ancho. Si alguien despliega esto en
+ * una cuenta con menos techo, lo sabrá igual: Salud tiene el botón que lo mide.
  */
-const PRESUPUESTO_MS = 55_000;
+const PRESUPUESTO_MS = 200_000;
 
 /** Lo que la puerta admite. Cualquier otra cosa es un 405 con palabras. */
 const METODOS = ['POST', 'OPTIONS'];

@@ -1889,17 +1889,30 @@ bloque('Código · los tiempos cuadran de arriba abajo');
       );
     }
 
-    // Y tampoco puede pasar del suelo que da el plan gratuito de Vercel sin nada
-    // especial, porque `maxDuration` puede concederse recortado y aquí no hay
-    // forma de enterarse: lo único que se ve es que la función deja de contestar.
-    const SUELO_DEL_PLAN_GRATUITO = 60_000;
-    if (enPuerta >= SUELO_DEL_PLAN_GRATUITO) {
+    // Y tampoco puede pasar del techo MEDIDO de la plataforma, porque
+    // `maxDuration` puede concederse recortado y aquí no hay forma de enterarse:
+    // lo único que se ve es que la función deja de contestar.
+    //
+    // Este número estuvo en 60 s —el suelo que da cualquier plan— mientras no
+    // hubo forma de saber el de verdad. Ahora la hay: el modo `aguante` espera
+    // los segundos que se le pidan y contesta cuántos esperó, sin llamar a
+    // ningún modelo, y en Salud hay un botón que lo prueba. En la cuenta de este
+    // proyecto sobrevivió a 240 s. Si alguien despliega esto donde den menos, ese
+    // mismo botón se lo dirá, y este número baja.
+    //
+    // El margen no es adorno: la función tiene que rendirse ELLA, con su
+    // explicación en español, antes de que la plataforma la corte en seco.
+    const TECHO_MEDIDO = 240_000;
+    const MARGEN_DEL_TECHO = 20_000;
+    const TOPE = TECHO_MEDIDO - MARGEN_DEL_TECHO;
+    if (enPuerta > TOPE) {
       quejas.push(
-        `api/g.js se cree con ${enPuerta / 1000} s, que es igual o más que los ` +
-          `${SUELO_DEL_PLAN_GRATUITO / 1000} s que da el plan gratuito. Pedir más en vercel.json ` +
-          'no garantiza que se conceda, y si no se concede la función muere cortada otra vez. ' +
-          'Para subirlo hay que comprobar antes, con una generación de verdad que tarde más de un ' +
-          'minuto, que la plataforma lo está concediendo.',
+        `api/g.js se cree con ${enPuerta / 1000} s, y el techo medido de la plataforma es ` +
+          `${TECHO_MEDIDO / 1000} s, así que como mucho puede creerse con ${TOPE / 1000}. ` +
+          'La función tiene que rendirse ella, explicándose, antes de que la plataforma la corte ' +
+          'en seco: un corte en seco es una generación pagada y perdida sin ni un mensaje. ' +
+          'Para subirlo hay que medir otra vez con el botón de Salud, «Cuánto tiempo me da mi ' +
+          'plan», y cambiar aquí el techo por lo que salga.',
       );
     }
     if (enNavegador <= enVercel) {

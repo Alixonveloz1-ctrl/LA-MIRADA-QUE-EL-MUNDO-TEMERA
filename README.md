@@ -384,8 +384,17 @@ suyo, y **un clip lanzado se consulta siempre con el nivel con el que se lanzó*
 (se apunta al lado de la operación), porque preguntar por él a otro modelo de Veo
 sería un clip pagado y perdido.
 
-**«La que dé Google» no es un tamaño: es no pedir ninguno.** Y a veces es la única
-que funciona. Vertex reparte la cuota de imagen **por modelo Y por resolución**,
+**«La que dé Google» no es un tamaño: es no pedir ninguno.** Y con el modelo
+**medio** no es un apaño, es lo correcto: ese modelo tiene un
+[fallo reconocido](https://github.com/googleapis/js-genai/issues/1461) por el que
+**ignora la resolución** y devuelve ~1K siempre, se le pida 2K o 4K. Pero pedir 2K
+sí mete la petición en el cubo de cuota de 2K, que es otro y más pequeño: se paga
+el peaje y se recibe 1K igual. En el nivel de **calidad** la resolución sí se
+respeta, y ahí el 2K se nota. (Los ids concretos salen de `datos/serie.json`, que
+es de donde salen siempre; aquí no se escriben para que este texto no envejezca
+mintiendo.)
+
+Y aparte de eso, a veces es la única que funciona. Vertex reparte la cuota de imagen **por modelo Y por resolución**,
 en cubos separados, y eso no se ve leyendo nada: se vio en la consola de cuotas de
 una cuenta real, con el cubo `gemini-3.1-flash-image_default_res` a 34 millones
 por minuto y un **0 % de uso**, mientras las peticiones que sí decían resolución

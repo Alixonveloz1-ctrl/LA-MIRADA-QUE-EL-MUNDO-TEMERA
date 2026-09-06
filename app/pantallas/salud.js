@@ -42,7 +42,7 @@
 // aplica una variable nueva a un despliegue ya construido. Sin decirlo, se busca
 // el fallo donde no está.
 
-import { llamar, pesos } from '../api.js';
+import { llamar, pesos, duraciones } from '../api.js';
 import { actual, alCambiar, cambiar } from '../estado.js';
 import { serie } from '../cola.js';
 import {
@@ -159,7 +159,7 @@ export default {
       seccion('Las voces', huecos.voces),
       seccion('El montador', huecos.montaje),
       seccion('Con qué se genera', huecos.generadores),
-      seccion('Lo que ha pesado cada respuesta', huecos.pesos),
+      seccion('Lo que ha pesado y lo que ha tardado cada respuesta', huecos.pesos),
       seccion(null, reloj, h('div', { clase: 'tarjeta-acciones' }, botonDeComprobar)),
     );
 
@@ -795,10 +795,23 @@ function pintarPesos(hueco) {
       h('tr', null,
         celda('th', 'Modo', { encabezado: true }),
         celda('th', 'Pesó', { encabezado: true, derecha: true }),
-        celda('th', 'Del tope', { encabezado: true, derecha: true }))),
+        celda('th', 'Del tope', { encabezado: true, derecha: true }),
+        celda('th', 'Tardó', { encabezado: true, derecha: true }))),
     h('tbody', null, nombres.map((modo) => filaDePeso(modo, medidos[modo]))));
 
   hueco.appendChild(h('div', { estilo: { 'overflow-x': 'auto' } }, tabla));
+
+  // LO QUE TARDA, que es la otra mitad de la pregunta. Saber que una imagen CABE
+  // en el plazo no dice si conviene: una que tardara cuatro minutos entraría y
+  // aun así no serviría para trabajar.
+  const lasTardanzas = duraciones();
+  const masLento = Object.keys(lasTardanzas).sort((a, b) => lasTardanzas[b] - lasTardanzas[a])[0];
+  if (masLento) {
+    hueco.appendChild(h('p', { clase: 'tenue' },
+      `Lo más lento hasta ahora ha sido «${masLento}», con ${segundosDe(lasTardanzas[masLento])}. ` +
+      'La columna «Tardó» es lo máximo que ha tardado cada modo en ESTA sesión, medido en el ' +
+      'navegador y sin contar la pausa del freno. El plazo de la función son 200 s.'));
+  }
 
   const pasados = nombres.filter((modo) => medidos[modo] >= TOPE_RESPUESTA);
   const apretados = nombres.filter(
@@ -828,6 +841,7 @@ function pintarPesos(hueco) {
  */
 function filaDePeso(modo, cuantos) {
   const parte = Math.min(1, cuantos / TOPE_RESPUESTA);
+  const tardo = duraciones()[modo];
   const pasado = cuantos >= TOPE_RESPUESTA;
   const apretado = !pasado && cuantos >= TOPE_RESPUESTA * PARTE_QUE_PREOCUPA;
   const color = pasado ? 'var(--fallido)' : (apretado ? 'var(--en-curso)' : 'var(--listo)');
@@ -1300,11 +1314,16 @@ function elegirResolucion(modelos, puesta) {
       'dárselo a Veo, 1K sobra: Veo entrega 720p. El 2K se nota en las placas del banco, que ' +
       'son las que se miran de cerca y las que después copian todas las demás.'),
     h('p', { clase: 'tenue' },
-      '«La que dé Google» no es un tamaño: es no pedir ninguno. Y a veces es la única que ' +
-      'funciona, porque Vertex reparte la cuota de imagen por modelo Y por resolución, en cubos ' +
-      'separados: pedir un tamaño concreto puede caer en un cubo agotado mientras el de «por ' +
-      'defecto» está entero. Si salen errores de cuota (429) o de tiempo agotado, esta es la ' +
-      'primera que hay que probar.'),
+      '«La que dé Google» no es un tamaño: es no pedir ninguno. Y con el nivel MEDIO no es un ' +
+      'apaño, es lo correcto: ese modelo tiene un fallo reconocido por el que IGNORA la ' +
+      'resolución que se le pida y devuelve ~1K siempre, se le pida 2K o 4K. Pero pedir 2K sí ' +
+      'mete la petición en el cubo de cuota de 2K, que es otro y más pequeño: se paga el peaje y ' +
+      'se recibe 1K igual. En el nivel de CALIDAD la resolución sí se respeta, y ahí el 2K se nota.'),
+    h('p', { clase: 'tenue' },
+      'Y aparte de eso: Vertex reparte la cuota de imagen por modelo Y por resolución, en cubos ' +
+      'separados. Pedir un tamaño concreto puede caer en un cubo agotado mientras el de «por ' +
+      'defecto» está entero. Ante un 429 o un tiempo agotado, esta es la primera que hay que ' +
+      'probar.'),
     filtro([
       { id: 'auto', texto: 'La que dé Google' },
       { id: '', texto: `La de serie.json (${escrita})` },
@@ -1428,6 +1447,12 @@ function medirElAguante() {
   );
 
   return tarjeta({ titulo: 'Cuánto tiempo me da mi plan', pie: cuerpo });
+}
+
+/** Milisegundos en algo que se lea de un vistazo. */
+function segundosDe(ms) {
+  const s = Math.round((Number(ms) || 0) / 100) / 10;
+  return s >= 60 ? `${Math.floor(s / 60)} min ${Math.round(s % 60)} s` : `${s} s`;
 }
 
 /** Lo elegido, con la forma entera aunque el estado sea viejo y no la traiga. */

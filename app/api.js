@@ -248,6 +248,9 @@ function esReintentable(http) {
 /** El máximo que ha pesado la respuesta de cada modo en esta sesión. */
 const pesosMaximos = Object.create(null);
 
+/** Lo que ha tardado como mucho cada modo, en milisegundos. */
+const duracionesMaximas = Object.create(null);
+
 /**
  * Lo medido hasta ahora, modo a modo, en bytes.
  *
@@ -259,6 +262,35 @@ const pesosMaximos = Object.create(null);
  */
 export function pesos() {
   return { ...pesosMaximos };
+}
+
+/**
+ * Lo que ha TARDADO cada modo, en milisegundos, quedándose con el máximo.
+ *
+ * Se mide aquí, en el navegador, y solo la llamada: la pausa del freno no cuenta,
+ * porque el freno es decisión nuestra y lo que se quiere saber es cuánto tarda
+ * Google.
+ *
+ * POR QUÉ HACE FALTA. El plazo de la función está puesto en 200 s porque la
+ * plataforma da 240 medidos. Pero saber que CABEN 200 no dice si conviene:
+ * una imagen que tardara cuatro minutos entraría en el plazo y aun así no
+ * serviría para trabajar. Esto lo dice con números en vez de con sensaciones.
+ * @returns {Record<string, number>}
+ */
+export function duraciones() {
+  return { ...duracionesMaximas };
+}
+
+/**
+ * Apunta lo que ha tardado una llamada, quedándose con el máximo.
+ * @param {string} modo
+ * @param {number} ms
+ */
+function anotarDuracion(modo, ms) {
+  const cuanto = Number(ms);
+  if (!Number.isFinite(cuanto) || cuanto < 0) return;
+  const antes = Number(duracionesMaximas[modo]) || 0;
+  if (cuanto > antes) duracionesMaximas[modo] = cuanto;
 }
 
 /**
@@ -405,6 +437,7 @@ export async function llamar(modo, campos = {}, { alEsperar } = {}) {
 
     const corte = new AbortController();
     const reloj = setTimeout(() => corte.abort(), LIMITE_MS);
+    const empezo = Date.now();
 
     let respuesta;
     try {
@@ -425,6 +458,7 @@ export async function llamar(modo, campos = {}, { alEsperar } = {}) {
     // saber cuánto ocupa ese modo.
     const texto = await leerElTexto(respuesta, nombre);
     anotarPeso(nombre, pesoDeLaRespuesta(respuesta, texto));
+    anotarDuracion(nombre, Date.now() - empezo);
 
     const datos = entender(texto, respuesta, nombre);
 
