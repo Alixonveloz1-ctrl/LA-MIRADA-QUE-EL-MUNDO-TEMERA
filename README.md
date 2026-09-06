@@ -36,6 +36,20 @@ imágenes: todo lo visual lo genera la herramienta.
 
    Lo que Google necesita no se dicta como comandos: vive en `despliegue/`, en
    archivos que el instalador lee.
+
+   **Para volver a desplegar solo el montador** —hay que hacerlo cada vez que ese
+   contenedor aprende algo nuevo, porque se despliega a mano y siempre va por
+   detrás del repositorio— hay un camino corto que no pregunta nada:
+
+   ```
+   bash <repo>/instalar.sh montador
+   ```
+
+   Lee del propio job el bucket y la clave que ya tiene puestos y lo vuelve a
+   desplegar igual. Que la clave salga de ahí y no se genere de nuevo es lo
+   importante: una clave nueva invalidaría la `MONTAJE_KEY` de Vercel y el
+   montaje empezaría a fallar por una razón que no se parece en nada a la
+   verdadera.
 2. Se abre la dirección de Vercel en el teléfono y se añade a la pantalla de
    inicio, que es como se abre a pantalla completa.
 3. Se entra en **Salud** y se pulsa **Comprobar los modelos**. No lo hace solo, y

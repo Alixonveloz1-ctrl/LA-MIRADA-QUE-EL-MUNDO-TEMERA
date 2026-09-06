@@ -7,6 +7,11 @@
 #     git clone https://github.com/<usuario>/<repo>.git
 #     bash <repo>/instalar.sh
 #
+# Y para volver a desplegar SOLO el montador, que es lo que hay que hacer cada
+# vez que ese contenedor aprende algo nuevo:
+#
+#     bash <repo>/instalar.sh montador
+#
 # Dos líneas porque el terminal de Cloud Shell NO DEJA PEGAR DESDE EL MÓVIL y
 # aquí solo hay móvil. Todo lo que no cabe en esas dos líneas lo hace este
 # archivo: las APIs, el bucket, el CORS, la service account con sus permisos y su
@@ -42,6 +47,90 @@ morir()  { echo; echo "!! $1" >&2; echo >&2; exit 1; }
 
 command -v gcloud >/dev/null || morir "Aquí no hay gcloud. Esto se ejecuta en Cloud Shell."
 [ -d "$AQUI/despliegue" ] || morir "No encuentro la carpeta despliegue/. ¿Has clonado el repositorio entero?"
+
+# ---------------------------------------------------------------------------
+# SOLO EL MONTADOR, Y POR QUÉ HACE FALTA UN CAMINO CORTO.
+#
+#     bash instalar.sh montador
+#
+# El montador vive en un contenedor que se despliega A MANO, así que siempre va
+# por detrás del repositorio: cada vez que aprende algo nuevo —hoy, escribir el
+# zip de difusión— hay que volver a desplegarlo. Y hacer eso con la instalación
+# entera son diez minutos y varias preguntas sobre el bucket, para cambiar UNA
+# cosa que ya está decidida desde el primer día.
+#
+# Este camino no pregunta nada y no toca nada más. Lee del propio job lo que ya
+# tiene puesto —el bucket y su clave— y lo vuelve a desplegar igual. Que la clave
+# salga del job y no se genere de nuevo es lo importante: una clave nueva
+# invalidaría la que Vercel tenga puesta, y el montaje empezaría a fallar por una
+# razón que no se parece en nada a la verdadera.
+# ---------------------------------------------------------------------------
+if [ "$SOLO" = "montador" ]; then
+  titulo "SOLO EL MONTADOR"
+  echo "No se toca nada más: ni el bucket, ni la"
+  echo "cuenta, ni los permisos, ni tus variables"
+  echo "de Vercel."
+
+  PROYECTO="$(gcloud config get-value project 2>/dev/null || true)"
+  [ -n "$PROYECTO" ] && [ "$PROYECTO" != "(unset)" ] \
+    || morir "No hay proyecto activo. Ponlo con:
+   gcloud config set project TU_PROYECTO"
+  bien "Proyecto: $PROYECTO"
+
+  paso "Buscando el montador que ya está desplegado"
+  REGION="$(gcloud run jobs list --project "$PROYECTO" \
+    --filter="metadata.name=$NOMBRE_JOB" \
+    --format='value(metadata.labels."cloud.googleapis.com/location")' 2>/dev/null | head -1)"
+
+  [ -n "$REGION" ] || morir "No encuentro el job «$NOMBRE_JOB» en este proyecto.
+   Si es la primera vez, esto no vale: hay que
+   hacer la instalación completa una vez, con
+       bash $AQUI/instalar.sh
+   y a partir de ahí ya sirve el camino corto."
+  bien "Está en la región $REGION."
+
+  # El bucket y la clave salen del propio job. Si se generaran de nuevo, la
+  # MONTAJE_KEY de Vercel dejaría de valer y el montaje fallaría diciendo otra
+  # cosa. Aquí se copian tal cual.
+  LEIDO="$(gcloud run jobs describe "$NOMBRE_JOB" --region "$REGION" --project "$PROYECTO" \
+    --format='value(spec.template.spec.template.spec.containers[0].env.flatten("name","value",separator="="))' \
+    2>/dev/null || true)"
+
+  BUCKET="$(printf '%s\n' "$LEIDO" | tr ';' '\n' | sed -n 's/^ *GCS_BUCKET=//p' | head -1)"
+  CLAVE_MONTAJE="$(printf '%s\n' "$LEIDO" | tr ';' '\n' | sed -n 's/^ *MONTAJE_CLAVE=//p' | head -1)"
+
+  [ -n "$BUCKET" ] || morir "No he podido leer el bucket que tiene puesto el
+   montador. Sin él no se puede redesplegar sin
+   riesgo de cambiárselo. Usa la instalación
+   completa:  bash $AQUI/instalar.sh"
+
+  [ -n "$CLAVE_MONTAJE" ] || morir "No he podido leer la clave que tiene puesta el
+   montador, y generar una nueva rompería la que
+   tienes en Vercel. Usa la instalación completa:
+       bash $AQUI/instalar.sh"
+
+  bien "Bucket y clave leídos del propio job."
+  bien "Tu MONTAJE_KEY de Vercel sigue valiendo."
+
+  paso "Construyendo y desplegando. Esto es lo que tarda"
+  gcloud run jobs deploy "$NOMBRE_JOB" \
+    --source "$AQUI/montador" --region "$REGION" --project "$PROYECTO" \
+    --memory 2Gi --cpu 2 --task-timeout 3600 --max-retries 0 \
+    --set-env-vars "GCS_BUCKET=${BUCKET},MONTAJE_CLAVE=${CLAVE_MONTAJE}" \
+    --quiet \
+    || morir "No se ha podido desplegar el montador.
+   El error de arriba dice por qué. Lo que ya
+   estuviera montado sigue estando."
+
+  echo
+  echo "======================================================"
+  echo "  MONTADOR ACTUALIZADO"
+  echo "======================================================"
+  echo
+  echo "  No hay que tocar nada en Vercel."
+  echo
+  exit 0
+fi
 
 titulo "LA MIRADA QUE EL MUNDO TEMERÁ"
 echo "Instalación completa de Google Cloud."
