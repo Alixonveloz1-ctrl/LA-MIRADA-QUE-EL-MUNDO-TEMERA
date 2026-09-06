@@ -1136,10 +1136,14 @@ function accionesDeLosFallidos(ctx) {
   const partes = [
     aviso(
       `${plural(fallidos.length, 'trabajo ha fallado', 'trabajos han fallado')}. La cola insiste ` +
-        'sola cuatro veces —a los 2, 4, 8 y 16 segundos— cuando el error es de los que pueden ' +
-        'cambiar: un tiempo agotado, un 429, una caída del otro lado. Con los demás no insiste, y ' +
-        'no es dejadez: un 4xx dice que la petición está mal y no va a dejar de estarlo, y un 413 ' +
-        'dice que algo no cabe, que tampoco cambia por repetirlo.',
+        'sola cuando el error es de los que pueden cambiar, y cuánto espera depende de qué falló: ' +
+        'si es la CUOTA (429), seis veces con paciencia —medio minuto, uno, minuto y medio y ' +
+        'luego de dos en dos, nueve minutos en total—, porque las cuotas de Vertex se reponen por ' +
+        'minutos y insistir en segundos es gastar los intentos contra lo mismo. Para lo demás ' +
+        '—un tiempo agotado, una caída del otro lado— cuatro veces a los 2, 4, 8 y 16 segundos, ' +
+        'que es lo que tarda en pasarse. Con el resto no insiste, y no es dejadez: un 4xx dice ' +
+        'que la petición está mal y no va a dejar de estarlo, y un 413 dice que algo no cabe, que ' +
+        'tampoco cambia por repetirlo.',
       { tono: 'error' }
     )
   ];

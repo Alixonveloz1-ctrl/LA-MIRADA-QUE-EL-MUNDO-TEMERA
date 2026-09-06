@@ -85,6 +85,29 @@ const A_LA_VEZ = 1;
  */
 const ESPERAS_DE_REINTENTO = [2000, 4000, 8000, 16000];
 
+/**
+ * Las esperas cuando lo que ha fallado es la CUOTA (429). Son otras y son mucho
+ * más largas, a propósito.
+ *
+ * POR QUÉ NO VALEN LAS DE ARRIBA. Las cuotas de Vertex se reponen por minuto.
+ * Insistir a los 2, 4, 8 y 16 segundos gasta los cuatro intentos dentro del
+ * mismo minuto en que la cuota ya estaba agotada: los cuatro se estrellan contra
+ * lo mismo y el trabajo se da por fallido treinta segundos después de empezar,
+ * cuando lo único que hacía falta era esperar a que cambiara el minuto.
+ *
+ * Con esto se espera medio minuto, luego uno, luego minuto y medio, y después de
+ * dos en dos: nueve minutos de paciencia repartidos en seis intentos. En una
+ * cuenta nueva —cuotas cortas, que es el caso— eso es la diferencia entre que la
+ * tirada termine sola y que haya que estar encima dándole a reintentar.
+ *
+ * No cuesta dinero: un 429 no genera nada y no se cobra. Solo cuesta esperar, y
+ * esperar es exactamente lo que hay que hacer con una cuota agotada.
+ */
+const ESPERAS_POR_CUOTA = [30_000, 60_000, 90_000, 120_000, 120_000, 120_000];
+
+/** El código con el que Google dice que se ha pasado de cuota. */
+const HTTP_CUOTA = 429;
+
 /** Cada cuánto se vuelve a preguntar por un clip de Veo que sigue generándose. */
 const ESPERA_CONSULTA_BASE = 12000;
 const ESPERA_CONSULTA_MAX = 60000;
@@ -1071,7 +1094,10 @@ async function ejecutarUno(trabajo) {
       id: trabajo.id,
       fin: error.reintentable ? 'reintentar' : FALLIDO,
       mensaje: error.mensaje,
-      detalle: error.detalle
+      detalle: error.detalle,
+      // El código viaja para poder decidir CUÁNTO se espera antes de insistir:
+      // una cuota agotada necesita minutos y lo demás, segundos.
+      http: Number(error.http) || 0
     };
   }
 }
@@ -1135,8 +1161,13 @@ function resolver(trabajo, resolucion) {
   trabajo.error = resolucion.mensaje || null;
   trabajo.detalle = resolucion.detalle || null;
 
-  if (resolucion.fin === 'reintentar' && trabajo.intentos <= ESPERAS_DE_REINTENTO.length) {
-    trabajo.proximo = dentroDe(ESPERAS_DE_REINTENTO[trabajo.intentos - 1]);
+  // Cuánto se espera depende de QUÉ falló. Una cuota agotada se repone por
+  // minutos, así que insistir en segundos es tirar los intentos; lo demás —una
+  // caída pasajera de Google, un tiempo agotado— sí se arregla enseguida.
+  const esperas = resolucion.http === HTTP_CUOTA ? ESPERAS_POR_CUOTA : ESPERAS_DE_REINTENTO;
+
+  if (resolucion.fin === 'reintentar' && trabajo.intentos <= esperas.length) {
+    trabajo.proximo = dentroDe(esperas[trabajo.intentos - 1]);
     trabajo.estado = parado ? DETENIDO : PENDIENTE;
     return;
   }

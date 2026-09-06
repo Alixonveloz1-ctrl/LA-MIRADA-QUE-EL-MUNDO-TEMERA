@@ -238,6 +238,15 @@ margen; si el plan concede más, no se usa y no pasa nada. Para subirlo hay que
 comprobar antes, con una generación real que tarde más de un minuto, que la
 plataforma lo está concediendo. `npm run invariantes` no deja subirlo a ciegas.
 
+**Y con la cuota se tiene paciencia.** Cuando lo que falla es un 429, la cola no
+insiste a los 2, 4, 8 y 16 segundos como con lo demás: espera medio minuto, uno,
+minuto y medio y luego de dos en dos — nueve minutos repartidos en seis intentos.
+Las cuotas de Vertex se reponen **por minuto**, así que insistir en segundos gasta
+los cuatro intentos dentro del mismo minuto en que la cuota ya estaba agotada y
+da el trabajo por perdido treinta segundos después de empezar. Un 429 no genera
+nada y no se cobra: lo único que cuesta es esperar, que es justo lo que hay que
+hacer.
+
 El hueco se cuenta sobre el estado del **bucket**, no sobre la pestaña que
 tienes delante, así que «una cada vez» vale para todo el estudio aunque dejes
 otra ventana abierta. Para poder distinguir «lo está haciendo otro» de «lo cogió
