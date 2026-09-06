@@ -86,7 +86,15 @@ const A_LA_VEZ = 1;
 const ESPERAS_DE_REINTENTO = [2000, 4000, 8000, 16000];
 
 /**
- * Las esperas cuando lo que ha fallado es la CUOTA (429). Son otras y son mucho
+ * Las esperas cuando lo que ha fallado es la CUOTA (429). Son la SEGUNDA capa: la
+ * primera está en `app/api.js`, que ante un «ahora no» frena, espera 30 s, 60 y
+ * 90 y reintenta la misma llamada sin que nadie se entere. Si aun así llega aquí,
+ * es que la ventana no era la del minuto —esa se abre sola— sino una mayor, y
+ * entonces hace falta paciencia de minutos y pararlo TODO.
+ *
+ * Dos capas, cada una con su trabajo, en vez de las dos haciendo lo mismo.
+ *
+ * Son otras y son mucho
  * más largas, a propósito.
  *
  * POR QUÉ NO VALEN LAS DE ARRIBA. Las cuotas de Vertex se reponen por minuto.
@@ -103,7 +111,7 @@ const ESPERAS_DE_REINTENTO = [2000, 4000, 8000, 16000];
  * No cuesta dinero: un 429 no genera nada y no se cobra. Solo cuesta esperar, y
  * esperar es exactamente lo que hay que hacer con una cuota agotada.
  */
-const ESPERAS_POR_CUOTA = [30_000, 60_000, 90_000];
+const ESPERAS_POR_CUOTA = [60_000, 180_000];
 
 /**
  * Lo máximo que el obrero se echa a dormir de una vez esperando la cuota. La

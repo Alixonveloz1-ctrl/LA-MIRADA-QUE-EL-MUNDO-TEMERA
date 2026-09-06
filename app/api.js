@@ -48,6 +48,141 @@ const LIMITE_MS = 320000;
 /** Cuántos caracteres del cuerpo se enseñan cuando no se entiende lo que llegó. */
 const MUESTRA_DETALLE = 300;
 
+// ---------------------------------------------------------------------------
+// El freno, que se ajusta solo
+// ---------------------------------------------------------------------------
+//
+// PORTADO DE UN PROYECTO DEL MISMO AUTOR QUE YA LLEVA MESES GENERANDO TANDAS DE
+// CIENTOS DE IMÁGENES SIN QUE EL USUARIO VEA UN SOLO ERROR DE CUOTA. La idea no
+// es mía y funciona; lo que sigue es por qué.
+//
+// Vertex no limita por «cuántas a la vez» sino POR MINUTO. Esta cola ya va de una
+// en una, así que la concurrencia nunca fue el problema: el problema es que
+// cuarenta imágenes seguidas, aunque vayan en fila india, se salen de la cuota
+// del minuto igual. Ir de una en una SIN PAUSA no es ir despacio.
+//
+// Y un 429 no es un fallo, es un «ahora no». Tratarlo como fallo definitivo es lo
+// que dejaba la lista entera en rojo.
+//
+// Así que hay un freno que se aprieta solo: cada 429 DOBLA la pausa entre
+// llamadas, y cada cinco aciertos seguidos la afloja un cuarto. Sube fuerte y
+// baja despacio, que es como se regula cualquier cosa que no conoce su propio
+// límite; subir multiplicando y bajar de golpe es un oscilador, no un regulador,
+// y se pasa la tanda chocando cada pocas imágenes.
+//
+// Las cifras importan en los dos sentidos. El primer frenazo son OCHO segundos
+// —siete llamadas por minuto, que cabe en la cuota más apretada que reparte
+// Vertex a un proyecto nuevo—; cuatro segundos serían quince por minuto y no
+// evitarían nada.
+
+/** Un minuto entre llamadas es una por minuto: por debajo de eso ya no es la cuota. */
+const PAUSA_MAX = 60_000;
+
+/** El primer frenazo: 8 s son siete llamadas por minuto. */
+const PAUSA_INICIAL = 8_000;
+
+/** Por debajo de esto el freno ya no sirve de nada y se quita del todo. */
+const PAUSA_MINIMA = 1_500;
+
+/** Cuántos aciertos seguidos hacen falta para aflojar. Uno solo puede ser suerte. */
+const ACIERTOS_PARA_AFLOJAR = 5;
+
+/**
+ * Las esperas cuando el proveedor dice «ahora no». Media hora de paciencia no
+ * cabe aquí: si tras minuto y medio la ventana sigue cerrada, no es la cuota por
+ * minuto —esa se abre sola— sino una mayor, y de esa se encarga la cola, que para
+ * la tanda entera. Dos capas, cada una con su trabajo.
+ */
+const ESPERAS_DE_CUOTA = [30_000, 60_000, 90_000];
+
+/** Nada de aquí duerme más que esto de una sentada, ni aunque lo pida Google. */
+const TECHO_DE_ESPERA = 120_000;
+
+/**
+ * A QUÉ SE LE PONE EL FRENO, y por qué no a todo.
+ *
+ * La cuota que se agota es la de los MODELOS. Leer el estado, escribirlo, firmar
+ * una URL o listar el bucket hablan con Cloud Storage, que no tiene nada que ver
+ * y cuya cuota no se agota jamás con este uso. Frenar esas dejaría la aplicación
+ * arrastrándose —el estado se lee constantemente— sin ganar ni un poco de cuota.
+ *
+ * Así que el freno es solo para lo que llama a Vertex. La lista se escribe entera
+ * y a mano a propósito: si mañana hay un modo nuevo que llama a un modelo y a
+ * nadie se le ocurre añadirlo aquí, lo que pasa es que ese modo no frena —que es
+ * como está todo hoy— y no que se frene de más media aplicación.
+ */
+const GASTAN_CUOTA = new Set([
+  'imagen',
+  'veo-lanzar',
+  'veo-consultar',
+  'musica',
+  'voz',
+  'voz-muestra',
+  'alinear',
+  'desglosar-escena',
+  'salud',
+]);
+
+/** Cuánto se espera ahora entre llamadas. */
+let pausaEntreLlamadas = 0;
+
+/** Aciertos seguidos desde el último frenazo. */
+let aciertosSeguidos = 0;
+
+/**
+ * El suelo del ritmo: lo que el usuario dice que aguanta su cuenta.
+ *
+ * El freno de arriba aprende chocando, y aprender chocando cuesta una llamada
+ * fallida y una espera cada vez. Quien ya sabe que su proyecto aguanta dos
+ * imágenes por minuto lo dice y se va a treinta segundos por imagen desde la
+ * primera, sin chocar ni una vez. Es un suelo, no un valor fijo: si aun así se
+ * choca, el freno sube por encima.
+ */
+let sueloDelRitmo = 0;
+
+/**
+ * Pone el ritmo mínimo entre llamadas, en milisegundos.
+ * @param {number} ms
+ */
+export function ponerRitmoMinimo(ms) {
+  sueloDelRitmo = Math.max(0, Math.min(PAUSA_MAX, Number(ms) || 0));
+  if (sueloDelRitmo > pausaEntreLlamadas) pausaEntreLlamadas = sueloDelRitmo;
+}
+
+/** Cuánto se está esperando ahora entre llamadas, para poder enseñarlo y guardarlo. */
+export function ritmoActual() {
+  return pausaEntreLlamadas;
+}
+
+/** Un «ahora no» del proveedor: se frena y se insiste, no se da por perdido. */
+function frenar() {
+  aciertosSeguidos = 0;
+  pausaEntreLlamadas = Math.min(
+    PAUSA_MAX,
+    pausaEntreLlamadas ? pausaEntreLlamadas * 2 : PAUSA_INICIAL
+  );
+}
+
+/** Va bien: se afloja, pero despacio y nunca por debajo de lo que dijo el usuario. */
+function aflojar() {
+  if (pausaEntreLlamadas <= sueloDelRitmo) return;
+  if (++aciertosSeguidos < ACIERTOS_PARA_AFLOJAR) return;
+  aciertosSeguidos = 0;
+  const siguiente = Math.round(pausaEntreLlamadas * 0.75);
+  pausaEntreLlamadas = Math.max(sueloDelRitmo, siguiente < PAUSA_MINIMA ? 0 : siguiente);
+}
+
+/** Duerme, y se despierta si se aborta. */
+function dormir(ms) {
+  return new Promise((listo) => setTimeout(listo, ms));
+}
+
+/** ¿Es un «espera» y no un «no»? */
+function esEspera(http, texto) {
+  return http === 429 || http === 503 ||
+    /RESOURCE_EXHAUSTED|has been exhausted|quota|rate limit|try again later/i.test(String(texto || ''));
+}
+
 /**
  * Nombre del evento con el que este módulo pide una clave nueva.
  *
@@ -240,7 +375,7 @@ function pedirClaveNueva(mensaje, modo) {
  * @returns {Promise<object>} lo que devolvió la función, sin el `ok`
  * @throws {ErrorDeCara} siempre con `.mensaje` en español, listo para pintarse
  */
-export async function llamar(modo, campos = {}) {
+export async function llamar(modo, campos = {}, { alEsperar } = {}) {
   const nombre = String(modo ?? '').trim();
   if (!nombre) {
     throw new ErrorDeCara(
@@ -255,35 +390,94 @@ export async function llamar(modo, campos = {}) {
   const clave = claveGuardada();
   if (clave) cabeceras['X-Clave'] = clave;
 
-  const corte = new AbortController();
-  const reloj = setTimeout(() => corte.abort(), LIMITE_MS);
+  // Cuántas veces se ha esperado por cuota en ESTA llamada. Un «espera» no gasta
+  // intento: no ha fallado, es que no le tocaba.
+  let esperas = 0;
 
-  let respuesta;
-  try {
-    respuesta = await fetch(RUTA, {
-      method: 'POST',
-      headers: cabeceras,
-      body: cuerpo,
-      cache: 'no-store',
-      signal: corte.signal
-    });
-  } catch (fallo) {
-    throw deLaRed(fallo, nombre);
-  } finally {
-    clearTimeout(reloj);
+  for (;;) {
+    // EL FRENO, ANTES DE LLAMAR. Si algo chocó antes con la cuota, esto es lo que
+    // hace que esta no vuelva a chocar. Solo para lo que gasta cuota de modelo:
+    // ver `GASTAN_CUOTA`.
+    if (pausaEntreLlamadas && GASTAN_CUOTA.has(nombre)) {
+      avisarDeLaEspera(alEsperar, pausaEntreLlamadas, 'ritmo', nombre);
+      await dormir(pausaEntreLlamadas);
+    }
+
+    const corte = new AbortController();
+    const reloj = setTimeout(() => corte.abort(), LIMITE_MS);
+
+    let respuesta;
+    try {
+      respuesta = await fetch(RUTA, {
+        method: 'POST',
+        headers: cabeceras,
+        body: cuerpo,
+        cache: 'no-store',
+        signal: corte.signal
+      });
+    } catch (fallo) {
+      throw deLaRed(fallo, nombre);
+    } finally {
+      clearTimeout(reloj);
+    }
+
+    // El peso, antes que nada: incluso una respuesta que trae un fallo cuenta para
+    // saber cuánto ocupa ese modo.
+    const texto = await leerElTexto(respuesta, nombre);
+    anotarPeso(nombre, pesoDeLaRespuesta(respuesta, texto));
+
+    const datos = entender(texto, respuesta, nombre);
+
+    if (respuesta.ok && datos.ok !== false) {
+      // Solo cuenta como acierto lo que de verdad pasó por un modelo: cien
+      // lecturas de estado seguidas no demuestran que la cuota se haya repuesto.
+      if (GASTAN_CUOTA.has(nombre)) aflojar();
+      delete datos.ok;
+      return datos;
+    }
+
+    const error = comoError(datos, respuesta, nombre);
+
+    // UN «AHORA NO» NO ES UN «NO». Aquí está la diferencia entre una tanda que
+    // termina sola y una lista entera en rojo: un 429 se frenaba y se daba por
+    // perdido, así que la siguiente llamada iba a la misma pared a toda
+    // velocidad. Ahora se frena Y SE INSISTE, con la paciencia que pide una
+    // ventana de cuota, y quien lo pidió no llega a enterarse.
+    if (esEspera(error.http, `${error.mensaje} ${error.detalle || ''}`)) {
+      frenar();
+
+      if (esperas < ESPERAS_DE_CUOTA.length) {
+        // Si Google dice cuánto esperar se le hace caso, PERO CON UN TECHO: una
+        // cuota diaria puede contestar «vuelve dentro de 40.000 segundos», y eso
+        // serían once horas quieto sin forma de saber que no está colgado.
+        const dice = Math.min(Number(respuesta.headers.get('retry-after')) * 1000 || 0, TECHO_DE_ESPERA);
+        const cuanto = Math.max(dice, ESPERAS_DE_CUOTA[esperas]);
+        esperas += 1;
+        avisarDeLaEspera(alEsperar, cuanto, 'cuota', nombre);
+        await dormir(cuanto);
+        continue;
+      }
+
+      // Se acabó la paciencia de esta capa. El error sale TAL CUAL lo dijo Google
+      // —sin sustituirlo por una suposición— y de aquí en adelante decide la cola,
+      // que para la tanda entera sin perder el trabajo.
+    }
+
+    throw error;
   }
+}
 
-  // El peso, antes que nada: incluso una respuesta que trae un fallo cuenta para
-  // saber cuánto ocupa ese modo.
-  const texto = await leerElTexto(respuesta, nombre);
-  anotarPeso(nombre, pesoDeLaRespuesta(respuesta, texto));
-
-  const datos = entender(texto, respuesta, nombre);
-
-  if (!respuesta.ok || datos.ok === false) throw comoError(datos, respuesta, nombre);
-
-  delete datos.ok;
-  return datos;
+/**
+ * Le cuenta a quien esté mirando que se está esperando, si es que hay alguien.
+ * Nunca lanza: un aviso que rompe la llamada que estaba avisando sería absurdo.
+ */
+function avisarDeLaEspera(alEsperar, ms, por, modo) {
+  if (typeof alEsperar !== 'function') return;
+  try {
+    alEsperar(ms, por, modo);
+  } catch {
+    // El que avisa se ha roto. No es motivo para perder la generación.
+  }
 }
 
 // ---------------------------------------------------------------------------
@@ -439,13 +633,28 @@ function comoError(datos, respuesta, modo) {
   const http = Number(respuesta.status) || 500;
   const dicho = datos && typeof datos.error === 'object' && datos.error ? datos.error : null;
 
+  // Si el error viene como TEXTO en vez de como objeto, ese texto se usa. Antes
+  // se tiraba y se ponía la frase genérica de abajo, que es la peor de las dos
+  // porque dice «no ha explicado por qué» cuando sí lo había explicado. Pasa con
+  // las respuestas que no compone esta función —una página de error de la
+  // plataforma que sí es JSON, por ejemplo—, y ahí es donde más falta hace.
+  const enTexto = typeof (datos && datos.error) === 'string' ? datos.error.trim() : '';
+
   const mensaje =
     dicho && typeof dicho.mensaje === 'string' && dicho.mensaje.trim()
       ? dicho.mensaje.trim()
-      : `La función no ha podido atender «${modo}» y ha contestado ${elCodigo(respuesta)}, pero no ` +
+      : enTexto ||
+        `La función no ha podido atender «${modo}» y ha contestado ${elCodigo(respuesta)}, pero no ` +
         'ha explicado por qué. Es un fallo del propio estudio, no de tu cuenta.';
 
-  const codigo = Number.isFinite(Number(dicho && dicho.http)) ? Number(dicho.http) : http;
+  // OJO CON EL `dicho &&` DENTRO DEL Number(): estaba mal y reventaba.
+  // `Number(null)` es 0, que ES finito, así que con `dicho` a null la condición
+  // daba verdadera y la rama buena leía `.http` de null: un TypeError en el
+  // camino que sirve para contar errores, o sea el peor sitio posible. Pasa
+  // siempre que la respuesta no traiga el error como objeto —una página de error
+  // de la plataforma, un cuerpo de otra forma—, que es justo cuando más falta
+  // hace saber qué pasó. Lo cazó `npm run freno` la primera vez que se ejecutó.
+  const codigo = dicho && Number.isFinite(Number(dicho.http)) ? Number(dicho.http) : http;
 
   const fallo = new ErrorDeCara(mensaje, {
     detalle: dicho && dicho.detalle != null ? String(dicho.detalle) : null,

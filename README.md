@@ -265,6 +265,38 @@ da el trabajo por perdido treinta segundos después de empezar. Un 429 no genera
 nada y no se cobra: lo único que cuesta es esperar, que es justo lo que hay que
 hacer.
 
+### El freno que se ajusta solo
+
+Portado de **Prisma-Negro**, otro proyecto del mismo autor que lleva meses
+generando tandas de cientos de imágenes sin que el usuario vea un solo error de
+cuota. La idea no es de aquí y funciona; esto es por qué.
+
+Vertex no limita por «cuántas a la vez» sino **por minuto**. Ir de una en una ya
+se hacía, pero **sin pausa entre llamadas**, y cuarenta imágenes seguidas se salen
+del minuto igual aunque vayan en fila india. **Ir de una en una no es ir despacio.**
+
+Ahora hay tres capas, y un 429 tiene que atravesarlas todas para llegar a la
+pantalla:
+
+1. **El freno** (`app/api.js`). Una pausa entre llamadas que **dobla** con cada
+   429 —empieza en 8 s, que son siete llamadas por minuto, y no pasa de 60— y se
+   **afloja un cuarto** cada cinco aciertos seguidos. Sube fuerte y baja despacio:
+   subir multiplicando y bajar de golpe es un oscilador, no un regulador, y se
+   pasa la tanda chocando cada pocas imágenes. Solo frena lo que gasta cuota de
+   modelo: leer el estado habla con el bucket y no se frena, o la aplicación se
+   arrastraría sin ganar nada.
+2. **La espera de la llamada** (`app/api.js`). Un 429 no falla: espera 30 s, 60 y
+   90 y reintenta **la misma llamada**. Si Google dice cuánto esperar se le hace
+   caso, con un techo de 2 minutos —una cuota diaria puede contestar «vuelve
+   dentro de 40.000 segundos», y eso serían once horas quieto—.
+3. **La espera de la cola** (`app/cola.js`). Si aun así llega, no era la ventana
+   del minuto: para **todo** el estudio 60 s y 180, sin perder el trabajo.
+
+Lo comprueba `npm run freno`, con un Google de mentira y un reloj de mentira: que
+un 429 seguido de un acierto **no llegue a quien llamó**, que el freno suba a 8 s
+y baje a 6, que el estado no lo pague, y que con la ventana cerrada del todo salga
+**el mensaje de Google tal cual** y no una suposición.
+
 **Y la cuota la espera la cola entera, no cada trabajo.** La cuota es una sola
 para toda la cuenta: si Google dice que no hay, no la hay para el siguiente de la
 lista tampoco. Antes cada trabajo se apuntaba su espera y la cola cogía
