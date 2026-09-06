@@ -22,9 +22,24 @@ import { token, AMBITOS } from './auth.js';
 import { ErrorDeCara, deGoogle } from './errores.js';
 import { plazoPara } from './plazo.js';
 
-// Lo que espera una llamada a Vertex si nadie dice otra cosa. Quien necesita más
-// —la imagen— lo pide, y `plazoPara` lo recorta a lo que quede de plazo.
-const LIMITE_MS = 45_000;
+// LO QUE ESPERA UNA LLAMADA SI NADIE DICE OTRA COSA, Y POR QUÉ AHORA ES EL TECHO.
+//
+// Esto valía 45 s, y era una trampa con la forma exacta de un valor razonable.
+// Quien escribía una llamada nueva y no se acordaba de poner su límite no recibía
+// ningún aviso: recibía 45 segundos. Y como `plazoPara()` ya recorta a lo que
+// quede del plazo de la función, ese 45 no protegía de nada — solo cortaba antes
+// de tiempo lo que necesitaba más.
+//
+// Pasó dos veces. La segunda fue la ficha de difusión: el modelo de texto se
+// pasa del minuto razonando, y moría a los 45 s exactos con un mensaje que
+// hablaba de la plataforma y no del número que de verdad la había cortado, que
+// estaba escrito en otro archivo.
+//
+// Ahora el que se olvida recibe TODO el tiempo que hay, y quien quiere fallar
+// antes —la comprobación de Salud, el lanzamiento del montaje— lo pide. Es la
+// misma trampa del revés, y del revés no muerde: pedir menos tiempo es una
+// decisión que se toma a conciencia; necesitar más se descubre en producción.
+const LIMITE_MS = 180_000;
 
 // Suelos y techos del límite. Menos de un segundo no es un límite, es un corte.
 //

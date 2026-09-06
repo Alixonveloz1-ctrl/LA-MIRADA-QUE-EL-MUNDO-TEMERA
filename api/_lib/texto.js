@@ -81,6 +81,15 @@ const NIVELES_DE_VEO = ['calidad', 'medio', 'economico'];
 // misma petición, que es lo que de verdad tarda.
 const LIMITE_TRADUCCION_MS = 30_000;
 
+// Lo que se le deja al modelo de texto cuando de verdad tiene que pensar: el
+// desglose de una escena y la ficha con la que se sube una pieza.
+//
+// Estaba sin poner, y sin poner significa el valor por defecto de `vertex.js`, que
+// eran 45 s. La ficha moría ahí, con un mensaje que hablaba de la plataforma en
+// vez del número que la cortaba. Se escribe aquí, al lado del otro, para que los
+// dos se vean juntos: uno razona y otro traduce una frase.
+const LIMITE_TEXTO_MS = 170_000;
+
 // Kana y kanji, por punto de código para que no dependa de cómo se guarde este
 // archivo. Sirve para comprobar que lo que volvió es japonés de verdad y no una
 // disculpa en español.
@@ -209,6 +218,9 @@ export async function generar(prompt, { json = false, limiteMs, rapido = false }
   const respuesta = await conGrafias(modelo, (id) =>
     llamar(urlModelo(comoGrafia(modelo, id), 'generateContent', ent.sa.project_id), cuerpo, {
       metodo: 'POST',
+      // Sin límite dicho, el de por defecto de vertex.js, que es todo el tiempo
+      // que hay. Cuando ese valor era 45 s, la ficha moría ahí con un mensaje
+      // que hablaba de la plataforma en vez del número que la cortaba.
       limiteMs,
       contexto: {
         que: json ? 'pedir el desglose al modelo de texto' : 'pedir una respuesta al modelo de texto',

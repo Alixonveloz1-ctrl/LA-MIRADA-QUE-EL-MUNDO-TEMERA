@@ -2445,17 +2445,23 @@ bloque('Código · los tiempos cuadran de arriba abajo');
   const enPuerta = numeroDe('api/g.js', /const PRESUPUESTO_MS = ([\d_]+);/);
   const enNavegador = numeroDe('app/api.js', /const LIMITE_MS = ([\d_]+);/);
   const techoDeVertex = numeroDe('api/_lib/vertex.js', /const LIMITE_MAXIMO_MS = ([\d_]+);/);
-  const enImagen = numeroDe('api/_lib/imagen.js', /const LIMITE_MS = ([\d_]+);/);
+
+  // EL VALOR POR DEFECTO DE VERTEX, que es el que reciben las llamadas que se
+  // olvidan de pedir el suyo. Estuvo en 45 s y era una trampa con forma de valor
+  // razonable: quien escribía una llamada nueva y no se acordaba no recibía
+  // ningún aviso, recibía cuarenta y cinco segundos. Pasó dos veces.
+  const porDefectoDeVertex = numeroDe('api/_lib/vertex.js', /const LIMITE_MS = ([\d_]+);/);
 
   const quejas = [];
 
   if (enVercel === null || enPuerta === null || enNavegador === null
-      || techoDeVertex === null || enImagen === null) {
+      || techoDeVertex === null || porDefectoDeVertex === null) {
     quejas.push(
-      'No se han podido leer los CINCO tiempos: maxDuration en vercel.json, PRESUPUESTO_MS en ' +
-        'api/g.js, LIMITE_MS en app/api.js, LIMITE_MAXIMO_MS en api/_lib/vertex.js y LIMITE_MS en ' +
-        'api/_lib/imagen.js. Si se les ha cambiado el nombre, hay que cambiarlo también aquí: sin ' +
-        'esta comprobación se vuelven a separar sin que nadie lo vea.',
+      'No se han podido leer todos los tiempos: maxDuration en vercel.json, PRESUPUESTO_MS en ' +
+        'api/g.js, LIMITE_MS en app/api.js, LIMITE_MS y LIMITE_MAXIMO_MS en api/_lib/vertex.js, ' +
+        'y LIMITE_MAXIMO_MS en api/_lib/vertex.js. Si se les ha ' +
+        'cambiado el nombre, hay que cambiarlo también aquí: sin esta comprobación se vuelven a ' +
+        'separar sin que nadie lo vea.',
     );
   } else {
     // El plazo que la función se cree suyo NUNCA puede pasar del que pide
@@ -2513,13 +2519,39 @@ bloque('Código · los tiempos cuadran de arriba abajo');
           'es el plazo. Sobra, y hace pensar que se puede esperar más de lo que se puede.',
       );
     }
-    if (enImagen > techoDeVertex) {
+    // NINGÚN MÓDULO QUE GENERA SE ESCRIBE SU PROPIO LÍMITE.
+    //
+    // Los tres lo tuvieron —imagen, audio y texto— y los tres se quedaron atrás
+    // cuando cambió el plazo: la imagen murió a los 55 s y la ficha a los 45,
+    // con el resto del código convencido de tener 200. Un número escrito a mano
+    // aquí solo puede hacer una cosa: cortar antes de tiempo una generación que
+    // ya se está pagando. Fallar rápido SÍ tiene sentido en lo que no genera
+    // —comprobar un modelo en Salud, lanzar un montaje—, y esos siguen pidiendo
+    // el suyo.
+    for (const rel of ['api/_lib/imagen.js', 'api/_lib/audio.js']) {
+      const fuente = fuenteDe(rel);
+      if (fuente === null) continue;
+      if (/limiteMs\s*:/.test(fuente)) {
+        quejas.push(
+          `${rel} se escribe su propio límite de espera. Los que generan no lo ` +
+            'hacen: se quedan atrás cuando cambia el plazo de la función, y lo único que pueden ' +
+            'conseguir es cortar antes de tiempo algo que ya se está pagando. Lo pone vertex.js, ' +
+            'y es todo el tiempo que hay.',
+        );
+      }
+    }
+
+    // El valor por defecto tiene que ser el techo, no un número «razonable».
+    // Cuando era 45 s, olvidarse de poner el límite salía barato de escribir y
+    // caro de descubrir: la ficha moría a los 45 con un mensaje que hablaba de
+    // la plataforma en vez de este número.
+    if (porDefectoDeVertex < techoDeVertex) {
       quejas.push(
-        `imagen.js pide ${enImagen / 1000} s y vertex.js recorta a ${techoDeVertex / 1000}. Ese ` +
-          'recorte es silencioso: la imagen se cree con su límite, muere en el de vertex.js, y el ' +
-          'mensaje nombra un número que no está escrito donde nadie lo busca. Los dos tienen que ' +
-          'cuadrar, y este es exactamente el descuido que dejó las imágenes muriendo a los 55 s ' +
-          'con el resto del código convencido de tener 200.',
+        `vertex.js da ${porDefectoDeVertex / 1000} s a quien no pide límite, y su techo es ` +
+          `${techoDeVertex / 1000}. Esa diferencia es una trampa con forma de valor razonable: ` +
+          'quien escriba una llamada nueva y no se acuerde de su límite no recibe ningún aviso, ' +
+          'recibe el número corto. El que se olvida tiene que recibir TODO el tiempo que hay; ' +
+          'quien quiera fallar antes, que lo pida.',
       );
     }
 

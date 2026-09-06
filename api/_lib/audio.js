@@ -71,11 +71,12 @@ const MARGEN_DEL_LIMITE_S = 0.1;
 // más de dos se parten por parejas consecutivas en `bloquesDeVoz()`.
 const MAXIMO_DE_HABLANTES = 2;
 
-// Por debajo de los 60 s de la plataforma. Generar una pieza de música o un
-// bloque de voz largo lleva su tiempo, pero el límite propio es lo único que
-// impide que la función se apague sin excepción y el audio se quede
-// «generando» para siempre.
-const LIMITE_MS = 45_000;
+// AQUÍ NO HAY LÍMITE ESCRITO, IGUAL QUE EN LA IMAGEN.
+//
+// Lo hubo, y eran 45 s: no dan ni para componer un minuto de música. Una pieza
+// cortada ahí se cobra igual —Lyria la ha compuesto, solo que nadie la recoge—.
+// Ahora lo pone `vertex.js`, que da todo el tiempo que hay, y no queda ningún
+// número que se pueda quedar atrás cuando cambie el plazo de la función.
 
 // Los bits por muestra que sabe escribir `envolverWav()`. Cualquier otro valor
 // daría una cabecera que suena a ruido en vez de a voz.
@@ -163,7 +164,6 @@ export async function musica({ texto, negativo = null, durS } = {}) {
     respuesta = await conGrafias(modelo, (id) =>
       llamar(urlModelo(comoGrafia(modelo, id), 'generateContent', ent.sa.project_id), cuerpo, {
         metodo: 'POST',
-        limiteMs: LIMITE_MS,
         contexto: {
           que: 'generar la música',
           modelo: id,
@@ -329,7 +329,6 @@ export async function voz({ partes, instruccion, voces } = {}) {
   const respuesta = await conGrafias(modelo, (id) =>
     llamar(urlModelo(comoGrafia(modelo, id), 'generateContent', ent.sa.project_id), cuerpo, {
       metodo: 'POST',
-      limiteMs: LIMITE_MS,
       contexto: {
         que: 'generar la voz del bloque',
         modelo: id,
@@ -731,7 +730,6 @@ export async function alinear(wav, lineas) {
     },
     {
       metodo: 'POST',
-      limiteMs: LIMITE_MS,
       contexto: { que: 'medir dónde empieza y acaba cada línea dentro del audio' }
     }
   );

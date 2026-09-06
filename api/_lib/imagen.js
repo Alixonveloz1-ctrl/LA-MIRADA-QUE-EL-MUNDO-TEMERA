@@ -43,18 +43,15 @@ const PROPORCION = '16:9';
 const RESOLUCIONES = ['1K', '2K'];
 const SIN_DECIR = 'auto';
 
-// Lo que se le deja tardar a una imagen.
+// AQUÍ NO HAY LÍMITE ESCRITO, Y ES A PROPÓSITO.
 //
-// Estuvo en 45 s mientras el plazo de la función era de 55, y era la causa de
-// que las imágenes buenas se cortaran: una imagen con referencias se pasa de
-// cuarenta y cinco segundos con normalidad. Medido el techo real de la
-// plataforma —240 s, ver api/g.js— el plazo subió a 200 y esto sube con él.
+// Lo hubo: 45 s primero y 170 después, y las dos veces hubo que acordarse de
+// cambiarlo cuando cambiaba el plazo de la función. La primera vez no se hizo, y
+// las imágenes buenas se cortaban a los 45 segundos exactos.
 //
-// No es «todo el plazo» a propósito: detrás de la imagen quedan la subida al
-// bucket y las dos escrituras del estado, y `plazoPara` recorta esto a lo que
-// quede si el plazo va más apurado. Que sobre tiempo aquí no cuesta nada; que
-// falte cuesta una imagen pagada y perdida.
-const LIMITE_MS = 170_000;
+// Ahora `vertex.js` da por defecto todo el tiempo que hay, y `plazoPara()` lo
+// recorta a lo que de verdad quede tras la subida al bucket y las escrituras del
+// estado. Un número menos que se puede quedar atrás.
 
 // Firmas de archivo, para poner el tipo cuando no viene dicho. Se miran los
 // primeros bytes: es lo único que no miente sobre lo que es un archivo.
@@ -104,7 +101,6 @@ export async function generar({ texto, negativo = null, referencias = [], nivel,
     respuesta = await conGrafias(modelo, (id) =>
       llamar(urlModelo(comoGrafia(modelo, id), 'generateContent', ent.sa.project_id), cuerpoPara(id, partes, tamano), {
         metodo: 'POST',
-        limiteMs: LIMITE_MS,
         contexto: {
           que: 'generar la imagen',
           modelo: id,
