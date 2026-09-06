@@ -972,6 +972,31 @@ Las trece piezas dicen dónde ocurren: la cripta el póster oficial y los episod
 8 y 11, los túneles el 3 y el 12, el archivo de la casa el 7 y el 9, la orilla el
 5 y el 6, y cada uno de los demás el suyo.
 
+#### Toda cara que se referencia necesita sitio y escala
+
+Esto salió mirando el póster generado: en el centro apareció un enmascarado
+prominente, de frente a cámara, que no era el celebrante de la serie.
+
+La causa era una contradicción que yo mismo había escrito. Adjuntar la placa de
+alguien es decirle al modelo **«copia esta identidad»**. Pero el encargo lo
+nombraba solo como *«una mejilla de máscara»* dentro de *«una masa de espaldas
+encapuchadas»*: sin escala y sin sitio. La instrucción de referencia dice
+literalmente «redibújalo al tamaño que esta toma requiera», y la toma no requería
+ninguno. El modelo resolvió la contradicción **inventándose una figura suya** y
+poniéndola delante.
+
+La regla queda escrita en `difusion.posters.regla_escala`:
+
+- Si un personaje tiene una placa adjunta, el encargo tiene que decir **dónde
+  está y de qué tamaño**. El póster ahora lo coloca en el labio del charco de
+  antorchas, al doble de la figura pequeña, de tres cuartos y vuelto hacia la
+  escalera, con «no está mirándonos y no está en primer plano».
+- Si un personaje **no** tiene un sitio de verdad en el cuadro, no se le adjunta
+  su placa: se queda como bulto encapuchado anónimo.
+- Y si lo que hace falta es solo su objeto —la máscara vacía en el suelo del
+  episodio 11—, hay que escribir que **la persona no está en la imagen**, o el
+  modelo la dibuja.
+
 #### Preferencia por las anclas, no obligación
 
 Una referencia de personaje existe para llevar la **identidad**, y eso es lo que
