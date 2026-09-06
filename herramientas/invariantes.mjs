@@ -1616,6 +1616,34 @@ bloque('Datos · todo el que habla tiene frase que decir');
 
   comprobar('Todo el que habla en los guiones tiene frase de muestra', sinFrase);
   comprobar('Cada frase sacada del guion dice por qué es esa', sinMotivo);
+
+  // UNA FRASE CORTADA ROMPE AL PERSONAJE ENTERO, no solo a esa muestra. Antes de
+  // decir nada hay que traducirlo al japonés, y al modelo se le pide la frase
+  // «sin notas»; ante un texto que acaba a media palabra contesta avisando de
+  // que está incompleta, salta la comprobación de «esto no está en japonés», y
+  // ese personaje no puede generar NI UNA voz. Le pasaba a Iven, cuya frase
+  // acababa en «y sin un solo»: fallaban las treinta candidatas, siempre.
+  //
+  // No se falla, se avisa: el guion interrumpe a la gente a propósito, y a quien
+  // solo dice una línea y esa está cortada es mejor ponerle esa que ninguna. Al
+  // modelo se le pide expresamente que traduzca la interrupción tal cual.
+  const cortadas = [];
+  for (const ficha of reparto) {
+    const texto = ficha.muestra && typeof ficha.muestra.texto === 'string' ? ficha.muestra.texto.trim() : '';
+    if (!texto) continue;
+    if (/^[.…]/.test(texto) || !/[.!?…»)"']$/.test(texto)) {
+      cortadas.push(`«${ficha.personaje}»: ${JSON.stringify(texto)}`);
+    }
+  }
+  if (cortadas.length) {
+    avisar(
+      `${cortadas.length === 1 ? 'Una frase de muestra está cortada' : `${cortadas.length} frases de muestra están cortadas`} ` +
+        `a media frase: ${cortadas.join('; ')}. Se traducen igual —al modelo se le pide que ` +
+        'conserve la interrupción— pero es lo que más veces hace que conteste una nota en vez de ' +
+        'traducir, y entonces ese personaje no puede generar ninguna voz. Si alguna da problemas, ' +
+        'se le escribe una frase entera a mano en «voces.reparto[].muestra» de datos/serie.json.',
+    );
+  }
   avisar(
     `De ${reparto.length} personajes del reparto, ${aMano} llevan la frase escrita a mano y ` +
       `${delGuion} la llevan sacada del guion por «npm run datos». Ninguno obliga a editar nada: ` +

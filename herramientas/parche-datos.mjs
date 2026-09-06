@@ -484,10 +484,46 @@ const GENERO_FIGURANTE = {
 
 const guiones = JSON.parse(readFileSync(join(raiz, 'datos/guiones.json'), 'utf8'));
 
+/**
+ * Cuántos caracteres tiene que tener una frase para servir de muestra.
+ *
+ * Con menos no se oye una interpretación, se oye un ruido: «¿Cómo?» no deja
+ * juzgar una entrada, un cuerpo y un cierre, que es lo que se está comparando
+ * entre treinta voces. Veinte caracteres son unas cuatro palabras.
+ */
+const LARGO_MINIMO_DE_MUESTRA = 20;
+
+/**
+ * ¿Esta frase está cortada? Empieza por puntos suspensivos, o acaba sin cerrar.
+ *
+ * Importa por dos motivos, y los dos se pagaron:
+ *
+ *   1. COMO MUESTRA NO SIRVE. Media frase no deja juzgar una voz: no hay
+ *      entrada, no hay cierre, y lo que se oye es un trozo suelto.
+ *   2. Y ROMPE LA TRADUCCIÓN. Al modelo se le pide la frase en japonés «sin
+ *      explicación y sin notas»; ante un texto cortado contesta una nota
+ *      avisando de que está incompleta, la comprobación de «esto no está en
+ *      japonés» salta, y ese personaje se queda sin poder generar NADA —la
+ *      traducción es el primer paso de todas sus voces—. Le pasaba a Iven, cuya
+ *      frase acababa en «y sin un solo».
+ *
+ * En el guion esas interrupciones se quedan como están: son la escena. Lo que
+ * cambia es cuál se elige para ESCUCHAR.
+ */
+function fraseCortada(texto) {
+  const t = String(texto || '').trim();
+  if (!t) return false;
+  return /^[.…]/.test(t) || !/[.!?…»)"']$/.test(t);
+}
+
 /** La línea más difícil de un personaje en los guiones, con el criterio de arriba. */
 function lineaMasDificil(id) {
+  // −Infinity y no −1: con los castigos de abajo una nota puede salir negativa,
+  // y arrancando en −1 un personaje cuya ÚNICA línea esté cortada se quedaría
+  // sin ninguna. Peor una frase mala que ninguna frase: sin ella no se le puede
+  // elegir voz de ningún modo.
   let mejor = null;
-  let mejorNota = -1;
+  let mejorNota = -Infinity;
   let cuantas = 0;
   let deRiesgo = 0;
 
@@ -503,7 +539,26 @@ function lineaMasDificil(id) {
         if (riesgo) deRiesgo += 1;
 
         const intencion = typeof linea.intencion === 'string' ? linea.intencion.trim() : '';
-        const nota = (riesgo ? 100000 : 0) + intencion.length * 100 + texto.length;
+
+        // DOS CASTIGOS, y el orden entre ellos importa.
+        //
+        //   · Cortada: pierde SIEMPRE. No se puede juzgar una voz con media
+        //     frase, y además rompe la traducción al japonés, que es el primer
+        //     paso de todas las voces de ese personaje.
+        //   · Muy corta: pierde casi siempre. «¿Cómo?» son dos palabras: no dan
+        //     para oír una entrada, un cuerpo y un cierre, que es lo que se está
+        //     juzgando. Y la intención más detallada suele estar justo en las
+        //     líneas más cortas —«desconcertado; no esperaba que alguien
+        //     escuchara» para decir «¿Cómo?»—, así que sin este castigo la regla
+        //     las prefiere, que es lo contrario de lo que hace falta.
+        //
+        // Cortada castiga más que corta: una frase entera y corta se puede oír;
+        // una cortada ni se oye bien ni se traduce.
+        const castigo =
+          (fraseCortada(texto) ? 1_000_000 : 0) +
+          (texto.length < LARGO_MINIMO_DE_MUESTRA ? 500_000 : 0);
+
+        const nota = (riesgo ? 100000 : 0) + intencion.length * 100 + texto.length - castigo;
 
         if (nota > mejorNota) {
           mejorNota = nota;
@@ -525,16 +580,51 @@ function lineaMasDificil(id) {
 }
 
 let conMuestra = 0;
+let rescatados = 0;
 const mudos = [];
+const sinRecambio = [];
+
 for (const ficha of serie.voces.reparto || []) {
   const escrita = ficha.muestra && typeof ficha.muestra.texto === 'string' ? ficha.muestra.texto.trim() : '';
-  if (escrita) continue;
+
+  // Una muestra escrita a mano se respeta... salvo que esté CORTADA. Cinco lo
+  // estaban, y con esas no se puede ni juzgar la voz ni traducir la frase: el
+  // personaje se queda sin poder generar nada. Si el guion tiene una línea
+  // entera suya, se cambia por esa y se deja dicho.
+  if (escrita && !fraseCortada(escrita)) continue;
 
   const delGuion = lineaMasDificil(String(ficha.personaje));
+
+  if (escrita && (!delGuion || fraseCortada(delGuion.texto))) {
+    // Está cortada y no hay ninguna entera con la que sustituirla. Se deja como
+    // está —es lo único que dice ese personaje— y se avisa, porque va a fallar.
+    sinRecambio.push(String(ficha.personaje));
+    continue;
+  }
+
+  if (escrita) {
+    ficha.muestra = {
+      ep: delGuion.ep,
+      escena: delGuion.escena,
+      texto: delGuion.texto,
+      intencion: delGuion.intencion,
+      del_guion: true,
+      porque: `${delGuion.porque} La que tenía escrita estaba cortada a media frase, y con media ` +
+        'frase no se puede juzgar una voz ni traducirla al japonés.',
+    };
+    rescatados += 1;
+    continue;
+  }
+
   if (!delGuion) {
     mudos.push(String(ficha.personaje));
     continue;
   }
+
+  // Si lo mejor que dice es una frase cortada, se le pone igual —peor sería
+  // dejarlo sin nada— pero queda avisado: es la que más veces hace que el modelo
+  // conteste una nota en vez de traducir.
+  if (fraseCortada(delGuion.texto)) sinRecambio.push(String(ficha.personaje));
 
   ficha.muestra = {
     ep: delGuion.ep,
@@ -550,7 +640,11 @@ for (const ficha of serie.voces.reparto || []) {
   conMuestra += 1;
 }
 anota(`frase de muestra sacada del guion para ${conMuestra} personajes que no la tenían`);
+if (rescatados) anota(`${rescatados} frases de muestra cambiadas por estar cortadas a media frase`);
 if (mudos.length) anota(`sin frase de muestra (no hablan en los guiones): ${mudos.join(', ')}`);
+if (sinRecambio.length) {
+  anota(`OJO — siguen con la frase cortada porque no dicen ninguna entera: ${sinRecambio.join(', ')}`);
+}
 
 // ---------------------------------------------------------------------------
 // UNA VOZ, UN PERSONAJE — Y QUIÉN PUEDE SALTARSE ESA REGLA.

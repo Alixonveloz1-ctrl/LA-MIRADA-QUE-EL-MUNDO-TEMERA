@@ -660,13 +660,16 @@ export default {
         // delante. Con una generación a la vez, «esperando» es el estado normal
         // y no decir cuánto queda invita a pulsar otra vez.
         const esperando = enLaCola.estado === 'pendiente';
-        acciones.push(boton(esperando ? 'En la cola…' : 'Generando…', () => {}, {
+        const sola = esperando && enLaCola.porDelante === 0;
+        acciones.push(boton(esperando ? (sola ? 'Pedida…' : 'En la cola…') : 'Generando…', () => {}, {
           desactivado: esperando
-            ? (enLaCola.porDelante
-                ? `Esperando turno: van ${enLaCola.porDelante} por delante. Se genera una cosa ` +
+            ? (sola
+                ? 'Ya está pedida y no hay nada por delante: empieza en cuanto la cola la coja. ' +
+                  'Si se queda aquí más de un minuto, mira la pantalla de Cola: puede haber algo ' +
+                  'atascado ocupando el único hueco.'
+                : `Esperando turno: van ${enLaCola.porDelante} por delante. Se genera una cosa ` +
                   'cada vez, y esta cuenta tiene las cuotas cortas: pedir varias a la vez las ' +
-                  'tumba todas.'
-                : 'Esperando turno: es la siguiente. Se genera una cosa cada vez.')
+                  'tumba todas.')
             : 'Ya se está generando esta muestra. Se paga una vez.',
         }));
       } else {
@@ -713,10 +716,17 @@ export default {
                 'porque los dos dicen una o dos líneas y no salen juntos en ninguna escena, así ' +
                 'que nadie los va a tener los dos en la cabeza a la vez.')
             : null,
+          // Lo que se dice depende de si de verdad hay alguien delante. «Esperando
+          // su turno» cuando es la primera y la única no es un matiz: es mentira,
+          // y deja mirando una pantalla que parece colgada.
           trabajando
-            ? espera(enLaCola.estado === 'pendiente'
-                ? 'Esperando su turno en la cola…'
-                : 'Diciendo la frase con esta voz…')
+            ? espera(
+                enLaCola.estado !== 'pendiente'
+                  ? 'Diciendo la frase con esta voz…'
+                  : enLaCola.porDelante === 0
+                    ? 'Pedida. Empieza en cuanto la cola la coja…'
+                    : `Esperando turno: ${enLaCola.porDelante} por delante…`,
+              )
             : null),
         acciones,
       });

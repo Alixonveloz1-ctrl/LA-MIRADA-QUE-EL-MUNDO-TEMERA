@@ -51,6 +51,8 @@
         "catálogo de 30 voces de Gemini (Chirp fuera)",
         "género puesto a 27 personajes, sacado de su identidad",
         "frase de muestra sacada del guion para 11 personajes que no la tenían",
+        "4 frases de muestra cambiadas por estar cortadas a media frase",
+        "OJO — siguen con la frase cortada porque no dicen ninguna entera: invitada",
         "género puesto a los 11 del reparto que no tienen ficha de personaje",
         "11 personajes de 2 líneas o menos pueden compartir voz",
         "sin género a propósito: voz —así lo dice el guion—"
@@ -2606,10 +2608,12 @@
         ],
         "voz_id": null,
         "muestra": {
-          "ep": 1,
-          "escena": "6",
-          "texto": "...trescientos carros. Trescientos. Con la nieve hasta la rodilla y sin un solo",
-          "intencion": "alto y nostálgico, hablando ya para nadie"
+          "ep": 2,
+          "escena": "13",
+          "texto": "Tú me recuerdas a mí cuando era joven.",
+          "intencion": "sentimental, emocionado",
+          "del_guion": true,
+          "porque": "Elegida por ser, de sus 12 líneas, la que lleva la intención más detallada. La que tenía escrita estaba cortada a media frase, y con media frase no se puede juzgar una voz ni traducirla al japonés."
         },
         "genero": "masculina",
         "comparte": false,
@@ -2721,8 +2725,10 @@
         "muestra": {
           "ep": 5,
           "escena": "17",
-          "texto": "Vinieron detrás de él. Buscaban a uno que salió del canal y se llevaron por",
-          "intencion": "acusación pública, con la voz rota de rabia"
+          "texto": "Mi madre estaba en medio.",
+          "intencion": "baja de golpe. Esto se dice casi en un susurro",
+          "del_guion": true,
+          "porque": "Elegida por ser, de sus 9 líneas, la que lleva la intención más detallada. La que tenía escrita estaba cortada a media frase, y con media frase no se puede juzgar una voz ni traducirla al japonés."
         },
         "genero": "masculina",
         "comparte": false,
@@ -2743,10 +2749,12 @@
         ],
         "voz_id": null,
         "muestra": {
-          "ep": 6,
-          "escena": "2",
-          "texto": "...y queda el asunto del campamento. Necesitamos a alguien que lo gestione.",
-          "intencion": "trámite"
+          "ep": 7,
+          "escena": "5",
+          "texto": "Llevan nueve días parados. Con el grano.",
+          "intencion": "añadiendo el detalle que lo hunde",
+          "del_guion": true,
+          "porque": "Elegida por ser, de sus 9 líneas, la que lleva la intención más detallada. La que tenía escrita estaba cortada a media frase, y con media frase no se puede juzgar una voz ni traducirla al japonés."
         },
         "genero": "masculina",
         "comparte": false,
@@ -2832,9 +2840,11 @@
         "voz_id": null,
         "muestra": {
           "ep": 3,
-          "escena": "19",
-          "texto": "...y la esclava del demonio mayor sigue comiendo de balde.",
-          "intencion": "de pasada, sin malicia"
+          "escena": "4",
+          "texto": "¿Sobrevivió?",
+          "intencion": "curiosidad",
+          "del_guion": true,
+          "porque": "Elegida por ser, de sus 3 líneas, la que lleva la intención más detallada. La que tenía escrita estaba cortada a media frase, y con media frase no se puede juzgar una voz ni traducirla al japonés."
         },
         "genero": "masculina",
         "comparte": false,

@@ -83,6 +83,23 @@ const LIMITE_TRADUCCION_MS = 20_000;
 // disculpa en español.
 const HAY_JAPONES = /[\u3040-\u30ff\u31f0-\u31ff\u3400-\u4dbf\u4e00-\u9fff\uff66-\uff9d]/;
 
+/**
+ * \u00bfEsta frase est\u00e1 cortada? Empieza por puntos suspensivos, o acaba sin cerrar.
+ *
+ * No sirve para rechazarla \u2014el guion interrumpe a la gente a prop\u00f3sito y esas
+ * l\u00edneas hay que decirlas igual\u2014 sino para poder EXPLICARLO cuando la traducci\u00f3n
+ * falla: un texto cortado es lo que m\u00e1s veces hace que el modelo conteste una
+ * nota en vez de traducir, y sin decirlo el mensaje no lleva a ninguna parte.
+ *
+ * @param {string} frase
+ * @returns {boolean}
+ */
+function fraseCortada(frase) {
+  const t = String(frase || '').trim();
+  if (!t) return false;
+  return /^[.\u2026]/.test(t) || !/[.!?\u2026\u00bb)"']$/.test(t);
+}
+
 // Lo que delata que un prompt de imagen o de vídeo NO está en inglés: letras
 // acentuadas o eñes (español), signos de apertura, o kana y kanji. `imagen` y
 // `video` son prompts para los modelos de imagen y de vídeo y van en inglés; el
@@ -357,6 +374,19 @@ export async function traducirAJapones(textoEs, intencion) {
       : 'No lleva intención escrita: dila en el registro contenido de la serie, en voz baja y sin ' +
         'subrayar nada.',
     '',
+    // LAS LÍNEAS CORTADAS SON DEL GUION, NO UN DATO ROTO. Este animé interrumpe
+    // a la gente a media frase —«...trescientos carros. Trescientos. Con la
+    // nieve hasta la rodilla y sin un solo»— y eso es la escena, no un error.
+    // Sin decírselo, el modelo contesta una nota avisando de que la frase está
+    // incompleta en vez de traducirla, la comprobación de «esto no está en
+    // japonés» salta, y el personaje entero se queda sin poder generar NADA:
+    // ni su muestra de voz ni sus líneas, porque la traducción es el primer
+    // paso de todas.
+    'La frase puede estar cortada, empezar por puntos suspensivos o terminar a media palabra: en ' +
+    'el guion interrumpen a quien habla. Si es así, tradúcela cortada igual, con la misma ' +
+    'interrupción y en el mismo punto. NO la completes, no la cierres, no adivines cómo seguía y ' +
+    'no avises de que está incompleta: esa interrupción es la escena.',
+    '',
     'Devuelve SOLO la frase en japonés, en una línea. Sin comillas, sin romaji, sin la frase en ' +
     'español, sin explicación, sin alternativas y sin ninguna nota.'
   ].join('\n');
@@ -376,8 +406,14 @@ export async function traducirAJapones(textoEs, intencion) {
   if (!HAY_JAPONES.test(japones)) {
     throw new ErrorDeCara(
       `Lo que ha devuelto el modelo al traducir «${frase}» no está en japonés: no lleva ni un ` +
-      'kana ni un kanji. Se le ha pedido la frase y ha contestado otra cosa. Debajo está, sin ' +
-      'tocar, lo que ha contestado. Se puede volver a intentar.',
+      'kana ni un kanji. Se le ha pedido la frase y ha contestado otra cosa. ' +
+      (fraseCortada(frase)
+        ? 'Y esta frase está CORTADA —empieza por puntos suspensivos o acaba a media frase—, que ' +
+          'es lo que más veces hace que el modelo conteste una nota en vez de traducir. Se le ' +
+          'pide expresamente que la traduzca cortada igual, pero si insiste, lo que hay que ' +
+          'cambiar es la frase de muestra de ese personaje en datos/serie.json por una entera. '
+        : '') +
+      'Debajo está, sin tocar, lo que ha contestado. Se puede volver a intentar.',
       { detalle: devuelto, reintentable: true, http: 502 }
     );
   }
