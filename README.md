@@ -416,13 +416,27 @@ gastada, remendada, con mangas largas y zapatos de tela. Se lee igual de pobre y
 no describe a un niño desnutrido y desnudo. Lo mismo con sus manos y con el de
 diez años.
 
-**Y hay un plano que probablemente no se pueda generar nunca: `OP03`,** el primer
-plano de los ojos de un recién nacido en la cripta. No es cuestión de palabras:
-un bebé en un ritual de culto es justo lo que ese filtro existe para no hacer.
-Buscarle la vuelta sería saltarse la protección, no arreglar un error. La salida
-buena es de cine y no de código: **contarlo sin enseñarlo** — las manos de la
-madre, la sombra del celebrante, el reflejo del fuego en la piedra. Da más miedo
-y se puede generar.
+**`OP03` estaba escrito como un primer plano de los ojos de un recién nacido en la
+cripta, y eso no era cuestión de palabras.** Un bebé dentro de un ritual de culto
+es justo lo que ese filtro existe para no hacer, y buscarle la vuelta sería
+saltarse la protección, no arreglar un error. Así que el plano se cuenta **sin
+enseñarlo**, que además es mejor cine:
+
+> La mano abierta de la madre cayendo laxa sobre el altar de piedra, los dedos
+> abriéndose, la luz del fuego rozando la piedra pulida — y al lado de su mano,
+> **dos puntos pequeños de luz roja reflejados en la piedra**. Sin figuras.
+>
+> La mano se posa y se detiene. Los dos reflejos rojos se quedan fijos y **no
+> parpadean con el fuego**. Empuje muy lento.
+
+El presagio está entero y el niño no sale. Y el plano encadena con `OP02`, que es
+la madre en el mismo altar, así que la secuencia gana en vez de perder.
+
+**Los guiones tienen más de esto, y conviene saberlo antes de llegar.** El
+episodio 1 tiene el parto y al celebrante levantando al recién nacido; hay una
+escena de un niño «desnudo, flaco, lleno de cicatrices» ante los sacerdotes. Esas
+tampoco se van a generar mostrando lo que describen, y la salida es la misma: el
+plano cuenta lo que pasa sin ponerlo en cuadro.
 
 ---
 

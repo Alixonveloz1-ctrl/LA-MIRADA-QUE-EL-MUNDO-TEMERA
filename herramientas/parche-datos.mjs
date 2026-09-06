@@ -167,11 +167,11 @@ const PLACAS_NUEVAS = [
     id: 'madre-manos',
     personaje: 'madre',
     luz: 'BARRIO',
-    encuadre: 'Close detail of both adult female hands only, very thin, old and fresh scars across both wrists, no face in frame',
+    encuadre: 'Close detail of both adult female hands only, thin and worn, old and recent chafe marks from restraints ringing both wrists, no face in frame',
     detalle: true,
     instruccion_referencia: DETALLE(
       'the mother',
-      'the exact skin tone (pale olive), how very thin and worn the hands are, and the old and fresh scars across both wrists',
+      'the exact skin tone (pale olive), how thin and worn the hands are, and the old and recent chafe marks ringing both wrists',
       { parte: 'her hands', nada: 'her face, her head or her body' },
     ),
   },

@@ -183,7 +183,7 @@
   },
   "personajes": {
     "madre": {
-      "identidad": "young woman in her early twenties, gaunt and worn; long dark brown hair, matted and unwashed; pale olive skin; large deep-set grey-green eyes with dark circles; high sharp cheekbones, cracked lips; very thin; torn undyed linen shift; old and fresh scars across both wrists",
+      "identidad": "young woman in her early twenties, gaunt and worn; long dark brown hair, matted and unwashed; pale olive skin; large deep-set grey-green eyes with dark circles; high sharp cheekbones, cracked lips; very thin; torn undyed linen shift; old and recent chafe marks from restraints ringing both wrists",
       "genero": "femenina"
     },
     "bebe": {
@@ -193,7 +193,7 @@
     },
     "nino5": {
       "nombre": "el niño de cinco años",
-      "identidad": "gaunt boy about five years old, dark hair grown out unevenly, red eyes, pale olive skin like his mother's, filthy oversized rag tunic, bare feet, dirt worked into every crease of his skin, no expression at all",
+      "identidad": "boy about five years old, dark hair grown out unevenly, red eyes, pale olive skin like his mother's, an oversized worn tunic with long sleeves, patched and travel-stained, simple cloth shoes, quiet serious face, no expression at all",
       "genero": "masculina"
     },
     "nino10": {
@@ -776,9 +776,9 @@
         "id": "madre-manos",
         "personaje": "madre",
         "luz": "BARRIO",
-        "encuadre": "Close detail of both adult female hands only, very thin, old and fresh scars across both wrists, no face in frame",
+        "encuadre": "Close detail of both adult female hands only, thin and worn, old and recent chafe marks from restraints ringing both wrists, no face in frame",
         "detalle": true,
-        "instruccion_referencia": "CHARACTER ANCHOR above: this is the mother. This new plate shows ONLY her hands. Copy from the anchor exactly: the exact skin tone (pale olive), how very thin and worn the hands are, and the old and fresh scars across both wrists. Do NOT draw her face, her head or her body — it is not in frame in this plate. Do NOT copy the pose, the framing, the scale or the background: redraw them as this plate describes."
+        "instruccion_referencia": "CHARACTER ANCHOR above: this is the mother. This new plate shows ONLY her hands. Copy from the anchor exactly: the exact skin tone (pale olive), how thin and worn the hands are, and the old and recent chafe marks ringing both wrists. Do NOT draw her face, her head or her body — it is not in frame in this plate. Do NOT copy the pose, the framing, the scale or the background: redraw them as this plate describes."
       },
       {
         "id": "madre-espalda",
@@ -1420,12 +1420,12 @@
           "luz": "CRIPTA",
           "escenario": "cripta",
           "refs": [
-            "saharis-bebe-cripta"
+            "madre-manos"
           ],
           "encadena_con": null,
           "boca_visible": null,
-          "imagen": "Extreme close up of a newborn's red eyes, wide open and unblinking, firelight reflected in them, the rest of the face in deep shadow",
-          "video": "The eyes do not blink. The reflected fire flickers. Very slow push in."
+          "imagen": "Extreme close up of the mother's open hand falling slack across the dark stone altar, fingers uncurling, wet firelight raking over the polished stone, and beside her hand two small points of red light reflected in the stone, no figures",
+          "video": "The hand settles and stops. The two red reflections hold steady and do not flicker with the fire. Very slow push in."
         },
         {
           "id": "OP04",
@@ -1464,7 +1464,7 @@
           ],
           "encadena_con": null,
           "boca_visible": null,
-          "imagen": "A gaunt five year old boy standing alone in a mud alley in the rain, oversized rag tunic, bare feet, no expression, leaning shacks around him",
+          "imagen": "A small boy of five standing alone in a mud alley in the rain, an oversized worn tunic with long sleeves, patched and travel-stained, simple cloth shoes, quiet serious face, leaning shacks around him",
           "video": "Rain falls. He does not move and does not flinch. Camera pushes in very slowly."
         },
         {
