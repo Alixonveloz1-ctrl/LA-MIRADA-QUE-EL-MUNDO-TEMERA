@@ -291,6 +291,34 @@ puede atribuir a un archivo de esta página —una extensión, un bloqueador de
 contenido—. Se dice tal cual, porque disfrazarlo de fallo del estudio manda a
 buscar donde no está.
 
+### Con qué se genera, y cuánto cuesta
+
+**Salud → «Con qué se genera».** Ahí se elige el modelo de imagen, el de vídeo y
+la resolución de las imágenes, y se ve el **id exacto** de cada uno. Es la
+decisión que más dinero mueve de toda la herramienta:
+
+| | Se elige entre | Qué cambia |
+|---|---|---|
+| Imágenes | calidad · medio · económico | Del más caro al más barato. Por defecto, el que diga `serie.json`. |
+| Resolución | 1K · 2K | La misma imagen a 2K cuesta bastante más. Para juzgar un keyframe y para dárselo a Veo, 1K sobra: Veo entrega 720p. |
+| Vídeos | calidad · medio · económico | Además de «el que lleve cada plano», que es lo que hay escrito en `serie.json` plano a plano. |
+
+Los tres niveles existían desde el principio, pero solo se podían cambiar con una
+variable de Vercel y un redespliegue. Eso estaba mal: lo elige quien paga, sobre
+la marcha, no quien despliega. Ahora vive en el estado —o sea en el bucket—, así
+que vale para todas las pestañas y sobrevive a cerrar el móvil. Se aplica a lo
+que se genere a partir de ese momento; lo que ya esté generándose sigue con lo
+suyo, y **un clip lanzado se consulta siempre con el nivel con el que se lanzó**
+(se apunta al lado de la operación), porque preguntar por él a otro modelo de Veo
+sería un clip pagado y perdido.
+
+**Precios: la pantalla no los pone, y es a propósito.** Este estudio no los sabe
+de cierto, y un precio inventado es peor que ninguno porque alguien decidiría con
+él. Lo que sí dice es el orden —cuál es el caro y cuál el barato— y el id exacto
+del modelo, que es lo que hay que buscar en la tarifa de Vertex AI. Lo que sí se
+cuenta de verdad es **cuántas imágenes y cuántos segundos de vídeo** se llevan
+generados con cada nivel, en `estado.gasto`.
+
 ---
 
 ## Antes de desplegar
@@ -299,16 +327,17 @@ buscar donde no está.
 npm run comprobar
 ```
 
-Encadena las cinco herramientas y no necesita red ni credenciales: regenera
+Encadena las seis herramientas y no necesita red ni credenciales: regenera
 `datos/serie.json` desde `serie.base.json` con el parche, comprueba los
 invariantes sobre los datos y sobre el árbol de código, **ejecuta** la cola
-contra un Google de mentira, **le da audio de verdad** al lector de formatos, y
+contra un Google de mentira, **le da audio de verdad** al lector de formatos,
+**sigue** el ajuste de con qué se genera hasta el cuerpo de la petición, y
 **pesa** la respuesta de cada modo con material del tamaño real para verificar
-que cabe en los 4,5 MB. Los tres últimos no se ven leyendo el código: se ven
+que cabe en los 4,5 MB. Los cuatro últimos no se ven leyendo el código: se ven
 ejecutándolo y midiendo. Si algo no cumple, sale con error y lo dice en español.
 
 Cada paso se puede lanzar por separado con `npm run datos`, `npm run invariantes`,
-`npm run cola`, `npm run audio` y `npm run pesar`.
+`npm run cola`, `npm run audio`, `npm run ajustes` y `npm run pesar`.
 
 ### Lo que manda Google no es siempre lo mismo
 

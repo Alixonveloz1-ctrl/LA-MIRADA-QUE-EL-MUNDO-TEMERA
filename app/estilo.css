@@ -953,6 +953,22 @@ body > nav a[aria-current="page"]::before {
   overflow-wrap: anywhere;
 }
 
+/* La lista de niveles de generación en Salud: cada uno con su id de modelo. Sin
+   viñetas y con aire entre líneas, porque lo que se lee de verdad es el id, que
+   va en monoespaciada y puede ser largo. */
+.lista-tenue {
+  margin: var(--espacio-2) 0 0;
+  padding: 0;
+  list-style: none;
+  color: var(--texto-tenue);
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.lista-tenue li + li {
+  margin-top: 4px;
+}
+
 .numero {
   font-variant-numeric: tabular-nums;
 }

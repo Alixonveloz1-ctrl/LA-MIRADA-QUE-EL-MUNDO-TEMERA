@@ -246,7 +246,7 @@ let promesaDeLaSerie = null;
  * `datos/serie.json`, bajado una vez y guardado.
  * @returns {Promise<object>}
  */
-function serie() {
+export function serie() {
   if (!promesaDeLaSerie) {
     promesaDeLaSerie = bajarLaSerie().catch((fallo) => {
       // Si falló, la próxima vez se vuelve a intentar: una caída de red no puede
@@ -327,14 +327,38 @@ async function tomaDeLaSerie(idPieza, idToma) {
 }
 
 /**
- * El nivel de imagen que se usa cuando nadie dice cuál. Sale de serie.json, que
- * es donde está escrito; aquí no se escribe ningún nivel a mano.
+ * El nivel de imagen que se usa cuando nadie dice cuál.
+ *
+ * Manda lo ELEGIDO en Salud, que vive en el estado y por tanto en el bucket; si
+ * ahí no hay nada elegido, lo que diga serie.json. Aquí no se escribe ningún
+ * nivel a mano.
  * @returns {Promise<string>}
  */
 async function nivelDeImagenPorDefecto() {
+  const elegido = ajustes().imagen.nivel;
+  if (elegido) return elegido;
   const datos = await serie();
   const dicho = datos && datos.modelos && datos.modelos.imagen && datos.modelos.imagen.por_defecto;
   return typeof dicho === 'string' && dicho.trim() ? dicho.trim() : 'medio';
+}
+
+/**
+ * Con qué se genera, tal como está elegido en Salud. Siempre devuelve la forma
+ * entera aunque el estado sea viejo y no la traiga: un ajuste que falta es «lo
+ * que digan los datos», nunca un fallo.
+ * @returns {{imagen:{nivel:string|null, resolucion:string|null}, video:{nivel:string|null}}}
+ */
+export function ajustes() {
+  const puesto = (actual() || {}).ajustes || {};
+  const imagen = puesto.imagen || {};
+  const video = puesto.video || {};
+  return {
+    imagen: {
+      nivel: soloTexto(imagen.nivel) || null,
+      resolucion: soloTexto(imagen.resolucion) || null,
+    },
+    video: { nivel: soloTexto(video.nivel) || null },
+  };
 }
 
 // ---------------------------------------------------------------------------
@@ -1680,11 +1704,16 @@ export const EJECUTORES = {
       );
     }
 
+    // El nivel elegido en Salud manda sobre el que lleva escrito el plano. Si no
+    // hay nada elegido no se manda campo y decide el plano, que es lo de siempre.
+    const nivelDeVeo = ajustes().video.nivel;
+
     const lanzado = await llamar('veo-lanzar', {
       pieza: idPieza,
       toma: idToma,
       imagen_b64: reducida.b64,
-      lastFrame_b64: enlace ? enlace.b64 : null
+      lastFrame_b64: enlace ? enlace.b64 : null,
+      ...(nivelDeVeo ? { nivel: nivelDeVeo } : {})
     });
 
     // AQUÍ NO SE ESPERA A LA TANDA. La operación está lanzada y pagada: se
@@ -1985,14 +2014,17 @@ async function generarImagen(tipo, args) {
   const campos = { tipo, id: args.id };
   if (tipo === 'keyframe') campos.pieza = args.pieza;
 
-  const nivel = soloTexto(args.nivel);
-  if (nivel) campos.nivel = nivel;
+  // El nivel y la resolución: lo que pida el trabajo, y si no lo que esté elegido
+  // en Salud. Van SIEMPRE escritos en la llamada, no dados por supuestos: así lo
+  // que se genera es lo que se eligió y no lo que quedara por defecto en el
+  // servidor.
+  const usado = soloTexto(args.nivel) || (await nivelDeImagenPorDefecto());
+  campos.nivel = usado;
+
+  const resolucion = soloTexto(args.resolucion) || ajustes().imagen.resolucion;
+  if (resolucion) campos.resolucion = resolucion;
 
   const hecho = await llamar('imagen', campos);
-
-  // El gasto se apunta por nivel, y el nivel que se ha usado de verdad es el que
-  // se pidió o el que serie.json tiene por defecto. Aquí no se escribe ninguno.
-  const usado = nivel || (await nivelDeImagenPorDefecto());
 
   anotar((estado) => {
     if (tipo === 'keyframe') {
@@ -2033,7 +2065,12 @@ async function cambioDeClipTerminado(idPieza, idToma, ruta) {
     entrada.operacion_en_curso = null;
     entrada.operacion_prefijo = null;
     apuntarIntento(entrada, 'intentos_clip', ruta);
-    if (laToma) anotarGasto(estado, 'video_s', laToma.veo, Number(laToma.dur_gen) || 0);
+    // El gasto se apunta con el nivel que se ha usado DE VERDAD, que es el
+    // elegido en Salud si lo hay y, si no, el del plano.
+    if (laToma) {
+      const nivel = ajustes().video.nivel || laToma.veo;
+      anotarGasto(estado, 'video_s', nivel, Number(laToma.dur_gen) || 0);
+    }
   };
 }
 

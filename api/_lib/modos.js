@@ -305,7 +305,9 @@ function entradaDeToma(estado, clave) {
       intentos_keyframe: [],
       clip_elegido: null,
       intentos_clip: [],
-      operacion_en_curso: null
+      operacion_en_curso: null,
+      operacion_prefijo: null,
+      operacion_nivel: null
     };
   }
   return estado.tomas[clave];
@@ -685,6 +687,7 @@ async function modoImagen(cuerpo) {
 
   const id = exigirTexto(cuerpo, 'id', 'qué placa, qué escenario o qué toma se genera');
   const nivel = textoSiViene(cuerpo, 'nivel');
+  const resolucion = textoSiViene(cuerpo, 'resolucion');
 
   // El id del modelo no se escribe aquí: sale de datos/serie.json y lo sustituye
   // IMAGE_MODEL. Hace falta antes de nada para poder mirar los cupos.
@@ -761,7 +764,8 @@ async function modoImagen(cuerpo) {
     texto: compuesto.texto,
     negativo: compuesto.negativo,
     referencias,
-    nivel
+    nivel,
+    resolucion
   });
 
   const datos = Buffer.from(generada.b64, 'base64');
@@ -820,6 +824,14 @@ async function modoVeoLanzar(cuerpo) {
 
   const encargo = promptVideo(idPieza, idToma);
 
+  // CON QUÉ NIVEL DE VEO. Lo normal es el que lleva escrito el plano, que es una
+  // decisión artística tomada plano a plano. Pero quien paga puede mandar otro
+  // desde Salud, y entonces manda ese: un plano de «calidad» cuesta varias veces
+  // lo que uno «economico», y esa cuenta la hace quien pone el dinero, no el
+  // archivo de datos.
+  const nivelPedido = textoSiViene(cuerpo, 'nivel');
+  const nivelUsado = nivelPedido || laToma.veo;
+
   // El fotograma de enlace solo viaja si esta toma encadena de verdad. Una toma
   // que no encadena y llevara lastFrame saldría interpolando hacia una imagen
   // que no le toca.
@@ -834,7 +846,7 @@ async function modoVeoLanzar(cuerpo) {
     negativo: encargo.negativo,
     imagenB64: cuerpo.imagen_b64,
     lastFrameB64: lastFrame,
-    nivel: laToma.veo,
+    nivel: nivelUsado,
     durGen: laToma.dur_gen,
     storageUri: gsUri(prefijo)
   });
@@ -866,6 +878,11 @@ async function modoVeoLanzar(cuerpo) {
       // listarlo. Si solo viajara en la respuesta, una operación recuperada al
       // abrir la aplicación no sabría dónde buscar su archivo. Se apunta al lado.
       entrada.operacion_prefijo = prefijo;
+      // Y CON QUÉ NIVEL SE LANZÓ. Sin esto, si el nivel se cambia en Salud
+      // mientras un clip está generándose, la consulta preguntaría por esa
+      // operación a OTRO modelo de Veo y Google contestaría que no existe: un
+      // clip pagado y perdido por un ajuste que se tocó a destiempo.
+      entrada.operacion_nivel = nivelUsado;
     }, leido);
   } catch (fallo) {
     // El nombre de la operación NO se pone en este mensaje: lleva el project id
@@ -951,7 +968,11 @@ async function modoVeoConsultar(cuerpo) {
 
   const finDelPlazo = Date.now() + PLAZO_DE_CONSULTA_MS;
 
-  const preguntado = await consultarVeo(operacion, laToma.veo);
+  // El nivel con el que se LANZÓ, que no tiene por qué ser el que lleva escrito
+  // el plano ni el que esté elegido ahora: una operación se consulta siempre
+  // donde se creó.
+  const nivelDeLaOperacion = soloTexto(enEstado.operacion_nivel) || laToma.veo;
+  const preguntado = await consultarVeo(operacion, nivelDeLaOperacion);
 
   if (!preguntado.hecho) return { hecho: false };
 
@@ -961,6 +982,7 @@ async function modoVeoConsultar(cuerpo) {
       const entrada = entradaDeToma(estado, clave);
       entrada.operacion_en_curso = null;
       entrada.operacion_prefijo = null;
+      entrada.operacion_nivel = null;
     });
     return { hecho: true, error: preguntado.error };
   }
@@ -989,6 +1011,7 @@ async function modoVeoConsultar(cuerpo) {
       const entrada = entradaDeToma(estado, clave);
       entrada.operacion_en_curso = null;
       entrada.operacion_prefijo = null;
+      entrada.operacion_nivel = null;
     }, leido);
     return {
       hecho: true,
@@ -1006,6 +1029,7 @@ async function modoVeoConsultar(cuerpo) {
     const entrada = entradaDeToma(estado, clave);
     entrada.operacion_en_curso = null;
     entrada.operacion_prefijo = null;
+    entrada.operacion_nivel = null;
     apuntarIntento(entrada, 'intentos_clip', ruta);
   }, leido);
 
@@ -1647,11 +1671,15 @@ function conNombresDeOperacion(delNavegador, delBucket) {
     if (!entrada.operacion_en_curso) {
       entrada.operacion_en_curso = null;
       entrada.operacion_prefijo = null;
+      entrada.operacion_nivel = null;
       continue;
     }
 
     entrada.operacion_en_curso = nombre || null;
     entrada.operacion_prefijo = prefijoOriginal || null;
+    // El nivel de la operación lo pone quien la lanzó y NO lo puede cambiar el
+    // navegador: es lo que decide a qué modelo se le pregunta después.
+    entrada.operacion_nivel = esObjeto(original) ? (soloTexto(original.operacion_nivel) || null) : null;
   }
   return copia;
 }

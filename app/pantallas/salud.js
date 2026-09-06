@@ -43,8 +43,11 @@
 // el fallo donde no está.
 
 import { llamar, pesos } from '../api.js';
-import { actual, alCambiar } from '../estado.js';
-import { h, pantalla, seccion, tarjeta, boton, aviso, espera, vaciar } from '../ui.js';
+import { actual, alCambiar, cambiar } from '../estado.js';
+import { serie } from '../cola.js';
+import {
+  h, pantalla, seccion, tarjeta, boton, aviso, espera, vaciar, filtro, contarFalloSuelto,
+} from '../ui.js';
 import { bytes, fecha, porcentaje, plural } from '../formato.js';
 
 // ---------------------------------------------------------------------------
@@ -128,6 +131,7 @@ export default {
       modelos: h('div', { clase: 'rejilla' }),
       voces: h('div', { clase: 'rejilla' }),
       montaje: h('div', { clase: 'rejilla' }),
+      generadores: h('div', { clase: 'rejilla' }),
       pesos: h('div', { clase: 'rejilla' }),
     };
 
@@ -152,6 +156,7 @@ export default {
       seccion('Los modelos', huecos.modelos),
       seccion('Las voces', huecos.voces),
       seccion('El montador', huecos.montaje),
+      seccion('Con qué se genera', huecos.generadores),
       seccion('Lo que ha pesado cada respuesta', huecos.pesos),
       seccion(null, reloj, h('div', { clase: 'tarjeta-acciones' }, botonDeComprobar)),
     );
@@ -162,8 +167,31 @@ export default {
     // lleva medido esta sesión, así que se pintan ya y se repintan solos cada vez
     // que alguien escribe el estado.
     pintarPesos(huecos.pesos);
+
+    // Con qué se genera: tampoco depende de la comprobación. Sale de los datos
+    // (qué niveles hay) y del estado (cuál está elegido), así que se pinta en
+    // cuanto llegan los datos y se repinta cada vez que alguien elige.
+    let laSerie = null;
+    pintarConQueSeGenera(huecos.generadores, null, null);
+    serie().then(
+      (datos) => {
+        laSerie = datos;
+        if (vivo) pintarConQueSeGenera(huecos.generadores, null, laSerie);
+      },
+      (fallo) => {
+        if (!vivo) return;
+        vaciar(huecos.generadores);
+        huecos.generadores.appendChild(aviso(
+          'No se ha podido leer datos/serie.json, así que no se puede decir con qué modelos se ' +
+          'genera ni elegir otro. El resto de esta pantalla sí vale.',
+          { tono: 'error', detalle: loQueDijo(fallo) }));
+      },
+    );
+
     const desuscribir = alCambiar(() => {
-      if (vivo) pintarPesos(huecos.pesos);
+      if (!vivo) return;
+      pintarPesos(huecos.pesos);
+      if (laSerie) pintarConQueSeGenera(huecos.generadores, null, laSerie);
     });
 
     const tic = setInterval(() => {
@@ -1031,6 +1059,11 @@ function loQueDijo(fallo) {
   return String(fallo);
 }
 
+/** El texto limpio de algo, o cadena vacía. Nunca lanza, venga lo que venga. */
+function soloTexto(valor) {
+  return typeof valor === 'string' ? valor.trim() : valor == null ? '' : String(valor).trim();
+}
+
 /** Un objeto de verdad, o uno vacío: así ninguna sección se rompe por un null. */
 function objeto(valor) {
   return valor && typeof valor === 'object' && !Array.isArray(valor) ? valor : {};
@@ -1108,4 +1141,185 @@ function pintarVariables(hueco, datos) {
       `Hay ${plural(sinPoner.length, 'variable opcional sin poner', 'variables opcionales sin poner')}. ` +
       'No es un fallo: cada tarjeta dice qué se pierde sin ella.'));
   }
+}
+
+// ---------------------------------------------------------------------------
+// Con qué se genera
+// ---------------------------------------------------------------------------
+
+/**
+ * Elegir el modelo de imagen y el de vídeo, y la resolución de la imagen.
+ *
+ * POR QUÉ ESTÁ AQUÍ Y NO EN UNA VARIABLE DE ENTORNO. Los tres niveles existían
+ * desde el principio en datos/serie.json, pero solo se podían cambiar con una
+ * variable de Vercel y un redespliegue. Eso es exactamente lo que no puede ser:
+ * es la decisión que más dinero mueve de toda la herramienta —entre el nivel
+ * más caro y el más barato hay varias veces el precio, y la resolución lo
+ * vuelve a multiplicar—, y la toma quien paga, sobre la marcha, mirando lo que
+ * le está costando. No quien despliega.
+ *
+ * POR QUÉ NO SE PONEN PRECIOS EN PANTALLA. Porque no los sé de cierto y aquí
+ * inventarse un número es peor que no ponerlo: alguien decidiría con él. Lo que
+ * sí se dice es el ORDEN —cuál es el caro y cuál el barato— y el id exacto del
+ * modelo, que es lo que hace falta para buscar su precio en la tarifa de Google.
+ *
+ * Lo elegido vive en el estado, o sea en el bucket: vale para todas las
+ * pestañas y sobrevive a cerrar el móvil.
+ */
+function pintarConQueSeGenera(hueco, datos, laSerie) {
+  vaciar(hueco);
+
+  if (!laSerie) {
+    hueco.appendChild(espera('Leyendo con qué se puede generar…'));
+    return;
+  }
+
+  const modelos = (laSerie && laSerie.modelos) || {};
+  const puesto = ajustesPuestos();
+
+  hueco.appendChild(h('p', { clase: 'suave' },
+    'Con qué modelo se genera cada cosa. Es lo que más mueve el gasto de toda la herramienta: ' +
+    'entre el nivel de calidad y el económico hay varias veces el precio, y la resolución de la ' +
+    'imagen lo vuelve a multiplicar. Se cambia aquí y vale para todo lo que se genere a partir ' +
+    'de ahora; lo que ya esté generándose sigue con lo suyo.'));
+
+  hueco.appendChild(elegirNivel({
+    titulo: 'Las imágenes',
+    familia: modelos.imagen || {},
+    puesto: puesto.imagen.nivel,
+    porDefecto: soloTexto((modelos.imagen || {}).por_defecto) || 'medio',
+    queEs: 'Placas del banco, escenarios y keyframes.',
+    guardar: (nivel) => guardarAjuste((a) => { a.imagen.nivel = nivel; }),
+  }));
+
+  hueco.appendChild(elegirResolucion(modelos, puesto.imagen.resolucion));
+
+  hueco.appendChild(elegirNivel({
+    titulo: 'Los vídeos',
+    familia: modelos.video || {},
+    puesto: puesto.video.nivel,
+    porDefecto: null,
+    queEs: 'Los clips de Veo. Un clip malo cuesta bastante más que un keyframe malo, ' +
+      'así que aquí es donde de verdad se decide el gasto.',
+    guardar: (nivel) => guardarAjuste((a) => { a.video.nivel = nivel; }),
+  }));
+}
+
+/** Los niveles de una familia, en orden de caro a barato, con su id de modelo. */
+function nivelesDe(familia) {
+  const orden = ['calidad', 'medio', 'economico'];
+  return orden
+    .filter((nivel) => familia && familia[nivel] && familia[nivel].id)
+    .map((nivel) => ({ nivel, id: String(familia[nivel].id) }));
+}
+
+/** Cómo se lee cada nivel, y qué significa para el bolsillo. */
+const COMO_SE_LEE = {
+  calidad: { nombre: 'Calidad', coste: 'el más caro' },
+  medio: { nombre: 'Medio', coste: 'intermedio' },
+  economico: { nombre: 'Económico', coste: 'el más barato' },
+};
+
+/**
+ * Las pastillas de una familia. La primera opción es siempre «lo que digan los
+ * datos», porque en el vídeo eso significa «el nivel que lleva escrito cada
+ * plano», que es una decisión artística tomada plano a plano y no conviene
+ * perderla sin querer.
+ */
+function elegirNivel({ titulo, familia, puesto, porDefecto, queEs, guardar }) {
+  const niveles = nivelesDe(familia);
+
+  if (!niveles.length) {
+    return tarjeta({
+      titulo,
+      pie: h('p', { clase: 'tenue' },
+        'datos/serie.json no declara ningún nivel para esto, así que no hay nada que elegir.'),
+    });
+  }
+
+  const deLosDatos = porDefecto
+    ? `El de serie.json (${COMO_SE_LEE[porDefecto] ? COMO_SE_LEE[porDefecto].nombre.toLowerCase() : porDefecto})`
+    : 'El que lleve cada plano';
+
+  const opciones = [
+    { id: '', texto: deLosDatos },
+    ...niveles.map(({ nivel }) => ({
+      id: nivel,
+      texto: (COMO_SE_LEE[nivel] || {}).nombre || nivel,
+    })),
+  ];
+
+  const cuerpo = h('div', {},
+    h('p', { clase: 'tenue' }, queEs),
+    filtro(opciones, puesto || '', (elegido) => {
+      guardar(elegido || null).catch((fallo) => contarFalloSuelto(fallo));
+    }),
+    h('ul', { clase: 'lista-tenue' },
+      ...niveles.map(({ nivel, id }) => h('li', {},
+        h('strong', {}, (COMO_SE_LEE[nivel] || {}).nombre || nivel),
+        document.createTextNode(` · ${(COMO_SE_LEE[nivel] || {}).coste || ''} · `),
+        h('code', { clase: 'mono' }, id),
+      )),
+    ),
+    h('p', { clase: 'tenue' },
+      'Aquí no se ponen precios porque este estudio no los sabe de cierto, y un precio inventado ' +
+      'es peor que ninguno: alguien decidiría con él. El id de arriba es el que hay que buscar en ' +
+      'la tarifa de Vertex AI para ver lo que cuesta de verdad.'),
+  );
+
+  return tarjeta({ titulo, pie: cuerpo });
+}
+
+/** La resolución de la imagen: el otro multiplicador del gasto. */
+function elegirResolucion(modelos, puesta) {
+  const escrita = soloTexto(((modelos.imagen || {}).parametros || {}).resolution) || '2K';
+
+  const cuerpo = h('div', {},
+    h('p', { clase: 'tenue' },
+      'La misma imagen a 2K cuesta bastante más que a 1K. Para juzgar un keyframe y para ' +
+      'dárselo a Veo, 1K sobra: Veo entrega 720p. El 2K se nota en las placas del banco, que ' +
+      'son las que se miran de cerca y las que después copian todas las demás.'),
+    filtro([
+      { id: '', texto: `La de serie.json (${escrita})` },
+      { id: '1K', texto: '1K' },
+      { id: '2K', texto: '2K' },
+    ], puesta || '', (elegida) => {
+      guardarAjuste((a) => { a.imagen.resolucion = elegida || null; })
+        .catch((fallo) => contarFalloSuelto(fallo));
+    }),
+  );
+
+  return tarjeta({ titulo: 'La resolución de las imágenes', pie: cuerpo });
+}
+
+/** Lo elegido, con la forma entera aunque el estado sea viejo y no la traiga. */
+function ajustesPuestos() {
+  const puesto = (actual() || {}).ajustes || {};
+  const imagen = puesto.imagen || {};
+  const video = puesto.video || {};
+  return {
+    imagen: {
+      nivel: soloTexto(imagen.nivel) || null,
+      resolucion: soloTexto(imagen.resolucion) || null,
+    },
+    video: { nivel: soloTexto(video.nivel) || null },
+  };
+}
+
+/**
+ * Guarda un cambio de ajuste en el estado, o sea en el bucket.
+ * @param {(ajustes: object) => void} cambio
+ * @returns {Promise<void>}
+ */
+async function guardarAjuste(cambio) {
+  await cambiar((estado) => {
+    if (!estado.ajustes || typeof estado.ajustes !== 'object') estado.ajustes = {};
+    if (!estado.ajustes.imagen || typeof estado.ajustes.imagen !== 'object') {
+      estado.ajustes.imagen = { nivel: null, resolucion: null };
+    }
+    if (!estado.ajustes.video || typeof estado.ajustes.video !== 'object') {
+      estado.ajustes.video = { nivel: null };
+    }
+    cambio(estado.ajustes);
+  });
 }

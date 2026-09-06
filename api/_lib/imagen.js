@@ -19,7 +19,7 @@
 
 import { Buffer } from 'node:buffer';
 import { entorno } from './entorno.js';
-import { nivelImagen } from './datos.js';
+import { nivelImagen, serie } from './datos.js';
 import { ErrorDeCara } from './errores.js';
 import { llamar, urlModelo, conGrafias, comoGrafia } from './vertex.js';
 
@@ -27,8 +27,11 @@ import { llamar, urlModelo, conGrafias, comoGrafia } from './vertex.js';
 // o el clip recorta la imagen que se aprobó.
 const PROPORCION = '16:9';
 
-// La K, en mayúscula. En minúscula Google rechaza la petición.
-const TAMANO = '2K';
+// Las dos que se pueden pedir. La K, en MAYÚSCULA: en minúscula Google rechaza
+// la petición. Cuál se usa lo decide quien paga, desde la pantalla de Salud; lo
+// de aquí es solo qué valores son válidos, porque un valor inventado se lo come
+// Google con un error en inglés que no dice esto.
+const RESOLUCIONES = ['1K', '2K'];
 
 // Generar una imagen 2K puede llevar su tiempo; el límite sigue por debajo del
 // de la plataforma, que es lo único que importa.
@@ -54,9 +57,12 @@ const FIRMAS = [
  *        línea que dice qué copiar de ella.
  *        `nivel` es `calidad`, `medio` o `economico`; si no se dice, el que
  *        marque `modelos.imagen.por_defecto` en datos/serie.json.
+ *        `resolucion` es «1K» o «2K»; si no se dice, la de
+ *        `modelos.imagen.parametros.resolution`. Es el otro multiplicador del
+ *        gasto además del nivel, y por eso se puede pedir llamada a llamada.
  * @returns {Promise<{b64:string, mime:string, bytes:number}>}
  */
-export async function generar({ texto, negativo = null, referencias = [], nivel } = {}) {
+export async function generar({ texto, negativo = null, referencias = [], nivel, resolucion } = {}) {
   const prompt = comprobarTexto(texto);
   const refs = comprobarReferencias(referencias);
 
@@ -66,12 +72,13 @@ export async function generar({ texto, negativo = null, referencias = [], nivel 
   const ent = entorno();
 
   const partes = componerPartes(refs, conNegativo(prompt, negativo));
+  const tamano = resolucionValida(resolucion);
 
   // Se prueban las grafías del modelo en orden: Vertex publica el mismo modelo
   // con el nombre de preview y el definitivo, y cuál contesta depende del
   // proyecto. Pedir solo uno y recibir 404 se lee como «no lo tienes».
   const respuesta = await conGrafias(modelo, (id) =>
-    llamar(urlModelo(comoGrafia(modelo, id), 'generateContent', ent.sa.project_id), cuerpoPara(id, partes), {
+    llamar(urlModelo(comoGrafia(modelo, id), 'generateContent', ent.sa.project_id), cuerpoPara(id, partes, tamano), {
       metodo: 'POST',
       limiteMs: LIMITE_MS,
       contexto: {
@@ -100,14 +107,43 @@ export async function generar({ texto, negativo = null, referencias = [], nivel 
  * @param {object[]} partes
  * @returns {object}
  */
-function cuerpoPara(id, partes) {
+function resolucionValida(pedida) {
+  const texto = typeof pedida === 'string' ? pedida.trim().toUpperCase() : '';
+
+  // SI SE PIDE UNA Y NO VALE, SE FALLA. Caer al valor por defecto en silencio
+  // esconde el defecto de quien la pidió: la imagen saldría a 2K, se pagaría a
+  // 2K, y quien creía haber elegido 1K no se enteraría nunca.
+  if (texto && !RESOLUCIONES.includes(texto)) {
+    throw new ErrorDeCara(
+      `«${pedida}» no es una resolución de imagen. Las que hay son ${RESOLUCIONES.join(' y ')}, ` +
+        'y se eligen en la pantalla de Salud.',
+      { reintentable: false, http: 400 }
+    );
+  }
+  if (texto) return texto;
+
+  // No se ha pedido ninguna: la de los datos, que es la de la serie.
+  const escrita = String(
+    ((serie.modelos && serie.modelos.imagen && serie.modelos.imagen.parametros) || {}).resolution || ''
+  ).trim().toUpperCase();
+  if (RESOLUCIONES.includes(escrita)) return escrita;
+
+  throw new ErrorDeCara(
+    `datos/serie.json declara «${escrita || 'nada'}» como resolución de imagen en ` +
+      `modelos.imagen.parametros.resolution, y las que hay son ${RESOLUCIONES.join(' y ')}. ` +
+      'Es un fallo de los datos, no de tu cuenta.',
+    { reintentable: false, http: 500 }
+  );
+}
+
+function cuerpoPara(id, partes, tamano) {
   const familia3 = /^gemini-3/i.test(String(id));
   const imageConfig = { aspectRatio: PROPORCION };
 
   // La K en MAYÚSCULA. En minúscula lo rechaza. docs/contrato.md §12 nombra este
   // campo `resolution`; la API de Vertex lo llama `imageSize` dentro de
   // `imageConfig`, y solo en la familia 3.
-  if (familia3) imageConfig.imageSize = TAMANO;
+  if (familia3) imageConfig.imageSize = tamano;
 
   return {
     contents: [{ role: 'user', parts: partes }],

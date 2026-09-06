@@ -11,8 +11,9 @@
     "datos": "node herramientas/parche-datos.mjs",
     "invariantes": "node herramientas/invariantes.mjs",
     "pesar": "node herramientas/pesar.mjs",
-    "comprobar": "npm run datos && npm run invariantes && npm run cola && npm run audio && npm run pesar",
+    "comprobar": "npm run datos && npm run invariantes && npm run cola && npm run audio && npm run ajustes && npm run pesar",
     "cola": "node herramientas/probar-cola.mjs && node herramientas/probar-cola.mjs 24",
-    "audio": "node herramientas/probar-audio.mjs"
+    "audio": "node herramientas/probar-audio.mjs",
+    "ajustes": "node herramientas/probar-ajustes.mjs"
   }
 }

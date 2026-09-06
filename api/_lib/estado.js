@@ -121,6 +121,24 @@ function nivelesDe(familia) {
   return niveles.length ? niveles : ['calidad', 'medio', 'economico'];
 }
 
+/**
+ * Las dos resoluciones de imagen que se pueden elegir. Son el otro multiplicador
+ * del gasto además del nivel: la misma imagen a 2K cuesta bastante más que a 1K,
+ * y para juzgar un keyframe 1K sobra. `null` significa la que diga serie.json.
+ */
+const RESOLUCIONES = ['1K', '2K'];
+
+/**
+ * Un nivel que exista de verdad en esa familia, o `null` para «lo que digan los
+ * datos». Cualquier otra cosa —un nivel inventado, un número, un objeto— se
+ * queda en `null` en vez de romper: un ajuste mal escrito no puede impedir que
+ * se lea el estado, que es de donde cuelga todo lo demás.
+ */
+function nivelODeLosDatos(valor, familia) {
+  const texto = typeof valor === 'string' ? valor.trim() : '';
+  return texto && nivelesDe(familia).includes(texto) ? texto : null;
+}
+
 /** La ruta lógica de `estado.json`, que la escribe serie.json en `rutas`. */
 function rutaDelEstado() {
   const escrita = serie.rutas && serie.rutas.estado;
@@ -168,6 +186,7 @@ export const ESTADO_VACIO = congelar({
   voces: {},
   montajes: [],
   cola: [],
+  ajustes: { imagen: { nivel: null, resolucion: null }, video: { nivel: null } },
   gasto: { imagen: {}, video_s: {}, musica_s: 0, voz_s: 0 },
   pesos: {}
 });
@@ -359,6 +378,18 @@ export function asegurar(estado) {
   // se comprueba que son listas.
   listaDe(completo, 'montajes');
   listaDe(completo, 'cola');
+
+  // Ajustes: CON QUÉ se genera. Vive aquí y no en una variable de entorno porque
+  // es una decisión de producción que se cambia sobre la marcha —y a mitad de una
+  // tirada— y porque la manda quien paga, no quien despliega. `null` significa
+  // «lo que diga datos/serie.json»: el nivel por defecto para la imagen y, en el
+  // vídeo, el que lleve escrito cada plano.
+  const ajustes = mapaDe(completo, 'ajustes');
+  const deImagen = mapaDe(ajustes, 'imagen');
+  deImagen.nivel = nivelODeLosDatos(deImagen.nivel, 'imagen');
+  deImagen.resolucion = RESOLUCIONES.includes(deImagen.resolucion) ? deImagen.resolucion : null;
+  const deVideo = mapaDe(ajustes, 'video');
+  deVideo.nivel = nivelODeLosDatos(deVideo.nivel, 'video');
 
   // Gasto: no es un límite, es información. Con 400 planos, saber por dónde se
   // va el dinero cambia decisiones (plan §8).
