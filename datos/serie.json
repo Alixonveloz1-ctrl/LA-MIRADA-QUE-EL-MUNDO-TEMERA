@@ -927,7 +927,7 @@
             "saharis-5-cripta"
           ],
           "encadena_con": null,
-          "imagen": "Close shot of a small child's hands, filthy and thin, resting flat on cold stone floor, torchlight raking across from the left, the rest of the body out of frame",
+          "imagen": "Close shot of a small child's hands resting flat on cold stone floor, grey dust in the creases of the skin, the sleeves of an oversized tunic fallen back from the wrists, torchlight raking across from the left, the rest of him out of frame",
           "video": "The small hands slowly close into fists. Camera locked. Only the fingers move.",
           "dur_gen": 4,
           "recorte": [
@@ -1027,7 +1027,7 @@
             "saharis-5-manos"
           ],
           "encadena_con": null,
-          "imagen": "Close shot of a woman's thin scarred hand placing a torn piece of hard bread into a small child's open palm, both hands only, cold grey light",
+          "imagen": "Close shot of a woman's thin work-worn hand placing a torn piece of hard bread into a small child's open palm, both hands only, cold grey light",
           "video": "The bread is placed, the small fingers slowly curl around it. Camera locked.",
           "dur_gen": 4,
           "recorte": [
@@ -1105,7 +1105,7 @@
             "saharis-bebe-ancla"
           ],
           "encadena_con": null,
-          "imagen": "Close up of an infant's face spattered with fine blood droplets, red eyes open, absolutely no expression, low orange torchlight, deep shadow behind",
+          "imagen": "Close up of a newborn's face filling the frame, red eyes open and steady, absolutely no expression, low orange torchlight from below, deep shadow behind, nothing else in frame",
           "video": "The face does not move. One single slow blink and nothing else. Camera locked. He does not cry.",
           "dur_gen": 4,
           "recorte": [
@@ -1113,7 +1113,7 @@
             2
           ],
           "escenario": "cripta",
-          "boca_visible": "bebe"
+          "boca_visible": null
         },
         {
           "id": "C3",
@@ -1281,8 +1281,8 @@
             "saharis-manos"
           ],
           "encadena_con": null,
-          "imagen": "Close shot of an adult male hand slowly opening, a long old ritual scar crossing the palm, warm gold light, dark background",
-          "video": "The fingers open fully to reveal the scarred palm. Camera locked. Total stillness.",
+          "imagen": "Close shot of an adult male hand slowly opening, a thin old pale ritual line crossing the palm, warm gold light, dark background",
+          "video": "The fingers open fully to reveal the marked palm. Camera locked. Total stillness.",
           "dur_gen": 4,
           "recorte": [
             0,
@@ -2934,8 +2934,8 @@
           ],
           "encadena_con": null,
           "boca_visible": null,
-          "imagen": "Close shot of an adult male hand slowly opening, a long old ritual scar crossing the palm, a silver signet ring, warm gold light, dark background",
-          "video": "The fingers open fully to reveal the scarred palm. Camera locked. Total stillness."
+          "imagen": "Close shot of an adult male hand slowly opening, a thin old pale ritual line crossing the palm, a silver signet ring, warm gold light, dark background",
+          "video": "The fingers open fully to reveal the marked palm. Camera locked. Total stillness."
         },
         {
           "id": "OP26",
@@ -3134,7 +3134,7 @@
           ],
           "encadena_con": null,
           "boca_visible": null,
-          "imagen": "Close detail of a woman's very thin scarred hands resting open on a cold stone floor, cold light from above, nothing else in frame",
+          "imagen": "Close detail of a woman's very thin worn hands resting open on a cold stone floor, old chafe marks ringing both wrists, cold light from above, nothing else in frame",
           "video": "The hands do not move at all. The light shifts very slightly. Camera locked."
         },
         {

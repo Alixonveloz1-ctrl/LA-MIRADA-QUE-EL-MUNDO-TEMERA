@@ -1303,6 +1303,114 @@ bloque('Datos · el archivo');
 }
 
 // ===========================================================================
+// DATOS · Menores y daño en el mismo prompt
+// ===========================================================================
+
+bloque('Datos · menores y daño');
+
+{
+  // LO QUE GOOGLE NO VA A GENERAR NUNCA, DICHO ANTES DE PEDIRLO.
+  //
+  // Esto no es una regla de estilo: es la única cosa que el filtro de contenido
+  // bloquea SIEMPRE, sin matices y sin importar cómo esté escrita. Un menor y
+  // una palabra de daño en el mismo prompt vuelven con
+  // «IMAGE_PROHIBITED_CONTENT» y no hay forma de reintentarlo.
+  //
+  // Ya ha pasado tres veces en este proyecto: la placa de Saharis a los cinco
+  // años («gaunt, filthy, bare feet»), la de saharis-barrio, y el plano C2 del
+  // teaser —un recién nacido con la cara salpicada de sangre—. Las tres se
+  // descubrieron pagando la llamada y leyendo el error en el móvil.
+  //
+  // La regla de la serie ya estaba escrita en el README: estas cosas se cuentan
+  // sin ponerlas en cuadro. Lo que faltaba era comprobarlo. Un plano que no se
+  // puede generar es peor que uno mal escrito: el mal escrito sale feo y se
+  // rehace; este no sale, y la primera noticia es un error rojo.
+  const DANO = [
+    'blood', 'bloody', 'bloodied', 'spatter', 'spattered', 'wound', 'wounded',
+    'scar', 'scars', 'scarred', 'bruise', 'bruised', 'bleeding', 'stab',
+    'stabbed', 'corpse', 'dead', 'naked', 'nude', 'starving', 'emaciated',
+    'gaunt', 'filthy', 'beaten', 'strangled', 'burned', 'mutilated',
+  ];
+
+  /**
+   * Los personajes que son menores, sacados de su propia identidad. No hay una
+   * lista escrita a mano a propósito: una lista se queda vieja en cuanto se
+   * añade un personaje, y entonces esta comprobación diría que todo está bien.
+   */
+  const NUMEROS_DE_MENOR =
+    /\b(newborn|infant|baby|toddler|one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve|thirteen|fourteen|fifteen|sixteen|seventeen)\b[^.]{0,24}\b(year|years|old)\b|\b(newborn|infant|baby)\b|\b(boy|girl|child|man|woman) (of|about) (one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve|thirteen|fourteen|fifteen|sixteen|seventeen)\b|\b(about|aged) (one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve|thirteen|fourteen|fifteen|sixteen|seventeen)\b/i;
+
+  const menores = new Set();
+  for (const [id, ficha] of Object.entries(serie.personajes || {})) {
+    if (NUMEROS_DE_MENOR.test(String((ficha && ficha.identidad) || ''))) menores.add(id);
+  }
+
+  /** Las placas de esos personajes: es lo que un plano nombra en «refs». */
+  const placasDeMenor = new Set(
+    placasBanco.filter((p) => p && menores.has(p.personaje)).map((p) => p.id)
+  );
+
+  const quejas = [];
+  for (const { idPieza, toma } of todasLasTomas) {
+    const texto = `${toma.imagen || ''} ${toma.video || ''}`.toLowerCase();
+    const palabras = DANO.filter((palabra) => new RegExp(`\\b${palabra}\\b`).test(texto));
+    if (!palabras.length) continue;
+
+    // ¿Hay un menor en este plano? Por referencia o dicho en el propio texto.
+    const porRef = (toma.refs || []).filter((ref) => placasDeMenor.has(ref));
+    const porTexto = NUMEROS_DE_MENOR.test(texto) ||
+      /\b(child|children|kid|infant|newborn|baby|boy|girl)\b/.test(texto);
+    if (!porRef.length && !porTexto) continue;
+
+    quejas.push(
+      `${nombreDeToma(idPieza, toma)} junta a un menor con ${
+        palabras.length === 1 ? 'la palabra' : 'las palabras'
+      } «${palabras.join('», «')}»` +
+        (porRef.length ? ` (referencia ${porRef.join(', ')})` : '') +
+        '. Google bloquea eso siempre, así que ese plano no se va a generar: ' +
+        'la primera noticia sería un error rojo con la llamada ya pagada. Se ' +
+        'cuenta sin ponerlo en cuadro, como el resto de la serie.'
+    );
+  }
+
+  comprobar(
+    `Ningún plano junta a un menor con una palabra de daño (${menores.size} menores)`,
+    quejas,
+    menores.size
+      ? [`Menores detectados por su ficha: ${[...menores].sort().join(', ')}.`]
+      : ['No se ha detectado ningún personaje menor, y eso en esta serie sería raro: míralo.']
+  );
+
+  // Y LO MISMO EN LAS PLACAS, QUE ES DONDE EMPEZÓ.
+  //
+  // La primera vez que salió «IMAGE_PROHIBITED_CONTENT» no fue en un plano: fue
+  // en la placa de Saharis a los cinco años, cuya identidad decía «gaunt,
+  // filthy, bare feet». Una placa bloqueada es peor que un plano bloqueado,
+  // porque su ancla es la referencia de todos los planos de ese personaje: sin
+  // ella no se puede generar nada suyo en toda la serie.
+  //
+  // Se mira la identidad del personaje Y el encuadre de la placa, porque el
+  // prompt que se manda es los dos juntos.
+  const deLasPlacas = [];
+  for (const placa of placasBanco) {
+    if (!placa || !menores.has(placa.personaje)) continue;
+    const ficha = (serie.personajes || {})[placa.personaje] || {};
+    const texto = `${ficha.identidad || ''} ${placa.encuadre || ''}`.toLowerCase();
+    const palabras = DANO.filter((palabra) => new RegExp(`\\b${palabra}\\b`).test(texto));
+    if (!palabras.length) continue;
+    deLasPlacas.push(
+      `La placa «${placa.id}» es de «${placa.personaje}», que es menor, y su ` +
+        `prompt lleva «${palabras.join('», «')}». Eso lo bloquea Google siempre. ` +
+        (placa.ancla
+          ? 'Y encima es su ANCLA: sin ella no se puede generar ni un plano suyo ' +
+            'en toda la serie.'
+          : 'La pobreza y el daño se cuentan con la ropa y con la luz, no con el cuerpo.')
+    );
+  }
+  comprobar('Ninguna placa de un menor lleva una palabra de daño', deLasPlacas);
+}
+
+// ===========================================================================
 // DATOS · Enmiendas del contrato §13
 // ===========================================================================
 

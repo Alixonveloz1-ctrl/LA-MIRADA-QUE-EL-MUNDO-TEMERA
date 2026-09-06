@@ -597,6 +597,27 @@ escena de un niño «desnudo, flaco, lleno de cicatrices» ante los sacerdotes. 
 tampoco se van a generar mostrando lo que describen, y la salida es la misma: el
 plano cuenta lo que pasa sin ponerlo en cuadro.
 
+#### Y ahora se comprueba antes de pagarlo
+
+Esto se descubrió tres veces, y las tres pagando la llamada y leyendo el error
+rojo en el móvil:
+
+| Qué se pidió | Qué pasó |
+|---|---|
+| La placa de Saharis a los cinco años: *gaunt, filthy, bare feet* | Bloqueada. Y es un **ancla**: sin ella no se genera ni un plano suyo en toda la serie |
+| `saharis-barrio`, con «diecisiete años» y una cicatriz en la palma | Bloqueada, y sin decir con qué palabra |
+| El plano C2 del teaser: un recién nacido con la cara **salpicada de sangre** | Bloqueado. Google no va a generar eso nunca |
+
+La regla estaba escrita. Lo que faltaba era comprobarla. `npm run invariantes`
+saca ahora la lista de personajes menores **de su propia ficha** —no de una
+lista escrita a mano, que se queda vieja en cuanto se añade un personaje— y
+rechaza cualquier plano o placa que junte a uno de ellos con una palabra de
+daño: sangre, cicatriz, herida, desnudo, hambriento, sucio, golpeado.
+
+Un plano que no se puede generar es peor que uno mal escrito. El mal escrito
+sale feo y se rehace; este no sale, y la primera noticia es un error rojo con la
+llamada ya pagada.
+
 ### «No hay imagen» no siempre es el filtro
 
 Cuando el modelo contesta sin imagen, lo que importa no es solo **qué** dice
