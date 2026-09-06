@@ -102,5 +102,20 @@ di(!('imageSize' in cuerpoAuto.generationConfig.imageConfig),
 const conAuto = est.asegurar({ ajustes: { imagen: { resolucion: 'auto' } } });
 di(conAuto.ajustes.imagen.resolucion === 'auto', '«auto» se guarda en el estado');
 
+// EL RITMO, que es lo que evita perder la primera generación de cada sesión.
+const sinRitmo = est.asegurar({});
+di(sinRitmo.ajustes.ritmo && sinRitmo.ajustes.ritmo.por_minuto === 0
+  && sinRitmo.ajustes.ritmo.aprendido_ms === 0,
+  'Un estado viejo sale con el ritmo a cero, que es «automático»');
+
+const conRitmo = est.asegurar({ ajustes: { ritmo: { por_minuto: 2, aprendido_ms: 16000 } } });
+di(conRitmo.ajustes.ritmo.por_minuto === 2 && conRitmo.ajustes.ritmo.aprendido_ms === 16000,
+  'El ritmo dicho y el aprendido se guardan');
+
+const ritmoLoco = est.asegurar({ ajustes: { ritmo: { por_minuto: 9999, aprendido_ms: -5 } } });
+di(ritmoLoco.ajustes.ritmo.por_minuto === 60 && ritmoLoco.ajustes.ritmo.aprendido_ms === 0,
+  'Un ritmo imposible se recorta en vez de romper el estado',
+  `salió ${ritmoLoco.ajustes.ritmo.por_minuto} y ${ritmoLoco.ajustes.ritmo.aprendido_ms}`);
+
 console.log(mal === 0 ? '\nTodo bien.\n' : `\n${mal} MAL.\n`);
 process.exit(mal ? 1 : 0);

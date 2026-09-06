@@ -1211,6 +1211,8 @@ function pintarConQueSeGenera(hueco, datos, laSerie) {
 
   hueco.appendChild(elegirResolucion(modelos, puesto.imagen.resolucion));
 
+  hueco.appendChild(elegirRitmo(puesto.ritmo));
+
   hueco.appendChild(elegirNivel({
     titulo: 'Los vídeos',
     familia: modelos.video || {},
@@ -1316,17 +1318,63 @@ function elegirResolucion(modelos, puesta) {
   return tarjeta({ titulo: 'La resolución de las imágenes', pie: cuerpo });
 }
 
+/**
+ * El ritmo: cuántas generaciones por minuto aguanta esta cuenta.
+ *
+ * POR QUÉ ESTO EXISTE Y POR QUÉ ARREGLA «FALLA DESDE EL PRIMER INTENTO». El freno
+ * que evita los errores de cuota aprende CHOCANDO: empieza sin pausa, se estrella
+ * una vez, y a partir de ahí va bien. Diciéndole aquí lo que aguanta tu cuenta, no
+ * se estrella ni una vez — que es la diferencia entre que la primera generación
+ * del día funcione o falle.
+ *
+ * Está portado de un proyecto del mismo autor donde lleva meses funcionando así.
+ */
+function elegirRitmo(puesto) {
+  const cuerpo = h('div', {},
+    h('p', { clase: 'tenue' },
+      'Cuántas generaciones por minuto aguanta tu cuenta de Google. En automático el estudio lo ' +
+      'aprende solo, pero lo aprende CHOCANDO: la primera generación de cada sesión se pierde ' +
+      'contra la cuota y a partir de ahí va bien. Si ya sabes tu límite, dilo aquí y no se ' +
+      'estrella ni una vez.'),
+    filtro([
+      { id: '0', texto: 'Automático' },
+      { id: '1', texto: '1 por minuto' },
+      { id: '2', texto: '2' },
+      { id: '3', texto: '3' },
+      { id: '5', texto: '5' },
+      { id: '10', texto: '10' },
+    ], String(puesto.porMinuto || 0), (elegido) => {
+      guardarAjuste((a) => {
+        if (!a.ritmo || typeof a.ritmo !== 'object') a.ritmo = { por_minuto: 0, aprendido_ms: 0 };
+        a.ritmo.por_minuto = Math.max(0, Math.min(60, Number(elegido) || 0));
+      }).catch((fallo) => contarFalloSuelto(fallo));
+    }),
+    puesto.aprendidoMs > 0
+      ? h('p', { clase: 'tenue' },
+          `Ahora mismo el freno está en ${(puesto.aprendidoMs / 1000).toFixed(0)} s entre ` +
+          'generaciones, que es lo que ha aprendido chocando. Queda guardado para la próxima vez.')
+      : null,
+  );
+
+  return tarjeta({ titulo: 'El ritmo', pie: cuerpo });
+}
+
 /** Lo elegido, con la forma entera aunque el estado sea viejo y no la traiga. */
 function ajustesPuestos() {
   const puesto = (actual() || {}).ajustes || {};
   const imagen = puesto.imagen || {};
   const video = puesto.video || {};
+  const ritmo = puesto.ritmo || {};
   return {
     imagen: {
       nivel: soloTexto(imagen.nivel) || null,
       resolucion: soloTexto(imagen.resolucion) || null,
     },
     video: { nivel: soloTexto(video.nivel) || null },
+    ritmo: {
+      porMinuto: Math.max(0, Math.min(60, Math.round(Number(ritmo.por_minuto) || 0))),
+      aprendidoMs: Math.max(0, Math.min(60_000, Math.round(Number(ritmo.aprendido_ms) || 0))),
+    },
   };
 }
 
@@ -1343,6 +1391,9 @@ async function guardarAjuste(cambio) {
     }
     if (!estado.ajustes.video || typeof estado.ajustes.video !== 'object') {
       estado.ajustes.video = { nivel: null };
+    }
+    if (!estado.ajustes.ritmo || typeof estado.ajustes.ritmo !== 'object') {
+      estado.ajustes.ritmo = { por_minuto: 0, aprendido_ms: 0 };
     }
     cambio(estado.ajustes);
   });

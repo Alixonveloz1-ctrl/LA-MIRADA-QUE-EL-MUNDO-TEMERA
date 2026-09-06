@@ -115,5 +115,30 @@ await api.llamar('imagen', { id: 'x' }).catch(() => {});
 di(!dormido.some((n) => n > 120000), 'Un «vuelve en 40.000 s» se recorta al techo de 2 min',
   `la mayor espera fue ${Math.max(...dormido, 0)} ms`);
 
+// 7. EL RITMO GUARDADO SALVA LA PRIMERA LLAMADA DE LA SESIÓN.
+//
+// Sin esto el freno arranca en cero cada vez que se recarga la página: la primera
+// generación se pierde contra la cuota, se aprende, y a partir de ahí va bien.
+// Y esa primera es justo la que el usuario está mirando.
+// Módulo nuevo, porque el freno de arriba quedó apretado de las pruebas
+// anteriores y aquí se comprueba precisamente cómo ARRANCA una sesión.
+const otro = join(mkdtempSync(join(tmpdir(), 'mirada-freno2-')), 'api.mjs');
+writeFileSync(otro, `const porcentaje = () => '';\n${codigo}\n`);
+const recien = await import(pathToFileURL(otro).href);
+
+di(recien.ritmoActual() === 0, 'Una sesión nueva arranca sin freno…');
+
+recien.ponerRitmoMinimo(30000);          // «mi cuenta aguanta dos por minuto»
+respuestas = [{ http: 200 }];
+dormido.length = 0;
+await recien.llamar('imagen', { id: 'x' });
+di(dormido.includes(30000), '…y con el ritmo guardado, la PRIMERA llamada ya va frenada',
+  `esperas: ${dormido.join(', ') || 'ninguna'}`);
+
+respuestas = Array.from({ length: 10 }, () => ({ http: 200 }));
+for (let i = 0; i < 10; i++) await recien.llamar('imagen', { id: 'x' });
+di(recien.ritmoActual() === 30000, 'Y diez aciertos no lo bajan del suelo que dijo el usuario',
+  `ritmo = ${recien.ritmoActual()} ms`);
+
 console.log(mal === 0 ? '\nTodo bien.\n' : `\n${mal} MAL.\n`);
 process.exit(mal ? 1 : 0);

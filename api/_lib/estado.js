@@ -190,7 +190,11 @@ export const ESTADO_VACIO = congelar({
   voces: {},
   montajes: [],
   cola: [],
-  ajustes: { imagen: { nivel: null, resolucion: null }, video: { nivel: null } },
+  ajustes: {
+    imagen: { nivel: null, resolucion: null },
+    video: { nivel: null },
+    ritmo: { por_minuto: 0, aprendido_ms: 0 },
+  },
   gasto: { imagen: {}, video_s: {}, musica_s: 0, voz_s: 0 },
   pesos: {}
 });
@@ -394,6 +398,16 @@ export function asegurar(estado) {
   deImagen.resolucion = RESOLUCIONES.includes(deImagen.resolucion) ? deImagen.resolucion : null;
   const deVideo = mapaDe(ajustes, 'video');
   deVideo.nivel = nivelODeLosDatos(deVideo.nivel, 'video');
+
+  // EL RITMO, QUE ES LO QUE EVITA ESTRELLARSE EL PRIMER DÍA. `por_minuto` lo dice
+  // el usuario —cuántas generaciones aguanta su cuota— y manda; `aprendido_ms` es
+  // lo que el freno de app/api.js descubrió chocando, guardado para que la sesión
+  // siguiente empiece donde acabó la anterior en vez de volver a estrellarse.
+  // Sin esto el freno arranca en cero CADA VEZ y el primer intento de cada sesión
+  // se pierde contra la cuota: es exactamente lo que se veía.
+  const elRitmo = mapaDe(ajustes, 'ritmo');
+  elRitmo.por_minuto = Math.max(0, Math.min(60, Math.round(aNumero(elRitmo.por_minuto))));
+  elRitmo.aprendido_ms = Math.max(0, Math.min(60_000, Math.round(aNumero(elRitmo.aprendido_ms))));
 
   // Gasto: no es un límite, es información. Con 400 planos, saber por dónde se
   // va el dinero cambia decisiones (plan §8).

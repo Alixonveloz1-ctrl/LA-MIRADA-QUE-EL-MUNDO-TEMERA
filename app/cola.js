@@ -52,7 +52,7 @@
 // no estaban, y el gasto se suma sobre el estado recién traído, no sobre el que
 // se leyó al principio.
 
-import { ErrorDeCara, llamar } from './api.js';
+import { ErrorDeCara, llamar, ponerRitmoMinimo, ritmoActual } from './api.js';
 import { actual, cambiar, cargar, anotarGasto } from './estado.js';
 import { reducirParaVeo, pesoDeB64 } from './imagen.js';
 import { bytes as enBytes } from './formato.js';
@@ -388,13 +388,52 @@ export function ajustes() {
   const puesto = (actual() || {}).ajustes || {};
   const imagen = puesto.imagen || {};
   const video = puesto.video || {};
+  const ritmo = puesto.ritmo || {};
   return {
     imagen: {
       nivel: soloTexto(imagen.nivel) || null,
       resolucion: soloTexto(imagen.resolucion) || null,
     },
     video: { nivel: soloTexto(video.nivel) || null },
+    ritmo: {
+      porMinuto: Math.max(0, Math.min(60, Math.round(Number(ritmo.por_minuto) || 0))),
+      aprendidoMs: Math.max(0, Math.min(60_000, Math.round(Number(ritmo.aprendido_ms) || 0))),
+    },
   };
+}
+
+/**
+ * Le pone al freno el ritmo que ya se sabe, para no tener que aprenderlo otra vez.
+ *
+ * POR QUÉ ESTO ARREGLA «FALLA DESDE EL PRIMER INTENTO». El freno de app/api.js
+ * aprende chocando: empieza en cero, se estrella contra la cuota, y a partir de
+ * ahí va bien. Pero lo aprendido se perdía al recargar la página, así que CADA
+ * SESIÓN volvía a estrellarse una vez —y esa una vez es justo la primera
+ * generación que el usuario mira—. Guardándolo, la sesión siguiente empieza
+ * frenada.
+ *
+ * Manda lo que diga el usuario: quien sabe que su cuenta aguanta dos por minuto
+ * va a treinta segundos por generación desde la primera, sin chocar ni una vez.
+ */
+export function aplicarElRitmoGuardado() {
+  const { porMinuto, aprendidoMs } = ajustes().ritmo;
+  ponerRitmoMinimo(porMinuto > 0 ? Math.round(60_000 / porMinuto) : aprendidoMs);
+}
+
+/**
+ * Guarda lo que el freno lleve aprendido, si ha cambiado.
+ *
+ * Se llama al terminar cada tanda y no en cada llamada: escribir en el bucket
+ * cuesta, y el ritmo cambia despacio a propósito.
+ * @param {object} estado el estado que se está escribiendo, para no escribir dos veces
+ */
+function apuntarElRitmoAprendido(estado) {
+  const ahora = ritmoActual();
+  const objeto = (x) => x && typeof x === 'object' && !Array.isArray(x);
+  if (!objeto(estado.ajustes)) estado.ajustes = {};
+  if (!objeto(estado.ajustes.ritmo)) estado.ajustes.ritmo = { por_minuto: 0, aprendido_ms: 0 };
+  if (estado.ajustes.ritmo.aprendido_ms === ahora) return;
+  estado.ajustes.ritmo.aprendido_ms = ahora;
 }
 
 // ---------------------------------------------------------------------------
@@ -1234,6 +1273,10 @@ async function escribirLaTanda(cambios, resoluciones) {
       }
 
       podar(colaDe(estado));
+
+      // Y de paso, lo que el freno lleve aprendido. Va aquí y no en una escritura
+      // propia porque escribir en el bucket cuesta y el ritmo cambia despacio.
+      apuntarElRitmoAprendido(estado);
     });
   } catch (fallo) {
     // La tanda se ha hecho pero no se ha podido apuntar. Lo generado está en el

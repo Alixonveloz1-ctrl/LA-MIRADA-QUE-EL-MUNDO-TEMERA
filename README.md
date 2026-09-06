@@ -292,6 +292,28 @@ pantalla:
 3. **La espera de la cola** (`app/cola.js`). Si aun así llega, no era la ventana
    del minuto: para **todo** el estudio 60 s y 180, sin perder el trabajo.
 
+### Y por qué fallaba SIEMPRE el primer intento
+
+Esa era la pregunta buena, y la respuesta estaba en Prisma-Negro: **el freno
+aprende chocando, y lo aprendido hay que guardarlo.**
+
+Empieza sin pausa, se estrella una vez contra la cuota, aprende, y a partir de ahí
+va bien. Pero si lo aprendido se pierde al recargar la página, **cada sesión
+vuelve a estrellarse una vez** — y esa una vez es justo la primera generación que
+se mira. De ahí «falla desde el primer intento» con la cola vacía y nada más
+corriendo.
+
+Dos cosas lo arreglan, y las dos están en **Salud → «Con qué se genera» → El
+ritmo**:
+
+- **Se puede decir el límite.** Quien sabe que su cuenta aguanta dos por minuto lo
+  elige y el estudio va a treinta segundos por generación desde la primera, sin
+  chocar ni una vez.
+- **Y lo aprendido se guarda** en el estado, o sea en el bucket, así que la sesión
+  siguiente empieza donde acabó la anterior.
+
+Es un suelo, no un valor fijo: si aun así se choca, el freno sube por encima.
+
 Lo comprueba `npm run freno`, con un Google de mentira y un reloj de mentira: que
 un 429 seguido de un acierto **no llegue a quien llamó**, que el freno suba a 8 s
 y baje a 6, que el estado no lo pague, y que con la ventana cerrada del todo salga

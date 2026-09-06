@@ -291,6 +291,14 @@ async function pasoDeLaCola(bitacora) {
     bitacora.haciendo('cola');
     try {
       const cola = await pedirLaCola();
+
+      // EL RITMO GUARDADO, ANTES DE ARRANCAR. El freno de app/api.js aprende
+      // chocando contra la cuota, y lo aprendido se perdía al recargar: cada
+      // sesión volvía a estrellarse una vez, y esa una vez es justo la primera
+      // generación que se mira. Aquí se le devuelve lo que ya sabía, o lo que el
+      // usuario haya dicho que aguanta su cuenta.
+      cola.aplicarElRitmoGuardado();
+
       await cola.arrancar();
       bitacora.hecho('cola');
       return;

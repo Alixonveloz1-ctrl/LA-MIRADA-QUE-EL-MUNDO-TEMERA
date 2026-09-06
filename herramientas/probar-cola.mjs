@@ -67,6 +67,10 @@ const stubs = {
     return turno;
   },
   anotarGasto: nada,
+  // El freno de app/api.js: aquí no se prueba, pero cola.js lo usa para guardar
+  // lo aprendido, así que tiene que existir.
+  ponerRitmoMinimo: nada,
+  ritmoActual: () => 0,
   reducirParaVeo: async () => ({ b64: 'AA', bytes: 2 }),
   pesoDeB64: () => 2,
   enBytes: (n) => `${n} B`,
