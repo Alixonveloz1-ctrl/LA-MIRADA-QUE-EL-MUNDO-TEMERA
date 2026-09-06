@@ -40,7 +40,7 @@
 
 import { ErrorDeCara, EVENTO_CLAVE_NECESARIA, guardarClave, olvidarClave } from './api.js';
 import { actual, alCambiar, cargar } from './estado.js';
-import { aviso, boton, espera, h, pantalla, seccion, vaciar } from './ui.js';
+import { aviso, boton, espera, EVENTO_FALLO_SUELTO, h, pantalla, seccion, vaciar } from './ui.js';
 
 // ---------------------------------------------------------------------------
 // Las ocho pantallas
@@ -1173,12 +1173,46 @@ function recogerLosFallosSueltos() {
     // Una imagen o un audio que no cargan también disparan «error», pero desde
     // su propio elemento: eso lo cuenta la pantalla que lo puso, no esto.
     if (evento && evento.target && evento.target !== window) return;
-    contarFalloSuelto(evento && evento.error ? evento.error : (evento && evento.message) || null);
+
+    // El objeto Error si lo hay; y si no, lo poco que traiga el evento CON SU
+    // SITIO. `filename`, `lineno` y `colno` son justo lo que falta cuando el
+    // mensaje es genérico, y antes se tiraban.
+    if (evento && evento.error) return contarFalloSuelto(evento.error);
+    contarFalloSuelto(dichoPorElNavegador(evento));
   });
 
   window.addEventListener('unhandledrejection', (evento) => {
     contarFalloSuelto(evento ? evento.reason : null);
   });
+
+  // Los fallos que el propio estudio entrega en mano (app/ui.js): llegan con el
+  // objeto Error entero, sin pasar por el navegador y sin que nadie los tape.
+  window.addEventListener(EVENTO_FALLO_SUELTO, (evento) => {
+    contarFalloSuelto(evento ? evento.detail : null);
+  });
+}
+
+/**
+ * Lo que dijo el navegador en un evento «error», con el archivo y la línea si
+ * los hay.
+ *
+ * «Script error.» a secas es el navegador NEGÁNDOSE a contarlo: pasa cuando no
+ * puede atribuir el error a ningún archivo servido desde aquí —una extensión
+ * del navegador, un bloqueador de contenido, un script de otro sitio—. Se dice
+ * tal cual en vez de disfrazarlo, porque disfrazarlo de fallo del estudio manda
+ * a buscar donde no está.
+ */
+function dichoPorElNavegador(evento) {
+  const mensaje = evento && evento.message ? String(evento.message) : '';
+  const archivo = evento && evento.filename ? String(evento.filename) : '';
+  if (!archivo) return mensaje || null;
+  const linea = evento.lineno ? `:${evento.lineno}${evento.colno ? `:${evento.colno}` : ''}` : '';
+  return `${mensaje}\n${archivo}${linea}`;
+}
+
+/** Si el navegador se ha negado a decir de dónde viene el fallo. */
+function elNavegadorNoLoCuenta(fallo) {
+  return typeof fallo === 'string' && /^script error\.?$/i.test(fallo.trim());
 }
 
 /**
@@ -1191,6 +1225,16 @@ function contarFalloSuelto(fallo) {
 
   const error = fallo instanceof ErrorDeCara
     ? fallo
+    : elNavegadorNoLoCuenta(fallo)
+    ? new ErrorDeCara(
+        'Se ha roto algo y el navegador se ha negado a decir qué: eso es lo que significa «Script ' +
+          'error.», y significa además que NO viene de este estudio. El navegador solo tapa así lo ' +
+          'que no puede atribuir a un archivo de esta página: una extensión, un bloqueador de ' +
+          'contenido o algo que el propio Safari haya metido. Si el estudio está haciendo su ' +
+          'trabajo, esto se puede ignorar; si algo se ha quedado a medias, prueba en una ventana ' +
+          'privada o con los bloqueadores desactivados.',
+        { detalle: 'Script error.', reintentable: false, http: 0 }
+      )
     : new ErrorDeCara(
         'Algo se ha roto por dentro del estudio y nadie lo ha recogido. No es tu cuenta ni tu bucket: ' +
           'es un fallo de la propia aplicación. Lo que estuvieras haciendo puede haberse quedado a ' +
@@ -1205,7 +1249,10 @@ function contarFalloSuelto(fallo) {
 
   const bandeja = laBandejaDeFallos();
   const tarjeta = h('div', { estilo: { position: 'relative' } },
-    aviso(error.mensaje, { tono: 'error', detalle: error.detalle }),
+    // Sin `detalle` a propósito: el detalle va abajo, a la vista, en el <pre>. Si
+    // se le pasa también aquí sale DOS VECES —una en el desplegable de aviso() y
+    // otra en el <pre>—, que es justo lo que se vio en el teléfono.
+    aviso(error.mensaje, { tono: 'error' }),
 
     // LO QUE DIJO EL NAVEGADOR, A LA VISTA Y SIN TENER QUE ABRIR NADA.
     //

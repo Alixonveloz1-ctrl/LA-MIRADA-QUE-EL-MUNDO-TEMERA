@@ -2119,6 +2119,7 @@ function tipoDe(ruta) {
   if (ext === '.mov') return 'video/quicktime';
   if (ext === '.mkv') return 'video/x-matroska';
   if (ext === '.wav') return 'audio/wav';
+  if (ext === '.mp3') return 'audio/mpeg';
   return 'application/octet-stream';
 }
 

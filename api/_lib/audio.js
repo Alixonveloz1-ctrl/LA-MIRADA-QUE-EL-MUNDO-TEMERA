@@ -180,13 +180,11 @@ export async function musica({ texto, negativo = null, durS } = {}) {
 
   const { datos, mime } = sacarAudio(respuesta, modelo, 'la música');
 
-  // Lyria no siempre entrega WAV: cuando manda PCM crudo, el muestreo viene en
-  // el propio mimeType («audio/L16;codec=pcm;rate=48000») y de ahí se lee. No se
-  // supone ninguno: un muestreo inventado da una duración inventada, y esa
-  // duración es la que coloca la pieza en el montaje.
-  const wav = aWav(datos, mime, { hzPorDefecto: null, deQuien: 'la música' });
-
-  return { wav, durS: duracionWav(wav) };
+  // Lyria no entrega siempre lo mismo: unas veces MP3 («audio/mpeg») y otras
+  // PCM crudo con el muestreo dentro del mimeType. Las dos valen y las dos
+  // dicen cuánto duran. Lo que no se hace es suponer un muestreo: uno inventado
+  // da una duración inventada, y esa duración coloca la pieza en el montaje.
+  return aPista(datos, mime, { hzPorDefecto: null, deQuien: 'la música' });
 }
 
 /**
@@ -344,11 +342,8 @@ export async function voz({ partes, instruccion, voces } = {}) {
   const { datos, mime } = sacarAudio(respuesta, modelo, 'la voz');
 
   // Gemini TTS entrega PCM mono de 16 bits a 24 kHz. Si viene crudo se envuelve
-  // en WAV, que es lo que sabe leer el resto del estudio —y lo que espera
-  // Speech-to-Text para alinear—.
-  const wav = aWav(datos, mime, { hzPorDefecto: HZ_DE_LA_VOZ, deQuien: 'la voz' });
-
-  return { wav, durS: duracionWav(wav) };
+  // en WAV, que es lo que espera Speech-to-Text para alinear.
+  return aPista(datos, mime, { hzPorDefecto: HZ_DE_LA_VOZ, deQuien: 'la voz' });
 }
 
 /**
@@ -1147,17 +1142,30 @@ function sinAudio(respuesta, modelo, candidatos, deQuien) {
 }
 
 /**
- * Deja el audio en WAV pase lo que pase: si ya viene envuelto se devuelve tal
- * cual, y si viene crudo se envuelve con el formato que declare el propio
- * mimeType («audio/L16;codec=pcm;rate=24000»).
+ * Deja el audio listo para guardar, venga como venga, y dice cuánto dura.
  *
- * `hzPorDefecto` es el muestreo que se da por bueno cuando Google no lo dice.
- * Con la voz hay uno declarado en serie.json —PCM mono de 16 bits a 24 kHz— y
- * con la música no lo hay: ahí, antes que inventarse un número, se falla. Un
- * muestreo equivocado no suena mal, suena bien y dura otra cosa, y esa duración
- * es la que coloca la pieza en el montaje.
+ * Google no manda siempre lo mismo, y ese es justo el punto:
+ *
+ *  · WAV  — ya viene envuelto. No se toca: volver a envolverlo dejaría dos
+ *    cabeceras y un chasquido al principio.
+ *  · MP3  — TAMBIÉN viene envuelto, aunque no lo parezca. Es lo que devuelve
+ *    Lyria («audio/mpeg»), y un MP3 se describe a sí mismo: la duración se lee
+ *    de sus propias cabeceras, no hace falta que nadie declare el muestreo.
+ *    Tratarlo como audio crudo —que es lo que se hacía— era el fallo: se le
+ *    pedía un muestreo que un MP3 no tiene por qué traer aparte, y la música se
+ *    rechazaba entera estando perfectamente bien.
+ *  · Crudo — PCM sin envolver. Aquí sí hace falta el muestreo, y viene en el
+ *    propio mimeType («audio/L16;codec=pcm;rate=24000»).
+ *
+ * `hzPorDefecto` es el muestreo que se da por bueno cuando el audio viene crudo
+ * y Google no lo dice. Con la voz hay uno declarado —PCM mono de 16 bits a
+ * 24 kHz— y con la música no lo hay: ahí, antes que inventarse un número, se
+ * falla. Un muestreo equivocado no suena mal, suena bien y dura otra cosa, y esa
+ * duración es la que coloca la pieza en el montaje.
+ *
+ * @returns {{datos: Buffer, extension: string, tipo: string, durS: number}}
  */
-function aWav(datos, mime, { hzPorDefecto, deQuien }) {
+function aPista(datos, mime, { hzPorDefecto, deQuien }) {
   if (datos.length === 0) {
     throw new ErrorDeCara(
       `Google ha contestado con ${deQuien} vacía: cero bytes de audio. Hay que volver a generarla.`,
@@ -1165,12 +1173,12 @@ function aWav(datos, mime, { hzPorDefecto, deQuien }) {
     );
   }
 
-  // Ya viene envuelto: no se toca. Volver a envolverlo dejaría dos cabeceras y
-  // un chasquido al principio.
-  if (datos.length >= 12 &&
-      datos.toString('ascii', 0, 4) === 'RIFF' &&
-      datos.toString('ascii', 8, 12) === 'WAVE') {
-    return datos;
+  if (esWav(datos)) {
+    return { datos, extension: '.wav', tipo: 'audio/wav', durS: duracionWav(datos) };
+  }
+
+  if (esMp3(datos)) {
+    return { datos, extension: '.mp3', tipo: 'audio/mpeg', durS: duracionMp3(datos, deQuien) };
   }
 
   const formato = formatoDeMime(mime);
@@ -1178,20 +1186,164 @@ function aWav(datos, mime, { hzPorDefecto, deQuien }) {
   const hz = formato.hz ?? hzPorDefecto;
   if (!hz) {
     throw new ErrorDeCara(
-      `Google ha mandado ${deQuien} como audio crudo y sin decir a qué muestreo está grabada ` +
-      `(su tipo es «${mime || 'ninguno'}»). Sin el muestreo no se puede saber cuánto dura, y esa ` +
-      'duración es la que coloca la pieza en el montaje: darla por supuesta desplazaría todo lo ' +
-      'que va detrás. No se inventa un número.',
-      { detalle: `${datos.length} bytes de audio sin muestreo declarado`,
+      `Google ha mandado ${deQuien} en un formato que este estudio no sabe leer: ni WAV, ni MP3, ni ` +
+      `audio crudo con su muestreo declarado (su tipo es «${mime || 'ninguno'}»). Sin saber el ` +
+      'formato no se puede saber cuánto dura, y esa duración es la que coloca la pieza en el ' +
+      'montaje: darla por supuesta desplazaría todo lo que va detrás. No se inventa un número.',
+      { detalle: `${datos.length} bytes que no empiezan ni por «RIFF» ni por una trama MP3`,
         reintentable: false, http: 502 }
     );
   }
 
-  return envolverWav(datos, {
+  const envuelto = envolverWav(datos, {
     hz,
     canales: formato.canales ?? CANALES_DE_LA_VOZ,
     bits: formato.bits ?? BITS_DE_LA_VOZ
   });
+  return { datos: envuelto, extension: '.wav', tipo: 'audio/wav', durS: duracionWav(envuelto) };
+}
+
+/** Un WAV empieza por «RIFF….WAVE». */
+function esWav(datos) {
+  return datos.length >= 12 &&
+    datos.toString('ascii', 0, 4) === 'RIFF' &&
+    datos.toString('ascii', 8, 12) === 'WAVE';
+}
+
+/**
+ * Un MP3 empieza por una etiqueta ID3 o por la sincronía de una trama (once
+ * unos seguidos). Se mira EL CONTENIDO, no el mimeType: el mimeType puede
+ * faltar, y al revés, un «audio/mpeg» cuyos bytes no sean de MP3 no se cuela
+ * por decirlo la etiqueta. Lo que se guarda tiene que ser lo que dice ser.
+ */
+function esMp3(datos) {
+  if (datos.length < 4) return false;
+  if (datos.toString('ascii', 0, 3) === 'ID3') return true;
+  return datos[0] === 0xff && (datos[1] & 0xe0) === 0xe0;
+}
+
+// Las tablas del formato MP3. Son fijas y están en la norma; se escriben aquí
+// enteras porque no hay dependencias y porque leerlas mal da una duración mal.
+const BITRATES_MPEG1_CAPA3 =
+  [0, 32, 40, 48, 56, 64, 80, 96, 112, 128, 160, 192, 224, 256, 320, 0];
+const BITRATES_MPEG2_CAPA3 =
+  [0, 8, 16, 24, 32, 40, 48, 56, 64, 80, 96, 112, 128, 144, 160, 0];
+const MUESTREOS_MP3 = {
+  3: [44100, 48000, 32000],   // MPEG 1
+  2: [22050, 24000, 16000],   // MPEG 2
+  0: [11025, 12000, 8000],    // MPEG 2.5
+};
+
+/**
+ * Cuánto dura un MP3, leído del propio archivo.
+ *
+ * Se hace en dos pasos, y el orden importa:
+ *
+ *  1. Si la primera trama trae cabecera Xing/Info o VBRI, ahí está escrito el
+ *     NÚMERO DE TRAMAS del archivo entero. Eso da la duración exacta, y es la
+ *     única forma correcta cuando el archivo es de tasa variable —que es lo
+ *     normal en lo que genera un modelo—.
+ *  2. Si no la trae, es de tasa constante y basta la regla de tres: los bytes
+ *     de audio por ocho, entre los bits por segundo que declara la trama.
+ *
+ * Si ninguna de las dos se puede leer, se falla y se dice por qué. No se estima:
+ * esta duración coloca la pieza en el montaje y arrastra todo lo que va detrás.
+ */
+function duracionMp3(datos, deQuien) {
+  const principio = saltarEtiquetaId3(datos);
+  const inicio = buscarLaPrimeraTrama(datos, principio);
+
+  if (inicio < 0) {
+    throw new ErrorDeCara(
+      `Google ha mandado ${deQuien} como MP3, pero dentro no hay ni una trama que se pueda leer, ` +
+      'así que no hay forma de saber cuánto dura. Hay que volver a generarla.',
+      { detalle: `${datos.length} bytes, sin sincronía de trama a partir del byte ${principio}`,
+        reintentable: true, http: 502 }
+    );
+  }
+
+  const trama = leerCabeceraDeTrama(datos, inicio);
+
+  const tramas = tramasDeclaradas(datos, inicio, trama);
+  if (tramas > 0) return (tramas * trama.muestrasPorTrama) / trama.hz;
+
+  // Tasa constante: los bytes que quedan, a los bits por segundo de la trama.
+  const bytesDeAudio = datos.length - inicio;
+  return (bytesDeAudio * 8) / (trama.kbps * 1000);
+}
+
+/** Dónde acaba la etiqueta ID3v2 del principio, si la hay. */
+function saltarEtiquetaId3(datos) {
+  if (datos.length < 10 || datos.toString('ascii', 0, 3) !== 'ID3') return 0;
+  // El tamaño va en cuatro bytes «sincroseguros»: siete bits útiles de cada uno.
+  const tamano = ((datos[6] & 0x7f) << 21) | ((datos[7] & 0x7f) << 14) |
+                 ((datos[8] & 0x7f) << 7) | (datos[9] & 0x7f);
+  const tras = 10 + tamano;
+  return tras < datos.length ? tras : 0;
+}
+
+/** El primer byte de una trama MP3 legible, o -1. */
+function buscarLaPrimeraTrama(datos, desde) {
+  for (let i = Math.max(0, desde); i + 4 <= datos.length; i++) {
+    if (datos[i] !== 0xff || (datos[i + 1] & 0xe0) !== 0xe0) continue;
+    if (leerCabeceraDeTrama(datos, i)) return i;
+  }
+  return -1;
+}
+
+/**
+ * La cabecera de cuatro bytes de una trama, ya interpretada. `null` si esos
+ * cuatro bytes no son una cabecera válida.
+ */
+function leerCabeceraDeTrama(datos, i) {
+  if (i + 4 > datos.length) return null;
+
+  const version = (datos[i + 1] >> 3) & 0x03;        // 3 = MPEG1, 2 = MPEG2, 0 = MPEG2.5
+  const capa = (datos[i + 1] >> 1) & 0x03;           // 1 = capa III
+  const indiceBitrate = (datos[i + 2] >> 4) & 0x0f;
+  const indiceMuestreo = (datos[i + 2] >> 2) & 0x03;
+  const canales = ((datos[i + 3] >> 6) & 0x03) === 3 ? 1 : 2;
+
+  if (version === 1 || capa !== 1) return null;      // 1 está reservado; solo capa III
+  if (indiceBitrate === 0 || indiceBitrate === 15) return null;
+  if (indiceMuestreo === 3) return null;
+
+  const kbps = (version === 3 ? BITRATES_MPEG1_CAPA3 : BITRATES_MPEG2_CAPA3)[indiceBitrate];
+  const hz = MUESTREOS_MP3[version][indiceMuestreo];
+  if (!kbps || !hz) return null;
+
+  return { version, kbps, hz, canales, muestrasPorTrama: version === 3 ? 1152 : 576 };
+}
+
+/**
+ * El número de tramas que declara la cabecera Xing/Info o VBRI de la primera
+ * trama, o 0 si no la trae. Es lo que hace exacta la duración de un MP3 de tasa
+ * variable.
+ */
+function tramasDeclaradas(datos, inicio, trama) {
+  // Xing/Info va justo después de la parte reservada de la trama, y dónde acaba
+  // esa parte depende de la versión y de si es mono.
+  const hueco = trama.version === 3
+    ? (trama.canales === 1 ? 17 : 32)
+    : (trama.canales === 1 ? 9 : 17);
+  const xing = inicio + 4 + hueco;
+
+  if (xing + 12 <= datos.length) {
+    const marca = datos.toString('ascii', xing, xing + 4);
+    if (marca === 'Xing' || marca === 'Info') {
+      const banderas = datos.readUInt32BE(xing + 4);
+      // El bit 0 dice si viene el número de tramas, y va lo primero.
+      if (banderas & 0x01) return datos.readUInt32BE(xing + 8);
+      return 0;
+    }
+  }
+
+  const vbri = inicio + 4 + 32;
+  if (vbri + 18 <= datos.length && datos.toString('ascii', vbri, vbri + 4) === 'VBRI') {
+    return datos.readUInt32BE(vbri + 14);
+  }
+
+  return 0;
 }
 
 /** «audio/L16;codec=pcm;rate=24000;channels=2» → { hz, canales, bits }. */

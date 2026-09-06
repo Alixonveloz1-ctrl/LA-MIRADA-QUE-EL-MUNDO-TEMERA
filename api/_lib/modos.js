@@ -576,8 +576,11 @@ async function modoVozMuestra(cuerpo) {
     voces: { [idPersonaje]: vozId }
   });
 
-  const ruta = `muestras/${idPersonaje}/${vozId}.wav`;
-  await escribirEnElBucket(ruta, generada.wav, { tipo: 'audio/wav' });
+  // La extensión la decide lo que haya devuelto Google, no una suposición: la
+  // música vuelve en MP3 y la voz en WAV, y guardar un MP3 llamándolo «.wav»
+  // rompe al reproductor del navegador y al montador.
+  const ruta = `muestras/${idPersonaje}/${vozId}${generada.extension}`;
+  await escribirEnElBucket(ruta, generada.datos, { tipo: generada.tipo });
 
   await anotarLoGenerado(
     (estado) => {
@@ -1038,8 +1041,8 @@ async function modoMusica(cuerpo) {
     durS: encargo.durS
   });
 
-  const ruta = `audio/musica/${idMusica}.wav`;
-  await escribirEnElBucket(ruta, generada.wav, { tipo: 'audio/wav' });
+  const ruta = `audio/musica/${idMusica}${generada.extension}`;
+  await escribirEnElBucket(ruta, generada.datos, { tipo: generada.tipo });
 
   await anotarLoGenerado(
     (estado) => {
@@ -1097,8 +1100,8 @@ async function modoVoz(cuerpo) {
     voces: reparto
   });
 
-  const ruta = `audio/voz/${idPieza}/${idBloque}.wav`;
-  await escribirEnElBucket(ruta, generada.wav, { tipo: 'audio/wav' });
+  const ruta = `audio/voz/${idPieza}/${idBloque}${generada.extension}`;
+  await escribirEnElBucket(ruta, generada.datos, { tipo: generada.tipo });
 
   const clave = `${idPieza}/${idBloque}`;
   await anotarLoGenerado(

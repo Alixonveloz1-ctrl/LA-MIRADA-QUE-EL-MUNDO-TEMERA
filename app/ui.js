@@ -24,6 +24,39 @@
 import { porcentaje } from './formato.js';
 
 // ---------------------------------------------------------------------------
+// Los fallos que no recogió nadie
+// ---------------------------------------------------------------------------
+
+/**
+ * El nombre del evento con el que un fallo suelto llega a quien lo pinta.
+ *
+ * POR QUÉ UN EVENTO Y NO UNA LLAMADA. Quien pinta es `app/main.js`, y main.js ya
+ * importa este módulo: importarlo de vuelta sería un círculo. Es el mismo camino
+ * que usa `EVENTO_CLAVE_NECESARIA` en `app/api.js` por la misma razón.
+ *
+ * Y POR QUÉ NO RELANZARLO A SECAS, que es lo que se hacía. Un error lanzado
+ * fuera de la pila —desde un microtask o desde un temporizador— no tiene ningún
+ * archivo al que el navegador pueda atribuirlo, y Safari entonces lo tapa: lo
+ * entrega como «Script error.», sin mensaje, sin archivo y sin línea. Por el
+ * evento viaja el objeto Error entero, con su texto y su pila, y no depende de
+ * que el navegador quiera contarlo.
+ */
+export const EVENTO_FALLO_SUELTO = 'fallo-suelto';
+
+/**
+ * Entrega un fallo que nadie recogió a quien sepa pintarlo.
+ * @param {*} fallo
+ */
+export function contarFalloSuelto(fallo) {
+  try {
+    window.dispatchEvent(new CustomEvent(EVENTO_FALLO_SUELTO, { detail: fallo }));
+  } catch {
+    // Si ni siquiera se puede lanzar el evento, al menos que quede en la consola.
+    console.error('Fallo sin recoger, y sin poder avisar', fallo);
+  }
+}
+
+// ---------------------------------------------------------------------------
 // Tablas
 // ---------------------------------------------------------------------------
 
@@ -405,8 +438,16 @@ export function boton(texto, alAccionar, { tono, desactivado } = {}) {
       // decir qué botón ni qué pantalla. Un fallo sin sitio es un fallo que
       // cuesta el triple de encontrar.
       //
-      // No se traga: se vuelve a lanzar con el nombre del botón pegado, para que
-      // el aviso de siempre lo enseñe sabiendo ya de dónde viene.
+      // No se traga: se le pega el nombre del botón y se ENTREGA EN MANO a quien
+      // pinta los fallos sueltos, con un evento.
+      //
+      // Antes se relanzaba con `queueMicrotask(() => { throw ... })` para que
+      // saliera por el camino de siempre. Era peor el remedio: un error lanzado
+      // desde un microtask no tiene ningún archivo al que Safari pueda
+      // atribuirlo, así que Safari lo tapa y lo entrega como «Script error.»,
+      // sin mensaje, sin archivo y sin línea. Es decir, el intento de decir de
+      // dónde venía el fallo era justo lo que borraba de dónde venía. Con un
+      // evento el objeto Error llega entero y no pasa por el navegador.
       const devuelto = alAccionar(evento);
       if (devuelto && typeof devuelto.then === 'function') {
         devuelto.catch((fallo) => {
@@ -415,9 +456,7 @@ export function boton(texto, alAccionar, { tono, desactivado } = {}) {
             : String(fallo);
           const conSitio = new Error(`Al pulsar «${nombre}»: ${dicho}`);
           conSitio.stack = fallo && fallo.stack ? fallo.stack : conSitio.stack;
-          // En un microtask, para que salga por el mismo camino que cualquier
-          // otro fallo sin recoger y lo pinte quien ya sabe pintarlo.
-          queueMicrotask(() => { throw conSitio; });
+          contarFalloSuelto(conSitio);
         });
       }
     },

@@ -278,7 +278,18 @@ la única línea que sirve para arreglarlo y esconderla no ayuda a nadie.
 Para que ese detalle diga siempre de dónde viene, `boton()` recoge lo que
 devuelve el manejador: la mitad de los botones del estudio son `async` —elegir
 voz, cambiarla, montar, aprobar— y antes su fallo se perdía sin nombre. Ahora
-llega con el del botón delante: «Al pulsar «Oír esta voz»: …».
+llega con el del botón delante: «Al pulsar «Oír esta voz»: …», **entregado en
+mano** con un evento. Relanzarlo para que saliera por el camino de siempre era
+peor el remedio: un error lanzado fuera de la pila no tiene ningún archivo al que
+Safari pueda atribuirlo, y entonces Safari lo tapa y lo entrega como «Script
+error.», sin mensaje y sin línea. El intento de decir de dónde venía era justo lo
+que lo borraba.
+
+Y si alguna vez sale «Script error.» de todas formas, el estudio ya no se lo
+apunta: eso es el navegador negándose a contarlo, y solo lo hace con lo que **no**
+puede atribuir a un archivo de esta página —una extensión, un bloqueador de
+contenido—. Se dice tal cual, porque disfrazarlo de fallo del estudio manda a
+buscar donde no está.
 
 ---
 
@@ -288,15 +299,38 @@ llega con el del botón delante: «Al pulsar «Oír esta voz»: …».
 npm run comprobar
 ```
 
-Encadena las tres herramientas y no necesita red ni credenciales: regenera
+Encadena las cinco herramientas y no necesita red ni credenciales: regenera
 `datos/serie.json` desde `serie.base.json` con el parche, comprueba los
-invariantes sobre los datos y sobre el árbol de código, y **pesa** la respuesta
-de cada modo con material del tamaño real para verificar que cabe en los 4,5 MB.
-Ese último fallo no se ve leyendo el código; se ve midiendo. Si algo no cumple,
-sale con error y lo dice en español.
+invariantes sobre los datos y sobre el árbol de código, **ejecuta** la cola
+contra un Google de mentira, **le da audio de verdad** al lector de formatos, y
+**pesa** la respuesta de cada modo con material del tamaño real para verificar
+que cabe en los 4,5 MB. Los tres últimos no se ven leyendo el código: se ven
+ejecutándolo y midiendo. Si algo no cumple, sale con error y lo dice en español.
 
-Cada paso se puede lanzar por separado con `npm run datos`, `npm run invariantes`
-y `npm run pesar`.
+Cada paso se puede lanzar por separado con `npm run datos`, `npm run invariantes`,
+`npm run cola`, `npm run audio` y `npm run pesar`.
+
+### Lo que manda Google no es siempre lo mismo
+
+`npm run audio` existe porque una suposición sobre el formato del audio ya rompió
+la producción: el código daba por hecho que todo lo que no fuera WAV era PCM
+crudo, así que cuando Lyria contestó con un **MP3** (`audio/mpeg`) el estudio
+rechazó una música que estaba perfectamente bien, pidiéndole un muestreo que un
+MP3 no tiene por qué declarar aparte.
+
+Ahora el estudio entiende tres cosas, y guarda cada una como lo que es:
+
+| Lo que llega | Se guarda | La duración sale de |
+|---|---|---|
+| WAV | `.wav` | su cabecera `fmt`/`data` |
+| MP3 | `.mp3` | su cabecera Xing/VBRI, y si no la trae, de su tasa |
+| PCM crudo | `.wav`, envuelto | el muestreo del propio `mimeType` |
+
+Lo que **no** se hace es suponer un muestreo cuando no lo hay: esa duración
+coloca la pieza en el montaje y arrastra todo lo que va detrás, así que antes que
+inventarse un número se falla y se dice por qué. Y el formato se decide mirando
+los bytes, no la etiqueta: un `audio/mpeg` cuyos bytes no sean de MP3 no se
+guarda como MP3.
 
 ---
 
