@@ -96,9 +96,15 @@ export default {
     const urls = new Map();
     /** Qué personajes tienen el panel de candidatas abierto. */
     const abiertos = new Set();
-    // Qué muestras están pedidas ya no se apunta aquí: lo sabe la cola, que vive
-    // en el bucket. Guardarlo en esta pantalla hacía que al recargar la página
-    // pareciera que no se había pedido nada, y se volvía a pedir.
+    /**
+     * Las que se acaban de pulsar y la cola todavía no ha visto: «personaje|voz».
+     *
+     * Es solo el hueco entre pulsar el botón y que la cola tenga el trabajo
+     * escrito en el bucket, medio segundo. Quien manda es la cola —esto se borra
+     * en cuanto ella lo sabe— pero sin esta marca ese medio segundo es un botón
+     * que no reacciona, y un botón que no reacciona se vuelve a pulsar.
+     */
+    const pedidas = new Set();
     /** El género por el que filtra cada personaje su lista de candidatas. */
     const generoElegido = new Map();
     /** Lo último que hay que decirle al usuario en cada tarjeta. */
@@ -756,9 +762,17 @@ export default {
       const id = String(ficha.personaje);
       recados.delete(id);
 
+      // SE MARCA ANTES DE ENCOLAR, no después. Encolar escribe en el bucket y
+      // eso tarda medio segundo; hasta que no termina, la cola todavía no sabe
+      // nada de este trabajo y la tarjeta se repintaría igual que estaba. Medio
+      // segundo de botón que no reacciona es medio segundo pulsándolo otra vez,
+      // y cada pulsación de más es una muestra de más pagada.
+      pedidas.add(`${id}|${voz.id}`);
+
       try {
         encolar('muestra', { personaje: id, voz_id: voz.id });
       } catch (fallo) {
+        pedidas.delete(`${id}|${voz.id}`);
         recados.set(id, {
           tono: 'error',
           mensaje: fallo && fallo.mensaje ? fallo.mensaje : 'No se ha podido pedir la muestra.',
@@ -784,8 +798,25 @@ export default {
     function comoVaLaMuestra(id, vozId) {
       const args = { personaje: id, voz_id: vozId };
       const estado = comoVa('muestra', args);
-      if (estado !== 'pendiente' && estado !== 'en_curso') return null;
-      return { estado, porDelante: cuantosPorDelante('muestra', args) };
+
+      if (estado === 'pendiente' || estado === 'en_curso') {
+        // Ya la conoce la cola: manda ella, y se puede soltar la marca local.
+        pedidas.delete(`${id}|${vozId}`);
+        return { estado, porDelante: cuantosPorDelante('muestra', args) };
+      }
+
+      // La cola todavía no la ha visto —se está escribiendo en el bucket— pero
+      // el botón ya se pulsó. Se dice, para que la tarjeta reaccione en el acto.
+      if (pedidas.has(`${id}|${vozId}`)) {
+        // Salvo que ya esté terminada: entonces la marca sobra y estorba.
+        if (estado === 'hecho' || estado === 'fallido') {
+          pedidas.delete(`${id}|${vozId}`);
+          return null;
+        }
+        return { estado: 'pendiente', porDelante: 0 };
+      }
+
+      return null;
     }
 
     /**
@@ -1095,7 +1126,38 @@ export default {
         abiertos.has(id) ? 'abierto' : '',
         generoElegido.get(id) || '',
         recados.has(id) ? 'recado' : '',
+        // LO QUE ESTÁ EN LA COLA, que faltaba y era el fallo. Sin esto la tarjeta
+        // solo se repintaba cuando la muestra ya estaba HECHA y guardada, así que
+        // entre pulsar «oír esta voz» y oírla no pasaba nada visible: ni
+        // «pedida», ni «generándose», nada. Y una tarjeta que no reacciona
+        // invita a volver a pulsar, que es pagar la misma muestra otra vez.
+        enLaColaDe(id),
+        [...pedidas].filter((clave) => clave.startsWith(`${id}|`)).sort().join(','),
       ].join('|');
+    }
+
+    /**
+     * Cómo están en la cola las muestras de este personaje, en una cadena corta
+     * que cambia en cuanto cambia cualquiera de ellas.
+     *
+     * Se lee de la cola del bucket y no de una variable de esta pantalla, para
+     * que valga igual al recargar la página o con la aplicación abierta en otro
+     * sitio.
+     *
+     * @param {string} id
+     * @returns {string}
+     */
+    function enLaColaDe(id) {
+      const estado = elEstado();
+      const cola = estado && Array.isArray(estado.cola) ? estado.cola : [];
+      const suyas = [];
+      for (const trabajo of cola) {
+        if (!trabajo || trabajo.tipo !== 'muestra') continue;
+        const args = trabajo.args || {};
+        if (args.personaje !== id) continue;
+        suyas.push(`${args.voz_id}:${trabajo.estado}`);
+      }
+      return suyas.sort().join(',');
     }
 
     /** Repinta la tarjeta de un personaje, esté donde esté. */
