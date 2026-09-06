@@ -629,18 +629,17 @@ export function promptVideo(idPieza, idToma) {
  * aquí no empeoraría el resultado: no habría resultado.
  *
  * @param {string} idPieza la pieza a la que pertenece; se comprueba que exista.
- * @param {string} idMusica p. ej. `teaser-lecho` o `teaser-canto`.
+ *   Vale `temporada` para las piezas del banco, que no son de ninguna pieza.
+ * @param {string} idMusica p. ej. `teaser-lecho` o `bso-cripta`.
  * @returns {{texto:string, negativo:string, durS:number}} `texto` es el encargo
  *   literal en inglés; `durS` sale de `duracion_s`.
  */
 export function encargoMusica(idPieza, idMusica) {
-  // La pieza no aporta texto al encargo —los encargos están escritos por id en
-  // musica.piezas—, pero se comprueba igual: pedir música de una pieza que no
-  // existe es un error que vale más ver aquí que después de generarla.
-  pieza(idPieza);
-
   const piezasDeMusica = (serie.musica && serie.musica.piezas) || [];
   const encontrada = piezasDeMusica.find((m) => m.id === idMusica);
+
+  // Primero el id de la música, porque es el que suele estar mal escrito y su
+  // frase dice exactamente cuáles hay.
   if (!encontrada) {
     const hay = piezasDeMusica.map((m) => m.id);
     throw new ErrorDeCara(
@@ -649,6 +648,17 @@ export function encargoMusica(idPieza, idMusica) {
       { reintentable: false, http: 400 }
     );
   }
+
+  // EL BANCO DE LA TEMPORADA NO ES DE NADIE, Y ESO NO ES UN AGUJERO.
+  //
+  // Las piezas marcadas `temporada` se componen una vez y suenan en los doce
+  // episodios, igual que el opening y el ending. Exigirles una pieza a la que
+  // pertenecer obligaría a inventarle una dueña a cada una, y la primera vez que
+  // alguien la moviera de sitio dejaría de generarse sin motivo. La pieza sí se
+  // comprueba para las demás: los encargos están escritos por id, así que la
+  // pieza no aporta texto, pero pedir música de una pieza que no existe es un
+  // error que vale más ver aquí que después de haberla pagado.
+  if (encontrada.temporada !== true) pieza(idPieza);
 
   if (typeof encontrada.encargo !== 'string' || !encontrada.encargo.trim()) {
     throw new ErrorDeCara(

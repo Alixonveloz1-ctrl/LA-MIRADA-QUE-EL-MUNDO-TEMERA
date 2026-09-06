@@ -97,6 +97,13 @@ const FUNDIDO_ENTRE_PIEZAS_S = 2.5;
 /** Los tres minutos de Lyria, si datos/serie.json no dijera otra cosa. */
 const MAXIMO_DE_LYRIA_S = 180;
 
+/**
+ * El nombre a cuyo cargo van las piezas del banco de la temporada. No es una
+ * pieza de la serie: es la manera de decir que esa música no pertenece a
+ * ninguna, porque suena en las doce.
+ */
+const PIEZA_DE_LA_TEMPORADA = 'temporada';
+
 // ---------------------------------------------------------------------------
 // Lo que esta pantalla recuerda mientras la aplicación está abierta
 // ---------------------------------------------------------------------------
@@ -483,36 +490,82 @@ function piezaActiva(serie, estado) {
 }
 
 /**
+ * Todas las entradas de `musica.piezas` que están bien escritas.
+ * @param {object} serie
+ * @returns {object[]}
+ */
+function todaLaMusica(serie) {
+  const musica = esObjeto(serie.musica) ? serie.musica : {};
+  return (Array.isArray(musica.piezas) ? musica.piezas : []).filter(
+    (una) => esObjeto(una) && soloTexto(una.id)
+  );
+}
+
+/**
+ * El banco de la temporada: las piezas marcadas `temporada`.
+ *
+ * Son la música que suena DENTRO de los episodios, y no pertenecen a ninguna
+ * pieza porque suenan en las doce. Se componen una vez y se reutilizan, igual
+ * que el opening y el ending: eso es lo que hace que una temporada suene a una
+ * temporada y no a doce encargos distintos.
+ *
+ * @param {object} serie
+ * @returns {object[]}
+ */
+function bancoDeLaTemporada(serie) {
+  return todaLaMusica(serie).filter((una) => una.temporada === true);
+}
+
+/**
+ * A nombre de qué pieza se pide una música. Las del banco van a nombre de
+ * `temporada`, que no es una pieza de la serie sino la manera de decir «esta no
+ * es de nadie porque es de todas». La función lo entiende igual.
+ *
+ * @param {object} laMusica la entrada de `musica.piezas`
+ * @param {object} pieza la pieza activa en pantalla
+ * @returns {string}
+ */
+function aNombreDeQuien(laMusica, pieza) {
+  if (laMusica && laMusica.temporada === true) return PIEZA_DE_LA_TEMPORADA;
+  return soloTexto(laMusica && laMusica.pieza) || String(pieza.id);
+}
+
+/**
  * Las piezas de música de una pieza de la serie.
  *
- * FALTA EN EL CONTRATO: `musica.piezas` de datos/serie.json es una lista global y
- * ninguna entrada dice a qué pieza pertenece; lo único que las relaciona es el id
- * («teaser-lecho», «teaser-canto»). Así que aquí se emparejan por ese prefijo, y
- * si no hay ninguna que empiece por el id de la pieza se dice con palabras en vez
- * de colgarle a un episodio la música del teaser. Conviene añadir un campo
- * `pieza` a cada entrada de `musica.piezas`.
+ * Cada entrada dice a cuál pertenece en su campo `pieza`. Antes no lo decía
+ * ninguna y esto se emparejaba por el prefijo del id, que funcionaba mientras la
+ * única pieza fuera el teaser y se habría vuelto un adivinar en cuanto hubiera
+ * episodios. El prefijo se sigue admitiendo para no romper una entrada antigua,
+ * pero manda el campo.
+ *
+ * Las del banco de la temporada no salen aquí NUNCA: tienen su propia sección y
+ * colgárselas a una pieza sería decir que hay que rehacerlas por episodio, que
+ * es justo lo contrario de para lo que existen.
  *
  * @param {object} serie
  * @param {string} idPieza
  * @param {number} cuantasPiezas cuántas piezas tiene la serie en total
- * @returns {{lista:object[], porPrefijo:boolean}}
+ * @returns {{lista:object[], como:'campo'|'prefijo'|'unica'|'ninguna'}} `como`
+ *   dice de qué manera se han emparejado, porque cada una se cuenta distinto en
+ *   pantalla.
  */
 function musicaDeLaPieza(serie, idPieza, cuantasPiezas) {
-  const musica = esObjeto(serie.musica) ? serie.musica : {};
-  const todas = (Array.isArray(musica.piezas) ? musica.piezas : []).filter(
-    (una) => esObjeto(una) && soloTexto(una.id)
-  );
+  const todas = todaLaMusica(serie).filter((una) => una.temporada !== true);
+
+  const dichas = todas.filter((una) => soloTexto(una.pieza) === idPieza);
+  if (dichas.length) return { lista: dichas, como: 'campo' };
 
   const suyas = todas.filter(
     (una) => una.id === idPieza || String(una.id).startsWith(`${idPieza}-`)
   );
-  if (suyas.length) return { lista: suyas, porPrefijo: true };
+  if (suyas.length) return { lista: suyas, como: 'prefijo' };
 
   // Con una sola pieza en toda la serie no hay ambigüedad posible: la música que
   // haya escrita es la suya, se llame como se llame.
-  if (cuantasPiezas === 1) return { lista: todas, porPrefijo: false };
+  if (cuantasPiezas === 1) return { lista: todas, como: 'unica' };
 
-  return { lista: [], porPrefijo: true };
+  return { lista: [], como: 'ninguna' };
 }
 
 /** El máximo que admite Lyria por pieza, tal como está escrito en la serie. */
@@ -747,6 +800,7 @@ function construir(serie, repintar, repintarLuego) {
 
   const todas = piezasDeLaSerie(serie);
   const musica = musicaDeLaPieza(serie, pieza.id, todas.length);
+  const banco = bancoDeLaTemporada(serie);
   const bloques = bloquesDeVoz(pieza.datos);
 
   const ctx = {
@@ -755,6 +809,7 @@ function construir(serie, repintar, repintarLuego) {
     pieza,
     todas,
     musica,
+    banco,
     bloques,
     trabajos: indexarCola(estado),
     repintar,
@@ -764,7 +819,7 @@ function construir(serie, repintar, repintarLuego) {
   // Las firmas llegan solas, sin que nadie las pida a mano, y su repintado es de
   // los que esperan a que termine lo que se esté escuchando.
   const rutas = [];
-  for (const una of musica.lista) {
+  for (const una of [...musica.lista, ...banco]) {
     const guardado = musicaGuardada(estado, una.id);
     if (guardado.ruta) rutas.push(guardado.ruta);
   }
@@ -778,6 +833,7 @@ function construir(serie, repintar, repintarLuego) {
     'Audio',
     seccionCabecera(ctx),
     seccionMusica(ctx),
+    seccionBanco(ctx),
     seccionVoces(ctx)
   );
 }
@@ -910,21 +966,21 @@ function seccionMusica(ctx) {
     partes.push(
       aviso(
         `No hay ninguna pieza de música escrita para «${pieza.id}». En datos/serie.json la música ` +
-          'vive en «musica.piezas», y lo único que une una pieza de música con una pieza de la ' +
-          `serie es su id: las de esta se llamarían «${pieza.id}-lecho», «${pieza.id}-canto» o ` +
-          `cualquier otro nombre que empiece por «${pieza.id}-».`,
+          `vive en «musica.piezas», y cada entrada dice de quién es en su campo «pieza»: las de ` +
+          `esta llevarían «"pieza": "${pieza.id}"». La música que suena dentro de los episodios no ` +
+          'va aquí: va en el banco de la temporada, ahí abajo.',
         { tono: 'nota' }
       )
     );
-    return seccion('Música', partes);
+    return seccion('Música de la pieza', partes);
   }
 
-  if (!musica.porPrefijo) {
+  if (musica.como === 'unica') {
     partes.push(
       aviso(
-        'Ninguna pieza de música lleva el id de esta pieza por delante, pero como en toda la serie ' +
-          'solo hay una pieza, la música escrita es la suya. En cuanto se desglose un episodio hará ' +
-          `falta que cada entrada de «musica.piezas» empiece por el id de su pieza.`,
+        'Ninguna pieza de música dice a cuál pertenece, pero como en toda la serie solo hay una ' +
+          'pieza, la música escrita es la suya. En cuanto se desglose un episodio hará falta que ' +
+          'cada entrada de «musica.piezas» lleve su campo «pieza».',
         { tono: 'nota' }
       )
     );
@@ -935,7 +991,54 @@ function seccionMusica(ctx) {
 
   for (const una of musica.lista) partes.push(tarjetaDeMusica(ctx, una, maximo));
 
-  return seccion('Música', partes);
+  return seccion('Música de la pieza', partes);
+}
+
+/**
+ * El banco de la temporada: la música que suena DENTRO de los episodios.
+ *
+ * Está aparte de la sección de arriba y no cambia al cambiar de pieza, porque
+ * eso es exactamente lo que son: piezas que se componen una vez y suenan en los
+ * doce episodios. Un anime de verdad no compone música por escena; tiene una
+ * biblioteca de temas con una función cada uno y los repite toda la temporada.
+ * Repetirlos NO es pobreza: es lo que hace que la serie suene a una sola cosa, y
+ * es lo que convierte la melodía de la madre en un hilo que el espectador
+ * reconoce sin darse cuenta.
+ *
+ * @param {object} ctx
+ * @returns {HTMLElement|null} `null` si no hay banco escrito todavía.
+ */
+function seccionBanco(ctx) {
+  const { serie, estado, banco } = ctx;
+  if (!banco.length) return null;
+
+  const maximo = maximoDeLyria(serie);
+  const partes = [];
+  const musica = esObjeto(serie.musica) ? serie.musica : {};
+  const dicho = esObjeto(musica.banco) ? musica.banco : {};
+
+  partes.push(
+    h(
+      'p',
+      { clase: 'suave' },
+      soloTexto(dicho.regla) ||
+        'Estas piezas se componen UNA VEZ para toda la temporada y suenan en los doce episodios, ' +
+          'igual que el opening y el ending. No se rehacen por episodio.'
+    )
+  );
+
+  if (soloTexto(dicho.silencio)) {
+    partes.push(h('p', { clase: 'tenue' }, soloTexto(dicho.silencio)));
+  }
+
+  const aprobadas = banco.filter((una) => musicaGuardada(estado, una.id).aprobada).length;
+  partes.push(
+    barra(aprobadas, banco.length, { etiqueta: 'Banco de la temporada aprobado' })
+  );
+
+  for (const una of banco) partes.push(tarjetaDeMusica(ctx, una, maximo));
+
+  return seccion('Banco de la temporada', partes);
 }
 
 /**
@@ -946,10 +1049,11 @@ function seccionMusica(ctx) {
  * @returns {HTMLElement}
  */
 function tarjetaDeMusica(ctx, laMusica, maximo) {
-  const { estado, pieza, trabajos, repintar } = ctx;
+  const { estado, pieza, trabajos } = ctx;
   const id = String(laMusica.id);
+  const deQuien = aNombreDeQuien(laMusica, pieza);
   const guardado = musicaGuardada(estado, id);
-  const enLaCola = trabajos.get(`musica:${pieza.id}/${id}`) || null;
+  const enLaCola = trabajos.get(`musica:${deQuien}/${id}`) || null;
   const trabajando = estaEnMarcha(enLaCola);
 
   const pedida = Number(laMusica.duracion_s);
@@ -1003,6 +1107,24 @@ function tarjetaDeMusica(ctx, laMusica, maximo) {
     : null;
 
   const pie = h('div', null);
+
+  // Para qué sirve. En el banco de la temporada es lo primero que hay que saber:
+  // son quince piezas parecidas y lo que las distingue no es el nombre, es el
+  // momento en el que suenan.
+  if (soloTexto(laMusica.funcion)) {
+    pie.appendChild(
+      h('p', { estilo: { margin: '0 0 6px' } }, soloTexto(laMusica.funcion))
+    );
+  }
+  if (soloTexto(laMusica.donde)) {
+    pie.appendChild(
+      h(
+        'p',
+        { clase: 'tenue', estilo: { margin: '0 0 6px', 'font-size': '13px' } },
+        `Suena en: ${soloTexto(laMusica.donde)}`
+      )
+    );
+  }
 
   pie.appendChild(
     h(
@@ -1648,7 +1770,7 @@ function textoDelTramo(tramo, ruta) {
 function generarMusica(ctx, laMusica) {
   const { pieza, repintar } = ctx;
   try {
-    encolar('musica', { pieza: pieza.id, id: String(laMusica.id) });
+    encolar('musica', { pieza: aNombreDeQuien(laMusica, pieza), id: String(laMusica.id) });
     queja = null;
   } catch (fallo) {
     queja = comoErrorDeCara(fallo);

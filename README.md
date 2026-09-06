@@ -105,10 +105,55 @@ canta exactamente lo que se le pide, así que la pantalla de Audio deja darle al
 play y tocar un botón cuando entra cada verso. Un verso sin marcar no se quema
 como subtítulo.
 
-**Cada canción son tres trozos, no uno.** El modelo de música disponible
-(`lyria-002`) da unos 30 segundos por generación y no admite duración: pedirle
-noventa devuelve treinta igual. Así que una pieza de 90 s se compone de tres
-trozos que el montaje une con fundidos de 2,5 s — los cortos suenan a tajo.
+**El lecho y el canto van separados a propósito.** Con la voz metida dentro de la
+misma pista no se puede ni mover ni bajar; separados, el canto se coloca en su
+segundo exacto y se mezcla a su propio nivel.
+
+El modelo es **Lyria 3 Pro**, que llega a 184 segundos por pieza. La duración no
+es un parámetro: se pide con palabras dentro del encargo, y lo que manda después
+es la duración REAL medida del archivo. Lo que pase de 184 s se parte en varias
+piezas y se une en el montaje con fundidos de 2,5 s — los cortos suenan a tajo.
+
+### La música de la temporada
+
+El opening y el ending son dos canciones. **La música que suena dentro de los
+episodios es otra cosa, y hasta ahora no existía.** Son 289 escenas.
+
+No se compone por escena. Un anime de verdad tiene una **biblioteca de temas**
+—una función cada uno— y los repite toda la temporada. Repetirlos no es pobreza:
+es exactamente lo que hace que doce episodios suenen a una sola serie en vez de a
+doce encargos distintos. Así que el banco se genera **una vez**, igual que el
+opening y el ending, y no se rehace por episodio nunca.
+
+Son **dieciocho piezas, treinta y dos minutos**, escritas en `musica.piezas` de
+`datos/serie.json` con `"temporada": true`, y salen en su propia sección de la
+pantalla de Audio, que no cambia al cambiar de pieza.
+
+No están inventadas: salen de leer los doce guiones escena por escena y contar
+qué se repite de verdad.
+
+| Qué son | Cuántas | Por qué |
+|---|---|---|
+| Un lecho por esquema de luz | 3 | Lo que más vuelve en la temporada no es una emoción, es una habitación: CRIPTA 39 escenas, NOBLE 88, BARRIO 162 |
+| Música de salón, tocada dentro de la escena | 1 | Se paga sola: si la sala ya tiene música, la partitura puede callarse mientras Saharis destruye a un hombre con un elogio |
+| El tambor seco: pensar, ejecutar, acercarse | 3 | El motor de doce episodios es un hombre calculando |
+| La melodía de la madre, transformada | 5 | Rota, al aire, contaminada, enterrada, y en negativo. Es el hilo de la serie |
+| Voz femenina sola | 2 | La hermana en el lago y la niña del valle. La voz es el recurso más caro: solo hay tres sitios donde vale, y el tercero ya existe |
+| Piezas de gesto | 4 | Romperse, reconocer, contenerse, y el altar vacío |
+
+**El Celebrante no tiene tema propio: tiene el de ella, mal afinado y a tempo de
+oficina.** Eso cuenta el episodio 7 entero sin una línea de guion.
+
+Y hay una decimonovena pieza que es la más usada de todas: **el silencio**. Está
+escrita con todas sus reglas en `musica.banco.silencio`, y la primera es que no
+suena nada debajo de la frase que decide la escena.
+
+**Cada pieza de música dice ahora de quién es.** Antes se adivinaba por el
+principio del id —`teaser-lecho` era del teaser porque empezaba por `teaser-`—, y
+eso funcionaba solo mientras la única pieza fuera el teaser. Ahora cada entrada
+lleva su campo `pieza`, las del banco llevan `temporada`, y `npm run banco`
+comprueba que ninguna se quede sin pantalla donde salir: una pieza escrita que no
+aparece en ningún sitio no tiene botón que la genere, y eso no se nota mirando.
 
 ### Lo que hay que poner a mano
 
@@ -204,9 +249,11 @@ que se probaba un solo nombre— y por eso hoy se mide en vez de darse por hecho
    texto por escena, sin campos de texto y sin pantalla de aprobación.
 5. **Tomas** — la lista de la pieza activa filtrable por estado: keyframe,
    aprobar, clip, intentos, elegir.
-6. **Audio** — la música de cada pieza y las voces de cada bloque, con
-   reproductor: nada entra en un montaje sin haber sonado antes aquí. Y el
-   marcador de letra, para poner los subtítulos de las canciones oyéndolas.
+6. **Audio** — la música de cada pieza, **el banco de la temporada** —las
+   dieciocho piezas que suenan dentro de los episodios, en su propia sección que
+   no cambia al cambiar de pieza— y las voces de cada bloque, con reproductor:
+   nada entra en un montaje sin haber sonado antes aquí. Y el marcador de letra,
+   para poner los subtítulos de las canciones oyéndolas.
 7. **Cola** — qué se está generando ahora, qué falló y por qué, el botón de
    detener y el contador de gasto.
 8. **Montaje** — montar por escenas, actos y episodio, y reproducir o descargar
@@ -570,17 +617,20 @@ Lo comprueban los invariantes: si alguien quita cualquiera de los dos frenos, el
 npm run comprobar
 ```
 
-Encadena las seis herramientas y no necesita red ni credenciales: regenera
+Encadena las nueve herramientas y no necesita red ni credenciales: regenera
 `datos/serie.json` desde `serie.base.json` con el parche, comprueba los
 invariantes sobre los datos y sobre el árbol de código, **ejecuta** la cola
 contra un Google de mentira, **le da audio de verdad** al lector de formatos,
-**sigue** el ajuste de con qué se genera hasta el cuerpo de la petición, y
-**pesa** la respuesta de cada modo con material del tamaño real para verificar
-que cabe en los 4,5 MB. Los cuatro últimos no se ven leyendo el código: se ven
+**sigue** el ajuste de con qué se genera hasta el cuerpo de la petición,
+**frena** contra un reloj de mentira, **apunta** lo generado con latidos cayendo
+encima, comprueba que **ninguna pieza de música se quede sin pantalla donde
+salir**, y **pesa** la respuesta de cada modo con material del tamaño real para
+verificar que cabe en los 4,5 MB. Casi ninguno se ve leyendo el código: se ven
 ejecutándolo y midiendo. Si algo no cumple, sale con error y lo dice en español.
 
 Cada paso se puede lanzar por separado con `npm run datos`, `npm run invariantes`,
-`npm run cola`, `npm run audio`, `npm run ajustes` y `npm run pesar`.
+`npm run cola`, `npm run audio`, `npm run ajustes`, `npm run freno`,
+`npm run anotar`, `npm run banco` y `npm run pesar`.
 
 ### Lo que manda Google no es siempre lo mismo
 

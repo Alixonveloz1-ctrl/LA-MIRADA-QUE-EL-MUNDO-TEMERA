@@ -1039,6 +1039,76 @@ bloque('Datos · música');
     }
   }
   comprobar(`Toda pieza de música cabe en los ${maximo} s de Lyria`, quejas);
+
+  // ─────────────────────────────────────────────────────────────────────────
+  // NINGUNA MÚSICA SE QUEDA SIN DUEÑO.
+  //
+  // La pantalla de Audio empareja cada pieza de música con una pieza de la serie
+  // por su campo `pieza`. Una entrada que no lo lleve y que tampoco sea del
+  // banco de la temporada no se pinta en ninguna parte: está escrita, cuesta lo
+  // mismo de mantener, y nadie puede generarla. Eso pasó de verdad y por eso se
+  // comprueba: el emparejamiento iba por el prefijo del id y funcionaba solo
+  // mientras la única pieza fuera el teaser.
+  // ─────────────────────────────────────────────────────────────────────────
+  const idsDePieza = new Set(Object.keys(serie.piezas || {}));
+  const huerfanas = [];
+  for (const pieza of piezasDeMusica) {
+    const id = String((pieza && pieza.id) || '');
+    if (pieza && pieza.temporada === true) continue;
+    const dicha = typeof pieza.pieza === 'string' ? pieza.pieza.trim() : '';
+    if (dicha) {
+      if (!idsDePieza.has(dicha)) {
+        huerfanas.push(
+          `«${id}» dice ser de la pieza «${dicha}», y esa pieza no existe en ` +
+            '`piezas` de datos/serie.json.'
+        );
+      }
+      continue;
+    }
+    const porPrefijo = [...idsDePieza].some((p) => id === p || id.startsWith(`${p}-`));
+    if (!porPrefijo) {
+      huerfanas.push(
+        `«${id}» no dice de qué pieza es (campo «pieza») ni su id empieza por ` +
+          'el de ninguna, y tampoco está marcada «temporada». Así no sale en ' +
+          'ninguna pantalla y no hay manera de generarla.'
+      );
+    }
+  }
+  comprobar('Ninguna pieza de música se queda sin dueño', huerfanas);
+
+  // ─────────────────────────────────────────────────────────────────────────
+  // EL BANCO DE LA TEMPORADA ESTÁ COMPLETO.
+  //
+  // Es la música que suena DENTRO de los episodios: 289 escenas. Se compone una
+  // vez y se reutiliza en los doce, como el opening y el ending. Cada pieza
+  // tiene que decir para qué sirve y dónde suena, o dentro de tres meses nadie
+  // —ni quien la escribió— sabrá cuál de las quince poner en una escena.
+  // ─────────────────────────────────────────────────────────────────────────
+  const banco = piezasDeMusica.filter((p) => p && p.temporada === true);
+  const delBanco = [];
+  if (!banco.length) {
+    delBanco.push(
+      'No hay ninguna pieza marcada «temporada». Sin banco, los doce ' +
+        'episodios se montarían sin más música que el opening y el ending.'
+    );
+  }
+  for (const pieza of banco) {
+    const id = String(pieza.id || '');
+    if (!id.startsWith('bso-')) {
+      delBanco.push(
+        `«${id}» es del banco y su id no empieza por «bso-». El prefijo importa: ` +
+          'la pantalla empareja por él cuando una entrada antigua no dice de qué ' +
+          'pieza es, y un id que empiece como una pieza se le colgaría a esa pieza.'
+      );
+    }
+    for (const campo of ['funcion', 'donde', 'encargo', 'negativo']) {
+      const valor = pieza[campo];
+      if (typeof valor !== 'string' || !valor.trim()) {
+        delBanco.push(`«${id}» no tiene escrito su «${campo}».`);
+      }
+    }
+  }
+  comprobar('El banco de la temporada dice para qué sirve cada pieza', delBanco);
 }
 
 // ===========================================================================
