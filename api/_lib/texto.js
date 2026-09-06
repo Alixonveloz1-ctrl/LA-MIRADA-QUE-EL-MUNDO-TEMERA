@@ -76,7 +76,10 @@ const NIVELES_DE_VEO = ['calidad', 'medio', 'economico'];
 // que traducir, sintetizar el audio y subirlo dentro de los 60 s de la función:
 // se le da un límite propio más corto para que, si el modelo se cuelga, quede
 // tiempo de explicarlo en pantalla en vez de morir en silencio.
-const LIMITE_TRADUCCION_MS = 20_000;
+// Traducir una línea con el modelo rápido son dos o tres segundos. Treinta es
+// margen de sobra, y sigue dejando sitio para la síntesis de voz dentro de la
+// misma petición, que es lo que de verdad tarda.
+const LIMITE_TRADUCCION_MS = 30_000;
 
 // Kana y kanji, por punto de código para que no dependa de cómo se guarde este
 // archivo. Sirve para comprobar que lo que volvió es japonés de verdad y no una
@@ -135,6 +138,31 @@ function modeloDeTexto() {
   return modelo;
 }
 
+/**
+ * El modelo rápido, para lo corto: traducir una línea al japonés.
+ *
+ * POR QUÉ HAY DOS Y NO UNO. Con uno solo, la traducción se hacía con el modelo
+ * de razonamiento del desglose, y no cabía: la llamada se cortaba a los veinte
+ * segundos y ese personaje se quedaba sin poder generar NI UNA voz, porque
+ * traducir es el primer paso de todas. Un flash lo hace en dos segundos.
+ *
+ * Si el dato no declara uno rápido, `entorno()` cae al pro: peor, pero nunca sin
+ * modelo.
+ */
+function modeloDeTextoRapido() {
+  const ent = entorno();
+  const modelo = (ent.modelos || {}).textoRapido || (ent.modelos || {}).texto;
+  if (!modelo || !modelo.id) {
+    throw new ErrorDeCara(
+      'No hay ningún modelo de texto rápido declarado, ni uno normal al que caer. Sale de ' +
+      '«modelos.texto_rapido» en datos/serie.json, y se puede poner uno a mano en la variable ' +
+      'de entorno TEXTO_RAPIDO_MODEL.',
+      { reintentable: false, http: 500 }
+    );
+  }
+  return modelo;
+}
+
 // ---------------------------------------------------------------------------
 // La llamada
 // ---------------------------------------------------------------------------
@@ -150,7 +178,7 @@ function modeloDeTexto() {
  *   plataforma; si no se dice, el de `vertex.js`.
  * @returns {Promise<string|object>} el texto tal cual, o el JSON parseado.
  */
-export async function generar(prompt, { json = false, limiteMs } = {}) {
+export async function generar(prompt, { json = false, limiteMs, rapido = false } = {}) {
   const texto = String(prompt === null || prompt === undefined ? '' : prompt).trim();
   if (!texto) {
     throw new ErrorDeCara(
@@ -161,7 +189,10 @@ export async function generar(prompt, { json = false, limiteMs } = {}) {
     );
   }
 
-  const modelo = modeloDeTexto();
+  // El pro para razonar —el desglose— y el flash para lo corto. Traducir una
+  // línea con un modelo de razonamiento se comía los veinte segundos del límite
+  // y dejaba al personaje sin poder generar ninguna voz.
+  const modelo = rapido ? modeloDeTextoRapido() : modeloDeTexto();
   const ent = entorno();
 
   const cuerpo = {
@@ -391,7 +422,7 @@ export async function traducirAJapones(textoEs, intencion) {
     'español, sin explicación, sin alternativas y sin ninguna nota.'
   ].join('\n');
 
-  const devuelto = await generar(prompt, { json: false, limiteMs: LIMITE_TRADUCCION_MS });
+  const devuelto = await generar(prompt, { json: false, limiteMs: LIMITE_TRADUCCION_MS, rapido: true });
   const japones = soloLaFrase(devuelto);
 
   if (!japones) {

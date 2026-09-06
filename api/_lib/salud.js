@@ -362,6 +362,18 @@ function listaDeModelos(ent) {
     que: 'comprobar el modelo de texto',
   });
 
+  // El rápido va aparte aunque casi siempre sea de la misma familia: es el que
+  // traduce cada línea al japonés, y si él no contesta no se puede generar ni
+  // una voz. Un modelo que nadie comprueba aquí es como se llega a descubrir un
+  // 404 en mitad de una tirada.
+  lista.push({
+    clave: 'texto_rapido',
+    modelo: ent.modelos.textoRapido,
+    verbo: 'generateContent',
+    cuerpo: SIN_CONTENIDO,
+    que: 'comprobar el modelo de texto rápido (traducciones)',
+  });
+
   return lista;
 }
 

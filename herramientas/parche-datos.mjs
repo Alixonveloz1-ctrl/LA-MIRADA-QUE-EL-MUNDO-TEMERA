@@ -352,6 +352,32 @@ if (!serie.voces.modelo.region) {
   anota('región de la voz: global, para las cuatro grafías');
 }
 
+// UN MODELO RÁPIDO PARA LO CORTO, Y NO ES UN LUJO: ERA UN FALLO.
+//
+// Había un solo modelo de texto, «gemini-3.1-pro», declarado para el DESGLOSE
+// —convertir una escena en diecisiete planos—, que sí necesita razonar. Pero se
+// estaba usando también para traducir al japonés una frase suelta, con un límite
+// de veinte segundos, y un modelo de razonamiento no cabe ahí: la llamada se
+// cortaba a los 20 s y el personaje se quedaba sin poder generar NI UNA voz,
+// porque la traducción es el primer paso de todas.
+//
+// Traducir una línea es trabajo de un flash: tarda un par de segundos, cuesta
+// una fracción y deja sitio de sobra para la síntesis de voz dentro de la misma
+// petición. El pro se queda donde hace falta.
+if (serie.modelos && !serie.modelos.texto_rapido) {
+  serie.modelos.texto_rapido = {
+    id: 'gemini-3.1-flash-preview',
+    ids: ['gemini-3.1-flash-preview', 'gemini-3.1-flash', 'gemini-2.5-flash'],
+    region: 'global',
+    protocolo: 'generateContent',
+    nota:
+      'Para lo corto y lo que corre: traducir una línea al japonés. NO para el desglose, que es ' +
+      'donde hace falta razonar y para eso está modelos.texto. Los Gemini 3.x solo se sirven ' +
+      'desde "global".',
+  };
+  anota('modelo de texto rápido añadido (traducciones), separado del pro del desglose');
+}
+
 // Texto: «gemini-3-pro» no existe. El que hay es «gemini-3.1-pro».
 if (serie.modelos.texto && !serie.modelos.texto.ids) {
   serie.modelos.texto.ids = ['gemini-3.1-pro-preview', 'gemini-3.1-pro', 'gemini-2.5-pro'];

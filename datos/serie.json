@@ -46,6 +46,7 @@
         "grafías de video.economico: veo-3.1-lite-generate-001, veo-3.1-lite-generate-preview",
         "grafías de voz: 4, empezando por la de preview",
         "región de la voz: global, para las cuatro grafías",
+        "modelo de texto rápido añadido (traducciones), separado del pro del desglose",
         "modelo de texto: gemini-3-pro no existe → gemini-3.1-pro(-preview)",
         "música: región «global» —ese era el 404— y máximo 184 s",
         "catálogo de 30 voces de Gemini (Chirp fuera)",
@@ -146,6 +147,17 @@
         "gemini-3.1-pro",
         "gemini-2.5-pro"
       ]
+    },
+    "texto_rapido": {
+      "id": "gemini-3.1-flash-preview",
+      "ids": [
+        "gemini-3.1-flash-preview",
+        "gemini-3.1-flash",
+        "gemini-2.5-flash"
+      ],
+      "region": "global",
+      "protocolo": "generateContent",
+      "nota": "Para lo corto y lo que corre: traducir una línea al japonés. NO para el desglose, que es donde hace falta razonar y para eso está modelos.texto. Los Gemini 3.x solo se sirven desde \"global\"."
     }
   },
   "estilo": {

@@ -103,9 +103,20 @@ const ESPERAS_DE_REINTENTO = [2000, 4000, 8000, 16000];
  * No cuesta dinero: un 429 no genera nada y no se cobra. Solo cuesta esperar, y
  * esperar es exactamente lo que hay que hacer con una cuota agotada.
  */
-const ESPERAS_POR_CUOTA = [30_000, 60_000, 90_000, 120_000, 120_000, 120_000];
+const ESPERAS_POR_CUOTA = [30_000, 60_000, 90_000];
 
-/** El código con el que Google dice que se ha pasado de cuota. */
+/**
+ * NO SE INSISTE MÁS QUE ESO, Y ES A PROPÓSITO.
+ *
+ * Con una generación cada vez, un 429 casi no puede pasar: son dos o tres
+ * llamadas por minuto y ninguna cuota se agota con eso. En tres horas de uso
+ * real hubo UN 429 y siete tiempos agotados, así que insistir mucho con la cuota
+ * es arreglar lo que casi nunca falla.
+ *
+ * Y si algo falla tres veces seguidas, no va a funcionar a la décima: lo que
+ * hace falta es enterarse y arreglar la causa, no dejar la máquina dando vueltas
+ * media hora para acabar en el mismo sitio con media hora menos.
+ */
 const HTTP_CUOTA = 429;
 
 /** Cada cuánto se vuelve a preguntar por un clip de Veo que sigue generándose. */

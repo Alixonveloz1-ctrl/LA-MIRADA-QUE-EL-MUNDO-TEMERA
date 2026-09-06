@@ -323,6 +323,9 @@ function tablaDeModelos(datos, region) {
     // concreto se declara en serie.json o se pone en STT_MODEL.
     stt: suelto(datos && datos.subtitulos && datos.subtitulos.modelo, null, 'STT_MODEL', region),
     texto: suelto(m.texto, 'modelos.texto', 'TEXTO_MODEL', region),
+    // El rápido, para lo corto. Si el dato no lo trae, se cae al pro: peor —se
+    // corta a los 20 s traduciendo— pero nunca sin modelo.
+    textoRapido: suelto(m.texto_rapido || m.texto, 'modelos.texto', 'TEXTO_RAPIDO_MODEL', region),
   };
 
   sustituirFamilia(modelos.imagen, process.env.IMAGE_MODEL, 'IMAGE_MODEL', region);

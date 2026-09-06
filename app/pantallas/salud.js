@@ -86,6 +86,7 @@ const FAMILIAS = {
   tts: 'Voz',
   musica: 'Música',
   texto: 'Texto',
+  texto_rapido: 'Texto rápido',
   stt: 'Alineación',
 };
 
