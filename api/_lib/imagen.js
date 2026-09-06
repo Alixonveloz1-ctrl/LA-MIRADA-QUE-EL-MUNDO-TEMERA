@@ -381,6 +381,9 @@ function sinImagen(respuesta, modelo, candidatos) {
   const feedback = respuesta?.promptFeedback ?? respuesta?.prompt_feedback ?? null;
   const bloqueo = feedback?.blockReason ?? feedback?.block_reason ?? null;
   if (bloqueo) motivos.push(String(bloqueo));
+  // Google solo rellena este campo cuando ha bloqueado el prompt: si está, hay
+  // bloqueo, diga lo que diga. Da igual que ponga «OTHER».
+  const prompBloqueado = Boolean(String(bloqueo || '').trim());
   const bloqueoTexto = feedback?.blockReasonMessage ?? feedback?.block_reason_message ?? null;
   if (bloqueoTexto) motivos.push(String(bloqueoTexto));
 
@@ -407,16 +410,33 @@ function sinImagen(respuesta, modelo, candidatos) {
     ? `Google dice, literalmente: «${recorte(motivo)}».`
     : 'Google no ha dicho por qué: ha contestado sin imagen y sin motivo.';
 
-  // NO TODOS LOS «NO HAY IMAGEN» SON EL FILTRO, Y TRATARLOS IGUAL SALE CARO.
+  // DÓNDE LO DIJO GOOGLE IMPORTA MÁS QUE LO QUE DIJO.
   //
-  // Antes esto decía siempre «suele ser el filtro de seguridad, repetir da el
-  // mismo resultado» y lo marcaba como NO reintentable. Con un bloqueo de
-  // contenido eso es verdad y es útil. Pero Google también contesta «OTHER», que
-  // significa literalmente «no digo por qué», y eso pasa con placas que no tienen
-  // nada que pueda molestar a nadie —un plano medio de un adulto vestido, de
-  // tres cuartos, sin expresión—. Ahí el mensaje mandaba a reescribir una
-  // descripción que estaba perfectamente bien, y la cola daba el trabajo por
-  // muerto sin volver a intentarlo ni una vez.
+  // Hay dos sitios distintos y no significan lo mismo:
+  //
+  //   · `promptFeedback.blockReason` — Google leyó el prompt y lo rechazó ANTES
+  //     de dibujar nada. Ese campo solo aparece cuando bloquea, así que si está,
+  //     es un bloqueo, ponga lo que ponga. «OTHER» ahí quiere decir «bloqueado y
+  //     no te digo con qué palabra», no «no sé qué ha pasado». Reintentarlo da
+  //     exactamente lo mismo las veces que haga falta: hay que tocar el texto.
+  //
+  //   · `candidates[].finishReason` — el modelo empezó y se quedó a medias. Ahí
+  //     «OTHER» sí es ambiguo y muchas veces sale a la siguiente.
+  //
+  // Antes se miraba solo la palabra, junta de los dos sitios, y por eso un
+  // prompt bloqueado con «OTHER» se reintentaba en balde una y otra vez.
+  if (prompBloqueado) {
+    return new ErrorDeCara(
+      `El modelo «${modelo.id}» no ha devuelto ninguna imagen: Google ha bloqueado el PROMPT antes ` +
+      `de dibujar nada. ${porQue} Reintentarlo da el mismo resultado siempre, así que la cola no lo ` +
+      'reintenta. Hay que cambiar el texto de la placa o de la toma, desde el estudio. Si el motivo ' +
+      'es «OTHER», Google no dice qué palabra le ha molestado: quita de la descripción lo que hable ' +
+      'de heridas, cicatrices, cuerpo desnudo o edad, y prueba otra vez. ' +
+      `El modelo no se sustituye por otro (se cambia a conciencia con la variable ${modelo.variable}).`,
+      { detalle: comoTexto(respuesta), reintentable: false, http: 502 }
+    );
+  }
+
   if (esBloqueoDeContenido(motivo)) {
     return new ErrorDeCara(
       `El modelo «${modelo.id}» no ha devuelto ninguna imagen: la ha bloqueado el filtro de ` +
@@ -441,10 +461,11 @@ function sinImagen(respuesta, modelo, candidatos) {
 
 /**
  * Los motivos con los que Google dice, con todas las letras, que ha bloqueado el
- * contenido. Cualquier otra cosa —«OTHER», nada, un mensaje que no reconocemos—
- * es ambigua, y ante la duda se reintenta: cuesta una llamada, y dar por muerto
- * un trabajo que iba a salir cuesta que el usuario reescriba a mano una
- * descripción que estaba bien.
+ * contenido, aunque los diga en `finishReason` en vez de en `promptFeedback`.
+ * Un «OTHER» suelto en `finishReason` NO entra aquí: ahí sí es ambiguo, y ante
+ * la duda se reintenta, que cuesta una llamada; dar por muerto un trabajo que
+ * iba a salir cuesta que el usuario reescriba a mano una descripción que estaba
+ * bien.
  */
 const BLOQUEOS_DE_CONTENIDO = [
   'PROHIBITED_CONTENT',

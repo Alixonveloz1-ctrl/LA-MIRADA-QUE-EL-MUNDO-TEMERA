@@ -119,7 +119,7 @@ const PLACAS_NUEVAS = [
     id: 'saharis-noble-nuca',
     personaje: 'saharis',
     luz: 'NOBLE',
-    encuadre: 'Medium shot from directly behind: back of the head and shoulders only, immaculate dark noble coat with the collar turned down and low, the nape of the neck bare, short black hair hacked off unevenly at the back, face not visible',
+    encuadre: 'Medium shot from directly behind: back of the head and shoulders only, immaculate dark noble coat with no high collar, the coat collar turned down flat, short black hair ending unevenly at the back, face not visible',
     detalle: true,
     instruccion_referencia: DETALLE(
       'Saharis',
@@ -131,11 +131,11 @@ const PLACAS_NUEVAS = [
     id: 'saharis-manos',
     personaje: 'saharis',
     luz: 'NOBLE',
-    encuadre: 'Close detail of both adult male hands only, clean, a silver signet ring, a long old ritual scar across the left palm, no face in frame',
+    encuadre: 'Close detail of both adult male hands only, clean, a silver signet ring, a thin old pale ritual line across the left palm, no face in frame',
     detalle: true,
     instruccion_referencia: DETALLE(
       'Saharis',
-      'the exact skin tone (pale olive), the age and build of the hands, the silver signet ring and the long old ritual scar across the left palm',
+      'the exact skin tone (pale olive), the age and build of the hands, the silver signet ring and the thin old pale ritual line across the left palm',
       { parte: 'his hands', nada: 'his face, his head or his body' },
     ),
   },
@@ -147,7 +147,7 @@ const PLACAS_NUEVAS = [
     detalle: true,
     instruccion_referencia: DETALLE(
       'Saharis at five',
-      'the exact skin tone (pale olive), how thin and undernourished the hands are, the size and proportions of a five year old\'s hands, the dirt worked into every crease',
+      'the exact skin tone (pale olive), the small size and proportions of a five year old\'s hands, the slender fingers, a little grey dust across the knuckles',
       { parte: 'his hands', nada: 'his face, his head or his body' },
     ),
   },

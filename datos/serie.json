@@ -198,11 +198,11 @@
     },
     "nino10": {
       "nombre": "el niño de diez años",
-      "identidad": "wiry boy about ten years old, dark hair to the jaw, red eyes, pale olive skin, a long fresh ritual scar across the left palm, thin scavenged dark clothing, cloth wraps on his feet, flat unreadable face",
+      "identidad": "wiry boy about ten years old, dark hair to the jaw, red eyes, pale olive skin, a thin ritual line marked across the left palm, thin scavenged dark clothing, cloth wraps over his feet, flat unreadable face",
       "genero": "masculina"
     },
     "saharis": {
-      "identidad": "young man about seventeen, black hair cut short by his own hand, uneven ragged lengths, hacked off rather than barbered, never neat or groomed, red eyes, pale olive skin, fine features gone hard, the same high cheekbones as his mother, immaculate dark charcoal noble coat worn open at the throat, collar turned down and low, bare throat over a black shirt, a silver signet ring, a long old scar across the left palm, unreadable face",
+      "identidad": "young man about seventeen, short black hair in uneven ragged lengths, roughly cut and never groomed or barbered, red eyes, pale olive skin, fine features gone hard, the same high cheekbones as his mother, immaculate dark charcoal noble coat, no high collar, the coat collar turned down flat over a plain black shirt closed at the neck, a silver signet ring, a thin old pale line across the left palm, unreadable face",
       "nota": "Ancla de linaje. Todas las edades encadenan a esta. Sus pomulos son los de su madre: es el unico rasgo heredado.",
       "genero": "masculina"
     },
@@ -217,12 +217,12 @@
       "genero": "masculina"
     },
     "saharis-10": {
-      "identidad": "boy of ten, dark hair to the jaw, red eyes, a healed scar across the left palm, dark mended clothes that do not fit him, worn but whole",
+      "identidad": "boy of ten, dark hair to the jaw, red eyes, a healed pale line across the left palm, dark mended clothes that do not fit him, worn but whole",
       "nota": "Encadena al ancla de linaje de saharis: misma estructura osea, mismos pomulos, mismo color de ojos. Solo cambia la edad.",
       "genero": "masculina"
     },
     "saharis-12": {
-      "identidad": "boy of twelve, harder and taller, red eyes, scarred hands, street clothes, flat unreadable face",
+      "identidad": "boy of twelve, harder and taller, red eyes, work-worn hands with a pale line across the left palm, street clothes, flat unreadable face",
       "nota": "Encadena al ancla de linaje de saharis: misma estructura osea, mismos pomulos, mismo color de ojos. Solo cambia la edad.",
       "genero": "masculina"
     },
@@ -744,7 +744,7 @@
         "id": "saharis-noble-nuca",
         "personaje": "saharis",
         "luz": "NOBLE",
-        "encuadre": "Medium shot from directly behind: back of the head and shoulders only, immaculate dark noble coat with the collar turned down and low, the nape of the neck bare, short black hair hacked off unevenly at the back, face not visible",
+        "encuadre": "Medium shot from directly behind: back of the head and shoulders only, immaculate dark noble coat with no high collar, the coat collar turned down flat, short black hair ending unevenly at the back, face not visible",
         "detalle": true,
         "instruccion_referencia": "CHARACTER ANCHOR above: this is Saharis. This new plate shows ONLY the back of his head and shoulders. Copy from the anchor exactly: the exact hair colour, the short neat cut and its hairline at the nape, the head and shoulder proportions, the build, the collar and cut of the charcoal noble coat. Do NOT draw his face, his eyes or any part of the front of his head — it is not in frame in this plate. Do NOT copy the pose, the framing, the scale or the background: redraw them as this plate describes."
       },
@@ -752,9 +752,9 @@
         "id": "saharis-manos",
         "personaje": "saharis",
         "luz": "NOBLE",
-        "encuadre": "Close detail of both adult male hands only, clean, a silver signet ring, a long old ritual scar across the left palm, no face in frame",
+        "encuadre": "Close detail of both adult male hands only, clean, a silver signet ring, a thin old pale ritual line across the left palm, no face in frame",
         "detalle": true,
-        "instruccion_referencia": "CHARACTER ANCHOR above: this is Saharis. This new plate shows ONLY his hands. Copy from the anchor exactly: the exact skin tone (pale olive), the age and build of the hands, the silver signet ring and the long old ritual scar across the left palm. Do NOT draw his face, his head or his body — it is not in frame in this plate. Do NOT copy the pose, the framing, the scale or the background: redraw them as this plate describes."
+        "instruccion_referencia": "CHARACTER ANCHOR above: this is Saharis. This new plate shows ONLY his hands. Copy from the anchor exactly: the exact skin tone (pale olive), the age and build of the hands, the silver signet ring and the thin old pale ritual line across the left palm. Do NOT draw his face, his head or his body — it is not in frame in this plate. Do NOT copy the pose, the framing, the scale or the background: redraw them as this plate describes."
       },
       {
         "id": "saharis-5-manos",
@@ -762,7 +762,7 @@
         "luz": "CRIPTA",
         "encuadre": "Close detail of a young child's hands only, small, a little dust across the knuckles, no face in frame",
         "detalle": true,
-        "instruccion_referencia": "CHARACTER ANCHOR above: this is Saharis at five. This new plate shows ONLY his hands. Copy from the anchor exactly: the exact skin tone (pale olive), how thin and undernourished the hands are, the size and proportions of a five year old's hands, the dirt worked into every crease. Do NOT draw his face, his head or his body — it is not in frame in this plate. Do NOT copy the pose, the framing, the scale or the background: redraw them as this plate describes."
+        "instruccion_referencia": "CHARACTER ANCHOR above: this is Saharis at five. This new plate shows ONLY his hands. Copy from the anchor exactly: the exact skin tone (pale olive), the small size and proportions of a five year old's hands, the slender fingers, a little grey dust across the knuckles. Do NOT draw his face, his head or his body — it is not in frame in this plate. Do NOT copy the pose, the framing, the scale or the background: redraw them as this plate describes."
       },
       {
         "id": "saharis-10-espalda",

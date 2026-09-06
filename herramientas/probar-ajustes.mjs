@@ -77,7 +77,7 @@ class ErrorDeCara extends Error { constructor(m,o={}){super(m);this.mensaje=m;Ob
 const entorno = () => ({ sa: { project_id: 'x' } });
 const nivelImagen = () => ({ id: 'gemini-3.1-flash-image', ids: [], region: 'global' });
 const llamar = async () => ({}), urlModelo = () => '', conGrafias = async () => ({}), comoGrafia = (m) => m;
-`, 'resolucionValida, cuerpoPara, esBloqueoDeContenido');
+`, 'resolucionValida, cuerpoPara, esBloqueoDeContenido, sinImagen');
 
 di(img.resolucionValida('1K') === '1K', 'La resolución 1K se acepta');
 di(img.resolucionValida('2k') === '2K', 'La k minúscula se arregla sola (Google la rechazaría)');
@@ -130,6 +130,35 @@ di(img.esBloqueoDeContenido('IMAGE_PROHIBITED_CONTENT · Unable to show the gene
 di(img.esBloqueoDeContenido('SAFETY'), 'Y los demás nombres del filtro también');
 di(!img.esBloqueoDeContenido('OTHER'), '«OTHER» NO se toma por un bloqueo: es «no digo por qué»');
 di(!img.esBloqueoDeContenido(''), 'Y no decir nada tampoco');
+
+// ── PERO DÓNDE LO DIJO GOOGLE MANDA SOBRE LO QUE DIJO ──────────────────────
+//
+// La misma palabra —«OTHER»— significa dos cosas distintas según el campo en el
+// que venga. En `promptFeedback.blockReason` es un prompt rechazado antes de
+// dibujar: reintentarlo es tirar cuota. En `candidates[].finishReason` es una
+// generación que se quedó a medias: eso sí sale muchas veces a la siguiente.
+console.log('\n  DÓNDE LO DIJO GOOGLE, NO SOLO QUÉ DIJO');
+const modeloFalso = { id: 'gemini-3.1-flash-image', variable: 'MODELO_IMAGEN' };
+
+const bloqueado = img.sinImagen({ promptFeedback: { blockReason: 'OTHER' } }, modeloFalso, []);
+di(bloqueado.reintentable === false,
+  'Un «OTHER» en promptFeedback NO se reintenta: es el prompt, rechazado entero',
+  `reintentable = ${bloqueado.reintentable}`);
+di(/PROMPT/.test(bloqueado.mensaje), 'Y el mensaje dice que lo bloqueado fue el prompt');
+
+const aMedias = img.sinImagen({ candidates: [{ finishReason: 'OTHER' }] }, modeloFalso,
+  [{ finishReason: 'OTHER' }]);
+di(aMedias.reintentable === true,
+  'Un «OTHER» suelto en finishReason SÍ se reintenta: ahí es ambiguo',
+  `reintentable = ${aMedias.reintentable}`);
+
+const filtrado = img.sinImagen({ candidates: [{ finishReason: 'IMAGE_PROHIBITED_CONTENT' }] },
+  modeloFalso, [{ finishReason: 'IMAGE_PROHIBITED_CONTENT' }]);
+di(filtrado.reintentable === false,
+  'Y el filtro dicho por su nombre en finishReason tampoco se reintenta');
+
+const mudo = img.sinImagen({}, modeloFalso, []);
+di(mudo.reintentable === true, 'Una respuesta sin imagen y sin motivo ninguno se reintenta');
 
 console.log(mal === 0 ? '\nTodo bien.\n' : `\n${mal} MAL.\n`);
 process.exit(mal ? 1 : 0);

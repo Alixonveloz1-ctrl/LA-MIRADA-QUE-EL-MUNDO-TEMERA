@@ -95,10 +95,10 @@
     },
     "nino10": {
       "nombre": "el niño de diez años",
-      "identidad": "wiry boy about ten years old, dark hair to the jaw, red eyes, pale olive skin, a long fresh ritual scar across the left palm, thin scavenged dark clothing, cloth wraps on his feet, flat unreadable face"
+      "identidad": "wiry boy about ten years old, dark hair to the jaw, red eyes, pale olive skin, a thin ritual line marked across the left palm, thin scavenged dark clothing, cloth wraps over his feet, flat unreadable face"
     },
     "saharis": {
-      "identidad": "young man about seventeen, black hair cut short by his own hand, uneven ragged lengths, hacked off rather than barbered, never neat or groomed, red eyes, pale olive skin, fine features gone hard, the same high cheekbones as his mother, immaculate dark charcoal noble coat worn open at the throat, collar turned down and low, bare throat over a black shirt, a silver signet ring, a long old scar across the left palm, unreadable face",
+      "identidad": "young man about seventeen, short black hair in uneven ragged lengths, roughly cut and never groomed or barbered, red eyes, pale olive skin, fine features gone hard, the same high cheekbones as his mother, immaculate dark charcoal noble coat, no high collar, the coat collar turned down flat over a plain black shirt closed at the neck, a silver signet ring, a thin old pale line across the left palm, unreadable face",
       "nota": "Ancla de linaje. Todas las edades encadenan a esta. Sus pomulos son los de su madre: es el unico rasgo heredado."
     },
     "saharis-bebe": {
@@ -110,11 +110,11 @@
       "nota": "Encadena al ancla de linaje de saharis: misma estructura osea, mismos pomulos, mismo color de ojos. Solo cambia la edad."
     },
     "saharis-10": {
-      "identidad": "boy of ten, dark hair to the jaw, red eyes, a healed scar across the left palm, dark mended clothes that do not fit him, worn but whole",
+      "identidad": "boy of ten, dark hair to the jaw, red eyes, a healed pale line across the left palm, dark mended clothes that do not fit him, worn but whole",
       "nota": "Encadena al ancla de linaje de saharis: misma estructura osea, mismos pomulos, mismo color de ojos. Solo cambia la edad."
     },
     "saharis-12": {
-      "identidad": "boy of twelve, harder and taller, red eyes, scarred hands, street clothes, flat unreadable face",
+      "identidad": "boy of twelve, harder and taller, red eyes, work-worn hands with a pale line across the left palm, street clothes, flat unreadable face",
       "nota": "Encadena al ancla de linaje de saharis: misma estructura osea, mismos pomulos, mismo color de ojos. Solo cambia la edad."
     },
     "celebrante": {

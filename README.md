@@ -465,20 +465,42 @@ plano cuenta lo que pasa sin ponerlo en cuadro.
 
 ### «No hay imagen» no siempre es el filtro
 
-Cuando el modelo contesta sin imagen, Google dice por qué — o no lo dice. Y son
-dos cosas distintas que estaban tratadas igual:
+Cuando el modelo contesta sin imagen, lo que importa no es solo **qué** dice
+Google, sino **en qué campo** lo dice. La misma palabra significa dos cosas
+distintas según de dónde venga:
 
-| Lo que dice Google | Qué significa | Qué se hace |
+| Dónde lo dice Google | Qué significa | Qué se hace |
 |---|---|---|
-| `IMAGE_PROHIBITED_CONTENT`, `SAFETY`, `BLOCKLIST`… | El filtro ha cortado, y con su nombre | **No se reintenta.** Repetir da lo mismo: hay que cambiar la descripción |
-| `OTHER`, o nada | «No digo por qué» | **Se reintenta.** Muchas veces sale a la siguiente |
+| `promptFeedback.blockReason` — cualquier valor, `OTHER` incluido | Ha leído el prompt y lo ha rechazado **antes de dibujar nada**. Ese campo solo aparece cuando bloquea | **No se reintenta.** Repetir da lo mismo siempre: hay que cambiar el texto |
+| `candidates[].finishReason` con nombre de filtro (`IMAGE_PROHIBITED_CONTENT`, `SAFETY`, `BLOCKLIST`…) | El filtro ha cortado a mitad, y con su nombre | **No se reintenta.** Igual: hay que cambiar el texto |
+| `candidates[].finishReason: OTHER`, o nada de nada | «No digo por qué»: se quedó a medias | **Se reintenta.** Muchas veces sale a la siguiente |
 
-Antes todo caía en el primer caso: el mensaje mandaba a reescribir una
-descripción y la cola daba el trabajo por muerto. Y salía con placas que no
-tienen absolutamente nada que pueda molestar a un filtro — un plano medio de un
-adulto vestido, de tres cuartos, sin expresión. Ante la duda se reintenta: cuesta
-una llamada, y dar por muerto un trabajo que iba a salir cuesta que alguien
-reescriba a mano algo que estaba bien.
+Esto se ha corregido dos veces, y cada vez por pasarse a un lado.
+
+Primero **todo** caía en «no se reintenta»: el mensaje mandaba a reescribir una
+descripción y la cola daba el trabajo por muerto, incluso con placas que no
+tienen nada que pueda molestar a un filtro — un plano medio de un adulto
+vestido, de tres cuartos, sin expresión.
+
+Luego se miró solo la palabra, junta de los dos campos, y entonces un `OTHER` en
+`promptFeedback` — que **sí** es un bloqueo, solo que sin decir con qué palabra —
+se reintentaba en balde una vez tras otra. Que es exactamente lo que no se
+quiere: mandar a hacer una generación que va a fallar diez veces.
+
+Ahora manda el campo. Cuando el bloqueo es del prompt, el mensaje lo dice con
+esas palabras y sugiere por dónde mirar: heridas, cicatrices, cuerpo desnudo o
+edad. Comprobado en `herramientas/probar-ajustes.mjs` con las dos formas de
+respuesta, la de `promptFeedback` y la de `finishReason`.
+
+**Y por eso las descripciones no nombran heridas.** El bloqueo cayó sobre
+Saharis, que es un personaje de diecisiete años: menor. Google es mucho más
+estricto con los menores, y basta con que en el mismo texto aparezcan la edad y
+una palabra de daño. Así que en `datos/serie.base.json` la cicatriz del pacto ya
+no es «a long old scar», es «a thin old pale line»; el pelo ya no está «cut short
+by his own hand … hacked off» sino «roughly cut and never groomed»; y la garganta
+ya no va «bare» sino con la camisa cerrada al cuello y el cuello del abrigo
+bajado. **Se ve exactamente igual.** Lo único que cambia es que no hay ninguna
+palabra que un filtro pueda leer como una herida en un menor.
 
 ### Apuntar lo que ya está pagado
 
