@@ -1314,11 +1314,17 @@ function elegirResolucion(modelos, puesta) {
       'dárselo a Veo, 1K sobra: Veo entrega 720p. El 2K se nota en las placas del banco, que ' +
       'son las que se miran de cerca y las que después copian todas las demás.'),
     h('p', { clase: 'tenue' },
-      '«La que dé Google» no es un tamaño: es no pedir ninguno. Y con el nivel MEDIO no es un ' +
-      'apaño, es lo correcto: ese modelo tiene un fallo reconocido por el que IGNORA la ' +
-      'resolución que se le pida y devuelve ~1K siempre, se le pida 2K o 4K. Pero pedir 2K sí ' +
-      'mete la petición en el cubo de cuota de 2K, que es otro y más pequeño: se paga el peaje y ' +
-      'se recibe 1K igual. En el nivel de CALIDAD la resolución sí se respeta, y ahí el 2K se nota.'),
+      '«La que dé Google» no es un tamaño: es no pedir ninguno. Y muchas veces es la que ' +
+      'funciona, porque Vertex reparte la cuota de imagen POR RESOLUCIÓN: pedir 2K mete la ' +
+      'petición en un cubo distinto y más pequeño que el de «por defecto», que es de donde salen ' +
+      'los errores de cuota.'),
+    h('p', { clase: 'tenue' },
+      'Sobre si el 2K se respeta de verdad: la documentación de Google dice que sí en todos los ' +
+      'niveles, pero hay un informe abierto desde abril —sin respuesta de Google— que dice que el ' +
+      'nivel medio lo ignora y devuelve 1K igual. No hay forma de zanjarlo leyendo, así que no se ' +
+      'discute: CADA IMAGEN GENERADA ENSEÑA SU TAMAÑO REAL EN PÍXELES en la esquina, en el Banco. ' +
+      'Pide 2K, genera una y míralo. Eso responde por esta cuenta y por hoy, que es lo que ' +
+      'importa.'),
     h('p', { clase: 'tenue' },
       'Y aparte de eso: Vertex reparte la cuota de imagen por modelo Y por resolución, en cubos ' +
       'separados. Pedir un tamaño concreto puede caer en un cubo agotado mientras el de «por ' +

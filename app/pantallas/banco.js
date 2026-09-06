@@ -1599,7 +1599,51 @@ function marcoDeImagen(clave, entrada, alt) {
     if (img.parentNode) img.replaceWith(fallo);
   });
 
+  // EL TAMAÑO DE VERDAD, EN LA ESQUINA. No es un adorno: es la única forma de
+  // saber a ciencia cierta qué resolución está devolviendo Google en ESTA cuenta
+  // y HOY. La documentación dice que este modelo admite 1K, 2K y 4K; hay
+  // informes abiertos de que a veces ignora lo que se le pide y devuelve 1K
+  // igual, y ninguna de las dos cosas se puede comprobar discutiendo. Aquí se ve.
+  img.addEventListener('load', () => {
+    if (!img.naturalWidth || !img.parentNode) return;
+    img.parentNode.appendChild(etiquetaDeTamano(img.naturalWidth, img.naturalHeight));
+  });
+
   return img;
+}
+
+/**
+ * La pastilla que dice cuántos píxeles tiene de verdad la imagen que se está
+ * mirando, con el nombre que le da Google al lado.
+ */
+function etiquetaDeTamano(ancho, alto) {
+  return h('span', {
+    clase: 'mono',
+    estilo: {
+      position: 'absolute',
+      right: '6px',
+      bottom: '6px',
+      padding: '2px 6px',
+      'border-radius': 'var(--radio-pastilla)',
+      background: 'rgba(7, 8, 10, 0.72)',
+      color: 'var(--texto-suave)',
+      'font-size': '11px',
+      'pointer-events': 'none',
+    },
+  }, `${ancho}×${alto} · ${comoLoLlamaGoogle(ancho, alto)}`);
+}
+
+/**
+ * De píxeles al nombre que usa Google. El lado mayor es lo que manda, porque
+ * estas imágenes son 16:9 y no cuadradas: un «1K» de Google mide 1024 de lado
+ * mayor, no 1024 de ancho Y de alto.
+ */
+function comoLoLlamaGoogle(ancho, alto) {
+  const mayor = Math.max(ancho, alto);
+  if (mayor >= 3200) return '4K';
+  if (mayor >= 1600) return '2K';
+  if (mayor >= 800) return '1K';
+  return '0,5K';
 }
 
 /** Qué ruta se está mirando de una placa: la elegida, la aprobada o la última. */
