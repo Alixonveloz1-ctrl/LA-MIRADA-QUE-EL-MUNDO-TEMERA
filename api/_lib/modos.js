@@ -1661,7 +1661,8 @@ export const MODOS = {
   borrar: modoBorrar,
   'guardar-texto': modoGuardarTexto,
   montar: modoMontar,
-  'montaje-estado': modoMontajeEstado
+  'montaje-estado': modoMontajeEstado,
+  aguante: modoAguante
 };
 
 /**
@@ -1742,4 +1743,54 @@ async function buscarOperacionApuntada(idPieza, idToma) {
   } catch {
     return null;
   }
+}
+
+// ---------------------------------------------------------------------------
+// Cuánto tiempo deja vivir la plataforma
+// ---------------------------------------------------------------------------
+
+/** Lo máximo que se le puede pedir a esta prueba. Más no hace falta saber. */
+const AGUANTE_MAXIMO_S = 280;
+
+/**
+ * NO GENERA NADA: solo espera y contesta cuánto ha esperado.
+ *
+ * POR QUÉ EXISTE. Todo el estudio depende de un número que nadie sabe de cierto:
+ * cuántos segundos deja vivir Vercel a esta función. `vercel.json` PIDE 300, pero
+ * pedir no es tener: la plataforma concede según el plan y puede conceder menos
+ * sin decirlo. Y equivocarse por arriba no da un error claro, da un corte mudo
+ * —la función muere a media generación, ya pagada, y en pantalla solo hay un 504
+ * sin cuerpo—. Por eso el plazo propio está puesto en 55 s, que es el suelo
+ * seguro de cualquier plan.
+ *
+ * Pero 55 s se le quedan cortos a una imagen con referencias, y entonces la
+ * pregunta deja de ser académica: hay que saber el número de verdad.
+ *
+ * Esto lo mide. Espera los segundos que se le pidan y contesta cuántos esperó de
+ * verdad. Si la plataforma corta antes, no contesta: el navegador recibe un 504
+ * sin cuerpo, y eso también es la respuesta. Probando 60, 120 y 240 se sabe el
+ * techo sin gastar ni un céntimo de Google: aquí no se llama a ningún modelo.
+ *
+ * Y NO PASA POR EL PLAZO a propósito: el plazo es justo lo que se está midiendo.
+ */
+async function modoAguante(cuerpo) {
+  const pedidos = Math.round(Number(cuerpo && cuerpo.segundos) || 0);
+
+  if (!(pedidos > 0)) {
+    throw new ErrorDeCara(
+      'Esta prueba necesita que se le diga cuántos segundos esperar, en el campo «segundos».',
+      { reintentable: false, http: 400 }
+    );
+  }
+
+  const segundos = Math.min(pedidos, AGUANTE_MAXIMO_S);
+  const empezo = Date.now();
+  await new Promise((listo) => setTimeout(listo, segundos * 1000));
+
+  return {
+    pedidos,
+    segundos,
+    esperado_ms: Date.now() - empezo,
+    nota: 'Si esto ha llegado, la plataforma deja vivir a la función al menos esos segundos.'
+  };
 }

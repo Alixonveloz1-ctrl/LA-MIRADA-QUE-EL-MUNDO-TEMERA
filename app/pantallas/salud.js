@@ -1212,6 +1212,7 @@ function pintarConQueSeGenera(hueco, datos, laSerie) {
   hueco.appendChild(elegirResolucion(modelos, puesto.imagen.resolucion));
 
   hueco.appendChild(elegirRitmo(puesto.ritmo));
+  hueco.appendChild(medirElAguante());
 
   hueco.appendChild(elegirNivel({
     titulo: 'Los vídeos',
@@ -1357,6 +1358,76 @@ function elegirRitmo(puesto) {
   );
 
   return tarjeta({ titulo: 'El ritmo', pie: cuerpo });
+}
+
+/** Los escalones que se prueban, de menos a más. */
+const AGUANTES_A_PROBAR = [60, 120, 240];
+
+/**
+ * Cuánto tiempo deja vivir la plataforma a la función. Medido, no supuesto.
+ *
+ * Todo el estudio depende de este número y nadie lo sabe de cierto: vercel.json
+ * PIDE 300 segundos, pero pedir no es tener. Y equivocarse por arriba no da un
+ * error claro: da un corte mudo a media generación, ya pagada. Por eso el plazo
+ * propio está en 55 s, que es el suelo seguro de cualquier plan — y 55 s se le
+ * quedan cortos a una imagen con referencias.
+ *
+ * Esta prueba no llama a ningún modelo y no cuesta un céntimo: la función espera
+ * y contesta cuánto esperó. Si la plataforma la corta antes, no contesta, y eso
+ * también es la respuesta.
+ */
+function medirElAguante() {
+  const salida = h('div', { clase: 'tenue' });
+  let midiendo = false;
+
+  const boton1 = boton('Medir cuánto tiempo me da', async () => {
+    if (midiendo) return;
+    midiendo = true;
+    boton1.textContent = 'Midiendo… puede tardar varios minutos';
+
+    let mayor = 0;
+    try {
+      for (const segundos of AGUANTES_A_PROBAR) {
+        vaciar(salida);
+        salida.appendChild(espera(
+          `Probando ${segundos} s${mayor ? ` (aguantó ${mayor} s)` : ''}… no cierres esta pantalla.`));
+        try {
+          await llamar('aguante', { segundos });
+          mayor = segundos;
+        } catch {
+          // Que falle es un resultado, no un fallo: significa que ahí está el techo.
+          break;
+        }
+      }
+    } finally {
+      midiendo = false;
+      boton1.textContent = 'Medir otra vez';
+      vaciar(salida);
+      salida.appendChild(h('p', {},
+        mayor
+          ? `Tu plan deja vivir a la función AL MENOS ${mayor} segundos. ` +
+            'Dímelo y ajusto el plazo del estudio a ese número: ahora está puesto en 55, que es ' +
+            'el suelo seguro, y por eso una imagen grande se corta.'
+          : 'No ha aguantado ni 60 segundos, así que el plazo de 55 que hay puesto es el correcto ' +
+            'y no se puede subir. Con este techo, la salida para las imágenes es 1K.'));
+    }
+  }, { tono: 'suave' });
+
+  const cuerpo = h('div', {},
+    h('p', { clase: 'tenue' },
+      'Todo el estudio depende de un número que no se puede suponer: cuántos segundos deja vivir ' +
+      'Vercel a la función. Si se supone de más, una generación se corta a medias YA PAGADA y en ' +
+      'pantalla no queda ni un mensaje. Por eso está puesto en 55 s, que es el suelo seguro de ' +
+      'cualquier plan — y a una imagen grande se le quedan cortos.'),
+    h('p', { clase: 'tenue' },
+      'Esta prueba lo mide de verdad: la función espera y contesta cuánto esperó. NO llama a ' +
+      'ningún modelo, así que no gasta cuota ni cuesta dinero. Prueba 60, 120 y 240 segundos, así ' +
+      'que puede tardar unos minutos.'),
+    h('div', { clase: 'tarjeta-acciones' }, boton1),
+    salida,
+  );
+
+  return tarjeta({ titulo: 'Cuánto tiempo me da mi plan', pie: cuerpo });
 }
 
 /** Lo elegido, con la forma entera aunque el estado sea viejo y no la traiga. */
