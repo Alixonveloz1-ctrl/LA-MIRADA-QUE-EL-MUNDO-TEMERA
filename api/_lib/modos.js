@@ -100,7 +100,7 @@ import {
   listarVoces,
   alinear as alinearAudio
 } from './audio.js';
-import { traducirAJapones, desglosarEscena } from './texto.js';
+import { traducirAJapones, desglosarEscena, fichaDePieza } from './texto.js';
 import { salud as comprobarSalud } from './salud.js';
 import { lanzar as lanzarMontaje, estado as estadoDeMontaje } from './montaje.js';
 
@@ -1257,6 +1257,55 @@ async function modoDesglosarEscena(cuerpo) {
 }
 
 // ---------------------------------------------------------------------------
+// ficha
+// ---------------------------------------------------------------------------
+
+/**
+ * Escribe la ficha con la que se sube una pieza —título, descripción y
+ * etiquetas— y la guarda en el bucket ANTES de contestar.
+ *
+ * Se guarda aunque el navegador se cierre en ese instante, igual que todo lo
+ * demás: una ficha es una llamada al modelo de texto, y pagarla dos veces por no
+ * haberla apuntado es el fallo que este estudio no comete en ningún otro sitio.
+ */
+async function modoFicha(cuerpo) {
+  const idPieza = exigirTexto(cuerpo, 'pieza', 'de qué pieza es la ficha');
+
+  const leido = await leerElEstado();
+  const ficha = await fichaDePieza(idPieza);
+
+  const ruta = `${carpetaDeDifusion(idPieza)}ficha.json`;
+  await escribirEnElBucket(ruta, JSON.stringify(ficha, null, 2), {
+    tipo: 'application/json; charset=utf-8'
+  });
+
+  await anotarLoGenerado(
+    (estado) => {
+      if (!esObjeto(estado.difusion)) estado.difusion = {};
+      if (!esObjeto(estado.difusion[idPieza])) estado.difusion[idPieza] = {};
+      const entrada = estado.difusion[idPieza];
+      entrada.ficha = ficha;
+      entrada.ficha_ruta = ruta;
+      // Una ficha nueva es una ficha sin aprobar: se lee antes de publicar con
+      // ella, igual que una pista se oye antes de montarla.
+      entrada.ficha_aprobada = false;
+    },
+    leido,
+    'La ficha',
+    ruta
+  );
+
+  return { pieza: idPieza, ficha, ruta };
+}
+
+/** `difusion/{pieza}/`, tal y como lo escribe `difusion.ruta` de serie.json. */
+function carpetaDeDifusion(idPieza) {
+  const dicha = soloTexto(serie.difusion && serie.difusion.ruta) || 'difusion/{pieza}/';
+  const puesta = dicha.replace('{pieza}', idPieza);
+  return puesta.endsWith('/') ? puesta : `${puesta}/`;
+}
+
+// ---------------------------------------------------------------------------
 // estado-leer / estado-escribir
 // ---------------------------------------------------------------------------
 
@@ -1670,6 +1719,7 @@ export const MODOS = {
   voz: modoVoz,
   alinear: modoAlinear,
   'desglosar-escena': modoDesglosarEscena,
+  ficha: modoFicha,
   'estado-leer': modoEstadoLeer,
   'estado-escribir': modoEstadoEscribir,
   firmar: modoFirmar,

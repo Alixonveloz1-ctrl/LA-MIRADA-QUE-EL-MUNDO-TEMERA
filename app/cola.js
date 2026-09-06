@@ -622,6 +622,12 @@ const NORMALIZADORES = {
     return { args, identidad: args };
   },
 
+  ficha(crudos) {
+    const pieza = exigirArg(crudos, ['pieza'], 'de qué pieza es la ficha');
+    const args = { pieza };
+    return { args, identidad: args };
+  },
+
   musica(crudos) {
     const pieza = exigirArg(crudos, ['pieza'], 'de qué pieza es esta música');
     const id = exigirArg(crudos, ['id', 'musica'], 'qué pieza de música se genera');
@@ -1902,6 +1908,18 @@ export const EJECUTORES = {
    */
   async muestra(args) {
     await llamar('voz-muestra', { personaje: args.personaje, voz_id: args.voz_id });
+  },
+
+  /**
+   * Escribe la ficha de difusión de una pieza —título, descripción y etiquetas—.
+   *
+   * Aquí no se apunta nada en el estado: la función la deja apuntada antes de
+   * contestar, igual que hace con una muestra de voz. Encolarla solo sirve para
+   * que espere su turno, porque es una llamada al modelo de texto y esas gastan
+   * la misma cuota por minuto que todo lo demás.
+   */
+  async ficha(args) {
+    await llamar('ficha', { pieza: args.pieza });
   },
 
   async musica(args) {

@@ -196,7 +196,10 @@ export const ESTADO_VACIO = congelar({
     ritmo: { por_minuto: 0, aprendido_ms: 0 },
   },
   gasto: { imagen: {}, video_s: {}, musica_s: 0, voz_s: 0 },
-  pesos: {}
+  pesos: {},
+  // Lo que hace falta para PUBLICAR cada pieza: su ficha —título, descripción y
+  // etiquetas— y si está aprobada. Una por pieza, y solo cuando se pide.
+  difusion: {}
 });
 
 // ---------------------------------------------------------------------------
@@ -231,6 +234,30 @@ function asegurarToma(mapa, clave) {
   if (typeof entrada.operacion_en_curso === 'string' && !entrada.operacion_en_curso.trim()) {
     entrada.operacion_en_curso = null;
   }
+  mapa[clave] = entrada;
+}
+
+/**
+ * La ficha de difusión de una pieza. Lo que no se entienda se deja en su valor
+ * de «nada» en vez de inventarse: una descripción a medias se publicaría igual.
+ * @param {object} mapa
+ * @param {string} clave el id de la pieza
+ */
+function asegurarFicha(mapa, clave) {
+  const entrada = esObjeto(mapa[clave]) ? mapa[clave] : {};
+  const ficha = esObjeto(entrada.ficha) ? entrada.ficha : null;
+  if (ficha) {
+    ficha.titulo = typeof ficha.titulo === 'string' ? ficha.titulo : '';
+    ficha.descripcion = typeof ficha.descripcion === 'string' ? ficha.descripcion : '';
+    ficha.etiquetas = Array.isArray(ficha.etiquetas)
+      ? ficha.etiquetas.map((una) => String(una).replace(/^#/, '').trim()).filter(Boolean)
+      : [];
+    entrada.ficha = ficha;
+  } else if (entrada.ficha !== undefined) {
+    entrada.ficha = null;
+  }
+  entrada.ficha_ruta = normalizarRuta(entrada.ficha_ruta);
+  entrada.ficha_aprobada = Boolean(entrada.ficha_aprobada);
   mapa[clave] = entrada;
 }
 
@@ -343,6 +370,19 @@ export function asegurar(estado) {
   const banco = mapaDe(completo, 'banco');
   for (const unaPlaca of (serie.banco && serie.banco.placas) || []) {
     if (unaPlaca && unaPlaca.id) asegurarAprobable(banco, unaPlaca.id);
+  }
+
+  // Difusión: una entrada por pieza, con la ficha con la que se sube. No se
+  // crean todas de golpe como las placas: una ficha cuesta una llamada al modelo
+  // de texto, así que la entrada aparece cuando se pide, no antes.
+  const difusion = mapaDe(completo, 'difusion');
+  for (const [clave, entrada] of Object.entries(difusion)) {
+    if (!idsDePieza.includes(clave) || !esObjeto(entrada)) {
+      // Una ficha de una pieza que ya no existe no se borra: costó dinero y
+      // puede ser de un episodio que se está renombrando. Se deja tal cual.
+      continue;
+    }
+    asegurarFicha(difusion, clave);
   }
 
   // Escenarios: una entrada por placa de escenario.

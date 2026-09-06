@@ -1,4 +1,4 @@
-// El arranque del estudio y el reparto de las ocho pantallas.
+// El arranque del estudio y el reparto de las nueve pantallas.
 //
 // Este módulo es lo único que index.html carga. Hace cuatro cosas, en este orden
 // y contándolas en pantalla mientras las hace (docs/contrato.md §12, app/main.js):
@@ -7,7 +7,7 @@
 //   2. Consultar las operaciones de Veo que quedaron a medias —
 //      `recuperarOperaciones()`— ANTES de lanzar nada nuevo.
 //   3. Arrancar la cola — `arrancar()`.
-//   4. Pintar las ocho pestañas y montar la pantalla que diga `location.hash`.
+//   4. Pintar las nueve pestañas y montar la pantalla que diga `location.hash`.
 //
 // POR QUÉ EL ORDEN NO SE PUEDE CAMBIAR. El paso 2 va antes que el 3 porque una
 // operación de Veo lanzada y olvidada es un euro tirado y una toma que se queda
@@ -23,12 +23,12 @@
 // se enseña la bitácora: qué se está haciendo, qué ya está hecho y qué ha fallado,
 // con palabras.
 //
-// POR QUÉ LAS PANTALLAS SE PIDEN CON `import()` Y NO ARRIBA. Son ocho archivos
+// POR QUÉ LAS PANTALLAS SE PIDEN CON `import()` Y NO ARRIBA. Son nueve archivos
 // separados. Con un `import` estático, un solo fallo en cualquiera de ellos —una
 // coma de más, un archivo que no llegó a desplegarse— deja el navegador en blanco
 // y sin manera de contarlo: ni siquiera llega a instalarse el recogedor de fallos
 // de este módulo. Pidiéndolas de una en una, la que se rompa se queda con su
-// pestaña puesta y su explicación dentro, y las otras siete funcionan.
+// pestaña puesta y su explicación dentro, y las otras ocho funcionan.
 //
 // POR QUÉ SE DESMONTA LA PANTALLA ANTERIOR. Cada pantalla se suscribe a
 // `alCambiar()` para repintarse cuando cambia el estado. Si al cambiar de pestaña
@@ -43,11 +43,11 @@ import { actual, alCambiar, cargar } from './estado.js';
 import { aviso, boton, espera, EVENTO_FALLO_SUELTO, h, pantalla, seccion, vaciar } from './ui.js';
 
 // ---------------------------------------------------------------------------
-// Las ocho pantallas
+// Las nueve pantallas
 // ---------------------------------------------------------------------------
 
 /**
- * Las ocho, en el orden en el que salen en la barra de abajo — docs/contrato.md §9.
+ * Las nueve, en el orden en el que salen en la barra de abajo — docs/contrato.md §9.
  *
  * El `titulo` y el `icono` de aquí son solo el respaldo: mandan los que traiga
  * cada módulo en su `export default`. Están escritos igualmente porque una
@@ -63,6 +63,7 @@ const PESTANAS = [
   { id: 'audio',    titulo: 'Audio',    icono: '\u{1F3A7}', archivo: './pantallas/audio.js' },
   { id: 'cola',     titulo: 'Cola',     icono: '\u{23F3}',  archivo: './pantallas/cola.js' },
   { id: 'montaje',  titulo: 'Montaje',  icono: '\u{1F39E}', archivo: './pantallas/montaje.js' },
+  { id: 'difusion', titulo: 'Difusión', icono: '\u{1F4E3}', archivo: './pantallas/difusion.js' },
 ];
 
 /** Los pasos del arranque, tal como se leen en pantalla. */
@@ -70,7 +71,7 @@ const PASOS = [
   ['estado',      'Trayendo del bucket el estado de la producción'],
   ['operaciones', 'Consultando los vídeos que se quedaron generándose'],
   ['cola',        'Arrancando la cola de trabajos'],
-  ['pantallas',   'Pintando las ocho pestañas'],
+  ['pantallas',   'Pintando las nueve pestañas'],
 ];
 
 /** Cada cuánto se repasa el punto de la pestaña de Cola, en milisegundos. */
@@ -165,7 +166,7 @@ async function arrancarElEstudio() {
   recogerLosFallosSueltos();
   escucharLaPeticionDeClave();
 
-  // Las ocho pantallas se piden ya, en paralelo con el bucket: son ocho archivos
+  // Las nueve pantallas se piden ya, en paralelo con el bucket: son nueve archivos
   // pequeños que no dependen de nada y así no se suman las esperas.
   const pantallasPedidas = pedirLasPantallas();
 

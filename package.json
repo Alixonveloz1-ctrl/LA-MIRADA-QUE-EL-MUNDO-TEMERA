@@ -11,7 +11,7 @@
     "datos": "node herramientas/parche-datos.mjs",
     "invariantes": "node herramientas/invariantes.mjs",
     "pesar": "node herramientas/pesar.mjs",
-    "comprobar": "npm run datos && npm run invariantes && npm run cola && npm run audio && npm run ajustes && npm run freno && npm run anotar && npm run banco && npm run veo && npm run pantalla && npm run fallos && npm run pesar",
+    "comprobar": "npm run datos && npm run invariantes && npm run cola && npm run audio && npm run ajustes && npm run freno && npm run anotar && npm run banco && npm run veo && npm run pantalla && npm run fallos && npm run zip && npm run difusion && npm run pesar",
     "cola": "node herramientas/probar-cola.mjs && node herramientas/probar-cola.mjs 24 && node herramientas/probar-cola.mjs cuota",
     "audio": "node herramientas/probar-audio.mjs",
     "ajustes": "node herramientas/probar-ajustes.mjs",
@@ -21,6 +21,8 @@
     "archivo": "node herramientas/escribir-archivo.mjs",
     "pantalla": "node herramientas/probar-pantalla-cola.mjs",
     "fallos": "node herramientas/probar-fallos.mjs",
-    "veo": "node herramientas/probar-veo.mjs"
+    "veo": "node herramientas/probar-veo.mjs",
+    "zip": "node herramientas/probar-zip.mjs",
+    "difusion": "node herramientas/probar-difusion.mjs"
   }
 }

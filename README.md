@@ -307,7 +307,7 @@ que se probaba un solo nombre— y por eso hoy se mide en vez de darse por hecho
 
 ---
 
-## Las ocho pantallas
+## Las nueve pantallas
 
 1. **Salud** — dice quién es esta instalación, si el bucket se lee y se escribe,
    si cada modelo contesta y cuánto pesan las respuestas, todo comprobado de
@@ -363,6 +363,8 @@ que se probaba un solo nombre— y por eso hoy se mide en vez de darse por hecho
    detener y el contador de gasto.
 8. **Montaje** — montar por escenas, actos y episodio, y reproducir o descargar
    el resultado por URL firmada.
+9. **Difusión** — lo que hace falta para PUBLICAR, que no es lo mismo que lo que
+   hace falta para producir.
 
 ---
 
@@ -817,13 +819,82 @@ Lo comprueban los invariantes: si alguien quita cualquiera de los dos frenos, el
 
 ---
 
+## Difusión: lo que hace falta para publicar
+
+Las otras ocho pantallas sirven para hacer la serie. Esta sirve para sacarla.
+
+### La ficha
+
+Cada pieza montada se descarga con su ficha al lado: **el título** con el que se
+sube, **la descripción** y **las etiquetas**. No se escriben a mano, y no es solo
+por comodidad: la descripción no puede contar el final ni nombrar a quien todavía
+no ha aparecido, y eso, escrito con prisa en el teclado de un móvil doce veces,
+se falla.
+
+Se pide, se lee y, si no gusta, se vuelve a pedir. **El botón de aprobarla está
+apagado hasta que está delante**, igual que en Audio no se aprueba una pista sin
+oírla: una descripción que cuenta el final se publica una vez y ya no se recoge.
+
+### Las etiquetas no se inventan
+
+Salen de una lista escrita en `difusion.etiquetas.lista` de `datos/serie.json` y
+el modelo solo **elige** de ahí. Las que se invente se tiran, una a una, y si
+quedan menos de ocho la ficha se rechaza y se vuelve a pedir.
+
+Dos razones, y las dos cuestan dinero si se ignoran:
+
+- Una etiqueta inventada **no la busca nadie**, y puede estar cogida por otra cosa.
+- Son **generales de animé** a propósito — `#anime`, `#seinen`, `#darkanime`— y
+  ninguna es de esta serie. Una etiqueta propia solo la busca quien ya conoce el
+  animé, y todavía no lo conoce nadie.
+
+Tres de la lista (`#aianimation`, `#animacion`, `#cortoanimado`) dicen que está
+hecho con animación generada. Se ponen o se quitan según cómo se presente la
+pieza: eso lo decide quien publica, no el modelo.
+
+### El paquete
+
+Un botón por pieza: **el vídeo y la ficha juntos en un zip**. Lo escribe el
+montador, que es donde está el archivo — un episodio pesa entre 1 y 2 GB y no
+puede pasar por la función, que tiene 4,5 MB de tope.
+
+El zip va **sin comprimir** a propósito: dentro hay un MP4, que ya está
+comprimido, y volver a comprimirlo tarda minutos de máquina y no quita ni un
+megabyte. El zip aquí no sirve para que ocupe menos; sirve para que no haya que
+acordarse de descargar dos cosas.
+
+Está escrito a mano, byte a byte, porque este proyecto no tiene ni una
+dependencia de npm y Node no trae ninguno. Eso tiene una manera muy fea de
+fallar: un zip mal escrito **no da ningún error al escribirlo**, lo da al abrirlo,
+en el teléfono, después de haber descargado un gigabyte y medio. Por eso
+`npm run zip` escribe uno de verdad y lo abre con el `unzip` del sistema —un
+programa que no sabe nada de este proyecto y no perdona nada—, comprueba los CRC
+y que lo que sale es byte a byte lo que entró. Y lleva ZIP64 para cuando un
+episodio pase de 4 GB, que es donde el formato original se queda corto.
+
+**El aviso antes de pulsar** dice lo que pesa, porque en un teléfono hay que
+descargarlo Y dejar libre otro tanto para abrirlo.
+
+### Lo que falta en esta pantalla
+
+Se dice ahí dentro, para que no se busque por las otras ocho:
+
+- Los **reels** de treinta segundos, en vertical, armados solos con los clips y
+  la música que ya existan. El montador ya sabe montar en vertical —el formato va
+  en el manifiesto—, así que no hace falta volver a desplegarlo. Lo que hace
+  falta son clips aprobados.
+- Los **pósters**: el oficial de la serie y las doce miniaturas de los episodios,
+  generados con las placas de personajes y escenarios ya aprobadas.
+
+---
+
 ## Antes de desplegar
 
 ```
 npm run comprobar
 ```
 
-Encadena las doce herramientas y no necesita red ni credenciales: regenera
+Encadena las catorce herramientas y no necesita red ni credenciales: regenera
 `datos/serie.json` desde `serie.base.json` con el parche, comprueba los
 invariantes sobre los datos y sobre el árbol de código, **ejecuta** la cola
 contra un Google de mentira, **le da audio de verdad** al lector de formatos,
@@ -832,14 +903,15 @@ contra un Google de mentira, **le da audio de verdad** al lector de formatos,
 encima, comprueba que **ninguna pieza de música se quede sin pantalla donde
 salir**, **recupera** un clip lanzado con otro nivel de Veo, **ejecuta** la pantalla de
 Cola con un vídeo en vuelo, **repite** un fallo doce veces para ver que el aviso
-no se apila, y **pesa** la respuesta de cada modo con material del tamaño real para
+no se apila, **escribe un zip y lo abre con el `unzip` del sistema**, **tira** las
+etiquetas que se inventa el modelo, y **pesa** la respuesta de cada modo con material del tamaño real para
 verificar que cabe en los 4,5 MB. Casi ninguno se ve leyendo el código: se ven
 ejecutándolo y midiendo. Si algo no cumple, sale con error y lo dice en español.
 
 Cada paso se puede lanzar por separado con `npm run datos`, `npm run invariantes`,
 `npm run cola`, `npm run audio`, `npm run ajustes`, `npm run freno`,
 `npm run anotar`, `npm run banco`, `npm run veo`, `npm run pantalla`,
-`npm run fallos` y `npm run pesar`. Y
+`npm run fallos`, `npm run zip`, `npm run difusion` y `npm run pesar`. Y
 `npm run archivo` reescribe los 56 planos de ambiente desde su tabla.
 
 ### Lo que manda Google no es siempre lo mismo

@@ -30,8 +30,9 @@
 // Node 20+, ESM, cero dependencias de npm: solo built-ins y `fetch` global.
 
 import { spawn } from 'node:child_process';
-import { createWriteStream } from 'node:fs';
+import { createReadStream, createWriteStream } from 'node:fs';
 import { mkdir, open, readFile, rm, stat, writeFile } from 'node:fs/promises';
+import zlib from 'node:zlib';
 import { Buffer } from 'node:buffer';
 import { Readable } from 'node:stream';
 import { pipeline } from 'node:stream/promises';
@@ -658,6 +659,404 @@ async function leerManifiesto(ent) {
   }
 }
 
+// ---------------------------------------------------------------------------
+// Empaquetar: un zip con lo que ya existe
+// ---------------------------------------------------------------------------
+
+// Cuántos archivos caben en un paquete. No es una limitación técnica: es que un
+// paquete de difusión son dos o tres cosas —el vídeo y su ficha—, y cien
+// archivos ahí dentro significan que alguien está usando esto para otra cosa.
+const MAXIMO_EN_UN_PAQUETE = 20;
+
+// Lo que puede pesar un texto escrito dentro del manifiesto. Una ficha son unos
+// cientos de bytes; medio mega ya es que alguien intenta meter un vídeo en
+// base64, que es exactamente lo que este camino existe para no hacer.
+const MAXIMO_DE_UN_TEXTO = 512 * 1024;
+
+/**
+ * Entiende un encargo de empaquetar.
+ *
+ * @param {object} manifiesto
+ * @param {object} ent
+ */
+function entenderElPaquete(manifiesto, ent) {
+  const quejas = [];
+
+  const trabajo = texto(manifiesto.trabajo) || trabajoDeLaRuta(ent.manifiesto);
+  if (!esNombreDeTrabajo(trabajo)) {
+    quejas.push(
+      `«${trabajo || 'vacío'}» no sirve como nombre de trabajo: acaba siendo una carpeta del ` +
+        'bucket, así que va sin barras ni espacios.',
+    );
+  }
+
+  const salida = texto(manifiesto.salida);
+  if (!esRutaLogica(salida)) {
+    quejas.push(
+      `«${salida || 'vacía'}» no sirve como sitio donde dejar el zip. Las rutas del manifiesto son ` +
+        'lógicas —«difusion/teaser/teaser.zip»—, sin «gs://», sin «https://» y sin barra al principio.',
+    );
+  }
+
+  const pedido = manifiesto.empaquetar;
+  const lista = pedido && typeof pedido === 'object' && Array.isArray(pedido.archivos)
+    ? pedido.archivos
+    : null;
+
+  if (!lista) {
+    quejas.push(
+      'El encargo de empaquetar no trae su lista de archivos («empaquetar.archivos»). Cada uno es ' +
+        'un nombre y, o bien la ruta de algo que ya está en el bucket («origen»), o bien el texto ' +
+        'que hay que escribir dentro («texto»).',
+    );
+  }
+
+  const archivos = [];
+  const nombresVistos = new Set();
+
+  for (const [i, entrada] of (lista || []).entries()) {
+    const cual = nombreDe(entrada, i, (lista || []).length, 'el archivo');
+
+    if (!entrada || typeof entrada !== 'object' || Array.isArray(entrada)) {
+      quejas.push(`No se entiende ${cual}: se esperaba un nombre y de dónde sale su contenido.`);
+      continue;
+    }
+
+    // El nombre de dentro del zip. Se limpia entero: una barra o un «..» ahí
+    // convierten un paquete en algo que escribe fuera de su carpeta al abrirlo.
+    const nombre = limpiarNombre(texto(entrada.nombre));
+    if (!nombre) {
+      quejas.push(
+        `${mayuscula(cual)} no dice cómo se va a llamar dentro del zip, o su nombre se queda en ` +
+          'nada al quitarle las barras. Un nombre con barras dentro de un zip escribe fuera de su ' +
+          'carpeta al abrirlo, y eso no se hace.',
+      );
+      continue;
+    }
+    if (nombresVistos.has(nombre.toLowerCase())) {
+      quejas.push(
+        `Hay dos archivos que se llaman «${nombre}» dentro del zip. Al descomprimirlo uno pisaría ` +
+          'al otro y nadie sabría cuál se ha quedado.',
+      );
+      continue;
+    }
+    nombresVistos.add(nombre.toLowerCase());
+
+    const origen = texto(entrada.origen);
+    const contenido = entrada.texto;
+
+    if (origen && contenido !== undefined) {
+      quejas.push(
+        `${mayuscula(cual)} dice a la vez de dónde se copia («origen») y qué texto lleva dentro ` +
+          '(«texto»). Es una cosa o la otra.',
+      );
+      continue;
+    }
+
+    if (origen) {
+      if (!esRutaLogica(origen)) {
+        quejas.push(
+          `${mayuscula(cual)} sale de «${origen}», y eso no es una ruta lógica del bucket.`,
+        );
+        continue;
+      }
+      archivos.push({ nombre, origen });
+      continue;
+    }
+
+    if (typeof contenido === 'string') {
+      const bytes = Buffer.byteLength(contenido, 'utf8');
+      if (bytes > MAXIMO_DE_UN_TEXTO) {
+        quejas.push(
+          `${mayuscula(cual)} trae ${megas(bytes)} de texto escrito dentro del propio manifiesto. ` +
+            'Ahí van fichas de unos cientos de bytes; lo que pese se copia desde el bucket con ' +
+            '«origen».',
+        );
+        continue;
+      }
+      archivos.push({ nombre, texto: contenido });
+      continue;
+    }
+
+    quejas.push(
+      `${mayuscula(cual)} no dice ni de dónde se copia («origen») ni qué texto lleva («texto»).`,
+    );
+  }
+
+  if (lista && !archivos.length && !quejas.length) {
+    quejas.push('El paquete no lleva ni un archivo dentro, así que no hay nada que empaquetar.');
+  }
+
+  if (archivos.length > MAXIMO_EN_UN_PAQUETE) {
+    quejas.push(
+      `El paquete lleva ${archivos.length} archivos y el tope son ${MAXIMO_EN_UN_PAQUETE}. Un ` +
+        'paquete de difusión son el vídeo y su ficha; si hacen falta veinte, lo que hace falta es ' +
+        'otra cosa.',
+    );
+  }
+
+  if (quejas.length) {
+    throw new ErrorDeCara(
+      `La hoja de este paquete no se puede usar tal y como está. ${quejas.length === 1 ? 'Esto es lo ' +
+        'que hay que arreglar' : `Hay ${quejas.length} cosas que arreglar`}:`,
+      { detalle: quejas.map((q, i) => `${i + 1}. ${q}`).join('\n') },
+    );
+  }
+
+  return { trabajo, salida, paquete: { archivos }, video: [], previas: [], audio: [] };
+}
+
+/**
+ * Escribe el zip: baja lo que haya que copiar, mete los textos, y lo sube.
+ *
+ * SIN COMPRIMIR, y no es pereza. Dentro va un MP4, que ya está comprimido: pasar
+ * un archivo de gigabyte y medio por un compresor tarda minutos de máquina y no
+ * quita ni un megabyte. El zip aquí no sirve para que ocupe menos, sirve para
+ * que el vídeo y su ficha viajen juntos y no haya que acordarse de descargar dos
+ * cosas.
+ */
+async function empaquetar(plan, ent) {
+  // El mismo directorio de trabajo que usa el montaje: Cloud Run lo da vacío en
+  // cada ejecución y lo tira al terminar.
+  const carpeta = path.join(ent.directorio, 'paquete');
+  await mkdir(carpeta, { recursive: true });
+
+  try {
+    const entradas = [];
+
+    for (const [i, archivo] of plan.paquete.archivos.entries()) {
+      const destino = path.join(carpeta, `entrada-${dos(i)}`);
+
+      if (archivo.origen) {
+        paso(`traer ${archivo.nombre}`);
+        console.log(`Archivo ${i + 1}/${plan.paquete.archivos.length}: ${archivo.nombre}`);
+        await descargar(archivo.origen, destino, ent);
+      } else {
+        await writeFile(destino, archivo.texto, 'utf8');
+      }
+
+      const { size } = await stat(destino);
+      entradas.push({ nombre: archivo.nombre, ruta: destino, bytes: size });
+    }
+
+    const total = entradas.reduce((suma, una) => suma + una.bytes, 0);
+    console.log(`Empaquetando ${entradas.length} archivo(s), ${megas(total)} en total.`);
+
+    paso('escribir el zip');
+    const zip = path.join(carpeta, 'paquete.zip');
+    await escribirZip(entradas, zip);
+
+    const { size } = await stat(zip);
+    console.log(`Zip escrito: ${megas(size)}.`);
+
+    paso('subir el zip');
+    await subirArchivo(plan.salida, zip, ent, 'application/zip');
+  } finally {
+    await rm(carpeta, { recursive: true, force: true }).catch(() => {});
+  }
+}
+
+/**
+ * Un zip con los archivos guardados tal cual (método «store»).
+ *
+ * Se escribe a mano porque Node no trae ninguno y este proyecto no tiene ni una
+ * dependencia de npm. El formato es viejo y sencillo: por cada archivo, una
+ * cabecera y sus bytes; al final, un índice con una entrada por archivo y un
+ * cierre que dice dónde empieza ese índice.
+ *
+ * SE LEE CADA ARCHIVO DOS VECES: una para calcular su CRC —que va en la cabecera,
+ * ANTES de los datos— y otra para copiarlo. Se puede evitar con el «descriptor
+ * de datos», que lo escribe detrás, pero hay descompresores que se atragantan
+ * con eso, y aquí el zip lo va a abrir un teléfono. Leer dos veces de disco son
+ * segundos; un zip que no abre es un zip inútil.
+ *
+ * ZIP64 cuando hace falta: por encima de 4 GB los campos de tamaño del formato
+ * original no dan más de sí, y un episodio largo puede pasar de ahí.
+ *
+ * @param {{nombre:string, ruta:string, bytes:number}[]} entradas
+ * @param {string} destino
+ */
+async function escribirZip(entradas, destino) {
+  const salida = createWriteStream(destino);
+  const escribir = (trozo) =>
+    new Promise((cumplir, romper) => {
+      salida.write(trozo, (error) => (error ? romper(error) : cumplir()));
+    });
+
+  let puesto = 0;
+  const indice = [];
+
+  for (const entrada of entradas) {
+    const nombre = Buffer.from(entrada.nombre, 'utf8');
+    const crc = await crcDelArchivo(entrada.ruta);
+    const grande = entrada.bytes >= 0xffffffff;
+    const desplazamiento = puesto;
+
+    const extra = grande
+      ? (() => {
+          const b = Buffer.alloc(20);
+          b.writeUInt16LE(0x0001, 0);          // etiqueta zip64
+          b.writeUInt16LE(16, 2);              // lo que ocupa lo de detrás
+          b.writeBigUInt64LE(BigInt(entrada.bytes), 4);   // sin comprimir
+          b.writeBigUInt64LE(BigInt(entrada.bytes), 12);  // comprimido: igual
+          return b;
+        })()
+      : Buffer.alloc(0);
+
+    const cabecera = Buffer.alloc(30);
+    cabecera.writeUInt32LE(0x04034b50, 0);
+    cabecera.writeUInt16LE(grande ? 45 : 20, 4);  // versión que hace falta
+    cabecera.writeUInt16LE(0x0800, 6);            // nombres en UTF-8
+    cabecera.writeUInt16LE(0, 8);                 // método: guardar tal cual
+    cabecera.writeUInt16LE(0, 10);                // hora
+    cabecera.writeUInt16LE(0x0021, 12);           // fecha: 1 de enero de 1980
+    cabecera.writeUInt32LE(crc, 14);
+    cabecera.writeUInt32LE(grande ? 0xffffffff : entrada.bytes, 18);
+    cabecera.writeUInt32LE(grande ? 0xffffffff : entrada.bytes, 22);
+    cabecera.writeUInt16LE(nombre.length, 26);
+    cabecera.writeUInt16LE(extra.length, 28);
+
+    await escribir(cabecera);
+    await escribir(nombre);
+    if (extra.length) await escribir(extra);
+    puesto += cabecera.length + nombre.length + extra.length;
+
+    await new Promise((cumplir, romper) => {
+      const lectura = createReadStream(entrada.ruta);
+      lectura.on('error', romper);
+      lectura.on('end', cumplir);
+      lectura.pipe(salida, { end: false });
+    });
+    puesto += entrada.bytes;
+
+    indice.push({ nombre, crc, bytes: entrada.bytes, desplazamiento, grande });
+  }
+
+  const empiezaElIndice = puesto;
+
+  for (const una of indice) {
+    const necesitaZip64 = una.grande || una.desplazamiento >= 0xffffffff;
+    const extra = necesitaZip64
+      ? (() => {
+          const cuantos = (una.grande ? 2 : 0) + (una.desplazamiento >= 0xffffffff ? 1 : 0);
+          const b = Buffer.alloc(4 + cuantos * 8);
+          b.writeUInt16LE(0x0001, 0);
+          b.writeUInt16LE(cuantos * 8, 2);
+          let donde = 4;
+          if (una.grande) {
+            b.writeBigUInt64LE(BigInt(una.bytes), donde); donde += 8;
+            b.writeBigUInt64LE(BigInt(una.bytes), donde); donde += 8;
+          }
+          if (una.desplazamiento >= 0xffffffff) {
+            b.writeBigUInt64LE(BigInt(una.desplazamiento), donde);
+          }
+          return b;
+        })()
+      : Buffer.alloc(0);
+
+    const fila = Buffer.alloc(46);
+    fila.writeUInt32LE(0x02014b50, 0);
+    fila.writeUInt16LE(necesitaZip64 ? 45 : 20, 4);   // con qué se hizo
+    fila.writeUInt16LE(necesitaZip64 ? 45 : 20, 6);   // qué hace falta para abrirlo
+    fila.writeUInt16LE(0x0800, 8);
+    fila.writeUInt16LE(0, 10);
+    fila.writeUInt16LE(0, 12);
+    fila.writeUInt16LE(0x0021, 14);
+    fila.writeUInt32LE(una.crc, 16);
+    fila.writeUInt32LE(una.grande ? 0xffffffff : una.bytes, 20);
+    fila.writeUInt32LE(una.grande ? 0xffffffff : una.bytes, 24);
+    fila.writeUInt16LE(una.nombre.length, 28);
+    fila.writeUInt16LE(extra.length, 30);
+    fila.writeUInt16LE(0, 32);                        // sin comentario
+    fila.writeUInt16LE(0, 34);                        // en el primer disco
+    fila.writeUInt16LE(0, 36);                        // atributos internos
+    fila.writeUInt32LE(0, 38);                        // atributos externos
+    fila.writeUInt32LE(una.desplazamiento >= 0xffffffff ? 0xffffffff : una.desplazamiento, 42);
+
+    await escribir(fila);
+    await escribir(una.nombre);
+    if (extra.length) await escribir(extra);
+    puesto += fila.length + una.nombre.length + extra.length;
+  }
+
+  const tamanoDelIndice = puesto - empiezaElIndice;
+  const hacenFaltaLosGrandes =
+    empiezaElIndice >= 0xffffffff || tamanoDelIndice >= 0xffffffff || indice.length >= 0xffff;
+
+  if (hacenFaltaLosGrandes) {
+    const donde = puesto;
+
+    const zip64 = Buffer.alloc(56);
+    zip64.writeUInt32LE(0x06064b50, 0);
+    zip64.writeBigUInt64LE(BigInt(44), 4);      // lo que queda detrás de este campo
+    zip64.writeUInt16LE(45, 12);
+    zip64.writeUInt16LE(45, 14);
+    zip64.writeUInt32LE(0, 16);
+    zip64.writeUInt32LE(0, 20);
+    zip64.writeBigUInt64LE(BigInt(indice.length), 24);
+    zip64.writeBigUInt64LE(BigInt(indice.length), 32);
+    zip64.writeBigUInt64LE(BigInt(tamanoDelIndice), 40);
+    zip64.writeBigUInt64LE(BigInt(empiezaElIndice), 48);
+    await escribir(zip64);
+
+    const localizador = Buffer.alloc(20);
+    localizador.writeUInt32LE(0x07064b50, 0);
+    localizador.writeUInt32LE(0, 4);
+    localizador.writeBigUInt64LE(BigInt(donde), 8);
+    localizador.writeUInt32LE(1, 16);
+    await escribir(localizador);
+  }
+
+  const cierre = Buffer.alloc(22);
+  cierre.writeUInt32LE(0x06054b50, 0);
+  cierre.writeUInt16LE(0, 4);
+  cierre.writeUInt16LE(0, 6);
+  cierre.writeUInt16LE(hacenFaltaLosGrandes ? 0xffff : indice.length, 8);
+  cierre.writeUInt16LE(hacenFaltaLosGrandes ? 0xffff : indice.length, 10);
+  cierre.writeUInt32LE(hacenFaltaLosGrandes ? 0xffffffff : tamanoDelIndice, 12);
+  cierre.writeUInt32LE(hacenFaltaLosGrandes ? 0xffffffff : empiezaElIndice, 16);
+  cierre.writeUInt16LE(0, 20);
+  await escribir(cierre);
+
+  await new Promise((cumplir, romper) => {
+    salida.on('error', romper);
+    salida.on('finish', cumplir);
+    salida.end();
+  });
+}
+
+/** El CRC-32 de un archivo, leyéndolo a trozos: puede pesar un gigabyte y medio. */
+async function crcDelArchivo(ruta) {
+  return new Promise((cumplir, romper) => {
+    let valor = 0;
+    const lectura = createReadStream(ruta);
+    lectura.on('error', romper);
+    lectura.on('data', (trozo) => { valor = crc32(trozo, valor); });
+    lectura.on('end', () => cumplir(valor >>> 0));
+  });
+}
+
+// La tabla del CRC-32, hecha una vez. Node trae `zlib.crc32` desde la 20.15, y
+// se usa cuando está; esto es el respaldo, porque el contenedor se despliega a
+// mano y nadie sabe con qué Node exacto se construyó la imagen que hay corriendo.
+const TABLA_CRC = (() => {
+  const tabla = new Int32Array(256);
+  for (let i = 0; i < 256; i += 1) {
+    let c = i;
+    for (let k = 0; k < 8; k += 1) c = c & 1 ? 0xedb88320 ^ (c >>> 1) : c >>> 1;
+    tabla[i] = c;
+  }
+  return tabla;
+})();
+
+/** @param {Buffer} datos @param {number} anterior */
+function crc32(datos, anterior = 0) {
+  if (typeof zlib.crc32 === 'function') return zlib.crc32(datos, anterior);
+  let c = ~anterior;
+  for (let i = 0; i < datos.length; i += 1) c = TABLA_CRC[(c ^ datos[i]) & 0xff] ^ (c >>> 8);
+  return ~c >>> 0;
+}
+
 /**
  * Comprueba el manifiesto y lo deja en tipos con los que se pueda trabajar.
  *
@@ -673,6 +1072,14 @@ function entender(manifiesto, ent) {
       'La hoja de montaje está vacía o no es lo que se esperaba, así que no hay nada que montar.',
     );
   }
+
+  // UN ENCARGO QUE NO ES UN MONTAJE.
+  //
+  // Empaquetar no monta nada: coge archivos que ya existen y los mete en un zip
+  // con un texto al lado. No tiene capa, ni formato, ni planos, y exigírselos
+  // sería pedirle papeles de otra cosa. Se reconoce por traer «empaquetar» y se
+  // entiende aparte.
+  if (manifiesto.empaquetar !== undefined) return entenderElPaquete(manifiesto, ent);
 
   const quejas = [];
 
@@ -2157,6 +2564,16 @@ async function principal() {
 
   const plan = entender(crudo, ent);
   enCurso.trabajo = plan.trabajo;
+
+  if (plan.paquete) {
+    console.log(
+      `Paquete «${plan.trabajo}»: ${plan.paquete.archivos.length} archivo(s) → ${plan.salida}.`,
+    );
+    await empaquetar(plan, ent);
+    paso('terminar');
+    console.log('Hecho.');
+    return;
+  }
 
   const cuenta = [];
   if (plan.video.length) cuenta.push(`${plan.video.length} plano(s)`);

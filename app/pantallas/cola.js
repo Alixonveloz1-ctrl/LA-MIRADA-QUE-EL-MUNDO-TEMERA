@@ -131,6 +131,7 @@ const TIPOS = {
   voz: 'Voz',
   alinear: 'Medir los tiempos de la voz',
   'desglose-escena': 'Desglose de una escena',
+  ficha: 'Ficha para publicar',
   montaje: 'Montaje'
 };
 

@@ -40,7 +40,7 @@
 // nada más el día que se decida. Conviene arreglar esa discrepancia en §6.
 
 import { ErrorDeCara } from './errores.js';
-import { serie, escenaDeGuion, personajesDeEscena, nivelImagen } from './datos.js';
+import { serie, escenaDeGuion, personajesDeEscena, nivelImagen, pieza } from './datos.js';
 import { comprobarCupos } from './prompt.js';
 import { entorno } from './entorno.js';
 import { llamar, urlModelo, conGrafias, comoGrafia } from './vertex.js';
@@ -1602,4 +1602,163 @@ function comoTexto(valor) {
   } catch {
     return String(valor);
   }
+}
+
+// ---------------------------------------------------------------------------
+// La ficha de difusión
+// ---------------------------------------------------------------------------
+
+/**
+ * El título, la descripción y las etiquetas con las que se sube una pieza.
+ *
+ * POR QUÉ ESTO NO ES UN CAMPO DE TEXTO. Escribir un título y cinco frases de
+ * descripción en el teclado de un móvil, doce veces, es exactamente el trabajo
+ * que esta herramienta existe para no hacer. Y hay una razón más dura: la
+ * descripción no puede contar el final ni nombrar a quien todavía no ha
+ * aparecido, y eso, escrito a mano y con prisa, se falla.
+ *
+ * LAS ETIQUETAS NO SE INVENTAN. Salen de la lista de `difusion.etiquetas.lista`
+ * de datos/serie.json y el modelo solo ELIGE de ahí. Una etiqueta inventada no la
+ * busca nadie —y puede estar cogida por otra cosa—, así que dejar que el modelo
+ * se las invente sería pagar por que no la vea nadie. Aquí se comprueba una a
+ * una y las que no estén en la lista se tiran.
+ *
+ * @param {string} idPieza
+ * @returns {Promise<{titulo:string, descripcion:string, etiquetas:string[]}>}
+ */
+export async function fichaDePieza(idPieza) {
+  const laPieza = pieza(idPieza);
+  const difusion = (serie.difusion && typeof serie.difusion === 'object') ? serie.difusion : {};
+  const reglaFicha = difusion.ficha || {};
+  const reglaEtiquetas = difusion.etiquetas || {};
+
+  const permitidas = Array.isArray(reglaEtiquetas.lista) ? reglaEtiquetas.lista.map(String) : [];
+  if (!permitidas.length) {
+    throw new ErrorDeCara(
+      'No hay ninguna etiqueta escrita en «difusion.etiquetas.lista» de datos/serie.json, y las ' +
+      'etiquetas no se inventan: se eligen de esa lista. Es un fallo de los datos del repositorio, ' +
+      'no de tu cuenta.',
+      { reintentable: false, http: 500 }
+    );
+  }
+
+  const [minEtiquetas, maxEtiquetas] = Array.isArray(reglaEtiquetas.cuantas)
+    ? reglaEtiquetas.cuantas.map((n) => Number(n) || 0)
+    : [8, 15];
+  const largoTitulo = Number(reglaFicha.largo_titulo) || 60;
+
+  const encargo = promptDeFicha(laPieza, idPieza, {
+    difusion, reglaFicha, reglaEtiquetas, permitidas, largoTitulo, minEtiquetas, maxEtiquetas
+  });
+
+  const devuelto = await generar(encargo, { json: true });
+
+  const titulo = comoCadena(devuelto && devuelto.titulo);
+  const descripcion = comoCadena(devuelto && devuelto.descripcion);
+  const crudas = Array.isArray(devuelto && devuelto.etiquetas) ? devuelto.etiquetas : [];
+
+  // Las etiquetas, una a una, contra la lista. Se comparan sin almohadilla y en
+  // minúsculas: el modelo las devuelve de las dos maneras.
+  const validas = new Set(permitidas.map((una) => una.toLowerCase()));
+  const elegidas = [];
+  for (const cruda of crudas) {
+    const limpia = comoCadena(cruda).replace(/^#/, '').trim().toLowerCase();
+    if (!limpia || !validas.has(limpia) || elegidas.includes(limpia)) continue;
+    elegidas.push(limpia);
+  }
+
+  if (!titulo || !descripcion) {
+    throw new ErrorDeCara(
+      `La ficha de «${idPieza}» ha vuelto sin título o sin descripción, que son lo único que hace ` +
+      'falta para subir el vídeo. Vuelve a pedirla.',
+      { detalle: comoTexto(devuelto), reintentable: true, http: 502 }
+    );
+  }
+
+  if (elegidas.length < Math.max(1, minEtiquetas)) {
+    throw new ErrorDeCara(
+      `La ficha de «${idPieza}» ha vuelto con ${elegidas.length} etiquetas de la lista y hacen ` +
+      `falta al menos ${minEtiquetas}. Las etiquetas salen de «difusion.etiquetas.lista» de ` +
+      'datos/serie.json y las que no estén ahí se tiran, porque una etiqueta inventada no la busca ' +
+      'nadie. Vuelve a pedir la ficha.',
+      { detalle: comoTexto(devuelto), reintentable: true, http: 502 }
+    );
+  }
+
+  return {
+    titulo: titulo.slice(0, largoTitulo * 2).trim(),
+    descripcion,
+    etiquetas: elegidas.slice(0, Math.max(minEtiquetas, maxEtiquetas))
+  };
+}
+
+/**
+ * El encargo de la ficha. Lleva lo que la pieza ES y lo que la pieza ENSEÑA, que
+ * es lo único con lo que se puede escribir una descripción que no mienta.
+ * @returns {string}
+ */
+function promptDeFicha(laPieza, idPieza, ctx) {
+  const { difusion, reglaFicha, reglaEtiquetas, permitidas, largoTitulo, minEtiquetas, maxEtiquetas } = ctx;
+
+  const meta = serie.meta || {};
+  const cuantosPlanos = Array.isArray(laPieza.tomas) ? laPieza.tomas.length : 0;
+  const lineas = Array.isArray(laPieza.audio && laPieza.audio.voz) ? laPieza.audio.voz : [];
+
+  return [
+    'Escribes la ficha con la que se sube un vídeo de un animé a YouTube, TikTok e Instagram. ' +
+    'No escribes el guion ni inventas historia: solo el título, la descripción y las etiquetas. ' +
+    'Contestas con el JSON que se te pide y nada más.',
+
+    bloque('LA SERIE', [
+      `Título: ${comoCadena(meta.titulo_es) || 'La mirada que el mundo temerá'}.`,
+      'Drama de animé para adultos, sombrío. Doce episodios de veintidós minutos.',
+    ].filter(Boolean).join('\n')),
+
+    bloque('LA PIEZA QUE SE SUBE', [
+      `Se llama «${idPieza}» y su título de producción es «${comoCadena(laPieza.titulo) || idPieza}».`,
+      Number(laPieza.duracion_s) ? `Dura ${Math.round(Number(laPieza.duracion_s))} segundos.` : '',
+      cuantosPlanos ? `Tiene ${cuantosPlanos} planos.` : '',
+      lineas.length
+        ? `Se oye hablar ${lineas.length} ${lineas.length === 1 ? 'vez' : 'veces'}. Lo que se dice, ` +
+          `en español: ${lineas.map((una) => `«${comoCadena(una.es)}»`).filter((t) => t !== '«»').join(' ')}`
+        : 'No habla nadie: es solo imagen y música.',
+    ].filter(Boolean).join('\n')),
+
+    bloque('LO QUE SE VE EN ELLA', (Array.isArray(laPieza.tomas) ? laPieza.tomas : [])
+      .map((una, i) => `${i + 1}. ${comoCadena(una.imagen) || '(sin descripción)'}`)
+      .join('\n') || '(esta pieza no trae planos escritos)'),
+
+    bloque('EL TÍTULO', [
+      comoCadena(reglaFicha.titulo) || '',
+      `Máximo ${largoTitulo} caracteres. En español.`,
+      'Sin emojis, sin MAYÚSCULAS gritadas, sin corchetes de «[SUB ESPAÑOL]».',
+    ].filter(Boolean).join('\n')),
+
+    bloque('LA DESCRIPCIÓN', [
+      comoCadena(reglaFicha.descripcion) || '',
+      'En español. Sin emojis. Las etiquetas NO van dentro de la descripción: van en su campo.',
+      'No escribas «¡Suscríbete!» ni «dale like»: eso lo pone quien sube, si quiere.',
+    ].filter(Boolean).join('\n')),
+
+    bloque('LAS ETIQUETAS', [
+      comoCadena(reglaEtiquetas.regla) || '',
+      `Elige entre ${minEtiquetas} y ${maxEtiquetas}, TODAS de esta lista y ninguna más:`,
+      permitidas.join(', '),
+      comoCadena(reglaEtiquetas.nota_ia) || '',
+      'Se comprueban una a una contra esa lista y las que no estén se tiran, así que inventar una ' +
+      'es perder un hueco.',
+    ].filter(Boolean).join('\n')),
+
+    bloque('LO QUE TIENES QUE DEVOLVER', [
+      'Un único objeto JSON con tres claves y nada más:',
+      '',
+      '{',
+      '  "titulo": "<el título, en español>",',
+      '  "descripcion": "<la descripción, en español, con saltos de línea si hacen falta>",',
+      '  "etiquetas": ["anime", "seinen", "..."]',
+      '}',
+      '',
+      'Las etiquetas van SIN almohadilla y en minúsculas.',
+    ].join('\n')),
+  ].join('\n\n');
 }

@@ -668,6 +668,13 @@ function validarManifiesto(manifiesto) {
 
   const quejas = [];
 
+  // UN PAQUETE NO ES UN MONTAJE, Y PEDIRLE PAPELES DE MONTAJE SERÍA UN ERROR.
+  //
+  // Empaquetar coge archivos que ya existen —un episodio ya montado y su ficha—
+  // y los mete en un zip. No tiene capa, ni formato, ni planos, ni acabado.
+  // Exigírselos rechazaría un encargo perfectamente válido.
+  const esPaquete = manifiesto.empaquetar !== undefined;
+
   const trabajo = String(manifiesto.trabajo ?? '').trim();
   if (!trabajo) {
     quejas.push(
@@ -688,7 +695,9 @@ function validarManifiesto(manifiesto) {
   }
 
   const capa = String(manifiesto.capa ?? '').trim();
-  if (!capa) {
+  if (esPaquete) {
+    // Un paquete no tiene capa y no se le pide.
+  } else if (!capa) {
     quejas.push(
       `No dice de qué capa es el montaje («capa»). Son ${enLista(CAPAS)}: un episodio no cabe en un ` +
         'solo trabajo y se monta por capas, guardando cada una, para que si falla la tercera no haya ' +
@@ -712,9 +721,17 @@ function validarManifiesto(manifiesto) {
     );
   } else if (!salida.includes('.')) {
     quejas.push(
-      `«${salida}» no lleva extensión, así que no se sabe qué archivo hay que escribir. El montaje ` +
-        'de una pieza sale en «.mp4».',
+      `«${salida}» no lleva extensión, así que no se sabe qué archivo hay que escribir. Un montaje ` +
+        'sale en «.mp4» y un paquete en «.zip».',
     );
+  }
+
+  // A partir de aquí, un paquete tiene sus propias reglas y ninguna de las del
+  // montaje. Se comprueba lo suyo y se sale.
+  if (esPaquete) {
+    comprobarElPaquete(manifiesto.empaquetar, salida, quejas);
+    if (quejas.length) throw quejaDelManifiesto(quejas);
+    return trabajo;
   }
 
   comprobarFormato(manifiesto.formato, quejas);
@@ -751,16 +768,86 @@ function validarManifiesto(manifiesto) {
     quejas,
   );
 
-  if (quejas.length) {
-    throw new ErrorDeCara(
-      'El manifiesto de montaje no está bien y no se ha encargado nada, así que no se ha gastado ' +
-        `tiempo de máquina. ${quejas.length === 1 ? 'Esto es lo que falla' : 'Esto es todo lo que falla'}:\n` +
-        quejas.map((q) => `· ${q}`).join('\n'),
-      { reintentable: false, http: 400 },
-    );
-  }
+  if (quejas.length) throw quejaDelManifiesto(quejas);
 
   return trabajo;
+}
+
+/** La misma queja para el montaje y para el paquete: se dice todo de una vez. */
+function quejaDelManifiesto(quejas) {
+  return new ErrorDeCara(
+    'El manifiesto no está bien y no se ha encargado nada, así que no se ha gastado tiempo de ' +
+      `máquina. ${quejas.length === 1 ? 'Esto es lo que falla' : 'Esto es todo lo que falla'}:\n` +
+      quejas.map((q) => `· ${q}`).join('\n'),
+    { reintentable: false, http: 400 },
+  );
+}
+
+/**
+ * El encargo de empaquetar: los archivos que van dentro del zip.
+ *
+ * Cada uno es un nombre y, o bien la ruta de algo que ya está en el bucket, o
+ * bien el texto que hay que escribir. Se comprueba aquí Y en el montador: aquí
+ * para no encargar un trabajo que va a fallar, y allí porque el montador se
+ * puede lanzar a mano.
+ */
+function comprobarElPaquete(pedido, salida, quejas) {
+  if (!pedido || typeof pedido !== 'object' || Array.isArray(pedido) || !Array.isArray(pedido.archivos)) {
+    quejas.push(
+      'El encargo de empaquetar no trae su lista de archivos («empaquetar.archivos»). Cada uno es ' +
+        'un nombre y, o bien la ruta de algo que ya está en el bucket («origen»), o bien el texto ' +
+        'que hay que escribir dentro («texto»).',
+    );
+    return;
+  }
+
+  if (salida && !/\.zip$/i.test(salida)) {
+    quejas.push(`«${salida}» es la salida de un paquete y no acaba en «.zip».`);
+  }
+
+  if (!pedido.archivos.length) {
+    quejas.push('El paquete no lleva ni un archivo dentro, así que no hay nada que empaquetar.');
+    return;
+  }
+
+  const vistos = new Set();
+  pedido.archivos.forEach((entrada, i) => {
+    const cual = `el archivo ${i + 1} de ${pedido.archivos.length}`;
+
+    if (!entrada || typeof entrada !== 'object' || Array.isArray(entrada)) {
+      quejas.push(`No se entiende ${cual}: se esperaba un nombre y de dónde sale su contenido.`);
+      return;
+    }
+
+    const nombre = String(entrada.nombre ?? '').trim();
+    if (!nombre) {
+      quejas.push(`${cual} no dice cómo se va a llamar dentro del zip.`);
+    } else if (/[\/\\]/.test(nombre) || nombre === '.' || nombre === '..') {
+      quejas.push(
+        `«${nombre}» no sirve como nombre dentro del zip: lleva barras o sube de carpeta, y eso al ` +
+          'descomprimirlo escribiría fuera de su sitio.',
+      );
+    } else if (vistos.has(nombre.toLowerCase())) {
+      quejas.push(`Hay dos archivos que se llaman «${nombre}» dentro del zip.`);
+    } else {
+      vistos.add(nombre.toLowerCase());
+    }
+
+    const tieneOrigen = typeof entrada.origen === 'string' && entrada.origen.trim();
+    const tieneTexto = typeof entrada.texto === 'string';
+
+    if (tieneOrigen && tieneTexto) {
+      quejas.push(`${cual} dice a la vez de dónde se copia y qué texto lleva dentro. Es una cosa o la otra.`);
+      return;
+    }
+    if (!tieneOrigen && !tieneTexto) {
+      quejas.push(`${cual} no dice ni de dónde se copia («origen») ni qué texto lleva («texto»).`);
+      return;
+    }
+    if (tieneOrigen && !esRutaLogica(entrada.origen.trim())) {
+      quejas.push(`${cual} sale de «${entrada.origen}», y eso no es una ruta lógica del bucket.`);
+    }
+  });
 }
 
 /** El formato de salida: sin él no se sabe ni a qué tamaño se monta. */

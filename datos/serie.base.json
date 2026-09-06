@@ -3304,5 +3304,69 @@
       "vendedora"
     ],
     "nota": "Figurantes. Una sola ancla generica cada uno, generada la primera vez que un plano los pide. No necesitan set de luces."
+  },
+  "difusion": {
+    "regla": "Lo que hace falta para PUBLICAR, que no es lo mismo que lo que hace falta para producir. Cada pieza montada se descarga con su ficha al lado: el titulo con el que se sube, la descripcion, y las etiquetas. Nada de esto se escribe a mano en el movil.",
+    "ruta": "difusion/{pieza}/",
+    "ficha": {
+      "titulo": "Como se llama el video al subirlo. Lleva el nombre de la serie y lo que es esa pieza. Corto: en el movil se corta a los sesenta caracteres y lo que quede fuera no lo lee nadie.",
+      "descripcion": "De tres a cinco frases. Que la primera funcione sola, porque es la unica que se ve sin desplegar. NO se cuenta el final, NO se nombra a nadie que no salga ya en la pieza, y NO se promete lo que no hay: doce episodios de veintidos minutos es la serie entera, no lo que esta subido.",
+      "idioma": "es",
+      "largo_titulo": 60,
+      "frases_descripcion": [
+        3,
+        5
+      ]
+    },
+    "etiquetas": {
+      "regla": "GENERALES, nunca de esta serie. Una etiqueta propia solo la busca quien ya conoce el anime, y no hay nadie todavia. Estas son las que ya busca la gente. El modelo ELIGE de esta lista las que encajen con la pieza; no inventa ninguna, porque una etiqueta inventada no la busca nadie y ademas puede estar cogida por otra cosa.",
+      "cuantas": [
+        8,
+        15
+      ],
+      "lista": [
+        "anime",
+        "anime2026",
+        "newanime",
+        "animeedit",
+        "animeamv",
+        "amv",
+        "darkanime",
+        "seinen",
+        "seinenanime",
+        "psychologicalanime",
+        "darkfantasy",
+        "animefantasy",
+        "originalanime",
+        "indieanime",
+        "animeoriginal",
+        "animeespanol",
+        "animeenespanol",
+        "animelatino",
+        "doblajeanime",
+        "animeopening",
+        "animeending",
+        "animeost",
+        "animetrailer",
+        "animeteaser",
+        "animeshorts",
+        "animescene",
+        "animeedits",
+        "animecommunity",
+        "animelover",
+        "aianimation",
+        "animacion",
+        "cortoanimado"
+      ],
+      "nota_ia": "Las tres ultimas dicen que esta hecho con animacion generada. Se ponen cuando la pieza se presenta como tal y NO se ponen cuando no. Es una decision de quien publica, no del modelo: la ficha las propone y se aprueban o se quitan."
+    },
+    "zip": {
+      "regla": "Cada pieza montada se descarga en un zip con el video dentro y la ficha al lado, en texto plano, para poder copiarla y pegarla en el movil sin abrir nada raro.",
+      "dentro": [
+        "{pieza}.mp4",
+        "ficha.txt"
+      ],
+      "nota": "Sin comprimir a proposito: un MP4 ya esta comprimido y volver a comprimirlo tarda minutos y no quita ni un megabyte."
+    }
   }
 }
