@@ -5064,11 +5064,12 @@
           "id": "poster-oficial",
           "nombre": "Poster oficial de la serie",
           "refs": [
-            "saharis-ancla",
-            "madre-ancla"
+            "saharis-ancla"
           ],
-          "encargo": "Official key visual poster for a bleak adult anime drama. A young man of about seventeen standing alone and facing the viewer, centred, in an immaculate dark charcoal coat, red eyes, short black hair in uneven ragged lengths, unreadable face, lit from one side by cold blue-grey light with a single warm orange point far behind him. Vast empty dark space around him and above his head. Painted anime key-visual finish: clean linework, flat cel shading, deep crushed blacks, film grain. No other figures.",
-          "uso": "El poster de la serie. El que va en la ficha del canal y en cualquier sitio donde se anuncie."
+          "encargo": "A young man's head fills the upper half, cropped by the right edge, near profile, ragged black hair, his one red eye slid to the corner, holding us. Most of him is black; one band of orange torchlight from far below rims brow, jaw, eye. Ash drifts past him, breath visible in the cold. Under his shoulder the frame opens down-left onto a ribbed vault: a stair falls steeply to the torch pool that rims him, where one robed figure stands, a fortieth of the frame tall, face lifted toward him; behind it a mass of hooded backs, faceless, one turned three-quarters, a leather mask cheek catching that rim. A colossal many-armed carving looms unlit behind them. No other warm source anywhere; embers climb only the right edge. Bottom third: crushed black under banked smoke, the torch pool well above, no spill, no object or figure entering: the title band, tall condensed heavy capitals, wide letterspacing, feet bitten by smoke, a hairline rule beneath.",
+          "uso": "El poster de la serie: el que va en la ficha del canal y en cualquier sitio donde se anuncie.",
+          "titulo_en": "El tercio inferior del cuadro, reescrito para vertical 9:16: negro aplastado con un banco de humo posado encima, con el charco de antorcha sujeto muy por encima de esa banda y sin un solo rebote de luz, objeto ni figura que entre en ella. Las brasas suben unicamente por el borde derecho, por encima de la banda, para que no ensucien las letras. El titulo se asienta ahi —mayusculas altas, condensadas, de peso fuerte, muy espaciadas, los pies de las letras mordidos por el humo y una linea fina de regla debajo—, nunca sobre la cara, que ocupa la mitad superior y el borde derecho.",
+          "nota_refs": "Solo el ancla del protagonista, y a proposito. El enmascarado del fondo ocupa una cuarentava parte del cuadro y su cara no se lee a ese tamano: la mascara la dibuja el encargo con palabras. Cada referencia de mas es una placa mas que hay que tener aprobada antes de poder generar, y este es el poster con el que se anuncia la serie: es el que menos puede quedarse esperando a nada."
         },
         {
           "id": "miniatura-ep01",
@@ -5076,17 +5077,20 @@
           "refs": [
             "saharis-ancla"
           ],
-          "encargo": "Episode thumbnail for a bleak adult anime drama. A single strong image with one clear subject placed off centre, generous empty dark space on the opposite side for the episode number to sit in, strong side light, deep crushed blacks. Painted anime finish: clean linework, flat cel shading, film grain. It has to read at the size of a thumbnail: one subject, one light, nothing small or busy.",
-          "uso": "La miniatura con la que se sube el episodio 1, «El que no llora»."
+          "encargo": "Night, a dead-end alley under the city, camera at gutter level. A wet brick edge and falling drainwater blur the near-left corner. Right of frame, close and very large, a lean young man with red eyes and uneven black hair crouches, back three-quarters to us, heavy dark coat, one bare hand flat on a low stone door sunk in the wall at ground level. A hairline seam of warm orange escaping that door is the only light in frame: it rakes up his forearm, across his jaw, catches one eye, and grazes a worn ring cut into the stone. His shadow climbs the wall in a hard diagonal, lower right to mid-left. Far off at the alley mouth one hooded figure is a tiny flat black cut-out against faint blue-grey. Drifting rain, visible breath. Keep the top third flat unlit wall and haze, no detail, nothing entering it: a clean band for tall condensed heavy widely spaced title lettering on a thin hairline rule, letter bases bitten by haze.",
+          "uso": "La miniatura con la que se sube el episodio 1, «El que no llora».",
+          "titulo_en": "Tercio superior, banda de ancho completo sobre muro sin luz y niebla de lluvia. Se pide expresamente vacia de detalle y con la orden de que nada entre en ella: ni la cabeza, ni la sombra que sube por el muro, ni el hueco del callejon, que quedan todos por debajo. Letras altas, condensadas, de peso fuerte y muy espaciadas, apoyadas en una regla fina, con la base de las letras mordida por la niebla en vez de flotando encima. La cara vive en el tercio inferior derecho, en penumbra, asi que el titulo no la pisa en ningun caso."
         },
         {
           "id": "miniatura-ep02",
           "nombre": "Miniatura del episodio 2: El precio del apellido",
           "refs": [
-            "saharis-ancla"
+            "saharis-ancla",
+            "iven-ancla"
           ],
-          "encargo": "Episode thumbnail for a bleak adult anime drama. A single strong image with one clear subject placed off centre, generous empty dark space on the opposite side for the episode number to sit in, strong side light, deep crushed blacks. Painted anime finish: clean linework, flat cel shading, film grain. It has to read at the size of a thumbnail: one subject, one light, nothing small or busy.",
-          "uso": "La miniatura con la que se sube el episodio 2, «El precio del apellido»."
+          "encargo": "Low camera, one hard diagonal running lower left to upper right along a heavy dark desk edge. Nearest the lens, filling the left third, unfocused and near-black, the shoulder and big ringed hand of an old nobleman pressing a brass seal into wax; no readable marks on the page beneath, only wet ink shine. Small beyond that hand, a young man of seventeen in a dark charcoal coat, ragged black hair, watching the seal, not the camera, half his jaw lit and the rest gone. One low oil lamp lights from below: its flame the only warm point, the wax almost black with a single orange gloss, his eyes the only red. Deep behind, a woman's dark shape in a doorway, her face above the light. Dust and thin wax smoke drift in the beam. The top third stays unlit ceiling and shelf shadow, nothing crossing it, kept empty for the title: tall condensed heavy capitals, wide spacing, a thin rule beneath, letters bitten from below by the smoke.",
+          "uso": "La miniatura con la que se sube el episodio 2, «El precio del apellido»: el sello del viejo lord cayendo sobre la cera, y el chico pequeño al otro lado de la mesa mirando cómo se compra su nombre.",
+          "titulo_en": "El tercio superior. La lámpara está por debajo del nivel de los ojos, así que todo lo que hay de la mesa hacia arriba —techo y estanterías— se queda sin iluminar: esa banda es negra por física, no por capricho. Se pide explícitamente que nada la cruce: ni lámpara, ni ventana, ni haz de luz, ni la cabeza de nadie. El título se asienta ahí, en capitales altas, condensadas, de peso fuerte y espaciado ancho, con una regla fina debajo y el pie de las letras mordido por el humo de la cera que sube. Nunca sobre una cara."
         },
         {
           "id": "miniatura-ep03",
@@ -5094,35 +5098,42 @@
           "refs": [
             "saharis-ancla"
           ],
-          "encargo": "Episode thumbnail for a bleak adult anime drama. A single strong image with one clear subject placed off centre, generous empty dark space on the opposite side for the episode number to sit in, strong side light, deep crushed blacks. Painted anime finish: clean linework, flat cel shading, film grain. It has to read at the size of a thumbnail: one subject, one light, nothing small or busy.",
-          "uso": "La miniatura con la que se sube el episodio 3, «La Prueba del Fuego»."
+          "encargo": "Underground chamber, night. A tall wall of pinned pale sheets and slack cords fills the frame, angled so its rows run as one hard diagonal, lower right to upper left. Across that pale field falls the enormous black shadow of a kneeling figure, head down, shoulders caved in: the biggest shape here. The young man casting it is small at lower right, a compact dark silhouette in a long coat, ragged hair, back to camera. A floor lantern at lower left is the only light and the only warm orange in the grey, raking up through dust and drifting paper. Torn sheets crowd the near bottom corner, out of focus. Across the top third the paper is torn away, leaving a wide empty band of bare near-black stone: hold it clear for the title, tall condensed heavy letters, wide spacing, a thin rule beneath, never touching the figure or the lantern glow. Big simple masses, no small detail, no readable marks on the sheets; it must read at fingernail size.",
+          "uso": "La miniatura con la que se sube el episodio 3, «La Prueba del Fuego»: el momento en que arranca su propio mapa del culto porque estaba mal.",
+          "titulo_en": "En el tercio superior, en la banda ancha de piedra desnuda que queda donde el papel ha sido arrancado: es la zona más oscura del cuadro y se pide vacía a propósito, sin hojas, sin cuerdas y sin sombra. Letras altas, condensadas, de peso fuerte y espaciado ancho, apoyadas en una línea fina de regla; no tocan ni la figura ni la mancha naranja del farol, que están abajo."
         },
         {
           "id": "miniatura-ep04",
           "nombre": "Miniatura del episodio 4: Lo que no se apagó",
           "refs": [
-            "saharis-ancla"
+            "saharis-ancla",
+            "celebrante-ancla"
           ],
-          "encargo": "Episode thumbnail for a bleak adult anime drama. A single strong image with one clear subject placed off centre, generous empty dark space on the opposite side for the episode number to sit in, strong side light, deep crushed blacks. Painted anime finish: clean linework, flat cel shading, film grain. It has to read at the size of a thumbnail: one subject, one light, nothing small or busy.",
-          "uso": "La miniatura con la que se sube el episodio 4, «Lo que no se apagó»."
+          "encargo": "Key visual, deep space, nothing centred. At the left edge, cut by the frame, the head and shoulder of a young man of about seventeen, ragged black hair, dark charcoal coat, three-quarters from behind: the biggest mass in frame, nearly all shadow, his face turned just enough that one red eye takes the light. Past him a white banquet cloth runs away on a hard diagonal, the only pale field. Far down it, small, a thin old man in plain dark clothes rises, laying a liver-spotted hand on the cloth, lit from below by one low row of candles. Behind him the guests dissolve into an out-of-focus row of dark shoulders, no faces. Smoke and dust cross the light; a blurred flame in the near corner. Warm orange and one red spark against black. Above the candles' reach the wall goes flat black, full width, nothing rising into it: that band holds the title in tall condensed heavy capitals, wide letterspacing, hairline rule beneath, lower edge grazed by smoke.",
+          "uso": "La miniatura con la que se sube el episodio 4, «Lo que no se apagó».",
+          "titulo_en": "En la banda superior, sobre el negro plano de la pared que queda por encima del alcance de las velas y de ancho completo; la cabeza del primer término se queda por debajo de esa línea y ahí no entra ningún otro elemento. Letras altas, condensadas, de peso fuerte y muy espaciadas, apoyadas en una regla fina y con el borde inferior mordido por el humo de las velas, para que se asienten en el aire y no floten sobre ninguna cara."
         },
         {
           "id": "miniatura-ep05",
           "nombre": "Miniatura del episodio 5: El bosque no está",
           "refs": [
-            "saharis-ancla"
+            "saharis-ancla",
+            "eira-ancla"
           ],
-          "encargo": "Episode thumbnail for a bleak adult anime drama. A single strong image with one clear subject placed off centre, generous empty dark space on the opposite side for the episode number to sit in, strong side light, deep crushed blacks. Painted anime finish: clean linework, flat cel shading, film grain. It has to read at the size of a thumbnail: one subject, one light, nothing small or busy.",
-          "uso": "La miniatura con la que se sube el episodio 5, «El bosque no está»."
+          "encargo": "Cold overcast river. Out of focus and near-black, cropped by the left edge, the shoulder and quarter profile of a young man of seventeen, ragged black hair, fill the left third, one red eye catching the water glare: the only colour anywhere. A clear gap of pale water separates him from the one sharp thing: a woman of twenty-two, long silver hair, seated upright on flat stones in profile, half the height of his shoulder, cut hard against the glare. The stone bank cuts a diagonal from lower left; the far shore is a dead flat horizon just below centre, a stripped ash ridge where a forest should stand, thinning into haze. Drizzle, drifting ash, visible breath. Keep the upper third an unbroken ceiling of dark smoke and cloud, empty, nothing rising into it; the title sits there, tall condensed heavy capitals, wide letterspacing, thin rule beneath, lower edge bitten by river mist. Three bands only: dark sky, bright water, dark figures. Two figures, no crowd, no small detail.",
+          "uso": "La miniatura con la que se sube el episodio 5, «El bosque no está»: el reencuentro en la orilla y la orilla de enfrente donde el bosque ya no está.",
+          "titulo_en": "En el tercio superior, sobre un techo cerrado de humo y nube baja que se pide expresamente oscuro, continuo y vacío. No es el cielo encapotado del borrador anterior —eso salía gris claro y se comía las letras—: es la única zona verdaderamente negra del cuadro, porque el brillo se ha bajado al agua y el horizonte está justo por debajo del centro, así que ni las dos figuras ni la loma quemada suben hasta ahí. Se pide además que nada se meta en esa banda. Letras altas, condensadas, de peso fuerte y espaciado ancho, con una línea fina de regla debajo y el borde inferior mordido por la niebla del río, para que el título se apoye en el diseño y no flote encima."
         },
         {
           "id": "miniatura-ep06",
           "nombre": "Miniatura del episodio 6: Admiración, temor, pérdida",
           "refs": [
-            "saharis-ancla"
+            "saharis-ancla",
+            "eira-ancla"
           ],
-          "encargo": "Episode thumbnail for a bleak adult anime drama. A single strong image with one clear subject placed off centre, generous empty dark space on the opposite side for the episode number to sit in, strong side light, deep crushed blacks. Painted anime finish: clean linework, flat cel shading, film grain. It has to read at the size of a thumbnail: one subject, one light, nothing small or busy.",
-          "uso": "La miniatura con la que se sube el episodio 6, «Admiración, temor, pérdida»."
+          "encargo": "Read at two shapes only. The lower left of the frame is one unbroken near-black mass: the back of a young man's head and shoulder in a dark charcoal coat, cropped by the bottom edge, his shoulder line running as a single diagonal up to the right. He is turned away, only the rim of his jaw and one red eye catching cold light off the water. Far along that diagonal, right of centre, small on a wet stone slipway, a young woman with long silver hair climbs away, back turned, her hair the brightest thing in the frame. Behind her one blurred orange fire-glow, out of focus, the only warmth. Everything past her dissolves into flat river haze: no crowd, no buildings. Cold drizzle, visible breath, standing water. Keep the top third empty — flat slate darkness with smoke crossing it, no silhouette entering it — and set the title there in tall condensed heavy capitals, widely spaced, a thin rule beneath, letter edges bitten by the smoke.",
+          "uso": "La miniatura con la que se sube el episodio 6, «Admiración, temor, pérdida»: ella se va por la orilla y él, enorme y de espaldas en primer término, no la sigue.",
+          "titulo_en": "El tercio superior, que en 16:9 es una banda ancha y baja, perfecta para un título largo: pizarra plana y oscura con humo cruzándola y nada más dentro. El encargo prohíbe expresamente que la silueta de la cabeza entre en esa banda, así que el título no se apoya sobre ninguna cara. Capitales altas, condensadas, muy espaciadas, con una regla fina debajo y el borde de las letras mordido por el humo."
         },
         {
           "id": "miniatura-ep07",
@@ -5130,8 +5141,9 @@
           "refs": [
             "saharis-ancla"
           ],
-          "encargo": "Episode thumbnail for a bleak adult anime drama. A single strong image with one clear subject placed off centre, generous empty dark space on the opposite side for the episode number to sit in, strong side light, deep crushed blacks. Painted anime finish: clean linework, flat cel shading, film grain. It has to read at the size of a thumbnail: one subject, one light, nothing small or busy.",
-          "uso": "La miniatura con la que se sube el episodio 7, «El sistema de las Siete Casas»."
+          "encargo": "A vast record vault under a great house, four centuries of ledger shelving rising out of frame both sides. Close in the right foreground, head and shoulder filling that third, cropped by the edge, a young man in a dark charcoal coat with ragged black hair, back half turned, an open ledger held low, a lantern on the shelf beside it. The flame lights him from beneath: jaw, knuckles and one red eye picked out warm, the rest of him solid black. Nothing legible on the page. Past his shoulder the aisle falls away as a hard diagonal into blackness; far down it a robed figure stands in a dull grey doorway, a watching silhouette dimmer than the flame. Suspended dust, lantern smoke, damp flagstones. The upper third is unbroken black, shelf tops lost in unlit vaulting, and the title sits alone there, tall condensed heavy letters, widely tracked, a hairline rule beneath, their bases bitten by smoke, clear of his head and the flame.",
+          "uso": "La miniatura con la que se sube el episodio 7, «El sistema de las Siete Casas»: el chico leyendo en la sala de registros el libro que lo compró a él, mientras el viejo lo mira desde el fondo.",
+          "titulo_en": "En el tercio superior. Ahí las estanterías mueren en la bóveda sin luz y queda una banda negra entera y vacía, sin cara, sin farol y sin nada que compita; se pide explícitamente que el título quede libre de la cabeza del chico y de la llama. Las letras van altas, condensadas, de peso fuerte y con espaciado ancho, apoyadas en una línea fina de regla por debajo y con el pie mordido por el humo del farol, para que se asienten en el dibujo en lugar de flotar encima."
         },
         {
           "id": "miniatura-ep08",
@@ -5139,8 +5151,9 @@
           "refs": [
             "saharis-ancla"
           ],
-          "encargo": "Episode thumbnail for a bleak adult anime drama. A single strong image with one clear subject placed off centre, generous empty dark space on the opposite side for the episode number to sit in, strong side light, deep crushed blacks. Painted anime finish: clean linework, flat cel shading, film grain. It has to read at the size of a thumbnail: one subject, one light, nothing small or busy.",
-          "uso": "La miniatura con la que se sube el episodio 8, «El heredero»."
+          "encargo": "Reads at fingernail size: one silhouette, one light. Low three-quarter angle, the black stone altar cutting a hard diagonal out of the lower left, its near edge huge and out of focus. An open ledger on it, blank unmarked paper, is the one bright shape: a slab of warm orange pushed up by a torch below frame. Beyond it a young man with red eyes and ragged black hair, dark charcoal coat, leans in, one flat palm on the page, lit only by that bounce: cheekbone flaring, the top of his face swallowed, one red eye catching. Two hooded overseers wait at the light's edge, flat black faceless cut-outs. The vault falls back into torch smoke, drifting ash, wet stone; the colossal many-armed idol only a darker mass. He sits right of centre and low; the upper third stays empty vaulted black and slow smoke, nothing lit in it, held clear for the title: tall condensed heavy capitals, wide spacing, feet bitten by haze, a thin hairline rule beneath.",
+          "uso": "La miniatura con la que se sube el episodio 8, «El heredero».",
+          "titulo_en": "En el tercio superior, sobre la boveda negra y el humo de las antorchas. El encargo baja al chico a la mitad inferior del cuadro y deja esa banda expresamente sin ninguna figura y sin ninguna fuente de luz, asi que el titulo no cae sobre ninguna cara: unica luz de la imagen es el libro abierto, abajo. Letras altas, condensadas, de peso fuerte y espaciado ancho, con los pies mordidos por la niebla y una linea fina de regla debajo, para que se asiente en el humo en vez de flotar encima."
         },
         {
           "id": "miniatura-ep09",
@@ -5148,17 +5161,20 @@
           "refs": [
             "saharis-ancla"
           ],
-          "encargo": "Episode thumbnail for a bleak adult anime drama. A single strong image with one clear subject placed off centre, generous empty dark space on the opposite side for the episode number to sit in, strong side light, deep crushed blacks. Painted anime finish: clean linework, flat cel shading, film grain. It has to read at the size of a thumbnail: one subject, one light, nothing small or busy.",
-          "uso": "La miniatura con la que se sube el episodio 9, «El nombre»."
+          "encargo": "Built to read at thumbnail size: one shape, one light. Close in the lower foreground an open ledger tilts up towards camera, its pages the only pale mass in frame, struck from below by a covered lantern outside the bottom edge; the writing is an illegible grey smear, no readable letters. Just above, off centre, the face of a young man with red eyes and short ragged black hair in a dark charcoal coat, caught only by the orange bounce off the page across jaw and cheekbone, crown and shoulders swallowed by black. Behind him ranks of record shelving run away out of focus on a hard diagonal into nothing, his own shadow thrown huge up their faces. Dust hangs in the beam. The top third stays flat black and haze, deliberately empty, no shelves or light reaching it, held clear for the title: lettering tall, condensed, heavy, widely spaced on a thin hairline rule, lower edge bitten by haze, his face well below that band.",
+          "uso": "La miniatura con la que se sube el episodio 9, «El nombre»: el momento en que encuentra la línea del libro y entiende de dónde le viene el nombre.",
+          "titulo_en": "En el tercio superior, que se pide expresamente vacío: negro plano y bruma, sin estanterías ni luz que lleguen ahí. La cara y el libro se quedan claramente por debajo de esa banda, nunca detrás de las letras. Tipografía alta, condensada, de peso fuerte y muy espaciada, asentada sobre una línea fina de regla y con el borde inferior mordido por la bruma, no flotando encima de la imagen."
         },
         {
           "id": "miniatura-ep10",
           "nombre": "Miniatura del episodio 10: La que me vio",
           "refs": [
-            "saharis-ancla"
+            "saharis-ancla",
+            "abuela-ancla"
           ],
-          "encargo": "Episode thumbnail for a bleak adult anime drama. A single strong image with one clear subject placed off centre, generous empty dark space on the opposite side for the episode number to sit in, strong side light, deep crushed blacks. Painted anime finish: clean linework, flat cel shading, film grain. It has to read at the size of a thumbnail: one subject, one light, nothing small or busy.",
-          "uso": "La miniatura con la que se sube el episodio 10, «La que me vio»."
+          "encargo": "Warm northern farmhouse kitchen at night, two masses only so it survives at nail size. The whole lower left is one enormous near-black head and shoulder from behind, a young man with ragged black hair stopped mid-turn, three-quarters away, the fire catching only the rim of one cheekbone and one red spark where his eye is. Far behind and far smaller, alone in the one pool of orange hearth light, a weathered old woman in heavy northern wool stirs a pot, her back to him, steam rising in a slow column. A long plank table drives a hard diagonal from the bottom right to her feet; on its near edge, huge and out of focus, an untouched plate of bread. No second light: no window, no lamp, nothing lit above the hearth. Hold the top third empty, unreached by the fire, black rafters and hanging smoke, so the title rests there in tall condensed heavy widely spaced capitals over a thin rule, its lower edge bitten by the smoke.",
+          "uso": "La miniatura con la que se sube el episodio 10, «La que me vio»: el momento en que la mujer que vendió a su madre le dice su nombre mientras remueve el caldo, sin saber a quién tiene sentado detrás.",
+          "titulo_en": "Banda vacía en el tercio superior, sobre las vigas negras del techo y el humo colgado, y se pide explícitamente que el fuego NO llegue ahí: es la única zona del cuadro sin luz, sin cabezas y sin nada que compita. El título se asienta en esa banda en capitales altas, condensadas, de peso fuerte y muy espaciadas, con una regla fina debajo y el borde inferior de las letras mordido por el humo. Nunca sobre la cara ni sobre la mancha naranja del hogar."
         },
         {
           "id": "miniatura-ep11",
@@ -5166,8 +5182,9 @@
           "refs": [
             "saharis-ancla"
           ],
-          "encargo": "Episode thumbnail for a bleak adult anime drama. A single strong image with one clear subject placed off centre, generous empty dark space on the opposite side for the episode number to sit in, strong side light, deep crushed blacks. Painted anime finish: clean linework, flat cel shading, film grain. It has to read at the size of a thumbnail: one subject, one light, nothing small or busy.",
-          "uso": "La miniatura con la que se sube el episodio 11, «El altar vacío»."
+          "encargo": "Wide low view of a vast crypt, the figure small inside it. Immediate foreground, out of focus, cut by the bottom edge: an empty leather mask moulded into a grin, face up on the wet step. Behind it, small at lower right, a young man with ragged black hair sits on the edge of a broad stone altar, three-quarter from behind, hands on his knees, head turned so one red eye catches the light. One torch out of frame left cuts a hard orange diagonal across the slab and his shoulder; the rest is black. Far behind, a colossal many-armed stone idol with a goat skull head rises from the dark, its arms a standing crowd. Smoke drifts, water drips, breath shows in the cold. Keep the top band empty black smoke and vaulting, idol head below it, nothing competing, reserved for the title: tall condensed capitals, heavy weight, wide spacing, a thin rule beneath, lower edges bitten by smoke. Reads at thumbnail size: one silhouette, one light.",
+          "uso": "La miniatura con la que se sube el episodio 11, «El altar vacío».",
+          "titulo_en": "La banda superior entera, que es la zona más oscura del cuadro: humo negro y bóveda, sin nada dentro. La cabeza del ídolo se queda por debajo de esa banda y ninguna cara entra en ella. El título se asienta ahí en capitales altas condensadas, de peso fuerte y muy espaciadas, con una línea fina de regla debajo y el borde inferior de las letras mordido por el humo que sube del altar."
         },
         {
           "id": "miniatura-ep12",
@@ -5175,8 +5192,9 @@
           "refs": [
             "saharis-ancla"
           ],
-          "encargo": "Episode thumbnail for a bleak adult anime drama. A single strong image with one clear subject placed off centre, generous empty dark space on the opposite side for the episode number to sit in, strong side light, deep crushed blacks. Painted anime finish: clean linework, flat cel shading, film grain. It has to read at the size of a thumbnail: one subject, one light, nothing small or busy.",
-          "uso": "La miniatura con la que se sube el episodio 12, «La mirada que el mundo temerá»."
+          "encargo": "Series finale thumbnail. At nail size, three shapes only: a giant shadow, a small seated figure, one flame. The lower two thirds is a sealed underground stone wall at a slight angle, hung with a few large yellowed sheets, blank and damp-stained, no writing on them, one slack cord sagging diagonally across; three pale rectangles where sheets were torn away. Very small at the lower left, seated on the floor, back to us, a young man of about eighteen in a coarse dark coat, head turned just enough that one red eye catches the light. A lantern beside him is the only source, burning orange from below, throwing his shadow up the wall as a standing giant four times his height. Dust drifts through the beam; the cord crosses the near foreground out of focus. Above the wall the vault falls to flat unlit black, full width, for the title: tall condensed heavy capitals, widely spaced, on a thin ruled line, nothing competing in that band.",
+          "uso": "La miniatura con la que se sube el episodio 12, «La mirada que el mundo temerá»: el final de la serie contado en una imagen, el hombre pequeño sentado y la sombra enorme en la que se ha convertido.",
+          "titulo_en": "En la franja superior, en el negro liso de la bóveda. Se ha bajado la pared de papeles al tercio inferior y a los dos tercios centrales del cuadro para que ese negro exista de verdad y ocupe todo el ancho: en el borrador anterior la pared subía «the full height of frame» y a la vez se pedía bóveda vacía encima, contradicción que el modelo resolvía comiéndose el hueco. Ahí arriba no hay nada pinchado, nada iluminado y no llega la sombra, así que el título se asienta sobre negro plano y no pisa ni la cara, ni el farol, ni la silueta proyectada. Letras altas, condensadas, de peso fuerte, muy espaciadas, apoyadas en una línea fina de regla por debajo."
         }
       ]
     },

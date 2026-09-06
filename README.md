@@ -916,6 +916,45 @@ como referencia, para que sea la misma cara, la misma luz y el mismo estilo. Un
 fotograma cualquiera no compone, y una miniatura tiene que leerse del tamaño de
 una uña.
 
+#### Un póster es una composición, no un retrato con el título encima
+
+La primera versión de estos encargos pedía, con estas palabras, *«un joven de
+unos diecisiete de pie, solo, mirando al espectador, centrado, con espacio vacío
+alrededor»*. Sale exactamente lo que dice: un retrato de catálogo con el título
+flotando encima. Y las doce miniaturas compartían **el mismo encargo genérico**,
+así que eran doce imágenes intercambiables.
+
+Los trece están reescritos como key visuals, cada miniatura leyendo su propio
+guion para encontrar la imagen que vende **ese** episodio. Lo que un encargo tiene
+que traer, y lo que se comprueba:
+
+- **Contraste de escala** — la figura pequeña contra un mundo enorme, o una cara
+  muy cerca con la escena viviendo detrás. Nunca «media figura, tamaño catálogo».
+- **Capas de profundidad** — algo en primer plano desenfocado que enmarca, el
+  sujeto en el medio, el mundo al fondo.
+- **Gente en la sombra** — siluetas encapuchadas, una cara a media luz, una figura
+  que se aleja. El vacío poblado es lo que hace que un póster cuente algo.
+- **Una diagonal**, una sola fuente de luz haciendo trabajo dramático, y
+  **atmósfera con materia**: ceniza, lluvia, humo, aliento en el frío.
+- **Una banda vacía reservada** para el título, sobre lo más oscuro, donde no
+  compita con ninguna cara. Cada pieza dice dónde está la suya.
+
+`npm run difusion` comprueba que los trece son trece textos distintos, que
+ninguno empieza igual que otro y que ninguno baja de 80 palabras: un encargo
+corto no compone.
+
+#### Todas las referencias son anclas
+
+Una referencia existe para llevar la **identidad** —la misma cara, el mismo pelo,
+la misma edad—, y eso es justo lo que un ancla es. La pose, la ropa y el sitio los
+describe el encargo.
+
+Poner una placa que no es ancla no mejora el póster y sí lo bloquea: habría que
+aprobar esa placa **y** el ancla de su personaje, dos imágenes más antes de poder
+pulsar un botón. El póster oficial lleva **una sola** referencia por eso mismo: es
+lo primero que quiere ver cualquiera y es lo que menos puede quedarse esperando.
+Un invariante lo comprueba.
+
 El botón de generar **no se enciende** mientras falte una de esas placas por
 aprobar, y dice cuál falta. Lo comprueba también la función, que es quien manda:
 encolar un trabajo que ya se sabe que va a fallar cuesta diez minutos de espera
@@ -959,8 +998,30 @@ por eso el botón de «Otro intento» está siempre a mano y **ningún intento s
 borra**, que el bueno puede ser el tercero.
 
 Se cambia en un sitio: `difusion.posters.titulo_en_la_imagen` a `false` en
-`datos/serie.json`, y entonces el prompt pide la imagen limpia, sin una sola
-letra, para ponerle el título encima con cualquier editor.
+`datos/serie.json`, y entonces el prompt le dice al modelo que **deje vacía la
+banda que ya tiene reservada**. No un «sin texto» a secas: los encargos hablan de
+su banda de título, así que una negación suelta al final los contradiría y esa
+pelea la resolvería el modelo a su gusto.
+
+**Y el negativo dejó de pelearse con el título.** El negativo de la serie lleva
+`text` dentro, porque en un keyframe o en un clip cualquier letra que aparezca es
+basura. Pero en un póster el título va DENTRO de la imagen y se pide con todas las
+letras: mandar las dos cosas en la misma llamada es pedir una cosa y prohibirla a
+la vez.
+
+Ese fallo **no da ningún error**. El modelo devuelve un título flojo, torcido o
+pegado como una pegatina, se cobra la generación igual, y pasa por «así escriben
+los modelos» sin que nadie sospeche de la lista de negativos. Ahora, cuando el
+título va dentro, se quitan del negativo las palabras que hablan de texto **y nada
+más**: la marca de agua y la firma se quedan, porque esas sobran siempre, y el
+resto —paleta shonen, render 3D, ojos brillantes— es lo que hace que el póster se
+parezca a la serie. `npm run difusion` compone el prompt de verdad y lo comprueba.
+
+**El formato se le dice como reencuadre, no como composición.** La frase que
+acompaña al 9:16 o al 16:9 dice «enmarca esto como imagen alta / ancha,
+manteniendo la composición de arriba», y no «pon el sujeto a un lado». La
+composición la manda el encargo, que es quien sabe dónde está la banda del título;
+una frase genérica pelearía con él.
 
 Un invariante comprueba que el título que se pide dentro del póster es el mismo
 que `meta.titulo_es`, que los formatos escritos son proporciones que el modelo

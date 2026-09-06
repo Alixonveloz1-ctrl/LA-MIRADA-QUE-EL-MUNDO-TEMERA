@@ -2907,6 +2907,61 @@ bloque('Datos · los pósters y las miniaturas');
     comprobar('Cada póster se genera contra placas del banco que existen', quejas);
   }
 
+  // 1.b Y esas placas son ANCLAS. Lo que una referencia aporta es la IDENTIDAD
+  //     —la misma cara, el mismo pelo, la misma edad—, y eso es exactamente lo
+  //     que un ancla es. La pose, la ropa y el sitio los describe el encargo.
+  //     Poner una placa que no es ancla no mejora el póster y sí lo bloquea: esa
+  //     placa hay que aprobarla ella, y para generarla hace falta aprobar antes
+  //     su ancla. Son dos imágenes más antes de poder pulsar un botón, y el
+  //     póster es lo primero que quiere ver cualquiera.
+  {
+    const quejas = [];
+    const porId = new Map(((serie.banco && serie.banco.placas) || []).map((una) => [una.id, una]));
+    for (const uno of piezas) {
+      if (!uno || !uno.id) continue;
+      for (const ref of Array.isArray(uno.refs) ? uno.refs : []) {
+        const laPlaca = porId.get(ref);
+        if (!laPlaca || laPlaca.ancla === true) continue;
+        quejas.push(
+          `El póster «${uno.id}» referencia «${ref}», que no es un ancla. Antes de poder ` +
+            `generarlo habría que aprobar «${ref}» Y el ancla de ${laPlaca.personaje}: dos ` +
+            `imágenes más. Se pone «${laPlaca.personaje}-ancla» y lo demás lo dice el encargo.`
+        );
+      }
+    }
+    comprobar('Y todas ellas son anclas, que es lo que se aprueba primero', quejas);
+  }
+
+  // 1.c Trece composiciones, no una plantilla repetida trece veces. Este es el
+  //     fallo que había: las doce miniaturas tenían el MISMO encargo genérico
+  //     («un sujeto claro descentrado, espacio oscuro al otro lado») y salían
+  //     doce imágenes intercambiables. No da error: da doce miniaturas que no
+  //     dicen de qué va su episodio.
+  {
+    const quejas = [];
+    const vistos = new Map();
+    for (const uno of piezas) {
+      if (!uno || typeof uno.encargo !== 'string') continue;
+      const arranque = uno.encargo.trim().slice(0, 60);
+      if (vistos.has(arranque)) {
+        quejas.push(
+          `«${uno.id}» y «${vistos.get(arranque)}» empiezan con el mismo texto. Si dos ` +
+            'miniaturas se pueden intercambiar, ninguna de las dos cuenta su episodio.'
+        );
+      } else {
+        vistos.set(arranque, uno.id);
+      }
+      const palabras = uno.encargo.trim().split(/\s+/).length;
+      if (palabras < 80) {
+        quejas.push(
+          `El encargo de «${uno.id}» tiene ${palabras} palabras. Un encargo corto no compone: ` +
+            'sale un retrato de catálogo con el título flotando encima.'
+        );
+      }
+    }
+    comprobar('Los pósters son trece composiciones distintas, no una plantilla', quejas);
+  }
+
   // 2. Los formatos escritos tienen que ser de los que el modelo de imagen
   //    acepta. Uno inventado no falla al escribirlo: falla al generar, ya
   //    encolado, y entonces hay que venir aquí a mirar por qué.

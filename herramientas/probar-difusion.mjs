@@ -325,5 +325,73 @@ di(dif.porQueNoSeGeneraElPoster([], false) === null, 'Con las placas aprobadas, 
 di(typeof dif.porQueNoSeGeneraElPoster([], true) === 'string',
   'Ni dos veces a la vez: una imagen se paga una vez');
 
+// ── EL PROMPT DEL PÓSTER, COMPUESTO DE VERDAD ──────────────────────────────
+//
+// Aquí vive el fallo que más caro sale de todos los de esta pantalla, porque NO
+// DA NINGÚN ERROR: el negativo de la serie lleva «text» dentro —en un keyframe
+// cualquier letra es basura—, y el póster pide el título ESCRITO DENTRO de la
+// imagen. Mandar las dos cosas en la misma llamada es pedir una cosa y
+// prohibirla a la vez. El modelo no se queja: devuelve un título flojo, torcido
+// o pegado como una pegatina, se cobra la generación igual, y eso pasa por «así
+// escriben los modelos» sin que nadie sospeche de la lista de negativos.
+console.log('\n  EL PROMPT DEL PÓSTER NO SE CONTRADICE A SÍ MISMO\n');
+
+const placasPorId = Object.fromEntries(serie.banco.placas.map((una) => [una.id, una]));
+
+const prm = await suelto(
+  'api/_lib/prompt.js',
+  `
+const serie = ${JSON.stringify(serie)};
+const guiones = { guiones: [] };
+class ErrorDeCara extends Error { constructor(m, o = {}) { super(m); this.mensaje = m; Object.assign(this, o); } }
+const placa = (id) => (${JSON.stringify(placasPorId)})[id];
+`,
+  'promptPoster, posterDeDifusion'
+);
+
+const conTitulo = serie.difusion.posters.titulo_en_la_imagen === true;
+const elPoster = prm.promptPoster('poster-oficial', '9:16');
+
+di(/LA MIRADA QUE EL MUNDO TEMERÁ/.test(elPoster.texto),
+  'El título se pide con todas sus letras y con su tilde');
+di(conTitulo ? !/\btext\b/i.test(elPoster.negativo) : true,
+  'Y el NEGATIVO no prohíbe el texto que el propio prompt está pidiendo',
+  elPoster.negativo.slice(-40));
+di(/watermark/i.test(elPoster.negativo) && /signature/i.test(elPoster.negativo),
+  'Pero la marca de agua y la firma siguen prohibidas: esas sobran siempre');
+di(/shonen|3D render/i.test(elPoster.negativo),
+  'Y el resto del negativo sigue entero: es lo que hace que se parezca a la serie');
+
+di(/tall vertical/i.test(prm.promptPoster('poster-oficial', '9:16').texto) &&
+   /wide horizontal/i.test(prm.promptPoster('poster-oficial', '16:9').texto),
+  'Cada formato se le DICE al modelo, no solo se le pasa como ajuste');
+di(!/subject sits to one side/i.test(prm.promptPoster('poster-oficial', '16:9').texto),
+  'Y se le dice como REENCUADRE, sin pelearse con la composición que manda el encargo');
+
+// Los trece encargos: que sean trece composiciones y no trece veces la misma.
+// El fallo que estamos corrigiendo era literalmente ese: las doce miniaturas
+// tenían el mismo texto con el número cambiado.
+const trece = serie.difusion.posters.piezas;
+const textosDeEncargo = trece.map((una) => una.encargo);
+di(new Set(textosDeEncargo).size === textosDeEncargo.length,
+  'Los trece encargos son trece textos distintos',
+  `${new Set(textosDeEncargo).size} de ${textosDeEncargo.length}`);
+
+const arranques = textosDeEncargo.map((uno) => uno.slice(0, 60));
+di(new Set(arranques).size === arranques.length,
+  'Y ninguno empieza igual que otro: son composiciones distintas, no una plantilla',
+  `${new Set(arranques).size} arranques distintos`);
+
+const cortitos = trece.filter((una) => una.encargo.split(/\s+/).length < 80);
+di(cortitos.length === 0,
+  'Ninguno es una frase suelta: un encargo corto sale como retrato de catálogo',
+  cortitos.length ? cortitos.map((u) => u.id).join(', ') : `el más corto, ${Math.min(...textosDeEncargo.map((t) => t.split(/\s+/).length))} palabras`);
+
+// Y que cada uno reserve de verdad su banda para el título, dicho en el encargo.
+const sinBanda = trece.filter((una) => !/\bband\b|\bthird\b|\bstrip\b/i.test(una.encargo));
+di(sinBanda.length === 0,
+  'Todos reservan a propósito la banda donde se va a asentar el título',
+  sinBanda.length ? sinBanda.map((u) => u.id).join(', ') : 'los trece');
+
 console.log(mal === 0 ? '\nTodo bien.\n' : `\n${mal} MAL.\n`);
 process.exit(mal ? 1 : 0);

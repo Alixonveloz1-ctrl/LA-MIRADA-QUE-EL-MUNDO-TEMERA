@@ -1057,30 +1057,53 @@ export function promptPoster(id, proporcion = null) {
 
   // La proporción no solo se le pasa al modelo como ajuste: se le DICE, porque
   // una composición vertical y una horizontal no son la misma imagen recortada.
+  //
+  // Pero se le dice como REENCUADRE, no como composición nueva: la composición
+  // ya la manda el encargo, que es quien sabe dónde está la banda del título y
+  // qué figura pesa. Una frase genérica del tipo «el sujeto a un lado y el hueco
+  // abriéndose de lado» pelearía con un encargo que ha puesto la cabeza arriba,
+  // y esa pelea la resuelve el modelo a su gusto.
   const forma = String(proporcion || '').trim();
   if (forma === '9:16') {
     partes.push(
-      'Vertical composition, taller than it is wide: the subject fills the height of the frame, ' +
-        'with room left above and below.'
+      'Frame this as a tall vertical image. Keep the composition described above and let its ' +
+        'depth run upwards and downwards; do not crop the subject away to make it fit.'
     );
   } else if (forma === '16:9') {
     partes.push(
-      'Horizontal composition, wider than it is tall: the subject sits to one side and the empty ' +
-        'space opens sideways, not upwards.'
+      'Frame this as a wide horizontal image. Keep the composition described above and re-stage ' +
+        'it for the wider frame: the depth opens sideways and the reserved title band stretches ' +
+        'across, but nothing that the composition places is cropped out or moved on top of a face.'
     );
   }
 
+  // EL TÍTULO. Cada encargo reserva su banda —dónde está el hueco oscuro donde
+  // el título no compite con ninguna cara es una decisión de composición, y por
+  // eso vive en la pieza—, pero CÓMO se escribe es de la serie entera y vive
+  // aquí: doce miniaturas con doce tipografías distintas no parecen una serie.
+  //
+  // Y el interruptor de apagarlo tiene que decir «deja esa banda vacía», no un
+  // «sin texto» a secas: los encargos hablan de su banda de título, así que una
+  // negación suelta al final los contradiría y el modelo resolvería la
+  // contradicción a su gusto. Se le dice qué hacer con la banda que ya conoce.
   if (posters.titulo_en_la_imagen === true) {
     const titulo = String(posters.titulo || '').trim();
     if (titulo) {
       partes.push(
-        `The exact title text "${titulo}" is written across the image in clean bold uppercase ` +
-        'lettering, spelled EXACTLY like that, letter by letter, accents included. Nothing else ' +
-        'is written anywhere: no other words, no subtitle, no credits, no watermark, no logo.'
+        `In the empty band reserved for it, and nowhere else, the exact title "${titulo}" is ` +
+        'written: tall condensed heavy uppercase letters, wide letterspacing, a single hairline ' +
+        'rule beneath them, the letters sitting on the darkness rather than floating over any ' +
+        'face. Spelled EXACTLY like that, letter by letter, accents included. Nothing else is ' +
+        'written anywhere in the image: no subtitle, no episode number, no credits, no ' +
+        'watermark, no logo, no lettering of any kind on any surface.'
       );
     }
   } else {
-    partes.push('No text anywhere in the image: no title, no words, no letters, no watermark.');
+    partes.push(
+      'The band reserved for the title stays completely empty: no title, no words, no letters, ' +
+        'no numbers, no watermark, no lettering anywhere in the image. Leave that area as clean ' +
+        'darkness.'
+    );
   }
 
   const referencias = [];
@@ -1093,7 +1116,45 @@ export function promptPoster(id, proporcion = null) {
     });
   }
 
-  return { texto: sellar(unir(...partes)), negativo: negativoDeEstilo(), referencias };
+  return {
+    texto: sellar(unir(...partes)),
+    negativo: negativoDelPoster(posters.titulo_en_la_imagen === true),
+    referencias
+  };
+}
+
+/**
+ * El negativo de un póster.
+ *
+ * ESTE ERA UN FALLO DE VERDAD, y de los que no dan ningún error. El negativo de
+ * la serie lleva «text» dentro, porque en un keyframe o en un clip cualquier
+ * letra que aparezca es basura. Pero en un póster el título va DENTRO de la
+ * imagen y se pide con todas las letras: mandarlo con «text» en el negativo es
+ * pedirle al modelo una cosa y prohibírsela en la misma llamada.
+ *
+ * El modelo no contesta con un error: contesta con un título flojo, o torcido, o
+ * pegado encima como una pegatina, y eso pasa por «así escriben los modelos» sin
+ * que nadie sospeche de la lista de negativos. Se paga la generación igual.
+ *
+ * Así que cuando el título va dentro, se quitan del negativo las palabras que
+ * hablan de texto y NADA MÁS: la marca de agua y la firma se quedan, porque esas
+ * sí sobran siempre, y el resto del negativo —paleta shonen, render 3D, ojos
+ * brillantes— es lo que hace que el póster se parezca a la serie.
+ *
+ * @param {boolean} conTitulo si el título va escrito dentro de la imagen
+ * @returns {string}
+ */
+function negativoDelPoster(conTitulo) {
+  const negativo = negativoDeEstilo();
+  if (!conTitulo) return negativo;
+
+  const quitar = new Set(['text', 'lettering', 'typography', 'letters', 'words']);
+  const quedan = negativo
+    .split(',')
+    .map((una) => una.trim())
+    .filter((una) => una && !quitar.has(una.toLowerCase()));
+
+  return quedan.join(', ');
 }
 
 /**
