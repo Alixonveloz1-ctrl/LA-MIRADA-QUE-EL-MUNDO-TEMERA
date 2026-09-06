@@ -1206,6 +1206,28 @@ function contarFalloSuelto(fallo) {
   const bandeja = laBandejaDeFallos();
   const tarjeta = h('div', { estilo: { position: 'relative' } },
     aviso(error.mensaje, { tono: 'error', detalle: error.detalle }),
+
+    // LO QUE DIJO EL NAVEGADOR, A LA VISTA Y SIN TENER QUE ABRIR NADA.
+    //
+    // Un fallo suelto no es un problema de la cuenta ni de Google: es SIEMPRE un
+    // defecto de este código, y esconder detrás de un desplegable la única línea
+    // que dice dónde está no ayuda a nadie. Con los errores de Google el
+    // desplegable tiene sentido —son parrafadas en inglés y lo que importa está
+    // arriba, traducido—; aquí lo que importa son esas cuatro palabras.
+    error.detalle
+      ? h('pre', {
+          clase: 'mono',
+          estilo: {
+            margin: 'var(--espacio-2) 0 0',
+            padding: '8px 10px',
+            background: 'var(--fondo-alto-2)',
+            'border-radius': 'var(--radio-chico)',
+            'white-space': 'pre-wrap',
+            'word-break': 'break-word',
+            'font-size': '12px',
+          },
+        }, error.detalle)
+      : null,
     h('div', { clase: 'tarjeta-acciones' },
       boton('Entendido', () => {
         tarjeta.remove();

@@ -827,6 +827,22 @@ export default {
      * @returns {Promise<void>}
      */
     async function elegirLaVoz(id, vozId) {
+      try {
+        await elegirLaVozDeVerdad(id, vozId);
+      } catch (fallo) {
+        // Hasta la confirmación puede fallar, y estaba fuera del try: cualquier
+        // fallo de aquí se escapaba como promesa sin recoger y salía como «algo
+        // se ha roto y nadie lo ha recogido», sin decir dónde.
+        recados.set(id, {
+          tono: 'error',
+          mensaje: fallo && fallo.mensaje ? fallo.mensaje : 'No se ha podido fijar la voz.',
+          detalle: fallo && fallo.detalle ? fallo.detalle : null,
+        });
+        if (vivo) refrescar(id);
+      }
+    }
+
+    async function elegirLaVozDeVerdad(id, vozId) {
       const seguro = await confirmar(
         `¿Fijar ${nombreCortoDeVoz(vozId)} como la voz de ${nombreEnPantalla(id)}? Dirá todas sus ` +
         'líneas en toda la serie.',
@@ -884,6 +900,19 @@ export default {
      * @returns {Promise<void>}
      */
     async function cambiarLaVoz(id) {
+      try {
+        await cambiarLaVozDeVerdad(id);
+      } catch (fallo) {
+        recados.set(id, {
+          tono: 'error',
+          mensaje: fallo && fallo.mensaje ? fallo.mensaje : 'No se ha podido cambiar la voz.',
+          detalle: fallo && fallo.detalle ? fallo.detalle : null,
+        });
+        if (vivo) refrescar(id);
+      }
+    }
+
+    async function cambiarLaVozDeVerdad(id) {
       const seguro = await confirmar(
         `¿Cambiar la voz de ${nombreEnPantalla(id)}? Lo que ya esté grabado con la voz de antes no ` +
         'se rehace solo: habría que volver a generar esos bloques en la pantalla de Audio.',

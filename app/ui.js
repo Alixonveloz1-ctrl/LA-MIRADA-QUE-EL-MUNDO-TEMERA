@@ -395,7 +395,31 @@ export function boton(texto, alAccionar, { tono, desactivado } = {}) {
         anunciar(motivo);
         return;
       }
-      if (typeof alAccionar === 'function') alAccionar(evento);
+      if (typeof alAccionar !== 'function') return;
+
+      // LO QUE DEVUELVE EL MANEJADOR NO SE TIRA, y esto no es celo: la mitad de
+      // los manejadores de esta aplicación son `async` —elegir una voz, cambiarla,
+      // montar, aprobar—, así que devuelven una promesa. Al tirarla, cualquier
+      // fallo dentro de ellos se convertía en un «unhandledrejection»: el aviso
+      // de arriba del todo que dice «algo se ha roto y nadie lo ha recogido», sin
+      // decir qué botón ni qué pantalla. Un fallo sin sitio es un fallo que
+      // cuesta el triple de encontrar.
+      //
+      // No se traga: se vuelve a lanzar con el nombre del botón pegado, para que
+      // el aviso de siempre lo enseñe sabiendo ya de dónde viene.
+      const devuelto = alAccionar(evento);
+      if (devuelto && typeof devuelto.then === 'function') {
+        devuelto.catch((fallo) => {
+          const dicho = fallo && fallo.mensaje ? fallo.mensaje
+            : fallo && fallo.message ? fallo.message
+            : String(fallo);
+          const conSitio = new Error(`Al pulsar «${nombre}»: ${dicho}`);
+          conSitio.stack = fallo && fallo.stack ? fallo.stack : conSitio.stack;
+          // En un microtask, para que salga por el mismo camino que cualquier
+          // otro fallo sin recoger y lo pinte quien ya sabe pintarlo.
+          queueMicrotask(() => { throw conSitio; });
+        });
+      }
     },
   }, nombre);
 

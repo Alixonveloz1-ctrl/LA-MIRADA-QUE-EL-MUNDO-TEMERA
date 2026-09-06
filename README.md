@@ -266,6 +266,20 @@ cada quince segundos; sin latido durante cuarenta y cinco, ese trabajo vuelve a
 la cola. Por eso, al recargar la página, lo que se quedó a medias vuelve solo en
 menos de un minuto en vez de bloquear el estudio durante cuatro.
 
+### Cuando algo se rompe por dentro
+
+Un fallo de Google, de la cuenta o del bucket sale **en la tarjeta** donde lo
+pediste, con su explicación. Si en cambio aparece arriba del todo un aviso rojo
+que dice «algo se ha roto por dentro del estudio y nadie lo ha recogido», eso no
+es tu cuenta: es un defecto de este código. Ese aviso enseña **el detalle sin
+tener que abrirlo** —el mensaje y la primera línea de dónde ocurrió—, porque es
+la única línea que sirve para arreglarlo y esconderla no ayuda a nadie.
+
+Para que ese detalle diga siempre de dónde viene, `boton()` recoge lo que
+devuelve el manejador: la mitad de los botones del estudio son `async` —elegir
+voz, cambiarla, montar, aprobar— y antes su fallo se perdía sin nombre. Ahora
+llega con el del botón delante: «Al pulsar «Oír esta voz»: …».
+
 ---
 
 ## Antes de desplegar
