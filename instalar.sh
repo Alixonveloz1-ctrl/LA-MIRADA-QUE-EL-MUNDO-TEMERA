@@ -46,6 +46,65 @@ ojo()    { echo "  ! $1"; }
 morir()  { echo; echo "!! $1" >&2; echo >&2; exit 1; }
 
 command -v gcloud >/dev/null || morir "Aquí no hay gcloud. Esto se ejecuta en Cloud Shell."
+
+# Una variable de entorno del job, leída del JSON entero y no de una plantilla
+# de formato de gcloud.
+#
+# POR QUÉ ASÍ. Las plantillas de `--format` de gcloud son un lenguaje propio, y
+# la primera versión de esto se escribió a ojo: devolvía la cadena vacía sin dar
+# ningún error, así que el script decía «no he podido leer el bucket» y se
+# plantaba. Eso pasó de verdad, en el móvil, con el usuario delante. El JSON no
+# se adivina: es el mismo desde hace años y lo lee python3, que en Cloud Shell
+# está siempre.
+#
+#   $1 = el JSON del job    $2 = el nombre de la variable
+delJob() {
+  printf '%s' "$1" | python3 -c '
+import json, sys
+quien = sys.argv[1]
+try:
+    d = json.load(sys.stdin)
+except Exception:
+    sys.exit(0)
+
+# Se busca por TODO el JSON, no por un camino concreto. Cloud Run ha tenido dos
+# formas de anidar esto (v1 y v2) y puede tener una tercera mañana; lo que no
+# cambia es que una variable de entorno es un {"name": …, "value": …}. Buscar la
+# pareja en vez del camino es lo único que no envejece.
+def buscar(x):
+    if isinstance(x, dict):
+        if x.get("name") == quien and isinstance(x.get("value"), str) and x["value"]:
+            return x["value"]
+        for v in x.values():
+            r = buscar(v)
+            if r:
+                return r
+    elif isinstance(x, list):
+        for v in x:
+            r = buscar(v)
+            if r:
+                return r
+    return None
+
+encontrado = buscar(d)
+if encontrado:
+    print(encontrado)
+' "$2" 2>/dev/null || true
+}
+
+# Lo mismo, pero de los archivos que dejó la instalación completa en la carpeta
+# de casa. Es la última red: si el job no se deja leer —porque gcloud cambió algo
+# o porque no hay permiso—, esto sigue sabiendo el bucket y la clave, y son los
+# mismos, porque los escribió el mismo script que desplegó el job.
+delArchivo() {
+  local quien="$1"
+  local valor=""
+  for donde in "$HOME/mirada-variables.txt" "$HOME/mirada-extras.txt"; do
+    [ -r "$donde" ] || continue
+    valor="$(sed -n "s/^${quien}=//p" "$donde" | head -1)"
+    [ -n "$valor" ] && { printf '%s' "$valor"; return; }
+  done
+}
 [ -d "$AQUI/despliegue" ] || morir "No encuentro la carpeta despliegue/. ¿Has clonado el repositorio entero?"
 
 # ---------------------------------------------------------------------------
@@ -93,11 +152,18 @@ if [ "$SOLO" = "montador" ]; then
   # MONTAJE_KEY de Vercel dejaría de valer y el montaje fallaría diciendo otra
   # cosa. Aquí se copian tal cual.
   LEIDO="$(gcloud run jobs describe "$NOMBRE_JOB" --region "$REGION" --project "$PROYECTO" \
-    --format='value(spec.template.spec.template.spec.containers[0].env.flatten("name","value",separator="="))' \
-    2>/dev/null || true)"
+    --format=json 2>/dev/null || true)"
 
-  BUCKET="$(printf '%s\n' "$LEIDO" | tr ';' '\n' | sed -n 's/^ *GCS_BUCKET=//p' | head -1)"
-  CLAVE_MONTAJE="$(printf '%s\n' "$LEIDO" | tr ';' '\n' | sed -n 's/^ *MONTAJE_CLAVE=//p' | head -1)"
+  BUCKET="$(delJob "$LEIDO" GCS_BUCKET)"
+  CLAVE_MONTAJE="$(delJob "$LEIDO" MONTAJE_CLAVE)"
+
+  # Si el job no se deja leer, los archivos de la instalación completa lo saben.
+  DE_DONDE="del propio job"
+  if [ -z "$BUCKET" ] || [ -z "$CLAVE_MONTAJE" ]; then
+    [ -n "$BUCKET" ] || BUCKET="$(delArchivo GCS_BUCKET)"
+    [ -n "$CLAVE_MONTAJE" ] || CLAVE_MONTAJE="$(delArchivo MONTAJE_KEY)"
+    DE_DONDE="de los archivos de la instalación"
+  fi
 
   [ -n "$BUCKET" ] || morir "No he podido leer el bucket que tiene puesto el
    montador. Sin él no se puede redesplegar sin
@@ -109,7 +175,7 @@ if [ "$SOLO" = "montador" ]; then
    tienes en Vercel. Usa la instalación completa:
        bash $AQUI/instalar.sh"
 
-  bien "Bucket y clave leídos del propio job."
+  bien "Bucket y clave leídos $DE_DONDE."
   bien "Tu MONTAJE_KEY de Vercel sigue valiendo."
 
   paso "Construyendo y desplegando. Esto es lo que tarda"
@@ -427,9 +493,8 @@ JOB_YA_ESTABA=0
 if gcloud run jobs describe "$NOMBRE_JOB" --region "$REGION" --project "$PROYECTO" >/dev/null 2>&1; then
   JOB_YA_ESTABA=1
   # Camino 1: preguntársela al propio job.
-  CLAVE_MONTAJE="$(gcloud run jobs describe "$NOMBRE_JOB" --region "$REGION" --project "$PROYECTO" \
-    --format='value(spec.template.spec.template.spec.containers[0].env.filter("name:MONTAJE_CLAVE").extract("value").flatten())' \
-    2>/dev/null | tr -d '[:space:]' || true)"
+  CLAVE_MONTAJE="$(delJob "$(gcloud run jobs describe "$NOMBRE_JOB" --region "$REGION" \
+    --project "$PROYECTO" --format=json 2>/dev/null || true)" MONTAJE_CLAVE)"
 
   # Camino 2: el archivo que dejó la instalación anterior. Hace falta porque la
   # expresión de arriba depende de la versión de gcloud, y si un día deja de
