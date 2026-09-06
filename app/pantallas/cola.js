@@ -617,10 +617,17 @@ function operacionesEnVuelo(estado, trabajos) {
         texto(trabajo.args.id) === toma
     );
 
+    // AQUÍ NO VA EL NOMBRE DE LA OPERACIÓN, Y NO ES UN OLVIDO.
+    //
+    // Antes se guardaba aquí, y cuando se decidió que el nombre NO viajara al
+    // navegador —lleva el project id dentro— se quitó la variable y se quedó el
+    // campo, escrito en forma corta. Un campo suelto que nombra una variable que
+    // ya no existe no es un campo vacío: es un ReferenceError que revienta esta
+    // pantalla entera, y solo cuando hay un vídeo en vuelo, que es exactamente
+    // cuando hace falta mirarla. Nadie lo lee, así que no está.
     salida.push({
       pieza,
       toma,
-      operacion,
       desde: consulta ? texto(consulta.creado) : '',
       consultas: consulta ? Number(consulta.consultas) || 0 : 0,
       estadoDeLaConsulta: consulta ? texto(consulta.estado) : '',

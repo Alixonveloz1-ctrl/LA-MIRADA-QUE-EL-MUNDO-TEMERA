@@ -497,6 +497,34 @@ puede atribuir a un archivo de esta página —una extensión, un bloqueador de
 contenido—. Se dice tal cual, porque disfrazarlo de fallo del estudio manda a
 buscar donde no está.
 
+#### El fallo que espera a que estés pagando
+
+La pantalla de Cola reventaba entera —`Can't find variable: operacion`— y solo
+cuando había un clip de Veo generándose.
+
+En JavaScript, `{ pieza, toma, operacion }` significa `operacion: operacion`. Si
+esa variable no existe, no queda un campo vacío: **es un error que tumba la
+función entera**. Y la sintaxis es perfecta, así que no lo ve ningún
+comprobador de sintaxis.
+
+Venía de un cambio correcto: el nombre de la operación de Veo dejó de viajar al
+navegador porque lleva el project id dentro. Se quitó la variable y **se quedó el
+campo**. Ahí siguió, escrito, esperando a que alguien lanzara un vídeo — que es
+justo cuando esa pantalla hace falta, y con el clip ya pagado.
+
+Dos cosas para que no vuelva:
+
+- `npm run invariantes` recoge todos los nombres que declara cada archivo y
+  rechaza cualquier campo en forma corta que nombre uno que no está.
+- `npm run pantalla` **ejecuta** la pantalla de Cola contra un estado con un
+  vídeo en vuelo. Ese estado no lo construía nunca nadie, y por eso el fallo
+  podía vivir ahí meses: un estado vacío no prueba nada, porque casi todas las
+  funciones de una pantalla salen por la puerta de «no hay nada que enseñar».
+
+Las dos se probaron contra el código de antes, y las dos lo cazan. La primera
+versión de la comprobación de invariantes **no** lo cazaba —se daba por buena a
+sí misma— y eso se vio ejecutándola contra el commit anterior, no leyéndola.
+
 ### Con qué se genera, y cuánto cuesta
 
 **Salud → «Con qué se genera».** Ahí se elige el modelo de imagen, el de vídeo y
@@ -725,21 +753,21 @@ Lo comprueban los invariantes: si alguien quita cualquiera de los dos frenos, el
 npm run comprobar
 ```
 
-Encadena las nueve herramientas y no necesita red ni credenciales: regenera
+Encadena las diez herramientas y no necesita red ni credenciales: regenera
 `datos/serie.json` desde `serie.base.json` con el parche, comprueba los
 invariantes sobre los datos y sobre el árbol de código, **ejecuta** la cola
 contra un Google de mentira, **le da audio de verdad** al lector de formatos,
 **sigue** el ajuste de con qué se genera hasta el cuerpo de la petición,
 **frena** contra un reloj de mentira, **apunta** lo generado con latidos cayendo
 encima, comprueba que **ninguna pieza de música se quede sin pantalla donde
-salir**, y **pesa** la respuesta de cada modo con material del tamaño real para
+salir**, **ejecuta** la pantalla de Cola con un vídeo en vuelo, y **pesa** la respuesta de cada modo con material del tamaño real para
 verificar que cabe en los 4,5 MB. Casi ninguno se ve leyendo el código: se ven
 ejecutándolo y midiendo. Si algo no cumple, sale con error y lo dice en español.
 
 Cada paso se puede lanzar por separado con `npm run datos`, `npm run invariantes`,
 `npm run cola`, `npm run audio`, `npm run ajustes`, `npm run freno`,
-`npm run anotar`, `npm run banco` y `npm run pesar`. Y `npm run archivo` reescribe
-los 56 planos de ambiente desde su tabla.
+`npm run anotar`, `npm run banco`, `npm run pantalla` y `npm run pesar`. Y
+`npm run archivo` reescribe los 56 planos de ambiente desde su tabla.
 
 ### Lo que manda Google no es siempre lo mismo
 

@@ -1882,6 +1882,97 @@ bloque('Código · el orden de la puerta');
 }
 
 // ===========================================================================
+// CÓDIGO · Campos en forma corta que nombran una variable que no existe
+// ===========================================================================
+
+bloque('Código · campos en forma corta');
+
+{
+  // EL FALLO QUE SOLO APARECE CUANDO YA ESTÁS PAGANDO.
+  //
+  // En JavaScript, `{ pieza, toma, operacion }` es lo mismo que escribir
+  // `operacion: operacion`. Si la variable `operacion` no existe, eso NO es un
+  // campo vacío: es un ReferenceError. Y no lo caza `node --check`, porque la
+  // sintaxis es perfecta.
+  //
+  // Pasó de verdad. Cuando se decidió que el nombre de la operación de Veo no
+  // viajara al navegador —lleva el project id dentro—, se quitó la variable y se
+  // quedó el campo. Resultado: la pantalla de Cola reventaba entera, y solo
+  // cuando había un vídeo generándose, que es exactamente cuando hay que
+  // mirarla. Con el clip ya lanzado y ya pagado.
+  //
+  // Esto es un rastreo de texto, no un analizador de ámbitos: mira si el nombre
+  // se declara EN ALGÚN SITIO del archivo. No caza una variable de otro ámbito,
+  // y no pretende. Caza el caso que ya ha pasado, que es el que importa.
+  const FORMA_CORTA = /^\s{2,}([a-zA-Z_$][\w$]*)\s*,\s*$/;
+
+  /**
+   * Todos los nombres que el archivo DECLARA en alguna parte.
+   *
+   * Se recogen una vez por archivo, en vez de preguntar por cada nombre suelto,
+   * y es lo que hace que esto funcione: preguntando por «¿aparece este nombre
+   * declarado?» con una expresión regular, la propia línea sospechosa —«toma,»
+   * seguida de «operacion,»— se parecía a una desestructuración y se daba por
+   * buena a sí misma. El primer intento de esta comprobación no cazó el fallo
+   * que la motivó, y eso se vio ejecutándola contra el código de antes.
+   */
+  const declarados = (fuente) => {
+    const nombres = new Set();
+    const meter = (texto) => {
+      for (const trozo of String(texto).matchAll(/[a-zA-Z_$][\w$]*/g)) nombres.add(trozo[0]);
+    };
+
+    for (const m of fuente.matchAll(/\b(?:const|let|var|function|class)\s+([a-zA-Z_$][\w$]*)/g)) {
+      nombres.add(m[1]);
+    }
+    // Desestructuraciones: solo las que son de verdad una declaración.
+    for (const m of fuente.matchAll(/\b(?:const|let|var)\s*(\{[^}]*\}|\[[^\]]*\])\s*=/g)) meter(m[1]);
+    for (const m of fuente.matchAll(/\bfor\s*\(\s*(?:const|let|var)\s*(\{[^}]*\}|\[[^\]]*\]|[a-zA-Z_$][\w$]*)/g)) {
+      meter(m[1]);
+    }
+    // Parámetros: función con nombre, flecha, y método corto de un objeto.
+    for (const m of fuente.matchAll(/\bfunction\s*[a-zA-Z_$][\w$]*\s*\(([^)]*)\)/g)) meter(m[1]);
+    for (const m of fuente.matchAll(/\(([^)]*)\)\s*=>/g)) meter(m[1]);
+    for (const m of fuente.matchAll(/^\s*(?:async\s+)?[a-zA-Z_$][\w$]*\s*\(([^)]*)\)\s*\{/gm)) meter(m[1]);
+    for (const m of fuente.matchAll(/([a-zA-Z_$][\w$]*)\s*=>/g)) nombres.add(m[1]);
+    for (const m of fuente.matchAll(/\bcatch\s*\(\s*([a-zA-Z_$][\w$]*)\s*\)/g)) nombres.add(m[1]);
+    for (const m of fuente.matchAll(/\bimport\s+([^;]*?)\s+from\b/g)) meter(m[1]);
+    return nombres;
+  };
+
+  const PALABRAS = new Set(['true', 'false', 'null', 'undefined', 'return', 'break', 'continue']);
+
+  const quejas = [];
+  const deCodigo = archivos.filter(
+    (rel) =>
+      (rel.startsWith('api/') || rel.startsWith('app/') || rel.startsWith('montador/')) &&
+      rel.endsWith('.js')
+  );
+
+  for (const rel of deCodigo) {
+    const fuente = fuenteDe(rel);
+    if (!fuente) continue;
+    const nombres = declarados(fuente);
+    const lineas = fuente.split('\n');
+    lineas.forEach((linea, i) => {
+      const encaja = FORMA_CORTA.exec(linea);
+      if (!encaja) return;
+      const nombre = encaja[1];
+      if (PALABRAS.has(nombre)) return;
+      if (nombres.has(nombre)) return;
+      quejas.push(
+        `${rel}:${i + 1} escribe «${nombre},» en forma corta y ese nombre no se ` +
+          'declara en ninguna parte del archivo. Eso no deja el campo vacío: ' +
+          'revienta la función entera en cuanto se ejecuta esa línea, y ' +
+          '`node --check` no lo ve porque la sintaxis está bien.'
+      );
+    });
+  }
+
+  comprobar('Ningún campo en forma corta nombra una variable que no existe', quejas);
+}
+
+// ===========================================================================
 // CÓDIGO · Ningún id de modelo escrito a mano
 // ===========================================================================
 
