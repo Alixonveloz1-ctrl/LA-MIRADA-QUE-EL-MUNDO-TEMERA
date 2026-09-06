@@ -216,7 +216,9 @@ const espera = () => null, h = () => null, pantalla = () => null, seccion = () =
 const tarjeta = () => null, vaciar = () => {};
 const bytes = () => '', fecha = () => '', plural = () => '';
 `,
-  'porQueNoSePuedeEmpaquetar, fichaEnTexto, piezasQueSePublican, paqueteDe'
+  'porQueNoSePuedeEmpaquetar, fichaEnTexto, piezasQueSePublican, paqueteDe, ' +
+    'formatosDePoster, piezasDePoster, formaDeTrabajo, claveDePoster, posterGuardado, ' +
+    'rutaQueSeMira, refsQueFaltan, porQueNoSeGeneraElPoster'
 );
 
 const conFicha = { ficha: { titulo: 'T', descripcion: 'D', etiquetas: ['anime'] }, ficha_aprobada: true };
@@ -247,6 +249,81 @@ const enTexto = dif.fichaEnTexto(
 di(/^TÍTULO\nUn título/.test(enTexto), 'La ficha en texto empieza por el título, para copiarlo de un gesto');
 di(/#anime #seinen/.test(enTexto), 'Y las etiquetas salen con su almohadilla, listas para pegar');
 di(/Dos\nlíneas/.test(enTexto), 'Y la descripción conserva sus saltos de línea');
+
+// ── LOS PÓSTERS: EL FORMATO NO SE PIERDE POR EL CAMINO ─────────────────────
+//
+// Esto es lo que se rompe callando. Si el formato dejara de entrar en la clave,
+// generar el 16:9 sobrescribiría el 9:16 que ya estaba aprobado: una imagen
+// pagada, perdida, sin ningún aviso. Y si el póster se pudiera encargar sin sus
+// placas aprobadas, el trabajo se encolaría para fallar diez minutos después.
+console.log('\n  LOS PÓSTERS: CADA FORMATO ES SU PROPIA IMAGEN\n');
+
+const formatos = dif.formatosDePoster(serie);
+di(formatos.length >= 2, 'Hay más de un formato escrito en los datos', formatos.join(' y '));
+di(formatos.includes('9:16') && formatos.includes('16:9'),
+  'Y son los dos que se pidieron: el vertical y el de miniatura de YouTube');
+
+const losPosters = dif.piezasDePoster(serie);
+di(losPosters.length === 13,
+  'Están el póster oficial y las doce miniaturas',
+  `${losPosters.length} piezas`);
+di(losPosters.some((uno) => uno.id === 'poster-oficial'), 'Y uno de ellos es el póster oficial');
+
+di(dif.formaDeTrabajo(serie) === '9:16',
+  'Sin elegir nada, se trabaja en vertical: es lo que dice formato_por_defecto');
+
+di(dif.claveDePoster('poster-oficial', '9:16') !== dif.claveDePoster('poster-oficial', '16:9'),
+  'EL FORMATO ENTRA EN LA CLAVE: el vertical y el horizontal no se pisan',
+  `${dif.claveDePoster('poster-oficial', '9:16')} ≠ ${dif.claveDePoster('poster-oficial', '16:9')}`);
+di(!dif.claveDePoster('poster-oficial', '9:16').includes(':'),
+  'Y la clave no lleva dos puntos: eso viaja a una ruta del bucket');
+
+// Dos formatos guardados a la vez, cada uno con lo suyo.
+const conDos = {
+  posters: {
+    'poster-oficial/9-16': {
+      aprobada: 'difusion/posters/poster-oficial/9-16/2.png',
+      intentos: [
+        'difusion/posters/poster-oficial/9-16/1.png',
+        'difusion/posters/poster-oficial/9-16/2.png'
+      ]
+    },
+    'poster-oficial/16-9': { aprobada: null, intentos: ['difusion/posters/poster-oficial/16-9/1.png'] }
+  }
+};
+const vertical = dif.posterGuardado(conDos, 'poster-oficial', '9:16');
+const horizontal = dif.posterGuardado(conDos, 'poster-oficial', '16:9');
+di(vertical.aprobada && !horizontal.aprobada,
+  'El vertical está aprobado y el horizontal no, y cada uno lo sabe de sí mismo');
+di(vertical.intentos.length === 2 && horizontal.intentos.length === 1,
+  'Y los intentos de uno no se cuentan en el otro');
+
+di(dif.rutaQueSeMira('poster-oficial', '9:16', vertical) === vertical.aprobada,
+  'Lo que se mira, sin tocar nada, es la aprobada');
+di(dif.rutaQueSeMira('poster-oficial', '16:9', horizontal) === horizontal.intentos[0],
+  'Y si no hay aprobada, el último intento');
+di(dif.rutaQueSeMira('miniatura-ep01', '9:16', dif.posterGuardado(conDos, 'miniatura-ep01', '9:16')) === null,
+  'Y si no hay nada, nada: no se enseña la imagen de otro');
+
+// Las referencias. Sin la placa aprobada, no hay botón.
+const elOficial = losPosters.find((uno) => uno.id === 'poster-oficial');
+const sinBanco = { banco: {} };
+const conBanco = {
+  banco: Object.fromEntries(
+    (elOficial.refs || []).map((una) => [una, { aprobada: `banco/${una}.png`, intentos: [] }])
+  )
+};
+di(dif.refsQueFaltan({ estado: sinBanco }, elOficial).length === (elOficial.refs || []).length,
+  'Con el banco vacío, faltan todas las placas del póster oficial',
+  (elOficial.refs || []).join(', '));
+di(dif.refsQueFaltan({ estado: conBanco }, elOficial).length === 0,
+  'Y con ellas aprobadas, no falta ninguna');
+
+di(typeof dif.porQueNoSeGeneraElPoster(['saharis-ancla'], false) === 'string',
+  'Sin la placa aprobada NO se puede generar, y se dice cuál falta');
+di(dif.porQueNoSeGeneraElPoster([], false) === null, 'Con las placas aprobadas, sí');
+di(typeof dif.porQueNoSeGeneraElPoster([], true) === 'string',
+  'Ni dos veces a la vez: una imagen se paga una vez');
 
 console.log(mal === 0 ? '\nTodo bien.\n' : `\n${mal} MAL.\n`);
 process.exit(mal ? 1 : 0);

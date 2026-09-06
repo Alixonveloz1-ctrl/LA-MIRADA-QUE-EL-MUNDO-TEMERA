@@ -3367,6 +3367,139 @@
         "ficha.txt"
       ],
       "nota": "Sin comprimir a proposito: un MP4 ya esta comprimido y volver a comprimirlo tarda minutos y no quita ni un megabyte."
+    },
+    "posters": {
+      "regla": "El poster oficial y las doce miniaturas. Se generan con el mismo modelo de imagen que las placas y usan como referencia las placas YA APROBADAS: la misma cara, la misma luz, el mismo estilo. No son fotogramas del capitulo: son una composicion propia.",
+      "ruta": "difusion/posters/{id}.png",
+      "formatos": [
+        "9:16",
+        "16:9"
+      ],
+      "formato_por_defecto": "9:16",
+      "nota_formato": "Se elige al generar. 9:16 es lo vertical —el poster de toda la vida, y lo que piden las plataformas de movil—; 16:9 es lo que pide una miniatura de YouTube. Cada uno se genera con su proporcion desde el principio: recortar uno para hacer el otro deja la cabeza fuera.",
+      "titulo_en_la_imagen": true,
+      "nota_titulo": "El titulo va DENTRO de la imagen, pedido en el prompt. Es una decision de quien paga, tomada a sabiendas: los modelos de imagen escriben mal las tildes y las enies, asi que «LA MIRADA QUE EL MUNDO TEMERA» puede salir con letras inventadas. Se mira y se rehace hasta que salga; por eso el boton de rehacer esta siempre a mano.",
+      "titulo": "LA MIRADA QUE EL MUNDO TEMERÁ",
+      "piezas": [
+        {
+          "id": "poster-oficial",
+          "nombre": "Poster oficial de la serie",
+          "refs": [
+            "saharis-ancla",
+            "madre-ancla"
+          ],
+          "encargo": "Official key visual poster for a bleak adult anime drama. A young man of about seventeen standing alone and facing the viewer, centred, in an immaculate dark charcoal coat, red eyes, short black hair in uneven ragged lengths, unreadable face, lit from one side by cold blue-grey light with a single warm orange point far behind him. Vast empty dark space around him and above his head. Painted anime key-visual finish: clean linework, flat cel shading, deep crushed blacks, film grain. No other figures.",
+          "uso": "El poster de la serie. El que va en la ficha del canal y en cualquier sitio donde se anuncie."
+        },
+        {
+          "id": "miniatura-ep01",
+          "nombre": "Miniatura del episodio 1: El que no llora",
+          "refs": [
+            "saharis-ancla"
+          ],
+          "encargo": "Episode thumbnail for a bleak adult anime drama. A single strong image with one clear subject placed off centre, generous empty dark space on the opposite side for the episode number to sit in, strong side light, deep crushed blacks. Painted anime finish: clean linework, flat cel shading, film grain. It has to read at the size of a thumbnail: one subject, one light, nothing small or busy.",
+          "uso": "La miniatura con la que se sube el episodio 1, «El que no llora»."
+        },
+        {
+          "id": "miniatura-ep02",
+          "nombre": "Miniatura del episodio 2: El precio del apellido",
+          "refs": [
+            "saharis-ancla"
+          ],
+          "encargo": "Episode thumbnail for a bleak adult anime drama. A single strong image with one clear subject placed off centre, generous empty dark space on the opposite side for the episode number to sit in, strong side light, deep crushed blacks. Painted anime finish: clean linework, flat cel shading, film grain. It has to read at the size of a thumbnail: one subject, one light, nothing small or busy.",
+          "uso": "La miniatura con la que se sube el episodio 2, «El precio del apellido»."
+        },
+        {
+          "id": "miniatura-ep03",
+          "nombre": "Miniatura del episodio 3: La Prueba del Fuego",
+          "refs": [
+            "saharis-ancla"
+          ],
+          "encargo": "Episode thumbnail for a bleak adult anime drama. A single strong image with one clear subject placed off centre, generous empty dark space on the opposite side for the episode number to sit in, strong side light, deep crushed blacks. Painted anime finish: clean linework, flat cel shading, film grain. It has to read at the size of a thumbnail: one subject, one light, nothing small or busy.",
+          "uso": "La miniatura con la que se sube el episodio 3, «La Prueba del Fuego»."
+        },
+        {
+          "id": "miniatura-ep04",
+          "nombre": "Miniatura del episodio 4: Lo que no se apagó",
+          "refs": [
+            "saharis-ancla"
+          ],
+          "encargo": "Episode thumbnail for a bleak adult anime drama. A single strong image with one clear subject placed off centre, generous empty dark space on the opposite side for the episode number to sit in, strong side light, deep crushed blacks. Painted anime finish: clean linework, flat cel shading, film grain. It has to read at the size of a thumbnail: one subject, one light, nothing small or busy.",
+          "uso": "La miniatura con la que se sube el episodio 4, «Lo que no se apagó»."
+        },
+        {
+          "id": "miniatura-ep05",
+          "nombre": "Miniatura del episodio 5: El bosque no está",
+          "refs": [
+            "saharis-ancla"
+          ],
+          "encargo": "Episode thumbnail for a bleak adult anime drama. A single strong image with one clear subject placed off centre, generous empty dark space on the opposite side for the episode number to sit in, strong side light, deep crushed blacks. Painted anime finish: clean linework, flat cel shading, film grain. It has to read at the size of a thumbnail: one subject, one light, nothing small or busy.",
+          "uso": "La miniatura con la que se sube el episodio 5, «El bosque no está»."
+        },
+        {
+          "id": "miniatura-ep06",
+          "nombre": "Miniatura del episodio 6: Admiración, temor, pérdida",
+          "refs": [
+            "saharis-ancla"
+          ],
+          "encargo": "Episode thumbnail for a bleak adult anime drama. A single strong image with one clear subject placed off centre, generous empty dark space on the opposite side for the episode number to sit in, strong side light, deep crushed blacks. Painted anime finish: clean linework, flat cel shading, film grain. It has to read at the size of a thumbnail: one subject, one light, nothing small or busy.",
+          "uso": "La miniatura con la que se sube el episodio 6, «Admiración, temor, pérdida»."
+        },
+        {
+          "id": "miniatura-ep07",
+          "nombre": "Miniatura del episodio 7: El sistema de las Siete Casas",
+          "refs": [
+            "saharis-ancla"
+          ],
+          "encargo": "Episode thumbnail for a bleak adult anime drama. A single strong image with one clear subject placed off centre, generous empty dark space on the opposite side for the episode number to sit in, strong side light, deep crushed blacks. Painted anime finish: clean linework, flat cel shading, film grain. It has to read at the size of a thumbnail: one subject, one light, nothing small or busy.",
+          "uso": "La miniatura con la que se sube el episodio 7, «El sistema de las Siete Casas»."
+        },
+        {
+          "id": "miniatura-ep08",
+          "nombre": "Miniatura del episodio 8: El heredero",
+          "refs": [
+            "saharis-ancla"
+          ],
+          "encargo": "Episode thumbnail for a bleak adult anime drama. A single strong image with one clear subject placed off centre, generous empty dark space on the opposite side for the episode number to sit in, strong side light, deep crushed blacks. Painted anime finish: clean linework, flat cel shading, film grain. It has to read at the size of a thumbnail: one subject, one light, nothing small or busy.",
+          "uso": "La miniatura con la que se sube el episodio 8, «El heredero»."
+        },
+        {
+          "id": "miniatura-ep09",
+          "nombre": "Miniatura del episodio 9: El nombre",
+          "refs": [
+            "saharis-ancla"
+          ],
+          "encargo": "Episode thumbnail for a bleak adult anime drama. A single strong image with one clear subject placed off centre, generous empty dark space on the opposite side for the episode number to sit in, strong side light, deep crushed blacks. Painted anime finish: clean linework, flat cel shading, film grain. It has to read at the size of a thumbnail: one subject, one light, nothing small or busy.",
+          "uso": "La miniatura con la que se sube el episodio 9, «El nombre»."
+        },
+        {
+          "id": "miniatura-ep10",
+          "nombre": "Miniatura del episodio 10: La que me vio",
+          "refs": [
+            "saharis-ancla"
+          ],
+          "encargo": "Episode thumbnail for a bleak adult anime drama. A single strong image with one clear subject placed off centre, generous empty dark space on the opposite side for the episode number to sit in, strong side light, deep crushed blacks. Painted anime finish: clean linework, flat cel shading, film grain. It has to read at the size of a thumbnail: one subject, one light, nothing small or busy.",
+          "uso": "La miniatura con la que se sube el episodio 10, «La que me vio»."
+        },
+        {
+          "id": "miniatura-ep11",
+          "nombre": "Miniatura del episodio 11: El altar vacío",
+          "refs": [
+            "saharis-ancla"
+          ],
+          "encargo": "Episode thumbnail for a bleak adult anime drama. A single strong image with one clear subject placed off centre, generous empty dark space on the opposite side for the episode number to sit in, strong side light, deep crushed blacks. Painted anime finish: clean linework, flat cel shading, film grain. It has to read at the size of a thumbnail: one subject, one light, nothing small or busy.",
+          "uso": "La miniatura con la que se sube el episodio 11, «El altar vacío»."
+        },
+        {
+          "id": "miniatura-ep12",
+          "nombre": "Miniatura del episodio 12: La mirada que el mundo temerá",
+          "refs": [
+            "saharis-ancla"
+          ],
+          "encargo": "Episode thumbnail for a bleak adult anime drama. A single strong image with one clear subject placed off centre, generous empty dark space on the opposite side for the episode number to sit in, strong side light, deep crushed blacks. Painted anime finish: clean linework, flat cel shading, film grain. It has to read at the size of a thumbnail: one subject, one light, nothing small or busy.",
+          "uso": "La miniatura con la que se sube el episodio 12, «La mirada que el mundo temerá»."
+        }
+      ]
     }
   }
 }

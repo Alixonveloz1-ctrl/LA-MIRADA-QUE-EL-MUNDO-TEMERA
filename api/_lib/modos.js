@@ -86,6 +86,8 @@ import {
 import {
   promptPlaca,
   promptEscenario,
+  promptPoster,
+  posterDeDifusion,
   promptKeyframe,
   promptVideo,
   encargoMusica,
@@ -123,7 +125,7 @@ const TOPE_LISTAR = 5000;
 const PLAZO_DE_CONSULTA_MS = 45_000;
 
 /** Los tres tipos de imagen que se generan mirándolos. */
-const TIPOS_DE_IMAGEN = ['placa', 'escenario', 'keyframe'];
+const TIPOS_DE_IMAGEN = ['placa', 'escenario', 'keyframe', 'poster'];
 
 /** Extensión según lo que conteste el modelo. El 2K llega en PNG. */
 const EXTENSIONES = { 'image/png': 'png', 'image/jpeg': 'jpg', 'image/webp': 'webp' };
@@ -373,6 +375,69 @@ function carpetaDeEscenario(id) {
     );
   }
   return `${quitarExtension(plantilla.replace('{id}', elEscenario.id))}/`;
+}
+
+/**
+ * La forma de un póster: la que se ha pedido, y si no se ha pedido ninguna, la
+ * que dice `difusion.posters.formato_por_defecto`. Solo valen las que están
+ * escritas en `difusion.posters.formatos`, y si no vale se dice cuáles hay.
+ * @param {string|null} proporcion
+ * @returns {string} «9:16» o «16:9»
+ */
+function formaDePoster(proporcion) {
+  const posters = (serie.difusion && serie.difusion.posters) || {};
+  const formatos = Array.isArray(posters.formatos) ? posters.formatos : [];
+  const pedida = String(proporcion || '').trim() || String(posters.formato_por_defecto || '').trim();
+  if (!pedida) {
+    throw new ErrorDeCara(
+      'No se sabe en qué formato hacer el póster: no se ha elegido ninguno y en ' +
+        'difusion.posters.formato_por_defecto de datos/serie.json tampoco hay nada escrito.',
+      { reintentable: false, http: 400 }
+    );
+  }
+  if (formatos.length && !formatos.includes(pedida)) {
+    throw new ErrorDeCara(
+      `«${pedida}» no es un formato de póster. Los que hay son: ${formatos.join(', ')}.`,
+      { reintentable: false, http: 400 }
+    );
+  }
+  return pedida;
+}
+
+/** «9:16» → «9-16». Los dos puntos no se llevan bien con las rutas. */
+function formaEnRuta(forma) {
+  return String(forma).replace(/:/g, '-');
+}
+
+/**
+ * La clave con la que vive un póster en `estado.posters`: la pieza Y su forma,
+ * porque el vertical y el horizontal son dos imágenes distintas, cada una con
+ * sus intentos y su aprobación. Igual que las tomas, que son `{pieza}/{toma}`.
+ * @param {string} id
+ * @param {string} forma
+ * @returns {string}
+ */
+function claveDePoster(id, forma) {
+  return `${id}/${formaEnRuta(forma)}`;
+}
+
+/**
+ * La carpeta de los intentos de un póster, desde `difusion.posters.ruta`.
+ * @param {string} id
+ * @param {string} forma
+ * @returns {string}
+ */
+function carpetaDePoster(id, forma) {
+  const posters = (serie.difusion && serie.difusion.posters) || {};
+  const plantilla = String(posters.ruta || '');
+  if (!plantilla.includes('{id}')) {
+    throw new ErrorDeCara(
+      'La plantilla de rutas de los pósters (difusion.posters.ruta en datos/serie.json) no lleva ' +
+        `{id}, así que no se sabe dónde guardar «${id}».`,
+      { detalle: plantilla || null, reintentable: false, http: 500 }
+    );
+  }
+  return `${quitarExtension(plantilla.replace('{id}', id))}/${formaEnRuta(forma)}/`;
 }
 
 /** La carpeta de los intentos de keyframe de una toma (docs/contrato.md §11). */
@@ -708,6 +773,8 @@ async function modoImagen(cuerpo) {
   const id = exigirTexto(cuerpo, 'id', 'qué placa, qué escenario o qué toma se genera');
   const nivel = textoSiViene(cuerpo, 'nivel');
   const resolucion = textoSiViene(cuerpo, 'resolucion');
+  // La proporción solo la pide el póster: todo lo que se anima va en 16:9.
+  const proporcion = tipo === 'poster' ? textoSiViene(cuerpo, 'proporcion') : null;
 
   // El id del modelo no se escribe aquí: sale de datos/serie.json y lo sustituye
   // IMAGE_MODEL. Hace falta antes de nada para poder mirar los cupos.
@@ -717,6 +784,7 @@ async function modoImagen(cuerpo) {
   let carpeta;
   let paraQue;
   let idPiezaDelKeyframe = null;
+  let formaDelPoster = null;
 
   if (tipo === 'placa') {
     placaDelBanco(id); // que exista de verdad, y si no que lo diga con palabras
@@ -728,6 +796,12 @@ async function modoImagen(cuerpo) {
     compuesto = promptEscenario(id);
     carpeta = carpetaDeEscenario(id);
     paraQue = `generar el escenario «${id}»`;
+  } else if (tipo === 'poster') {
+    posterDeDifusion(id);
+    formaDelPoster = formaDePoster(proporcion);
+    compuesto = promptPoster(id, formaDelPoster);
+    carpeta = carpetaDePoster(id, formaDelPoster);
+    paraQue = `generar «${id}» en ${formaDelPoster}`;
   } else {
     idPiezaDelKeyframe = exigirTexto(cuerpo, 'pieza', 'de qué pieza es la toma del keyframe');
     tomaDeLaPieza(idPiezaDelKeyframe, id);
@@ -785,7 +859,8 @@ async function modoImagen(cuerpo) {
     negativo: compuesto.negativo,
     referencias,
     nivel,
-    resolucion
+    resolucion,
+    proporcion: formaDelPoster
   });
 
   const datos = Buffer.from(generada.b64, 'base64');
@@ -798,6 +873,13 @@ async function modoImagen(cuerpo) {
       if (tipo === 'keyframe') {
         const entrada = entradaDeToma(estado, `${idPiezaDelKeyframe}/${id}`);
         apuntarIntento(entrada, 'intentos_keyframe', ruta);
+        return;
+      }
+      if (tipo === 'poster') {
+        const clave = claveDePoster(id, formaDelPoster);
+        if (!esObjeto(estado.posters)) estado.posters = {};
+        if (!esObjeto(estado.posters[clave])) estado.posters[clave] = { aprobada: null, intentos: [] };
+        apuntarIntento(estado.posters[clave], 'intentos', ruta);
         return;
       }
       const donde = tipo === 'placa' ? 'banco' : 'escenarios';

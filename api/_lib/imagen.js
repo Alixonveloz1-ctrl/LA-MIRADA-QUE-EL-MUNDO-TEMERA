@@ -25,7 +25,17 @@ import { llamar, urlModelo, conGrafias, comoGrafia } from './vertex.js';
 
 // Formato de la serie. El 16:9 tiene que coincidir con el `aspectRatio` de Veo
 // o el clip recorta la imagen que se aprobó.
+//
+// TODO LO QUE SE ANIMA VA EN 16:9 Y NO SE DISCUTE. Lo que puede ir en otra
+// proporción es lo que NO se anima: un póster, una miniatura. Por eso la
+// proporción se puede pedir, pero solo se pide desde ahí; un keyframe que
+// pidiera otra cosa saldría recortado en el clip y no se vería hasta tener el
+// vídeo pagado.
 const PROPORCION = '16:9';
+
+// Las que Google acepta. Una que no esté en esta lista se la come con un error
+// en inglés que no dice que el problema sea este.
+const PROPORCIONES = ['1:1', '3:4', '4:3', '9:16', '16:9'];
 
 // Las que se pueden pedir. La K, en MAYÚSCULA: en minúscula Google rechaza la
 // petición. Cuál se usa lo decide quien paga, desde la pantalla de Salud; lo de
@@ -78,7 +88,14 @@ const FIRMAS = [
  *        gasto además del nivel, y por eso se puede pedir llamada a llamada.
  * @returns {Promise<{b64:string, mime:string, bytes:number}>}
  */
-export async function generar({ texto, negativo = null, referencias = [], nivel, resolucion } = {}) {
+export async function generar({
+  texto,
+  negativo = null,
+  referencias = [],
+  nivel,
+  resolucion,
+  proporcion
+} = {}) {
   const prompt = comprobarTexto(texto);
   const refs = comprobarReferencias(referencias);
 
@@ -92,6 +109,7 @@ export async function generar({ texto, negativo = null, referencias = [], nivel,
   // `null` significa no mandar el campo: Google elige, y la petición cae en el
   // cubo de cuota más ancho.
   const tamano = resolucionValida(resolucion);
+  const forma = proporcionValida(proporcion);
 
   // Se prueban las grafías del modelo en orden: Vertex publica el mismo modelo
   // con el nombre de preview y el definitivo, y cuál contesta depende del
@@ -99,7 +117,7 @@ export async function generar({ texto, negativo = null, referencias = [], nivel,
   let respuesta;
   try {
     respuesta = await conGrafias(modelo, (id) =>
-      llamar(urlModelo(comoGrafia(modelo, id), 'generateContent', ent.sa.project_id), cuerpoPara(id, partes, tamano), {
+      llamar(urlModelo(comoGrafia(modelo, id), 'generateContent', ent.sa.project_id), cuerpoPara(id, partes, tamano, forma), {
         metodo: 'POST',
         contexto: {
           que: 'generar la imagen',
@@ -190,9 +208,9 @@ function resolucionValida(pedida) {
   );
 }
 
-function cuerpoPara(id, partes, tamano) {
+function cuerpoPara(id, partes, tamano, forma) {
   const familia3 = /^gemini-3/i.test(String(id));
-  const imageConfig = { aspectRatio: PROPORCION };
+  const imageConfig = { aspectRatio: forma || PROPORCION };
 
   // La K en MAYÚSCULA. En minúscula lo rechaza. docs/contrato.md §12 nombra este
   // campo `resolution`; la API de Vertex lo llama `imageSize` dentro de
@@ -475,6 +493,32 @@ const BLOQUEOS_DE_CONTENIDO = [
   'SPII',
   'IMAGE_OTHER_PROHIBITED',
 ];
+
+/**
+ * La proporción, si se pide una.
+ *
+ * Sin pedir nada sale el 16:9 de la serie, que es lo que hay que usar para todo
+ * lo que se anima: un keyframe en otra proporción sale recortado en el clip, y
+ * eso no se ve hasta tener el vídeo pagado. Lo que sí puede llevar otra es lo
+ * que no se anima: un póster vertical, una miniatura.
+ *
+ * Una proporción inventada NO se cambia por la de siempre en silencio: se falla.
+ * Cambiarla sin decirlo daría un póster horizontal cuando se pidió vertical, y
+ * eso se descubre mirando la imagen ya pagada.
+ *
+ * @param {*} proporcion
+ * @returns {string|null} null significa «la de la serie»
+ */
+function proporcionValida(proporcion) {
+  const dicha = String(proporcion ?? '').trim();
+  if (!dicha) return null;
+  if (PROPORCIONES.includes(dicha)) return dicha;
+  throw new ErrorDeCara(
+    `«${dicha}» no es una proporción que Google acepte. Las que acepta son: ` +
+      `${PROPORCIONES.join(', ')}. Se dice así, con dos puntos en medio.`,
+    { reintentable: false, http: 400 }
+  );
+}
 
 /** @param {string} motivo lo que dijo Google, ya juntado */
 function esBloqueoDeContenido(motivo) {

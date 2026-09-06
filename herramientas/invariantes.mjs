@@ -2870,6 +2870,137 @@ bloque('Código · una llamada por escena');
 }
 
 // ===========================================================================
+// DATOS · Los pósters y las miniaturas
+// ===========================================================================
+
+bloque('Datos · los pósters y las miniaturas');
+
+{
+  const posters = (serie.difusion && serie.difusion.posters) || {};
+  const piezas = Array.isArray(posters.piezas) ? posters.piezas : [];
+  const placas = new Set(((serie.banco && serie.banco.placas) || []).map((una) => una && una.id));
+
+  // 1. Cada póster se genera contra placas que EXISTEN. Una referencia con un
+  //    nombre mal escrito no se nota hasta que se pulsa generar y la función
+  //    contesta, y para entonces ya se ha ido a buscar el botón tres veces.
+  {
+    const quejas = [];
+    for (const uno of piezas) {
+      if (!uno || !uno.id) continue;
+      const refs = Array.isArray(uno.refs) ? uno.refs : [];
+      if (!refs.length) {
+        quejas.push(
+          `El póster «${uno.id}» no tiene ni una placa de referencia. Sin una cara ` +
+            'aprobada delante, el modelo se inventa el personaje y no se parece a la serie.'
+        );
+        continue;
+      }
+      for (const ref of refs) {
+        if (!placas.has(ref)) {
+          quejas.push(
+            `El póster «${uno.id}» dice usar la placa «${ref}», que no está en ` +
+              'banco.placas de datos/serie.json.'
+          );
+        }
+      }
+    }
+    comprobar('Cada póster se genera contra placas del banco que existen', quejas);
+  }
+
+  // 2. Los formatos escritos tienen que ser de los que el modelo de imagen
+  //    acepta. Uno inventado no falla al escribirlo: falla al generar, ya
+  //    encolado, y entonces hay que venir aquí a mirar por qué.
+  {
+    const quejas = [];
+    const fuente = fuenteDe('api/_lib/imagen.js');
+    const lista = fuente ? fuente.match(/const PROPORCIONES\s*=\s*\[([^\]]*)\]/) : null;
+    const aceptadas = lista
+      ? lista[1].split(',').map((uno) => uno.trim().replace(/^['"]|['"]$/g, '')).filter(Boolean)
+      : [];
+
+    if (!aceptadas.length) {
+      quejas.push(
+        'api/_lib/imagen.js ya no declara PROPORCIONES, así que no se puede comprobar que ' +
+          'los formatos de los pósters sean de los que el modelo acepta.'
+      );
+    } else {
+      for (const forma of Array.isArray(posters.formatos) ? posters.formatos : []) {
+        if (!aceptadas.includes(forma)) {
+          quejas.push(
+            `«${forma}» está escrito en difusion.posters.formatos y no es una de las ` +
+              `proporciones que acepta el modelo de imagen (${aceptadas.join(', ')}).`
+          );
+        }
+      }
+      const porDefecto = posters.formato_por_defecto;
+      if (porDefecto && !(posters.formatos || []).includes(porDefecto)) {
+        quejas.push(
+          `El formato por defecto de los pósters es «${porDefecto}» y no está en la lista ` +
+            'de formatos. Al abrir la pantalla no habría ninguno elegido.'
+        );
+      }
+    }
+    comprobar('Los formatos de los pósters son proporciones que el modelo acepta', quejas);
+  }
+
+  // 3. Si el título va DENTRO de la imagen, tiene que estar escrito. Un título
+  //    vacío no da un error: da una imagen sin título, pagada, que hay que
+  //    mirar dos veces para darse cuenta.
+  {
+    const quejas = [];
+    const notas = [];
+    if (posters.titulo_en_la_imagen === true) {
+      const titulo = typeof posters.titulo === 'string' ? posters.titulo.trim() : '';
+      if (!titulo) {
+        quejas.push(
+          'difusion.posters.titulo_en_la_imagen está en true pero difusion.posters.titulo ' +
+            'está vacío: se pediría una imagen con un título en blanco.'
+        );
+      } else if (titulo !== String((serie.meta && serie.meta.titulo_es) || '').trim()) {
+        quejas.push(
+          `El título que se pide dentro del póster («${titulo}») no es el título de la ` +
+            `serie («${serie.meta && serie.meta.titulo_es}»). Uno de los dos está mal escrito.`
+        );
+      }
+      const fuente = fuenteDe(RUTA_PROMPT);
+      if (fuente && !/promptPoster/.test(fuente)) {
+        quejas.push(`${RUTA_PROMPT} ya no exporta promptPoster, o ha cambiado de nombre.`);
+      }
+      notas.push(
+        'El título va dentro de la imagen porque así se pidió, a sabiendas de que los ' +
+          'modelos escriben mal las tildes. Cada intento cuesta una generación y el botón ' +
+          'de rehacer está a mano: es la excepción aceptada, no un descuido.'
+      );
+    }
+    comprobar('El título que va dentro del póster es el título de la serie', quejas, notas);
+  }
+
+  // 4. Una miniatura por GUION, ni una más ni una menos. Los episodios se
+  //    cuentan donde de verdad están —datos/guiones.json—, no en un número
+  //    escrito aparte que nadie actualizaría. Si se escribe un guion trece y
+  //    nadie añade su miniatura, ese capítulo se subiría sin portada.
+  {
+    const quejas = [];
+    const losGuiones = Array.isArray(guiones.guiones) ? guiones.guiones : [];
+    const miniaturas = piezas.filter((uno) => uno && /^miniatura-/.test(uno.id));
+
+    if (miniaturas.length !== losGuiones.length) {
+      quejas.push(
+        `Hay ${losGuiones.length} guiones escritos y ${miniaturas.length} miniaturas. Al ` +
+          'episodio que se quede sin la suya se le sube sin portada.'
+      );
+    }
+    for (const unGuion of losGuiones) {
+      const numero = String((unGuion && unGuion.episodio) || '').padStart(2, '0');
+      if (numero && !miniaturas.some((una) => una.id === `miniatura-ep${numero}`)) {
+        quejas.push(`El episodio ${numero} no tiene miniatura escrita (miniatura-ep${numero}).`);
+      }
+    }
+    comprobar('Hay una miniatura por cada guion escrito', quejas);
+  }
+}
+
+// ===========================================================================
 // Resumen
 // ===========================================================================
 

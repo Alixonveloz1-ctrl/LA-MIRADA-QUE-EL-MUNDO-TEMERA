@@ -392,7 +392,8 @@ que se probaba un solo nombre— y por eso hoy se mide en vez de darse por hecho
 8. **Montaje** — montar por escenas, actos y episodio, y reproducir o descargar
    el resultado por URL firmada.
 9. **Difusión** — lo que hace falta para PUBLICAR, que no es lo mismo que lo que
-   hace falta para producir.
+   hace falta para producir: la ficha con la que se sube cada pieza, el zip con
+   el vídeo y esa ficha dentro, y los pósters y miniaturas en 9:16 o 16:9.
 
 ---
 
@@ -903,6 +904,62 @@ episodio pase de 4 GB, que es donde el formato original se queda corto.
 **El aviso antes de pulsar** dice lo que pesa, porque en un teléfono hay que
 descargarlo Y dejar libre otro tanto para abrirlo.
 
+### Los pósters y las miniaturas
+
+El **póster oficial** de la serie y una **miniatura por episodio**: trece piezas,
+escritas en `difusion.posters.piezas` de `datos/serie.json`.
+
+**No son fotogramas del capítulo.** Se generan aquí, con el mismo modelo de
+imagen que las placas y con las **placas ya aprobadas** de los personajes delante
+como referencia, para que sea la misma cara, la misma luz y el mismo estilo. Un
+fotograma cualquiera no compone, y una miniatura tiene que leerse del tamaño de
+una uña.
+
+El botón de generar **no se enciende** mientras falte una de esas placas por
+aprobar, y dice cuál falta. Lo comprueba también la función, que es quien manda:
+encolar un trabajo que ya se sabe que va a fallar cuesta diez minutos de espera
+para nada.
+
+#### El formato se elige antes, no se recorta después
+
+Un selector arriba de la sección, **9:16 o 16:9**, y lo que se elija es lo que se
+genera y lo que se mira debajo. Uno solo para las trece tarjetas: en un teléfono,
+trece selectores iguales son trece formas de equivocarse.
+
+`9:16` es lo vertical —el póster de toda la vida, y lo que piden las plataformas
+de móvil—; `16:9` es lo que pide una miniatura de YouTube. **Cada uno se genera
+con su proporción desde el principio**: recortar uno para sacar el otro deja la
+cabeza fuera del cuadro.
+
+Por eso cada formato es **su propia imagen**, con sus intentos y su aprobación.
+En el estado viven separados, con la pieza y el formato en la clave
+(`poster-oficial/9-16`, `poster-oficial/16-9`), y en el bucket en carpetas
+distintas. Generar el horizontal **nunca** pisa el vertical que ya estaba
+aprobado. Eso lo comprueba `npm run difusion` ejecutándolo, porque es justo la
+clase de fallo que no avisa: se perdería una imagen ya pagada sin un solo error
+en pantalla.
+
+#### El título va dentro de la imagen
+
+`LA MIRADA QUE EL MUNDO TEMERÁ` se le pide al modelo **escrito dentro del
+póster**, letra por letra, en el propio prompt.
+
+Es una decisión de quien paga, tomada a sabiendas y escrita aquí para que no
+parezca un descuido: **los modelos de imagen escriben mal las tildes y las eñes**,
+así que puede salir con letras inventadas. Se mira y se rehace hasta que salga;
+por eso el botón de «Otro intento» está siempre a mano y **ningún intento se
+borra**, que el bueno puede ser el tercero.
+
+Se cambia en un sitio: `difusion.posters.titulo_en_la_imagen` a `false` en
+`datos/serie.json`, y entonces el prompt pide la imagen limpia, sin una sola
+letra, para ponerle el título encima con cualquier editor.
+
+Un invariante comprueba que el título que se pide dentro del póster es el mismo
+que `meta.titulo_es`, que los formatos escritos son proporciones que el modelo
+acepta, que cada póster referencia placas que existen y que **hay una miniatura
+por cada guion escrito**: si algún día hay un episodio trece, el que se quede sin
+la suya se subiría sin portada.
+
 ### Lo que falta en esta pantalla
 
 Se dice ahí dentro, para que no se busque por las otras ocho:
@@ -911,8 +968,6 @@ Se dice ahí dentro, para que no se busque por las otras ocho:
   la música que ya existan. El montador ya sabe montar en vertical —el formato va
   en el manifiesto—, así que no hace falta volver a desplegarlo. Lo que hace
   falta son clips aprobados.
-- Los **pósters**: el oficial de la serie y las doce miniaturas de los episodios,
-  generados con las placas de personajes y escenarios ya aprobadas.
 
 ---
 

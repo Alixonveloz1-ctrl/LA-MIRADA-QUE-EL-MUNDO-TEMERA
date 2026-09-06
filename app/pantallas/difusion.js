@@ -27,10 +27,26 @@
 //      la ficha está delante. Una descripción que cuenta el final se publica una
 //      vez y ya no se puede recoger.
 //
+//   4. UN PÓSTER NO ES UN FOTOGRAMA. El póster oficial y las doce miniaturas se
+//      GENERAN aquí, con las placas ya aprobadas de los personajes delante como
+//      referencia, para que sea la misma cara y la misma luz. No se sacan del
+//      capítulo: un fotograma cualquiera no compone, y una miniatura tiene que
+//      leerse del tamaño de una uña.
+//
+//      El FORMATO se elige antes de generar, y no se recorta después: 9:16 es lo
+//      vertical y 16:9 es lo que pide una miniatura de YouTube. Recortar uno para
+//      sacar el otro deja la cabeza fuera del cuadro, así que cada formato es su
+//      propia imagen, con sus intentos y su aprobación.
+//
+//      El TÍTULO va escrito DENTRO de la imagen, pedido en el prompt. Es una
+//      decisión tomada a sabiendas: los modelos de imagen escriben mal las tildes
+//      y las eñes, así que puede salir con letras inventadas. Por eso el botón de
+//      «Otro intento» está siempre a mano y cada intento se queda guardado.
+//
 // LO QUE TODAVÍA NO ESTÁ, y se dice para que no se busque: los reels de treinta
-// segundos y los pósters. Van en esta misma pantalla y en este orden. El paquete
-// de descarga va primero porque es lo primero que hace falta: en cuanto haya un
-// teaser montado, ya se puede subir.
+// segundos. Van en esta misma pantalla. El paquete de descarga va primero porque
+// es lo primero que hace falta: en cuanto haya un teaser montado, ya se puede
+// subir.
 
 import { ErrorDeCara, llamar } from '../api.js';
 import { actual, alCambiar, cambiar } from '../estado.js';
@@ -91,6 +107,16 @@ const leidas = new Set();
 
 /** Ruta lógica → bytes, de lo que hay en «difusion/». */
 const pesos = new Map();
+
+/**
+ * El formato en el que se está trabajando: «9:16» o «16:9». Uno para toda la
+ * sección y no uno por tarjeta, porque en un teléfono trece selectores iguales
+ * son trece formas de equivocarse. Null hasta que se lee serie.json.
+ */
+let formaElegida = null;
+
+/** «{poster}/{forma}» → qué intento se está mirando de esa tarjeta. */
+const mirandoPoster = new Map();
 
 /** Si ya se ha preguntado por los pesos en esta visita. */
 let pesosPedidos = false;
@@ -201,7 +227,15 @@ function construir(serie, repintar) {
   const piezas = piezasQueSePublican(serie);
   const montajes = Array.isArray(estado.montajes) ? estado.montajes : [];
 
-  const ctx = { serie, estado, piezas, montajes, repintar, trabajos: indexarCola(estado) };
+  const ctx = {
+    serie,
+    estado,
+    piezas,
+    montajes,
+    repintar,
+    trabajos: indexarCola(estado),
+    forma: formaDeTrabajo(serie)
+  };
 
   // Las firmas y los pesos llegan solos.
   const rutas = [];
@@ -211,10 +245,69 @@ function construir(serie, repintar) {
     const paquete = elPaqueteDe(montajes, una.id);
     if (paquete) rutas.push(paquete.ruta);
   }
+  // Los pósters: el intento que se esté mirando de cada uno, en el formato
+  // elegido. Solo esos: pedir enlace de los veintitantos intentos viejos sería
+  // una llamada enorme para enseñar una sola imagen por tarjeta.
+  for (const unPoster of piezasDePoster(serie)) {
+    const guardado = posterGuardado(estado, unPoster.id, ctx.forma);
+    const ruta = rutaQueSeMira(unPoster.id, ctx.forma, guardado);
+    if (ruta) rutas.push(ruta);
+  }
+
   pedirEnlacesQueFalten(rutas, repintar);
   pedirLosPesos(repintar);
 
-  return pantalla('Difusión', seccionCabecera(ctx), seccionPiezas(ctx), seccionLoQueFalta());
+  return pantalla(
+    'Difusión',
+    seccionCabecera(ctx),
+    seccionPiezas(ctx),
+    seccionPosters(ctx),
+    seccionLoQueFalta()
+  );
+}
+
+/**
+ * Los formatos en los que se puede hacer un póster, tal como están escritos en
+ * datos/serie.json. Si allí no hay nada, no se inventa ninguno: se devuelve la
+ * lista vacía y la sección lo dice con palabras.
+ * @param {object} serie
+ * @returns {string[]}
+ */
+function formatosDePoster(serie) {
+  const posters = ajustesDePoster(serie);
+  return Array.isArray(posters.formatos) ? posters.formatos.filter((uno) => soloTexto(uno)) : [];
+}
+
+/** El bloque `difusion.posters` de la serie, o un objeto vacío. */
+function ajustesDePoster(serie) {
+  const difusion = esObjeto(serie && serie.difusion) ? serie.difusion : {};
+  return esObjeto(difusion.posters) ? difusion.posters : {};
+}
+
+/** El póster oficial y las doce miniaturas, en el orden en que están escritos. */
+function piezasDePoster(serie) {
+  const posters = ajustesDePoster(serie);
+  const piezas = Array.isArray(posters.piezas) ? posters.piezas : [];
+  return piezas.filter((una) => esObjeto(una) && soloTexto(una.id));
+}
+
+/** El formato con el que se trabaja: el elegido, y si no el que dice la serie. */
+function formaDeTrabajo(serie) {
+  const formatos = formatosDePoster(serie);
+  if (formaElegida && formatos.includes(formaElegida)) return formaElegida;
+  const porDefecto = soloTexto(ajustesDePoster(serie).formato_por_defecto);
+  if (porDefecto && formatos.includes(porDefecto)) return porDefecto;
+  return formatos[0] || '';
+}
+
+/** «9:16» → «9-16». Los dos puntos no se llevan bien con las rutas. */
+function formaEnRuta(forma) {
+  return String(forma).replace(/:/g, '-');
+}
+
+/** La clave con la que vive un póster en el estado: la pieza Y su formato. */
+function claveDePoster(id, forma) {
+  return `${id}/${formaEnRuta(forma)}`;
 }
 
 /**
@@ -528,6 +621,344 @@ function comoTexto(etiquetas) {
 }
 
 // ---------------------------------------------------------------------------
+// Los pósters y las miniaturas
+// ---------------------------------------------------------------------------
+
+/**
+ * El póster oficial y las doce miniaturas, en el formato que se haya elegido.
+ * @param {object} ctx
+ * @returns {HTMLElement}
+ */
+function seccionPosters(ctx) {
+  const { serie, forma, repintar } = ctx;
+  const piezas = piezasDePoster(serie);
+
+  if (!piezas.length) {
+    return seccion(
+      'Pósters y miniaturas',
+      aviso(
+        'No hay ningún póster escrito en difusion.posters.piezas de datos/serie.json, así que no ' +
+          'hay nada que generar.',
+        { tono: 'error' }
+      )
+    );
+  }
+
+  const formatos = formatosDePoster(serie);
+  const partes = [];
+
+  partes.push(
+    h(
+      'p',
+      { clase: 'tarjeta-texto suave' },
+      'El póster oficial de la serie y la miniatura de cada episodio. No son fotogramas del ' +
+        'capítulo: se generan aquí con las placas ya aprobadas de los personajes delante, para ' +
+        'que sea la misma cara, la misma luz y el mismo estilo.'
+    )
+  );
+
+  // EL SELECTOR DE FORMATO. Va arriba y uno solo para toda la sección: lo que se
+  // elija aquí es lo que se genera y lo que se mira debajo.
+  if (formatos.length > 1) {
+    const botones = h('div', { clase: 'tarjeta-acciones' });
+    for (const uno of formatos) {
+      botones.appendChild(
+        boton(
+          `${uno}${uno === '9:16' ? ' · vertical' : uno === '16:9' ? ' · horizontal' : ''}`,
+          () => {
+            formaElegida = uno;
+            repintar();
+          },
+          { tono: uno === forma ? 'principal' : 'suave' }
+        )
+      );
+    }
+    partes.push(botones);
+    partes.push(
+      h(
+        'p',
+        { clase: 'tenue' },
+        soloTexto(ajustesDePoster(serie).nota_formato) ||
+          'Se elige antes de generar. Cada formato es su propia imagen.'
+      )
+    );
+  }
+
+  if (ajustesDePoster(serie).titulo_en_la_imagen === true) {
+    partes.push(
+      h(
+        'p',
+        { clase: 'tenue' },
+        `El título «${soloTexto(ajustesDePoster(serie).titulo)}» se le pide al modelo escrito ` +
+          'DENTRO de la imagen. Con las tildes suele fallar: míralo antes de aprobarlo y, si sale ' +
+          'con letras inventadas, dale a «Otro intento».'
+      )
+    );
+  }
+
+  if (!forma) {
+    partes.push(
+      aviso(
+        'No hay ningún formato escrito en difusion.posters.formatos de datos/serie.json, así que ' +
+          'no se sabe en qué proporción generarlos.',
+        { tono: 'error' }
+      )
+    );
+    return seccion('Pósters y miniaturas', partes);
+  }
+
+  for (const uno of piezas) partes.push(tarjetaDePoster(ctx, uno));
+
+  return seccion('Pósters y miniaturas', partes);
+}
+
+/**
+ * Un póster: lo que se está mirando de él, cómo va y sus botones.
+ * @param {object} ctx
+ * @param {object} elPoster la entrada de `difusion.posters.piezas`
+ * @returns {HTMLElement}
+ */
+function tarjetaDePoster(ctx, elPoster) {
+  const { estado, forma, trabajos, repintar } = ctx;
+
+  const id = soloTexto(elPoster.id);
+  const clave = claveDePoster(id, forma);
+  const guardado = posterGuardado(estado, id, forma);
+  const enLaCola = trabajos.get(`poster:${clave}`) || null;
+  const enMarcha = Boolean(enLaCola && estaEnMarcha(enLaCola));
+
+  const ruta = rutaQueSeMira(id, forma, guardado);
+  const pie = h('div', null);
+
+  if (soloTexto(elPoster.uso)) {
+    pie.appendChild(h('p', { clase: 'tarjeta-texto suave' }, soloTexto(elPoster.uso)));
+  }
+
+  const faltan = refsQueFaltan(ctx, elPoster);
+  if (faltan.length) {
+    pie.appendChild(
+      h(
+        'p',
+        { clase: 'tarjeta-texto' },
+        faltan.length === 1
+          ? `Para generarlo hace falta la placa ${faltan[0]} aprobada, y todavía no lo está. Se ` +
+            'aprueba en la pantalla del Banco, mirándola.'
+          : `Para generarlo hacen falta ${plural(faltan.length, 'placa', 'placas')} aprobadas que ` +
+            `todavía no lo están: ${enumerarCorto(faltan)}. Se aprueban en la pantalla del Banco, ` +
+            'mirándolas.'
+      )
+    );
+  }
+
+  if (enMarcha) pie.appendChild(espera('Generándose ahora. No hace falta tener esto abierto.'));
+  if (enLaCola && enLaCola.error) {
+    pie.appendChild(aviso(enLaCola.error, { tono: 'error', detalle: enLaCola.detalle }));
+  }
+
+  // Los intentos: cuántos hay y cuál se está mirando. Ninguno se borra, porque
+  // cada uno está pagado y el bueno puede ser el tercero.
+  if (guardado.intentos.length > 1) {
+    const cual = guardado.intentos.indexOf(ruta);
+    const fila = h('div', { clase: 'tarjeta-acciones' });
+    fila.appendChild(
+      boton('Anterior', () => moverIntento(clave, guardado, -1, repintar), {
+        tono: 'suave',
+        desactivado: cual > 0 ? null : 'Es el primero.'
+      })
+    );
+    fila.appendChild(
+      boton('Siguiente', () => moverIntento(clave, guardado, 1, repintar), {
+        tono: 'suave',
+        desactivado: cual >= 0 && cual < guardado.intentos.length - 1 ? null : 'Es el último.'
+      })
+    );
+    pie.appendChild(fila);
+    pie.appendChild(
+      h(
+        'p',
+        { clase: 'tenue' },
+        `Intento ${cual >= 0 ? cual + 1 : '?'} de ${guardado.intentos.length}` +
+          `${ruta && ruta === guardado.aprobada ? ' · es el aprobado' : ''}.`
+      )
+    );
+  }
+
+  if (ruta && pesoDe(ruta)) {
+    pie.appendChild(h('p', { clase: 'tenue' }, `Pesa ${bytes(pesoDe(ruta))}.`));
+  }
+
+  const url = ruta ? enlaceDe(ruta) : null;
+  if (url) {
+    pie.appendChild(
+      h(
+        'p',
+        { clase: 'tarjeta-texto' },
+        h('a', { href: url, download: '', clase: 'enlace' }, 'Descargar esta imagen')
+      )
+    );
+  }
+
+  // Los botones.
+  const acciones = h('div', { clase: 'tarjeta-acciones' });
+
+  acciones.appendChild(
+    boton(
+      guardado.intentos.length ? 'Otro intento' : 'Generar',
+      () => generarPoster(ctx, id, forma),
+      {
+        tono: guardado.aprobada ? 'suave' : 'principal',
+        desactivado: porQueNoSeGeneraElPoster(faltan, enMarcha)
+      }
+    )
+  );
+
+  if (ruta) {
+    acciones.appendChild(
+      ruta === guardado.aprobada
+        ? boton('Quitar el visto bueno', () => aprobarPoster(ctx, id, forma, null), {
+            tono: 'suave'
+          })
+        : boton('Aprobar esta', () => aprobarPoster(ctx, id, forma, ruta), { tono: 'principal' })
+    );
+  }
+
+  return tarjeta({
+    titulo: `${soloTexto(elPoster.nombre) || id} · ${forma}`,
+    estado: comoVaElPoster(guardado, enMarcha),
+    media: marcoDePoster(ruta, guardado, `${soloTexto(elPoster.nombre) || id}, ${forma}`),
+    pie,
+    acciones
+  });
+}
+
+/** Por qué todavía no se puede generar un póster, con palabras. Null si se puede. */
+function porQueNoSeGeneraElPoster(faltan, enMarcha) {
+  if (enMarcha) return 'Ya se está generando. Se paga una vez.';
+  if (faltan.length) {
+    return `Falta aprobar ${enumerarCorto(faltan)}. Sin esa imagen delante no hay contra qué ` +
+      'generar el póster.';
+  }
+  return null;
+}
+
+/** El punto de estado de un póster. */
+function comoVaElPoster(guardado, enMarcha) {
+  if (guardado.aprobada) return { tipo: 'aprobada', texto: 'Aprobada' };
+  if (enMarcha) return { tipo: 'en_curso', texto: 'Generándose' };
+  if (guardado.intentos.length) return { tipo: 'por-aprobar', texto: 'Por aprobar' };
+  return { tipo: 'pendiente', texto: 'Sin generar' };
+}
+
+/**
+ * Las placas de referencia de un póster que todavía no están aprobadas. El
+ * servidor también lo comprueba —es él quien manda—, pero decirlo aquí evita
+ * encolar un trabajo que ya se sabe que va a fallar.
+ * @param {object} ctx
+ * @param {object} elPoster
+ * @returns {string[]}
+ */
+function refsQueFaltan(ctx, elPoster) {
+  const banco = esObjeto(ctx.estado.banco) ? ctx.estado.banco : {};
+  const refs = Array.isArray(elPoster.refs) ? elPoster.refs : [];
+  return refs
+    .map((una) => soloTexto(una))
+    .filter((una) => una && !soloTexto(esObjeto(banco[una]) ? banco[una].aprobada : ''));
+}
+
+/** Lo guardado de un póster en un formato, con la forma del contrato §5. */
+function posterGuardado(estado, id, forma) {
+  const mapa = esObjeto(estado.posters) ? estado.posters : {};
+  const entrada = esObjeto(mapa[claveDePoster(id, forma)]) ? mapa[claveDePoster(id, forma)] : {};
+  const intentos = Array.isArray(entrada.intentos) ? entrada.intentos.filter(soloTexto) : [];
+  return { aprobada: soloTexto(entrada.aprobada) || null, intentos };
+}
+
+/**
+ * Qué imagen se está mirando de un póster: la que se haya elegido con los
+ * botones, y si no la aprobada, y si no el último intento.
+ */
+function rutaQueSeMira(id, forma, guardado) {
+  const puesta = mirandoPoster.get(claveDePoster(id, forma));
+  if (puesta && guardado.intentos.includes(puesta)) return puesta;
+  if (guardado.aprobada) return guardado.aprobada;
+  return guardado.intentos[guardado.intentos.length - 1] || null;
+}
+
+/** Pasa al intento anterior o al siguiente. */
+function moverIntento(clave, guardado, cuanto, repintar) {
+  const ruta = mirandoPoster.get(clave);
+  const desde = guardado.intentos.indexOf(
+    ruta && guardado.intentos.includes(ruta)
+      ? ruta
+      : guardado.aprobada || guardado.intentos[guardado.intentos.length - 1]
+  );
+  const hasta = desde + cuanto;
+  if (hasta < 0 || hasta >= guardado.intentos.length) return;
+  mirandoPoster.set(clave, guardado.intentos[hasta]);
+  repintar();
+}
+
+/** La imagen de un póster, o un cuadro con palabras cuando no hay ninguna. */
+function marcoDePoster(ruta, guardado, alt) {
+  if (!ruta) return huecoDePoster('Todavía no se ha generado.');
+
+  const url = enlaceDe(ruta);
+  if (!url) {
+    return huecoDePoster(
+      sinEnlace.has(ruta)
+        ? 'Esta imagen está en el bucket pero no se ha conseguido enlace para verla. Prueba con ' +
+          '«Volver a pedir los enlaces», arriba del todo.'
+        : 'Pidiendo el enlace para verla…'
+    );
+  }
+
+  const img = h('img', {
+    src: url,
+    alt: `${alt}. ${ruta === guardado.aprobada ? 'Imagen aprobada' : 'Intento sin aprobar'}.`,
+    loading: 'lazy',
+    decoding: 'async'
+  });
+
+  img.addEventListener('error', () => {
+    const fallo = huecoDePoster(
+      'Esta imagen no se ha podido cargar. Los enlaces para mirar duran seis horas: prueba con ' +
+        '«Volver a pedir los enlaces», arriba del todo.'
+    );
+    if (img.parentNode) img.replaceWith(fallo);
+  });
+
+  return img;
+}
+
+/** El cuadro con una frase dentro, para cuando no hay imagen que enseñar. */
+function huecoDePoster(texto) {
+  return h(
+    'p',
+    {
+      clase: 'tenue',
+      estilo: {
+        position: 'absolute',
+        inset: '0',
+        margin: '0',
+        display: 'flex',
+        'align-items': 'center',
+        'justify-content': 'center',
+        'text-align': 'center',
+        padding: 'var(--espacio-3)',
+        'font-size': '13px'
+      }
+    },
+    texto
+  );
+}
+
+/** «a, b y c», para meterlo en una frase. */
+function enumerarCorto(lista) {
+  if (lista.length <= 1) return lista.join('');
+  return `${lista.slice(0, -1).join(', ')} y ${lista[lista.length - 1]}`;
+}
+
+// ---------------------------------------------------------------------------
 // Lo que todavía no está
 // ---------------------------------------------------------------------------
 
@@ -542,19 +973,13 @@ function seccionLoQueFalta() {
     h(
       'p',
       { clase: 'tarjeta-texto suave' },
-      'Esta pantalla va a llevar dos cosas más, y todavía no están:'
+      'Esta pantalla va a llevar una cosa más, y todavía no está:'
     ),
     h(
       'p',
       { clase: 'tarjeta-texto' },
       'Los REELS de treinta segundos, en vertical, armados solos con los clips y la música que ya ' +
         'existan. Necesitan clips aprobados: hoy hay muy pocos.'
-    ),
-    h(
-      'p',
-      { clase: 'tarjeta-texto' },
-      'Los PÓSTERS: el oficial de la serie y las doce miniaturas de los episodios, generados con ' +
-        'las placas de personajes y escenarios que ya están aprobadas.'
     )
   );
 }
@@ -573,6 +998,49 @@ function pedirLaFicha(ctx, laPieza) {
     queja = comoErrorDeCara(fallo);
   }
   ctx.repintar();
+}
+
+/** Encola un póster o una miniatura en el formato elegido. */
+function generarPoster(ctx, id, forma) {
+  try {
+    encolar('poster', { id, proporcion: forma });
+    queja = null;
+  } catch (fallo) {
+    queja = comoErrorDeCara(fallo);
+  }
+  ctx.repintar();
+}
+
+/**
+ * Da o quita el visto bueno a un póster. Aprobar es MIRAR: por eso solo se puede
+ * aprobar la imagen que está delante, y no una de una lista.
+ * @param {object} ctx
+ * @param {string} id
+ * @param {string} forma
+ * @param {string|null} ruta la que se aprueba, o null para quitar el visto bueno
+ */
+function aprobarPoster(ctx, id, forma, ruta) {
+  const clave = claveDePoster(id, forma);
+  cambiar((borrador) => {
+    if (!esObjeto(borrador.posters)) borrador.posters = {};
+    if (!esObjeto(borrador.posters[clave])) borrador.posters[clave] = { aprobada: null, intentos: [] };
+    const entrada = borrador.posters[clave];
+    entrada.aprobada = ruta;
+    // El intento aprobado tiene que seguir estando en la lista: este cambio se
+    // puede aplicar dos veces si el bucket contesta 409, y las dos veces tiene
+    // que dejar lo mismo.
+    if (!Array.isArray(entrada.intentos)) entrada.intentos = [];
+    if (ruta && !entrada.intentos.includes(ruta)) entrada.intentos.push(ruta);
+  })
+    .then(() => {
+      if (ruta) mirandoPoster.set(clave, ruta);
+      queja = null;
+      ctx.repintar();
+    })
+    .catch((fallo) => {
+      queja = comoErrorDeCara(fallo);
+      ctx.repintar();
+    });
 }
 
 /** Da o quita el visto bueno a una ficha. */
@@ -673,7 +1141,7 @@ function elEstado() {
   try {
     return actual() || {};
   } catch {
-    return { difusion: {}, montajes: [], cola: [] };
+    return { difusion: {}, posters: {}, banco: {}, montajes: [], cola: [] };
   }
 }
 
@@ -697,6 +1165,9 @@ function indexarCola(estado) {
     const args = esObjeto(trabajo.args) ? trabajo.args : {};
     if (tipo === 'ficha') mapa.set(`ficha:${soloTexto(args.pieza)}`, trabajo);
     if (tipo === 'montaje') mapa.set(`montaje:${soloTexto(args.trabajo)}`, trabajo);
+    if (tipo === 'poster') {
+      mapa.set(`poster:${claveDePoster(soloTexto(args.id), soloTexto(args.proporcion))}`, trabajo);
+    }
   }
   return mapa;
 }

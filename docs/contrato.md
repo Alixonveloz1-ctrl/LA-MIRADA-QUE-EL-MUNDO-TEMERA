@@ -106,9 +106,10 @@ no como texto a leer.
 
 ### `imagen`
 ```js
-{ modo:"imagen", tipo:"placa"|"escenario"|"keyframe",
-  id:"saharis-ancla" | "cripta" | "A4",
+{ modo:"imagen", tipo:"placa"|"escenario"|"keyframe"|"poster",
+  id:"saharis-ancla" | "cripta" | "A4" | "poster-oficial",
   pieza:"teaser",            // solo si tipo==="keyframe"
+  proporcion:"9:16"|"16:9",  // solo si tipo==="poster"; por defecto difusion.posters.formato_por_defecto
   nivel:"calidad"|"medio"|"economico" }   // opcional; por defecto modelos.imagen.por_defecto
 → { ok:true, ruta, url, intento:2, bytes, ancho, alto }
 ```
@@ -132,6 +133,14 @@ Cómo compone la función, según `tipo`:
   como referencia de **personaje**, cada una seguida de
   `instrucciones_referencia.toma` con `{nombre}` sustituido.
   Si falta cualquier referencia aprobada, falla y **dice cuál**.
+- **poster**: `difusion.posters.piezas[id]`. Prompt = `encargo` + la frase de la
+  proporción + el título **dentro** de la imagen si
+  `difusion.posters.titulo_en_la_imagen` es `true` (y si no, la orden de no
+  escribir nada). Adjunta cada `refs` como referencia de **personaje**.
+  La `proporcion` solo se acepta si está en `difusion.posters.formatos`, y viaja
+  al modelo como `imageConfig.aspectRatio`: **no se recorta después**.
+  Se guarda en `difusion/posters/{id}/{formato}/{n}.png` y se apunta en
+  `estado.posters["{id}/{formato}"]`.
 
 Cupos: `instrucciones_referencia.maximo_referencias`. Si se pasan, falla antes
 de gastar.
@@ -342,7 +351,11 @@ Reglas duras:
   "gasto":    { "imagen": { "calidad": 0, "medio": 0, "economico": 0 },
                 "video_s": { "calidad": 0, "medio": 0, "economico": 0 },
                 "musica_s": 0, "voz_s": 0 },
-  "pesos":    { "imagen": 0 }
+  "pesos":    { "imagen": 0 },
+  "difusion": { "teaser": { "ficha": { "titulo": "", "descripcion": "", "etiquetas": [] },
+                            "ficha_aprobada": false } },
+  "posters":  { "poster-oficial/9-16": { "aprobada": null, "intentos": [] },
+                "poster-oficial/16-9": { "aprobada": null, "intentos": [] } }
 }
 ```
 
@@ -352,6 +365,9 @@ Reglas:
 - Cambiar un ancla pone `aprobada:null` en **todas** las placas de ese personaje.
 - Toda operación de Veo lanzada queda en `operacion_en_curso` **antes** de que la
   respuesta llegue al navegador. Ninguna queda huérfana.
+- La clave de `posters` es **`{pieza}/{formato}`** con el formato sin dos puntos
+  (`9-16`, `16-9`). El vertical y el horizontal son dos imágenes distintas, con
+  sus intentos y su aprobación: generar uno **nunca** pisa el otro.
 
 ---
 
@@ -438,8 +454,11 @@ móvil, al volver a abrir se reanuda sola.
   "creado": "2026-…", "actualizado": "2026-…" }
 ```
 
-Tipos: `placa`, `escenario`, `keyframe`, `clip`, `clip-consultar`, `musica`,
-`voz`, `alinear`, `desglose-escena`, `montaje`.
+Tipos: `placa`, `escenario`, `poster`, `keyframe`, `clip`, `clip-consultar`,
+`musica`, `voz`, `alinear`, `desglose-escena`, `ficha`, `montaje`.
+
+En `poster`, el **formato entra en la identidad** del trabajo: encolar el 9:16 y
+el 16:9 de la misma pieza no es encolar dos veces lo mismo.
 
 - Concurrencia máxima = `CONCURRENCIA` (por defecto 3), visible y ajustable en
   pantalla. Saturar las cuotas de Vertex devuelve errores que parecen falta de
@@ -535,7 +554,12 @@ veo/{pieza}/{toma}/{n}/                veo/{pieza}/{toma}/elegido.mp4
 audio/musica/{id}.wav                  audio/voz/{pieza}/{bloque}.wav
 muestras/{personaje}/{voz_id}.wav      montaje/{trabajo}/…
 montaje/{pieza}-{version}.mp4          estado.json
+difusion/{pieza}.zip                   difusion/posters/{id}/{formato}/{n}.png
 ```
+
+El `{formato}` de un póster es `9-16` o `16-9`: los dos puntos no viajan a una
+ruta. Cada formato tiene su carpeta, y por eso el contador de intentos de uno no
+cuenta los del otro.
 
 ---
 

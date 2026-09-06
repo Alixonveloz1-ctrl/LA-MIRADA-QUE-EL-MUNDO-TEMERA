@@ -1025,3 +1025,100 @@ export function comprobarCupos(referencias, idModelo) {
 
   return { porCupo, total };
 }
+
+// ---------------------------------------------------------------------------
+// Los pósters y las miniaturas
+// ---------------------------------------------------------------------------
+
+/**
+ * El prompt de un póster o de una miniatura de episodio.
+ *
+ * NO ES UN FOTOGRAMA. Un póster es una composición propia: se dibuja de cero
+ * usando como referencia las placas ya aprobadas, para que sea la misma cara,
+ * la misma luz y el mismo estilo que el resto de la serie. Por eso lleva las
+ * mismas referencias de personaje que un keyframe y con la misma línea pegada
+ * detrás — sin ella el modelo copia el ENCUADRE de la placa en vez de la cara.
+ *
+ * EL TÍTULO VA DENTRO DE LA IMAGEN, y es una decisión tomada a sabiendas por
+ * quien paga. Los modelos de imagen escriben mal las tildes y las eñes, así que
+ * «LA MIRADA QUE EL MUNDO TEMERÁ» puede salir con letras inventadas. Se pide
+ * escrito con todas las letras, se mira, y se rehace hasta que salga. Lo que NO
+ * se hace es corregirlo por detrás: un título mal escrito que nadie mira acaba
+ * publicado.
+ *
+ * @param {string} id el id de `difusion.posters.piezas`
+ * @returns {{texto:string, negativo:string, referencias:object[]}}
+ */
+export function promptPoster(id, proporcion = null) {
+  const laPieza = posterDeDifusion(id);
+  const posters = (serie.difusion && serie.difusion.posters) || {};
+
+  const partes = [laPieza.encargo];
+
+  // La proporción no solo se le pasa al modelo como ajuste: se le DICE, porque
+  // una composición vertical y una horizontal no son la misma imagen recortada.
+  const forma = String(proporcion || '').trim();
+  if (forma === '9:16') {
+    partes.push(
+      'Vertical composition, taller than it is wide: the subject fills the height of the frame, ' +
+        'with room left above and below.'
+    );
+  } else if (forma === '16:9') {
+    partes.push(
+      'Horizontal composition, wider than it is tall: the subject sits to one side and the empty ' +
+        'space opens sideways, not upwards.'
+    );
+  }
+
+  if (posters.titulo_en_la_imagen === true) {
+    const titulo = String(posters.titulo || '').trim();
+    if (titulo) {
+      partes.push(
+        `The exact title text "${titulo}" is written across the image in clean bold uppercase ` +
+        'lettering, spelled EXACTLY like that, letter by letter, accents included. Nothing else ' +
+        'is written anywhere: no other words, no subtitle, no credits, no watermark, no logo.'
+      );
+    }
+  } else {
+    partes.push('No text anywhere in the image: no title, no words, no letters, no watermark.');
+  }
+
+  const referencias = [];
+  for (const idRef of Array.isArray(laPieza.refs) ? laPieza.refs : []) {
+    const laPlaca = placa(idRef);
+    ponerReferencia(referencias, {
+      placa: laPlaca.id,
+      instruccion: instruccionDeToma(laPlaca.personaje),
+      cupo: 'personaje'
+    });
+  }
+
+  return { texto: sellar(unir(...partes)), negativo: negativoDeEstilo(), referencias };
+}
+
+/**
+ * Un póster o una miniatura de `difusion.posters.piezas`.
+ * @param {string} id
+ * @returns {object}
+ */
+export function posterDeDifusion(id) {
+  const posters = (serie.difusion && serie.difusion.posters) || {};
+  const piezas = Array.isArray(posters.piezas) ? posters.piezas : [];
+  const encontrada = piezas.find((una) => una && una.id === id);
+  if (!encontrada) {
+    throw new ErrorDeCara(
+      `No existe el póster «${id}». Debería estar en difusion.posters.piezas de datos/serie.json, ` +
+        `que hoy tiene ${piezas.length}. Los que hay son: ` +
+        `${piezas.map((una) => una.id).join(', ') || 'ninguno'}.`,
+      { reintentable: false, http: 400 }
+    );
+  }
+  if (typeof encontrada.encargo !== 'string' || !encontrada.encargo.trim()) {
+    throw new ErrorDeCara(
+      `El póster «${id}» no tiene encargo escrito, y el encargo es todo el prompt: sin él no hay ` +
+        'nada que dibujar.',
+      { reintentable: false, http: 500 }
+    );
+  }
+  return encontrada;
+}

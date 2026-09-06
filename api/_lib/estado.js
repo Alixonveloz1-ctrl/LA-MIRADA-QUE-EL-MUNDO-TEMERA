@@ -199,7 +199,11 @@ export const ESTADO_VACIO = congelar({
   pesos: {},
   // Lo que hace falta para PUBLICAR cada pieza: su ficha —título, descripción y
   // etiquetas— y si está aprobada. Una por pieza, y solo cuando se pide.
-  difusion: {}
+  difusion: {},
+  // Los pósters y las miniaturas. La clave es «{pieza}/{forma}» —«poster-oficial/9-16»—
+  // porque el vertical y el horizontal son dos imágenes distintas, cada una con
+  // sus intentos y su aprobación.
+  posters: {}
 });
 
 // ---------------------------------------------------------------------------
@@ -383,6 +387,19 @@ export function asegurar(estado) {
       continue;
     }
     asegurarFicha(difusion, clave);
+  }
+
+  // Pósters y miniaturas: una entrada por pieza Y por formato, porque el
+  // vertical y el horizontal son dos imágenes distintas. Se crean todas de
+  // golpe, como las placas: son pocas y no cuestan nada hasta que se generan.
+  const posters = mapaDe(completo, 'posters');
+  const difusionDeSerie = (serie.difusion && serie.difusion.posters) || {};
+  const formatosDePoster = Array.isArray(difusionDeSerie.formatos) ? difusionDeSerie.formatos : [];
+  for (const unPoster of difusionDeSerie.piezas || []) {
+    if (!unPoster || !unPoster.id) continue;
+    for (const formato of formatosDePoster) {
+      asegurarAprobable(posters, `${unPoster.id}/${String(formato).replace(/:/g, '-')}`);
+    }
   }
 
   // Escenarios: una entrada por placa de escenario.

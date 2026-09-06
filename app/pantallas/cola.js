@@ -124,6 +124,7 @@ const MAXIMO_FALLOS = 5;
 const TIPOS = {
   placa: 'Placa del banco',
   escenario: 'Escenario',
+  poster: 'Póster o miniatura',
   keyframe: 'Keyframe',
   clip: 'Clip de vídeo',
   'clip-consultar': 'Recoger un clip',
@@ -1271,6 +1272,8 @@ function queEs(trabajo) {
     case 'placa':
     case 'escenario':
       return texto(args.id) || 'sin nombre';
+    case 'poster':
+      return `${texto(args.id) || 'sin nombre'} · ${texto(args.proporcion) || 'sin formato'}`;
     case 'keyframe':
     case 'clip':
     case 'clip-consultar':

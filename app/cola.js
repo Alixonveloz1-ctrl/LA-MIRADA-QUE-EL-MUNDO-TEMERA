@@ -589,6 +589,16 @@ const NORMALIZADORES = {
     return { args, identidad: args };
   },
 
+  poster(crudos) {
+    const id = exigirArg(crudos, ['id', 'poster'], 'qué póster o qué miniatura se genera');
+    const proporcion = exigirArg(crudos, ['proporcion', 'formato'], 'en qué formato se genera');
+    const nivel = soloTexto(crudos.nivel);
+    // El formato ENTRA en la identidad: el vertical y el horizontal son dos
+    // imágenes distintas, y encolar los dos no es encolar dos veces lo mismo.
+    const args = nivel ? { id, proporcion, nivel } : { id, proporcion };
+    return { args, identidad: args };
+  },
+
   keyframe(crudos) {
     const pieza = exigirArg(crudos, ['pieza'], 'de qué pieza es la toma');
     const id = exigirArg(crudos, ['id', 'toma'], 'de qué toma es el keyframe');
@@ -1737,6 +1747,11 @@ export const EJECUTORES = {
     await generarImagen('escenario', args);
   },
 
+  /** Un póster o una miniatura, en el formato que se haya elegido. */
+  async poster(args) {
+    await generarImagen('poster', args);
+  },
+
   /** El keyframe de una toma: lo que se mira para aprobar antes de gastar vídeo. */
   async keyframe(args) {
     await generarImagen('keyframe', args);
@@ -2118,15 +2133,17 @@ export const EJECUTORES = {
 // ---------------------------------------------------------------------------
 
 /**
- * Genera una placa, un escenario o un keyframe. Los tres son la misma llamada con
- * distinto `tipo`, y el PNG de 2K no viaja: se queda en el bucket.
- * @param {'placa'|'escenario'|'keyframe'} tipo
+ * Genera una placa, un escenario, un keyframe o un póster. Todos son la misma
+ * llamada con distinto `tipo`, y el PNG de 2K no viaja: se queda en el bucket.
+ * @param {'placa'|'escenario'|'keyframe'|'poster'} tipo
  * @param {object} args
  * @returns {Promise<void>}
  */
 async function generarImagen(tipo, args) {
   const campos = { tipo, id: args.id };
   if (tipo === 'keyframe') campos.pieza = args.pieza;
+  // La proporción solo la pide el póster: todo lo que se anima va en 16:9.
+  if (tipo === 'poster') campos.proporcion = soloTexto(args.proporcion);
 
   // El nivel y la resolución: lo que pida el trabajo, y si no lo que esté elegido
   // en Salud. Van SIEMPRE escritos en la llamada, no dados por supuestos: así lo
@@ -2144,6 +2161,9 @@ async function generarImagen(tipo, args) {
     if (tipo === 'keyframe') {
       const entrada = entradaDeToma(estado, `${args.pieza}/${args.id}`);
       apuntarIntento(entrada, 'intentos_keyframe', hecho.ruta);
+    } else if (tipo === 'poster') {
+      const clave = `${args.id}/${String(args.proporcion || '').replace(/:/g, '-')}`;
+      apuntarIntento(entradaAprobable(estado, 'posters', clave), 'intentos', hecho.ruta);
     } else {
       const donde = tipo === 'placa' ? 'banco' : 'escenarios';
       apuntarIntento(entradaAprobable(estado, donde, args.id), 'intentos', hecho.ruta);
