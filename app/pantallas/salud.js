@@ -1279,7 +1279,14 @@ function elegirResolucion(modelos, puesta) {
       'La misma imagen a 2K cuesta bastante más que a 1K. Para juzgar un keyframe y para ' +
       'dárselo a Veo, 1K sobra: Veo entrega 720p. El 2K se nota en las placas del banco, que ' +
       'son las que se miran de cerca y las que después copian todas las demás.'),
+    h('p', { clase: 'tenue' },
+      '«La que dé Google» no es un tamaño: es no pedir ninguno. Y a veces es la única que ' +
+      'funciona, porque Vertex reparte la cuota de imagen por modelo Y por resolución, en cubos ' +
+      'separados: pedir un tamaño concreto puede caer en un cubo agotado mientras el de «por ' +
+      'defecto» está entero. Si salen errores de cuota (429) o de tiempo agotado, esta es la ' +
+      'primera que hay que probar.'),
     filtro([
+      { id: 'auto', texto: 'La que dé Google' },
       { id: '', texto: `La de serie.json (${escrita})` },
       { id: '1K', texto: '1K' },
       { id: '2K', texto: '2K' },

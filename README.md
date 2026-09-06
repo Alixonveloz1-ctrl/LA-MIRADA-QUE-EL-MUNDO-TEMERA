@@ -311,7 +311,7 @@ decisión que más dinero mueve de toda la herramienta:
 | | Se elige entre | Qué cambia |
 |---|---|---|
 | Imágenes | calidad · medio · económico | Del más caro al más barato. Por defecto, el que diga `serie.json`. |
-| Resolución | 1K · 2K | La misma imagen a 2K cuesta bastante más. Para juzgar un keyframe y para dárselo a Veo, 1K sobra: Veo entrega 720p. |
+| Resolución | **La que dé Google** · 1K · 2K | La misma imagen a 2K cuesta bastante más. Para juzgar un keyframe y para dárselo a Veo, 1K sobra: Veo entrega 720p. |
 | Vídeos | calidad · medio · económico | Además de «el que lleve cada plano», que es lo que hay escrito en `serie.json` plano a plano. |
 
 Los tres niveles existían desde el principio, pero solo se podían cambiar con una
@@ -322,6 +322,15 @@ que se genere a partir de ese momento; lo que ya esté generándose sigue con lo
 suyo, y **un clip lanzado se consulta siempre con el nivel con el que se lanzó**
 (se apunta al lado de la operación), porque preguntar por él a otro modelo de Veo
 sería un clip pagado y perdido.
+
+**«La que dé Google» no es un tamaño: es no pedir ninguno.** Y a veces es la única
+que funciona. Vertex reparte la cuota de imagen **por modelo Y por resolución**,
+en cubos separados, y eso no se ve leyendo nada: se vio en la consola de cuotas de
+una cuenta real, con el cubo `gemini-3.1-flash-image_default_res` a 34 millones
+por minuto y un **0 % de uso**, mientras las peticiones que sí decían resolución
+volvían con un 429. Ante un error de cuota o de tiempo agotado en las imágenes,
+esta es la primera opción que hay que probar. Que el campo `imageSize` NO viaje
+—que es distinto de mandarlo vacío— lo comprueba `npm run ajustes`.
 
 **Precios: la pantalla no los pone, y es a propósito.** Este estudio no los sabe
 de cierto, y un precio inventado es peor que ninguno porque alguien decidiría con

@@ -122,11 +122,15 @@ function nivelesDe(familia) {
 }
 
 /**
- * Las dos resoluciones de imagen que se pueden elegir. Son el otro multiplicador
- * del gasto además del nivel: la misma imagen a 2K cuesta bastante más que a 1K,
- * y para juzgar un keyframe 1K sobra. `null` significa la que diga serie.json.
+ * Lo que se puede elegir de resolución de imagen. Es el otro multiplicador del
+ * gasto además del nivel: la misma imagen a 2K cuesta bastante más que a 1K, y
+ * para juzgar un keyframe 1K sobra. `null` significa la que diga serie.json.
+ *
+ * «auto» no es una resolución: es NO decir ninguna y dejar que elija Google.
+ * Existe porque Vertex reparte la cuota de imagen por modelo Y por resolución,
+ * en cubos separados, y el cubo de «resolución por defecto» suele ser el ancho.
  */
-const RESOLUCIONES = ['1K', '2K'];
+const RESOLUCIONES = ['1K', '2K', 'auto'];
 
 /**
  * Un nivel que exista de verdad en esa familia, o `null` para «lo que digan los

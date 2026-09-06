@@ -27,11 +27,21 @@ import { llamar, urlModelo, conGrafias, comoGrafia } from './vertex.js';
 // o el clip recorta la imagen que se aprobó.
 const PROPORCION = '16:9';
 
-// Las dos que se pueden pedir. La K, en MAYÚSCULA: en minúscula Google rechaza
-// la petición. Cuál se usa lo decide quien paga, desde la pantalla de Salud; lo
-// de aquí es solo qué valores son válidos, porque un valor inventado se lo come
+// Las que se pueden pedir. La K, en MAYÚSCULA: en minúscula Google rechaza la
+// petición. Cuál se usa lo decide quien paga, desde la pantalla de Salud; lo de
+// aquí es solo qué valores son válidos, porque un valor inventado se lo come
 // Google con un error en inglés que no dice esto.
+//
+// Y «auto», QUE NO ES UNA RESOLUCIÓN: es no decir ninguna.
+//
+// Eso importa por una razón que no se ve leyendo el código y que salió mirando
+// la consola de cuotas de una cuenta de verdad: Vertex reparte la cuota de
+// imagen por modelo Y POR RESOLUCIÓN, en cubos separados. En esa cuenta, el cubo
+// «gemini-3.1-flash-image_default_res» tenía 34 millones por minuto y un 0 % de
+// uso, mientras las peticiones que SÍ decían resolución se estrellaban contra un
+// 429. Pedir sin decir resolución cae en ese cubo ancho.
 const RESOLUCIONES = ['1K', '2K'];
+const SIN_DECIR = 'auto';
 
 // Generar una imagen 2K puede llevar su tiempo; el límite sigue por debajo del
 // de la plataforma, que es lo único que importa.
@@ -72,6 +82,9 @@ export async function generar({ texto, negativo = null, referencias = [], nivel,
   const ent = entorno();
 
   const partes = componerPartes(refs, conNegativo(prompt, negativo));
+
+  // `null` significa no mandar el campo: Google elige, y la petición cae en el
+  // cubo de cuota más ancho.
   const tamano = resolucionValida(resolucion);
 
   // Se prueban las grafías del modelo en orden: Vertex publica el mismo modelo
@@ -143,6 +156,9 @@ function quizaEsElTamano(fallo, tamano, modelo) {
 function resolucionValida(pedida) {
   const texto = typeof pedida === 'string' ? pedida.trim().toUpperCase() : '';
 
+  // No decir ninguna es una opción, y a veces la única que funciona.
+  if (texto === SIN_DECIR.toUpperCase()) return null;
+
   // SI SE PIDE UNA Y NO VALE, SE FALLA. Caer al valor por defecto en silencio
   // esconde el defecto de quien la pidió: la imagen saldría a 2K, se pagaría a
   // 2K, y quien creía haber elegido 1K no se enteraría nunca.
@@ -176,7 +192,9 @@ function cuerpoPara(id, partes, tamano) {
   // La K en MAYÚSCULA. En minúscula lo rechaza. docs/contrato.md §12 nombra este
   // campo `resolution`; la API de Vertex lo llama `imageSize` dentro de
   // `imageConfig`, y solo en la familia 3.
-  if (familia3) imageConfig.imageSize = tamano;
+  // Sin tamaño no se manda el campo: decide Google. No es lo mismo que mandar
+  // uno «normal», porque la cuota de Vertex va por modelo Y resolución.
+  if (familia3 && tamano) imageConfig.imageSize = tamano;
 
   return {
     contents: [{ role: 'user', parts: partes }],

@@ -90,5 +90,17 @@ di(cuerpo1k.generationConfig.imageConfig.imageSize === '1K',
   'Y lo elegido llega DE VERDAD al cuerpo de la petición',
   `imageSize = ${cuerpo1k.generationConfig.imageConfig.imageSize}`);
 
+// «auto» no es un tamaño: es no mandar el campo. Importa que NO se mande, no que
+// se mande vacío: Vertex reparte la cuota por modelo y resolución, y el cubo de
+// «resolución por defecto» solo se toca si no se pide ninguna.
+di(img.resolucionValida('auto') === null, '«auto» no resuelve a ningún tamaño');
+const cuerpoAuto = img.cuerpoPara('gemini-3.1-flash-image', [], null);
+di(!('imageSize' in cuerpoAuto.generationConfig.imageConfig),
+  'Con «auto» el campo imageSize NO viaja en la petición',
+  `imageConfig = ${JSON.stringify(cuerpoAuto.generationConfig.imageConfig)}`);
+
+const conAuto = est.asegurar({ ajustes: { imagen: { resolucion: 'auto' } } });
+di(conAuto.ajustes.imagen.resolucion === 'auto', '«auto» se guarda en el estado');
+
 console.log(mal === 0 ? '\nTodo bien.\n' : `\n${mal} MAL.\n`);
 process.exit(mal ? 1 : 0);
