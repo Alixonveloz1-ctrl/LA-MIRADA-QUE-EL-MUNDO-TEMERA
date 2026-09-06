@@ -879,9 +879,19 @@ async function modoVeoLanzar(cuerpo) {
   // archivo no compite con nadie, así que si el estado no llega a escribirse el
   // nombre sigue existiendo y `veo-consultar` lo encuentra. Una operación
   // lanzada y perdida es un clip pagado que nadie recoge.
+  //
+  // Y va CON EL NIVEL. Antes solo llevaba el nombre, y eso dejaba media red: si
+  // el estado se perdía, la consulta rescataba el nombre de aquí pero no sabía a
+  // qué nivel de Veo preguntarle, así que caía al que lleva escrito el plano —que
+  // puede no ser el que se usó— y Google contestaba que esa operación no existe.
+  // Un clip pagado, terminado, y con la puerta cerrada. El apunte que existe para
+  // que no se pierda un clip tiene que traer TODO lo que hace falta para
+  // recogerlo.
   const apunte = `${prefijo}operacion.txt`;
   try {
-    await escribirEnElBucket(apunte, lanzado.operacion, { tipo: 'text/plain; charset=utf-8' });
+    await escribirEnElBucket(apunte, `${lanzado.operacion}\nnivel: ${nivelUsado}\n`, {
+      tipo: 'text/plain; charset=utf-8'
+    });
   } catch {
     // Que no se pueda dejar el apunte no es motivo para tirar el clip lanzado:
     // queda el estado, que es el camino normal.
@@ -964,6 +974,7 @@ async function modoVeoConsultar(cuerpo) {
   const enEstado = entradaDeToma(antesDeConsultar.estado, clave);
   let operacion = soloTexto(enEstado.operacion_en_curso);
   let prefijoApuntado = soloTexto(enEstado.operacion_prefijo);
+  let nivelApuntado = soloTexto(enEstado.operacion_nivel);
 
   // Si el estado no lo tiene —porque su escritura falló justo después de
   // lanzar—, se busca el apunte que `veo-lanzar` deja en el bucket. Es lo que
@@ -973,6 +984,7 @@ async function modoVeoConsultar(cuerpo) {
     if (rescatado) {
       operacion = rescatado.operacion;
       prefijoApuntado = rescatado.prefijo;
+      if (!nivelApuntado) nivelApuntado = rescatado.nivel;
     }
   }
 
@@ -991,7 +1003,11 @@ async function modoVeoConsultar(cuerpo) {
   // El nivel con el que se LANZÓ, que no tiene por qué ser el que lleva escrito
   // el plano ni el que esté elegido ahora: una operación se consulta siempre
   // donde se creó.
-  const nivelDeLaOperacion = soloTexto(enEstado.operacion_nivel) || laToma.veo;
+  // El nivel del estado, si no el del apunte del bucket, y solo al final el que
+  // lleva escrito el plano. Y aunque se acierte mal, el nombre de la operación
+  // dice con qué modelo se creó y `veo.js` va a ese: esto es por dónde se
+  // empieza a mirar, no la última palabra.
+  const nivelDeLaOperacion = nivelApuntado || laToma.veo;
   const preguntado = await consultarVeo(operacion, nivelDeLaOperacion);
 
   if (!preguntado.hecho) return { hecho: false };
@@ -1737,9 +1753,15 @@ async function buscarOperacionApuntada(idPieza, idToma) {
   try {
     const leido = await leerBytes(ultimo);
     if (!leido) return null;
-    const operacion = Buffer.from(leido.datos).toString('utf8').trim();
+    // La primera línea es el nombre; el nivel, si está, viene detrás. Los
+    // apuntes de antes traían solo el nombre y siguen valiendo: se lee lo que
+    // haya y no se exige lo que no estaba.
+    const lineas = Buffer.from(leido.datos).toString('utf8').split('\n');
+    const operacion = soloTexto(lineas[0]);
     if (!operacion) return null;
-    return { operacion, prefijo: ultimo.slice(0, -'operacion.txt'.length) };
+    const conNivel = lineas.slice(1).find((una) => /^\s*nivel\s*:/i.test(una));
+    const nivel = conNivel ? soloTexto(conNivel.split(':').slice(1).join(':')) : '';
+    return { operacion, nivel, prefijo: ultimo.slice(0, -'operacion.txt'.length) };
   } catch {
     return null;
   }

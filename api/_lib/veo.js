@@ -34,7 +34,7 @@
 
 import { Buffer } from 'node:buffer';
 import { entorno } from './entorno.js';
-import { serie, nivelVeo } from './datos.js';
+import { serie, nivelVeo, NIVELES_DE_MODELO } from './datos.js';
 import { ErrorDeCara } from './errores.js';
 import { llamar, urlModelo, conGrafias, comoGrafia } from './vertex.js';
 
@@ -464,8 +464,7 @@ function grafiaDeLaOperacion(nombre, modelo) {
   const modeloDelNombre = partes[2];
 
   // Cualquiera de las grafías de ESTE nivel vale: son nombres distintos del
-  // mismo modelo y el clip se lanzó con la que contestara ese día. Lo que no
-  // vale es otro nivel de Veo, que sí sería otro modelo y otro precio.
+  // mismo modelo y el clip se lanzó con la que contestara ese día.
   const grafias = Array.isArray(modelo.ids) && modelo.ids.length ? modelo.ids : [modelo.id];
   if (grafias.includes(modeloDelNombre)) {
     // La región sale del nombre y no de la tabla: donde se creó la operación es
@@ -473,13 +472,39 @@ function grafiaDeLaOperacion(nombre, modelo) {
     return { ...modelo, id: modeloDelNombre, region: regionDelNombre };
   }
 
+  // EL NOMBRE DE LA OPERACIÓN MANDA SOBRE LO QUE CREAMOS SABER.
+  //
+  // Antes esto se plantaba aquí y daba el clip por perdido. Era un error de
+  // criterio, y caro: el nombre de la operación DICE con qué modelo y en qué
+  // región se creó —viene dentro, escrito por Google—, así que no hay nada que
+  // adivinar. Si nuestra idea de con qué nivel se lanzó no coincide con lo que
+  // pone el nombre, quien se equivoca es nuestra idea.
+  //
+  // Y no hay riesgo en hacerle caso: preguntar por una operación no cuesta nada
+  // y no genera nada. Lo que sí costaba era lo otro: tirar un clip ya pagado
+  // porque un ajuste se tocó mientras se generaba.
+  //
+  // Solo se sigue fallando cuando el modelo del nombre no es NINGUNO de los
+  // niveles de la serie, que ya no es un descuadre nuestro: es que se lanzó con
+  // un modelo que este estudio no conoce.
+  for (const nivel of NIVELES_DE_MODELO) {
+    let otro;
+    try {
+      otro = nivelVeo(nivel);
+    } catch {
+      continue; // un nivel sin modelo escrito no descalifica a los demás
+    }
+    const suyas = Array.isArray(otro.ids) && otro.ids.length ? otro.ids : [otro.id];
+    if (!suyas.includes(modeloDelNombre)) continue;
+    return { ...otro, id: modeloDelNombre, region: regionDelNombre, nivelDelNombre: nivel };
+  }
+
   throw new ErrorDeCara(
-    `Este clip se lanzó con el modelo «${modeloDelNombre}» en la región «${regionDelNombre}» y ` +
-      `ahora se está preguntando por él a un nivel de Veo que se llama ${grafias.join(' o ')}, ` +
-      'que no es el mismo modelo: Google contestaría que no existe. Una operación solo se puede ' +
-      'consultar donde se creó. Suele pasar por dos motivos: la toma tiene apuntado otro nivel de ' +
-      `Veo del que se usó al lanzarla, o se ha cambiado la variable ${modelo.variable} con el clip ` +
-      'a medio generar. Devuélvela a como estaba para recoger este clip, o da la toma por perdida ' +
+    `Este clip se lanzó con el modelo «${modeloDelNombre}» en la región «${regionDelNombre}», y ` +
+      'ese modelo no es ninguno de los tres niveles de vídeo de datos/serie.json. Una operación ' +
+      'solo se puede consultar en el modelo que la creó, así que no hay dónde preguntar por ella. ' +
+      `Pasa cuando se ha cambiado la variable ${modelo.variable} a un modelo distinto con el clip ` +
+      'a medio generar: devuélvela a como estaba para recoger este clip, o da la toma por perdida ' +
       'y vuelve a lanzarla.',
     { reintentable: false, http: 400 }
   );

@@ -76,6 +76,9 @@ export const guiones = cargarDatos('datos/guiones.json', [
 // `parametros`, que no son niveles.
 const NIVELES = ['calidad', 'medio', 'economico'];
 
+/** Los tres niveles, para quien necesite recorrerlos. */
+export const NIVELES_DE_MODELO = NIVELES;
+
 // Qué variable de entorno sustituye a cada familia de modelos. Los nombres salen
 // de docs/contrato.md §10 y de `serie.modelos.sustituible_por_entorno`; los ids
 // no se escriben nunca aquí, salen de serie.json.

@@ -1105,6 +1105,9 @@ function sinAudio(respuesta, modelo, candidatos, deQuien) {
   const opinion = (respuesta && (respuesta.promptFeedback ?? respuesta.prompt_feedback)) || null;
   const bloqueo = opinion && (opinion.blockReason ?? opinion.block_reason);
   if (bloqueo) motivos.push(String(bloqueo));
+  // Google solo rellena este campo cuando bloquea el prompt: si está, hay
+  // bloqueo, diga lo que diga.
+  const promptBloqueado = Boolean(String(bloqueo || '').trim());
   const bloqueoTexto = opinion && (opinion.blockReasonMessage ?? opinion.block_reason_message);
   if (bloqueoTexto) motivos.push(String(bloqueoTexto));
 
@@ -1133,12 +1136,68 @@ function sinAudio(respuesta, modelo, candidatos, deQuien) {
     ? `Google dice, literalmente: «${recorte(motivo)}».`
     : 'Google no ha dicho por qué: ha contestado sin sonido y sin motivo.';
 
+  // DÓNDE LO DIJO GOOGLE IMPORTA MÁS QUE LO QUE DIJO.
+  //
+  // Es la misma regla que la imagen, y por el mismo motivo: aquí se decía
+  // siempre «repetir da el mismo resultado» y se daba el trabajo por muerto, y
+  // eso mandaba a reescribir un encargo que estaba bien.
+  //
+  //   · `promptFeedback.blockReason` — Google leyó el encargo y lo rechazó ANTES
+  //     de componer nada. Ese campo solo aparece cuando bloquea, así que si está,
+  //     es un bloqueo, ponga lo que ponga. Reintentarlo es tirar cuota.
+  //
+  //   · `candidates[].finishReason` — el modelo empezó y se quedó a medias. Ahí
+  //     «OTHER» es ambiguo y muchas veces sale a la siguiente, sobre todo con
+  //     una pieza de tres minutos.
+  if (promptBloqueado) {
+    return new ErrorDeCara(
+      `El modelo «${modelo.id}» no ha devuelto ningún audio para ${deQuien}: Google ha bloqueado el ` +
+      `ENCARGO antes de componer nada. ${porQue} Reintentarlo da el mismo resultado siempre, así que ` +
+      'la cola no lo reintenta: hay que cambiar el encargo en datos/serie.json. El modelo no se ' +
+      `sustituye por otro (se cambia a conciencia con la variable ${modelo.variable}).`,
+      { detalle: comoTexto(respuesta), reintentable: false, http: 502 }
+    );
+  }
+
+  if (esBloqueoDeContenido(motivo)) {
+    return new ErrorDeCara(
+      `El modelo «${modelo.id}» no ha devuelto ningún audio para ${deQuien}: lo ha cortado el filtro ` +
+      `de contenido, y lo dice con su nombre. ${porQue} Repetir tal cual da el mismo resultado: hay ` +
+      'que cambiar el encargo en datos/serie.json. El modelo no se sustituye por otro (se cambia a ' +
+      `conciencia con la variable ${modelo.variable}).`,
+      { detalle: comoTexto(respuesta), reintentable: false, http: 502 }
+    );
+  }
+
   return new ErrorDeCara(
-    `El modelo «${modelo.id}» no ha devuelto ningún audio para ${deQuien}. ${porQue} Repetir tal ` +
-    'cual da el mismo resultado: hay que cambiar lo que se le pide en datos/serie.json. El modelo ' +
-    `no se sustituye por otro (se cambia a conciencia con la variable ${modelo.variable}).`,
-    { detalle: comoTexto(respuesta), reintentable: false, http: 502 }
+    `El modelo «${modelo.id}» ha contestado sin audio para ${deQuien} y SIN DECIR POR QUÉ. ${porQue} ` +
+    'Eso no es lo mismo que un bloqueo: cuando el filtro corta algo, lo dice con su nombre, y cuando ' +
+    'rechaza el encargo entero lo dice en otro sitio. Aquí no dice ninguna de las dos, así que muchas ' +
+    'veces es pasajero —una pieza de tres minutos es mucho que componer— y sale a la siguiente. La ' +
+    'cola lo reintenta sola. Si vuelve a pasar tres o cuatro veces con la misma pieza, entonces sí es ' +
+    'el encargo: míralo en datos/serie.json.',
+    { detalle: comoTexto(respuesta), reintentable: true, http: 502 }
   );
+}
+
+/**
+ * Los motivos con los que Google dice, con todas las letras, que ha cortado por
+ * contenido, aunque los diga en `finishReason` en vez de en `promptFeedback`. Un
+ * «OTHER» suelto NO entra aquí: ahí sí es ambiguo y se reintenta.
+ */
+const BLOQUEOS_DE_CONTENIDO = [
+  'PROHIBITED_CONTENT',
+  'SAFETY',
+  'BLOCKLIST',
+  'RECITATION',
+  'SPII',
+  'LANGUAGE',
+];
+
+/** @param {string} motivo lo que dijo Google, ya juntado */
+function esBloqueoDeContenido(motivo) {
+  const dicho = String(motivo || '').toUpperCase();
+  return BLOQUEOS_DE_CONTENIDO.some((clave) => dicho.includes(clave));
 }
 
 /**

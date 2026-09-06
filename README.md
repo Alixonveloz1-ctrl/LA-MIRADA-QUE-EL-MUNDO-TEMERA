@@ -525,6 +525,30 @@ Las dos se probaron contra el código de antes, y las dos lo cazan. La primera
 versión de la comprobación de invariantes **no** lo cazaba —se daba por buena a
 sí misma— y eso se vio ejecutándola contra el commit anterior, no leyéndola.
 
+#### Un clip pagado no se tira por un descuadre de contabilidad
+
+Un clip de Veo se lanza y se consulta minutos después, y la operación vive
+colgada del modelo que la creó: se pregunta a ese modelo o Google contesta que no
+existe.
+
+El estudio decidía a qué modelo preguntar por lo que llevaba escrito el plano o
+por lo que estuviera elegido en Salud. Cuando eso no coincidía con el modelo real
+—porque el nivel se tocó mientras el clip se generaba, o porque el estado se
+perdió y solo quedó el apunte del bucket, **que no llevaba el nivel**— se plantaba
+y daba el clip por perdido. Terminado, pagado, y con la puerta cerrada.
+
+Y era innecesario. **El nombre de la operación dice con qué modelo y en qué región
+se creó**: viene dentro, escrito por Google. Si nuestra idea no coincide con el
+nombre, quien se equivoca es nuestra idea — y preguntar no cuesta nada ni genera
+nada, así que hacerle caso no tiene ningún riesgo.
+
+Ahora se busca ese modelo entre los tres niveles de la serie y se pregunta ahí,
+diciendo con cuál se lanzó de verdad. Solo se falla cuando el modelo del nombre
+no es **ninguno** de los tres, que ya no es un descuadre nuestro. Y el apunte del
+bucket —el que existe para que no se pierda un clip— lleva ahora también el
+nivel, porque un salvavidas incompleto no es un salvavidas. `npm run veo` lo
+ejecuta.
+
 #### Y el aviso que no se callaba
 
 El mismo aviso, cerrado y vuelto a salir, cerrado y vuelto a salir. Eran dos
@@ -696,6 +720,13 @@ esas palabras y sugiere por dónde mirar: heridas, cicatrices, cuerpo desnudo o
 edad. Comprobado en `herramientas/probar-ajustes.mjs` con las dos formas de
 respuesta, la de `promptFeedback` y la de `finishReason`.
 
+**La música sigue la misma regla.** Lyria contestaba «OTHER» y el estudio decía
+«repetir da el mismo resultado», que con una pieza de tres minutos es
+sencillamente falso: ahí «OTHER» es «no digo por qué» y muchas veces sale a la
+siguiente. Ahora la cola la reintenta sola, y solo se planta cuando el bloqueo
+viene en `promptFeedback` o el filtro se nombra a sí mismo. `npm run audio` lo
+comprueba con las dos formas de respuesta.
+
 **Y por eso las descripciones no nombran heridas.** El bloqueo cayó sobre
 Saharis, que es un personaje de diecisiete años: menor. Google es mucho más
 estricto con los menores, y basta con que en el mismo texto aparezcan la edad y
@@ -774,22 +805,23 @@ Lo comprueban los invariantes: si alguien quita cualquiera de los dos frenos, el
 npm run comprobar
 ```
 
-Encadena las once herramientas y no necesita red ni credenciales: regenera
+Encadena las doce herramientas y no necesita red ni credenciales: regenera
 `datos/serie.json` desde `serie.base.json` con el parche, comprueba los
 invariantes sobre los datos y sobre el árbol de código, **ejecuta** la cola
 contra un Google de mentira, **le da audio de verdad** al lector de formatos,
 **sigue** el ajuste de con qué se genera hasta el cuerpo de la petición,
 **frena** contra un reloj de mentira, **apunta** lo generado con latidos cayendo
 encima, comprueba que **ninguna pieza de música se quede sin pantalla donde
-salir**, **ejecuta** la pantalla de Cola con un vídeo en vuelo, **repite** un fallo doce
-veces para ver que el aviso no se apila, y **pesa** la respuesta de cada modo con material del tamaño real para
+salir**, **recupera** un clip lanzado con otro nivel de Veo, **ejecuta** la pantalla de
+Cola con un vídeo en vuelo, **repite** un fallo doce veces para ver que el aviso
+no se apila, y **pesa** la respuesta de cada modo con material del tamaño real para
 verificar que cabe en los 4,5 MB. Casi ninguno se ve leyendo el código: se ven
 ejecutándolo y midiendo. Si algo no cumple, sale con error y lo dice en español.
 
 Cada paso se puede lanzar por separado con `npm run datos`, `npm run invariantes`,
 `npm run cola`, `npm run audio`, `npm run ajustes`, `npm run freno`,
-`npm run anotar`, `npm run banco`, `npm run pantalla`, `npm run fallos` y
-`npm run pesar`. Y
+`npm run anotar`, `npm run banco`, `npm run veo`, `npm run pantalla`,
+`npm run fallos` y `npm run pesar`. Y
 `npm run archivo` reescribe los 56 planos de ambiente desde su tabla.
 
 ### Lo que manda Google no es siempre lo mismo

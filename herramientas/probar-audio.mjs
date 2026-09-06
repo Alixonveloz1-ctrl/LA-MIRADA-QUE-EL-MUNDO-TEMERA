@@ -33,7 +33,7 @@ const RAIZ = new URL('..', import.meta.url);
  * que se quiere es la parte que mira bytes. Se hace una copia del módulo sin sus
  * importaciones y con lo justo puesto delante.
  */
-async function traerAPista() {
+async function traerDeAudio() {
   const codigo = readFileSync(new URL('api/_lib/audio.js', RAIZ), 'utf8');
   const sinImportaciones = codigo
     .split('\n')
@@ -55,9 +55,12 @@ async function traerAPista() {
 
   const carpeta = mkdtempSync(join(tmpdir(), 'mirada-audio-'));
   const archivo = join(carpeta, 'audio-suelto.mjs');
-  writeFileSync(archivo, `${delante}\n${sinImportaciones}\nexport { aPista };\n`);
+  writeFileSync(
+    archivo,
+    `${delante}\n${sinImportaciones}\nexport { aPista, sinAudio, esBloqueoDeContenido };\n`
+  );
 
-  return (await import(pathToFileURL(archivo).href)).aPista;
+  return import(pathToFileURL(archivo).href);
 }
 
 // ---------------------------------------------------------------------------
@@ -152,7 +155,8 @@ function wav(segundos, hz = 24000) {
 const MUESTRAS_POR_TRAMA = 1152;
 const HZ = 44100;
 
-const aPista = await traerAPista();
+const deAudio = await traerDeAudio();
+const { aPista, sinAudio, esBloqueoDeContenido } = deAudio;
 
 let bien = 0;
 let mal = 0;
@@ -263,6 +267,53 @@ comprobar('Cero bytes se cuenta como cero bytes, no como formato raro', () => {
   if (!salto || !/vacía/i.test(salto.mensaje || '')) {
     throw new Error('no ha dicho que venía vacía');
   }
+});
+
+// ── UN «SIN AUDIO» NO ES SIEMPRE UN BLOQUEO ────────────────────────────────
+//
+// Es la misma regla que la imagen y hace falta por lo mismo. Aquí se decía
+// siempre «repetir da el mismo resultado» y la cola daba la pieza por muerta,
+// así que un «OTHER» de Lyria —que es «no digo por qué», y con una pieza de
+// tres minutos pasa— mandaba a reescribir un encargo que estaba bien.
+//
+// Lo que decide no es la palabra: es el campo en el que viene.
+const modeloFalso = { id: 'lyria-3-pro-preview', variable: 'MUSIC_MODEL' };
+
+comprobar('Un «OTHER» en finishReason SÍ se reintenta: ahí es ambiguo', () => {
+  const salta = sinAudio(
+    { candidates: [{ content: { role: 'model' }, finishReason: 'OTHER' }] },
+    modeloFalso,
+    [{ content: { role: 'model' }, finishReason: 'OTHER' }],
+    'la música'
+  );
+  if (salta.reintentable !== true) throw new Error(`reintentable = ${salta.reintentable}`);
+  if (!/SIN DECIR POR QUÉ/.test(salta.mensaje)) throw new Error('no lo dice con palabras');
+});
+
+comprobar('Un «OTHER» en promptFeedback NO se reintenta: es el encargo, rechazado entero', () => {
+  const salta = sinAudio({ promptFeedback: { blockReason: 'OTHER' } }, modeloFalso, [], 'la música');
+  if (salta.reintentable !== false) throw new Error(`reintentable = ${salta.reintentable}`);
+  if (!/ENCARGO/.test(salta.mensaje)) throw new Error('no dice que lo bloqueado fue el encargo');
+});
+
+comprobar('El filtro dicho por su nombre tampoco se reintenta', () => {
+  const salta = sinAudio(
+    { candidates: [{ finishReason: 'PROHIBITED_CONTENT' }] },
+    modeloFalso,
+    [{ finishReason: 'PROHIBITED_CONTENT' }],
+    'la música'
+  );
+  if (salta.reintentable !== false) throw new Error(`reintentable = ${salta.reintentable}`);
+});
+
+comprobar('Y una respuesta sin audio y sin motivo ninguno se reintenta', () => {
+  const salta = sinAudio({}, modeloFalso, [], 'la música');
+  if (salta.reintentable !== true) throw new Error(`reintentable = ${salta.reintentable}`);
+});
+
+comprobar('«OTHER» no cuenta como bloqueo de contenido, y «SAFETY» sí', () => {
+  if (esBloqueoDeContenido('OTHER')) throw new Error('«OTHER» no es un bloqueo');
+  if (!esBloqueoDeContenido('SAFETY')) throw new Error('«SAFETY» sí lo es');
 });
 
 console.log(`\n${bien + mal} comprobaciones, ${bien} bien${mal ? `, ${mal} MAL` : ''}\n`);
