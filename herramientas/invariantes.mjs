@@ -1112,6 +1112,197 @@ bloque('Datos · música');
 }
 
 // ===========================================================================
+// DATOS · El archivo de planos de ambiente
+// ===========================================================================
+
+bloque('Datos · el archivo');
+
+{
+  // UN PLANO DE ARCHIVO NO PUEDE CONTAR NADA, Y ESO NO ES UN CAPRICHO.
+  //
+  // El archivo son planos de ambiente que se generan una vez y se reutilizan en
+  // los doce episodios: la cripta sale en 24 escenas de 8 episodios, los túneles
+  // en 46 de 11. Reutilizar solo funciona si el plano no dice nada: si en él
+  // aparece un personaje, o pasa algo, al repetirlo en el episodio 9 el
+  // personaje vuelve a estar ahí y lo que pasó vuelve a pasar. Eso el
+  // espectador SÍ lo nota, y entonces el ahorro sale carísimo.
+  //
+  // Las palabras de abajo son las que delatan a alguien en cuadro. Están en
+  // inglés porque los prompts van en inglés. Se admiten dentro de una negación
+  // —«no people anywhere in frame» es justamente lo que hay que escribir—, así
+  // que lo que se busca es la palabra SIN un «no» delante.
+  // Van con límites de palabra a propósito: sin ellos, «man» salta dentro de
+  // «many-armed idol» y «he» dentro de «the», y una herramienta que acusa a
+  // media biblioteca de tener gente donde no la hay deja de leerse a la tercera
+  // vez.
+  const PALABRAS_DE_GENTE = [
+    'man', 'men', 'woman', 'women', 'boy', 'girl', 'child', 'children',
+    'person', 'people', 'figure', 'figures', 'hand', 'hands', 'face', 'faces',
+    'he', 'she', 'his', 'her', 'they', 'someone', 'crowd',
+  ];
+
+  /** ¿La palabra viene precedida de una negación en la misma frase? */
+  const vaNegada = (texto, donde) => {
+    const antes = texto.slice(Math.max(0, donde - 40), donde);
+    return /\b(no|not|never|without|nobody|none)\b[^.]*$/i.test(antes);
+  };
+
+  const delArchivo = [];
+  const notasDelArchivo = [];
+
+  for (const [idPieza, pieza] of Object.entries(piezas)) {
+    if (!pieza || pieza.archivo !== true) continue;
+    const tomas = Array.isArray(pieza.tomas) ? pieza.tomas : [];
+
+    if (!tomas.length) {
+      delArchivo.push(`La pieza de archivo «${idPieza}» no tiene ni un plano.`);
+      continue;
+    }
+
+    for (const toma of tomas) {
+      const donde = nombreDeToma(idPieza, toma);
+
+      // Referencias de personaje: aquí no puede haber ninguna, y esto no admite
+      // matices ni palabras que interpretar.
+      if (Array.isArray(toma.refs) && toma.refs.length) {
+        delArchivo.push(
+          `${donde} lleva ${toma.refs.length} referencia(s) de personaje ` +
+            `(${toma.refs.join(', ')}). Un plano de archivo se repite en varios ` +
+            'episodios: un personaje dentro reaparecería cada vez.'
+        );
+      }
+
+      if (toma.encadena_con) {
+        delArchivo.push(
+          `${donde} encadena con «${toma.encadena_con}». Un plano de archivo no ` +
+            'encadena con nada: se coloca suelto donde haga falta, y encadenar ' +
+            'lo ata a un sitio de la línea de tiempo de una pieza concreta.'
+        );
+      }
+
+      if (toma.boca_visible) {
+        delArchivo.push(`${donde} declara boca visible, y en un plano de archivo no hay nadie.`);
+      }
+
+      if (typeof toma.uso !== 'string' || !toma.uso.trim()) {
+        delArchivo.push(
+          `${donde} no dice cuándo se usa. Con 56 planos de ambiente, el que no ` +
+            'dice para qué sirve no lo va a poner nadie.'
+        );
+      }
+
+      // TRES SITIOS SÍ LLEVAN GENTE, Y ES LO CORRECTO.
+      //
+      // La ciudad trabajando, la cola de carros en la puerta y el campamento no
+      // significan nada vacíos: lo que cuentan es que hay gente. Ahí se admiten
+      // figurantes a lo lejos —anónimos, demasiado pequeños para leerlos—, y el
+      // plano se marca para decir que es a propósito. Lo que sí se exige es que
+      // el texto prometa que no se les ve la cara: un figurante reconocible en
+      // un plano que sale en cuatro episodios es un personaje sin ficha.
+      if (toma.figurantes_lejanos === true) {
+        const junto = `${toma.imagen || ''} ${toma.video || ''}`.toLowerCase();
+        if (!junto.includes('no faces visible')) {
+          delArchivo.push(
+            `${donde} admite figurantes a lo lejos pero no promete «no faces ` +
+              'visible». Sin esa promesa, un figurante reconocible aparecería ' +
+              'igual en cuatro episodios y sería un personaje sin ficha.'
+          );
+        }
+        continue;
+      }
+
+      // Y las palabras. Como aviso y no como fallo: la lista es de palabras, no
+      // de sentido, y tumbar un plano por decir «hands» en «no hands in frame»
+      // sería exactamente el error que esta herramienta dice no cometer.
+      for (const campo of ['imagen', 'video']) {
+        const texto = String(toma[campo] || '').toLowerCase();
+        for (const palabra of PALABRAS_DE_GENTE) {
+          const patron = new RegExp(`\\b${palabra}\\b`, 'g');
+          let encontrado = null;
+          for (const coincidencia of texto.matchAll(patron)) {
+            if (!vaNegada(texto, coincidencia.index)) {
+              encontrado = coincidencia.index;
+              break;
+            }
+          }
+          if (encontrado === null) continue;
+          notasDelArchivo.push(
+            `${donde}, en «${campo}», dice «${palabra}» sin negarla. Míralo: si ` +
+              'de verdad hay alguien en cuadro, este plano no se puede reutilizar.'
+          );
+          break;
+        }
+      }
+    }
+  }
+
+  comprobar(
+    'Ningún plano de archivo lleva personajes, encadena ni cuenta nada',
+    delArchivo,
+    notasDelArchivo
+  );
+
+  // ─────────────────────────────────────────────────────────────────────────
+  // Y AL REVÉS: QUIEN APUNTA AL ARCHIVO TIENE QUE APUNTAR A ALGO QUE ESTÁ.
+  //
+  // Un plano de episodio con `de_archivo` no genera nada suyo: lee el material
+  // del archivo. Si el id no existe —porque se renombró un sitio, porque el
+  // desglose se lo inventó—, ese plano no tiene de dónde sacar el clip y el
+  // episodio se monta con un hueco justo ahí. No falla nada, no avisa nadie:
+  // sale un salto en el vídeo terminado. Por eso se mira aquí.
+  // ─────────────────────────────────────────────────────────────────────────
+  const idsDeArchivo = new Set();
+  for (const pieza of Object.values(piezas)) {
+    if (!pieza || pieza.archivo !== true) continue;
+    for (const toma of Array.isArray(pieza.tomas) ? pieza.tomas : []) {
+      if (toma && toma.id) idsDeArchivo.add(String(toma.id));
+    }
+  }
+
+  const punteros = [];
+  for (const { idPieza, pieza, toma } of todasLasTomas) {
+    if (pieza && pieza.archivo === true) continue;
+    const apunta = typeof toma.de_archivo === 'string' ? toma.de_archivo.trim() : '';
+    if (!apunta) continue;
+    const donde = nombreDeToma(idPieza, toma);
+
+    if (!idsDeArchivo.has(apunta)) {
+      punteros.push(
+        `${donde} usa «${apunta}» del archivo y ese plano no existe. El ` +
+          'episodio se montaría con un hueco ahí, sin avisar de nada.'
+      );
+      continue;
+    }
+
+    const original = [...todasLasTomas].find(
+      (otra) => otra.pieza && otra.pieza.archivo === true && otra.toma.id === apunta
+    );
+
+    if (Number(toma.dur) > Number(original.toma.dur) + CASI) {
+      punteros.push(
+        `${donde} pide ${toma.dur} s de «${apunta}», que dura ` +
+          `${original.toma.dur} s. No se puede cortar más película de la que hay.`
+      );
+    }
+
+    if (Array.isArray(toma.refs) && toma.refs.length) {
+      punteros.push(`${donde} usa el archivo y además lleva referencias de personaje.`);
+    }
+    if (toma.boca_visible) {
+      punteros.push(`${donde} usa el archivo y declara boca visible: ahí no habla nadie.`);
+    }
+    if (toma.encadena_con) {
+      punteros.push(
+        `${donde} usa el archivo y encadena con «${toma.encadena_con}». Un plano ` +
+          'que sale igual en varios episodios no puede llevar a un sitio concreto.'
+      );
+    }
+  }
+
+  comprobar('Todo plano que apunta al archivo apunta a uno que existe', punteros);
+}
+
+// ===========================================================================
 // DATOS · Enmiendas del contrato §13
 // ===========================================================================
 

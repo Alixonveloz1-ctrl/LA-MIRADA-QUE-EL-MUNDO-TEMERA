@@ -17,6 +17,7 @@
     "ajustes": "node herramientas/probar-ajustes.mjs",
     "freno": "node herramientas/probar-freno.mjs",
     "anotar": "node herramientas/probar-anotar.mjs",
-    "banco": "node herramientas/probar-banco.mjs"
+    "banco": "node herramientas/probar-banco.mjs",
+    "archivo": "node herramientas/escribir-archivo.mjs"
   }
 }

@@ -637,21 +637,21 @@
             "quien": "madre",
             "ja": "ここは、輝くものを壊す。",
             "es": "Este lugar destruye lo que brilla.",
-            "hasta": 36.0
+            "hasta": 36
           },
           {
             "t": 58,
             "quien": "madre",
             "ja": "神になる前のあなたを見た者を、忘れないで。",
             "es": "No olvides quién te vio antes de que fueras dios.",
-            "hasta": 62.0
+            "hasta": 62
           },
           {
             "t": 70,
             "quien": "saharis",
             "ja": "二度と。",
             "es": "Nunca más.",
-            "hasta": 72.0
+            "hasta": 72
           }
         ]
       },
@@ -1142,6 +1142,1084 @@
           "boca_visible": null
         }
       ]
+    },
+    "archivo": {
+      "titulo": "Archivo — planos de ambiente de la temporada",
+      "duracion_s": 224,
+      "fija": true,
+      "archivo": true,
+      "nota_fija": "No es una pieza que se monte: es una BIBLIOTECA. Se generan una vez para toda la temporada y se reutilizan en los doce episodios, como el opening, el ending y el banco de música. Por eso no sale en Montaje, ni en Audio, ni en Desglose: solo en Tomas, que es donde se generan y se aprueban.",
+      "por_que": "La cripta sale en 24 escenas de 8 episodios; los túneles, en 46 de 11. Sin archivo, cada una de las 289 escenas paga su propio plano de ambiente. Con archivo son 56, y el espectador no lo nota porque un plano de ambiente no cuenta nada: dice dónde estamos y se quita.",
+      "regla": "Nada con un personaje dentro, nada que pase una sola vez, y nada que cuente algo. Si en un plano de archivo ocurre algo, no se puede repetir en el episodio 9 sin que vuelva a ocurrir. Dos por sitio: un general vacío para abrir, y un detalle que se mueve solo.",
+      "tomas": [
+        {
+          "id": "arch-cripta-a",
+          "inicio": 0,
+          "dur": 4,
+          "veo": "economico",
+          "luz": "CRIPTA",
+          "refs": [],
+          "encadena_con": null,
+          "imagen": "Wide establishing shot of the whole underground sanctuary, seen from the back of the hall toward the altar and the many-armed idol, completely empty, no people anywhere in frame, no figures, torch smoke hanging in the air",
+          "video": "The torch flames breathe and the smoke drifts slowly across the frame. Camera locked. Nothing else moves. No people enter.",
+          "dur_gen": 4,
+          "recorte": [
+            0,
+            4
+          ],
+          "escenario": "cripta",
+          "boca_visible": null,
+          "uso": "Abrir cualquier escena de la cripta. El plano con el que se llega al sitio."
+        },
+        {
+          "id": "arch-cripta-b",
+          "inicio": 4,
+          "dur": 4,
+          "veo": "economico",
+          "luz": "CRIPTA",
+          "refs": [],
+          "encadena_con": null,
+          "imagen": "Close detail of one iron torch bracket on the damp black wall, the flame burning low, wet stone shining around it, bones set into a niche just visible at the edge of frame, no people",
+          "video": "The flame gutters and recovers, throwing the shadow of the bracket back and forth across the wet stone. Very slow push in. Nothing else moves.",
+          "dur_gen": 4,
+          "recorte": [
+            0,
+            4
+          ],
+          "escenario": "cripta",
+          "boca_visible": null,
+          "uso": "Corte de respiro dentro de la cripta, o para tapar un salto de tiempo."
+        },
+        {
+          "id": "arch-cripta-celda-a",
+          "inicio": 8,
+          "dur": 4,
+          "veo": "economico",
+          "luz": "BARRIO",
+          "refs": [],
+          "encadena_con": null,
+          "imagen": "Wide establishing shot of the whole bare stone cell, the straw pallet, the heavy wooden door standing ajar, cold light falling from the single high barred opening, completely empty, no people anywhere in frame",
+          "video": "Dust turns slowly in the shaft of light from the barred opening. Camera locked. Nothing else moves. No people enter.",
+          "dur_gen": 4,
+          "recorte": [
+            0,
+            4
+          ],
+          "escenario": "cripta-celda",
+          "boca_visible": null,
+          "uso": "Abrir una escena de la celda. Sirve igual con la celda ocupada o vacía."
+        },
+        {
+          "id": "arch-cripta-celda-b",
+          "inicio": 12,
+          "dur": 4,
+          "veo": "economico",
+          "luz": "BARRIO",
+          "refs": [],
+          "encadena_con": null,
+          "imagen": "Close detail of the high barred opening seen from inside the cell, cold light coming through, damp running down the rough stone below it, no people",
+          "video": "The light through the bars dims very slightly and comes back, as if a cloud crossed outside. One drop runs down the stone. Camera locked.",
+          "dur_gen": 4,
+          "recorte": [
+            0,
+            4
+          ],
+          "escenario": "cripta-celda",
+          "boca_visible": null,
+          "uso": "El paso del tiempo en la celda, sin decir cuánto."
+        },
+        {
+          "id": "arch-tuneles-a",
+          "inicio": 16,
+          "dur": 4,
+          "veo": "economico",
+          "luz": "BARRIO",
+          "refs": [],
+          "encadena_con": null,
+          "imagen": "Wide establishing shot of the whole dry stone room under the city: the pallet, the table, the single lantern, and the entire wall covered in pinned papers, maps, lists and cord, completely empty, no people anywhere in frame",
+          "video": "The lantern flame shifts and the pinned papers stir very slightly in the draught. Camera locked. Nothing else moves. No people enter.",
+          "dur_gen": 4,
+          "recorte": [
+            0,
+            4
+          ],
+          "escenario": "tuneles",
+          "boca_visible": null,
+          "uso": "Abrir cualquier escena de la base. El sitio que más sale de toda la serie."
+        },
+        {
+          "id": "arch-tuneles-b",
+          "inicio": 20,
+          "dur": 4,
+          "veo": "economico",
+          "luz": "BARRIO",
+          "refs": [],
+          "encadena_con": null,
+          "imagen": "Close detail of the wall of pinned papers: overlapping notes, a map corner, lists in a small cramped script, cord running between the pins, lit from one side by the lantern, no people, no readable words",
+          "video": "One loose paper corner lifts and settles in the draught. The lantern light shifts across the pins. Very slow lateral pan to the right. Nothing else moves.",
+          "dur_gen": 4,
+          "recorte": [
+            0,
+            4
+          ],
+          "escenario": "tuneles",
+          "boca_visible": null,
+          "uso": "El trabajo que hay detrás sin enseñar a nadie trabajando. Corte de pensamiento."
+        },
+        {
+          "id": "arch-academia-a",
+          "inicio": 24,
+          "dur": 4,
+          "veo": "economico",
+          "luz": "CRIPTA",
+          "refs": [],
+          "encadena_con": null,
+          "imagen": "Wide establishing shot of the whole bare stone hall of the cult academy: rows of low empty desks, the blackened writing wall, the altar at the far end, torchlight, completely empty, no people anywhere in frame",
+          "video": "Torchlight moves slowly across the empty desks. Camera locked. Nothing else moves. No people enter.",
+          "dur_gen": 4,
+          "recorte": [
+            0,
+            4
+          ],
+          "escenario": "academia",
+          "boca_visible": null,
+          "uso": "Abrir una escena de la academia, antes o después de que estén los niños."
+        },
+        {
+          "id": "arch-academia-b",
+          "inicio": 28,
+          "dur": 4,
+          "veo": "economico",
+          "luz": "CRIPTA",
+          "refs": [],
+          "encadena_con": null,
+          "imagen": "Close detail of the blackened writing wall, chalk dust caught in the surface, one low desk corner in the foreground, torchlight raking across from the left, no people, no readable writing",
+          "video": "The torchlight rakes slowly across the blackened surface and chalk dust drifts through it. Camera locked.",
+          "dur_gen": 4,
+          "recorte": [
+            0,
+            4
+          ],
+          "escenario": "academia",
+          "boca_visible": null,
+          "uso": "Detalle de la academia. Vale para cualquier lección sin enseñar la lección."
+        },
+        {
+          "id": "arch-barrio-humo-a",
+          "inicio": 32,
+          "dur": 4,
+          "veo": "economico",
+          "luz": "BARRIO",
+          "refs": [],
+          "encadena_con": null,
+          "imagen": "Wide establishing shot down a mud alley of the low district: leaning shacks, open drains, doorways without doors, rain falling on broken cobbles, completely empty, no people anywhere in frame",
+          "video": "Rain falls steadily and runs in the open drain. Smoke drifts from a roof at the far end. Camera locked. Nothing else moves. No people enter.",
+          "dur_gen": 4,
+          "recorte": [
+            0,
+            4
+          ],
+          "escenario": "barrio-humo",
+          "boca_visible": null,
+          "uso": "Abrir cualquier escena del barrio. El plano de llegada al sitio donde creció."
+        },
+        {
+          "id": "arch-barrio-humo-b",
+          "inicio": 36,
+          "dur": 4,
+          "veo": "economico",
+          "luz": "BARRIO",
+          "refs": [],
+          "encadena_con": null,
+          "imagen": "Close detail of rain running off the edge of a leaning shack roof into the mud below, broken cobbles half under water, no people",
+          "video": "The water runs off the roof edge in an uneven stream and hits the mud. Rings spread in the standing water. Camera locked.",
+          "dur_gen": 4,
+          "recorte": [
+            0,
+            4
+          ],
+          "escenario": "barrio-humo",
+          "boca_visible": null,
+          "uso": "Detalle del barrio. Se usa mucho bajo una voz en off."
+        },
+        {
+          "id": "arch-calle-a",
+          "inicio": 40,
+          "dur": 4,
+          "veo": "economico",
+          "luz": "BARRIO",
+          "refs": [],
+          "encadena_con": null,
+          "imagen": "Wide establishing shot along a Feyrond street between districts: worn cobbles, shuttered shopfronts, street lamps at intervals, wet stone, completely empty, no people anywhere in frame",
+          "video": "One shutter swings slightly in the wind. The lamps flicker. Camera locked. Nothing else moves. No people enter.",
+          "dur_gen": 4,
+          "recorte": [
+            0,
+            4
+          ],
+          "escenario": "calle",
+          "boca_visible": null,
+          "uso": "Cualquier tránsito entre distritos. Abrir una escena de calle."
+        },
+        {
+          "id": "arch-calle-b",
+          "inicio": 44,
+          "dur": 4,
+          "veo": "economico",
+          "luz": "BARRIO",
+          "refs": [],
+          "encadena_con": null,
+          "imagen": "Close detail of one street lamp on its bracket over wet cobbles, the light pooling on the stone below, shuttered fronts out of focus behind, no people",
+          "video": "The lamp flame moves and the pool of light on the cobbles breathes with it. Very slow push in. Nothing else moves.",
+          "dur_gen": 4,
+          "recorte": [
+            0,
+            4
+          ],
+          "escenario": "calle",
+          "boca_visible": null,
+          "uso": "Una noche cualquiera en la ciudad. Sirve de puente entre dos escenas."
+        },
+        {
+          "id": "arch-elserath-salon-a",
+          "inicio": 48,
+          "dur": 4,
+          "veo": "economico",
+          "luz": "NOBLE",
+          "refs": [],
+          "encadena_con": null,
+          "imagen": "Wide establishing shot of the whole great hall of the declining noble house: tall windows, the long table, dark polished wood, faded tapestries, dust suspended in the light, completely empty, no people anywhere in frame, no places set",
+          "video": "Dust turns slowly in the light from the tall windows. Camera locked. Nothing else moves. No people enter.",
+          "dur_gen": 4,
+          "recorte": [
+            0,
+            4
+          ],
+          "escenario": "elserath-salon",
+          "boca_visible": null,
+          "uso": "Abrir cualquier escena del salón Elserath. La casa antes de que llegue nadie."
+        },
+        {
+          "id": "arch-elserath-salon-b",
+          "inicio": 52,
+          "dur": 4,
+          "veo": "economico",
+          "luz": "NOBLE",
+          "refs": [],
+          "encadena_con": null,
+          "imagen": "Close detail of an oil lamp on the long polished table, the grain of the dark wood, one faded tapestry edge out of focus behind, dust in the air, no people",
+          "video": "The lamp flame leans and rights itself. Dust drifts through the light above the table. Camera locked.",
+          "dur_gen": 4,
+          "recorte": [
+            0,
+            4
+          ],
+          "escenario": "elserath-salon",
+          "boca_visible": null,
+          "uso": "Detalle del salón. Corte de respiro en una escena de mesa larga."
+        },
+        {
+          "id": "arch-elserath-despacho-a",
+          "inicio": 56,
+          "dur": 4,
+          "veo": "economico",
+          "luz": "NOBLE",
+          "refs": [],
+          "encadena_con": null,
+          "imagen": "Wide establishing shot of the whole study: the heavy dark desk, stacked ledgers, sealing wax, the single oil lamp, shelves receding into shadow, completely empty, no people anywhere in frame, the chair pushed back and unoccupied",
+          "video": "The lamp flame shifts and the shadows on the shelves move with it. Camera locked. Nothing else moves. No people enter.",
+          "dur_gen": 4,
+          "recorte": [
+            0,
+            4
+          ],
+          "escenario": "elserath-despacho",
+          "boca_visible": null,
+          "uso": "Abrir cualquier escena del despacho. También sirve de cierre, con la silla vacía."
+        },
+        {
+          "id": "arch-elserath-despacho-b",
+          "inicio": 60,
+          "dur": 4,
+          "veo": "economico",
+          "luz": "NOBLE",
+          "refs": [],
+          "encadena_con": null,
+          "imagen": "Close detail of the desk surface: a stick of sealing wax, a closed ledger, the base of the oil lamp, the dark wood grain, no people, no readable writing",
+          "video": "The lamp light steadies and dips on the desk surface. Very slow push in. Nothing else moves.",
+          "dur_gen": 4,
+          "recorte": [
+            0,
+            4
+          ],
+          "escenario": "elserath-despacho",
+          "boca_visible": null,
+          "uso": "El detalle que se usa bajo la frase que decide algo, con la música fuera."
+        },
+        {
+          "id": "arch-elserath-cocina-a",
+          "inicio": 64,
+          "dur": 4,
+          "veo": "economico",
+          "luz": "NOBLE",
+          "refs": [],
+          "encadena_con": null,
+          "imagen": "Wide establishing shot of the whole service kitchen: steam, hanging copper, the long scrubbed table, the low ceiling, completely empty, no people anywhere in frame",
+          "video": "Steam rises steadily and drifts under the low ceiling. Camera locked. Nothing else moves. No people enter.",
+          "dur_gen": 4,
+          "recorte": [
+            0,
+            4
+          ],
+          "escenario": "elserath-cocina",
+          "boca_visible": null,
+          "uso": "Abrir una escena de cocina. El único sitio caliente de la casa."
+        },
+        {
+          "id": "arch-elserath-cocina-b",
+          "inicio": 68,
+          "dur": 4,
+          "veo": "economico",
+          "luz": "NOBLE",
+          "refs": [],
+          "encadena_con": null,
+          "imagen": "Close detail of hanging copper pots against the kitchen wall, steam moving across them, the scrubbed table edge in the foreground, no people",
+          "video": "Steam drifts across the copper and the reflections shift with it. Camera locked.",
+          "dur_gen": 4,
+          "recorte": [
+            0,
+            4
+          ],
+          "escenario": "elserath-cocina",
+          "boca_visible": null,
+          "uso": "Detalle de cocina. Bajo una conversación de servicio."
+        },
+        {
+          "id": "arch-elserath-jardin-a",
+          "inicio": 72,
+          "dur": 4,
+          "veo": "economico",
+          "luz": "BARRIO",
+          "refs": [],
+          "encadena_con": null,
+          "imagen": "Wide establishing shot of the whole walled garden at night: clipped hedges gone slightly wild, gravel paths, cold moonlight, no lamps anywhere, completely empty, no people anywhere in frame",
+          "video": "The hedges move very slightly in the night air. Camera locked. Nothing else moves. No people enter.",
+          "dur_gen": 4,
+          "recorte": [
+            0,
+            4
+          ],
+          "escenario": "elserath-jardin",
+          "boca_visible": null,
+          "uso": "Abrir una escena de jardín de noche. Lo que se habla ahí no se habla dentro."
+        },
+        {
+          "id": "arch-elserath-jardin-b",
+          "inicio": 76,
+          "dur": 4,
+          "veo": "economico",
+          "luz": "BARRIO",
+          "refs": [],
+          "encadena_con": null,
+          "imagen": "Close detail of gravel path and the base of a clipped hedge gone wild at the edge, cold moonlight, one leaf on the gravel, no people",
+          "video": "One leaf turns over on the gravel in the night air and stops. Camera locked. Nothing else moves.",
+          "dur_gen": 4,
+          "recorte": [
+            0,
+            4
+          ],
+          "escenario": "elserath-jardin",
+          "boca_visible": null,
+          "uso": "Detalle de jardín. Muy útil para dejar un silencio después de una frase."
+        },
+        {
+          "id": "arch-consejo-a",
+          "inicio": 80,
+          "dur": 4,
+          "veo": "economico",
+          "luz": "NOBLE",
+          "refs": [],
+          "encadena_con": null,
+          "imagen": "Wide establishing shot of the whole council chamber: the shallow amphitheatre of dark empty benches, the speaker's floor, high windows, gold light and dust, completely empty, no people anywhere in frame",
+          "video": "Dust turns in the light from the high windows over the empty benches. Camera locked. Nothing else moves. No people enter.",
+          "dur_gen": 4,
+          "recorte": [
+            0,
+            4
+          ],
+          "escenario": "consejo",
+          "boca_visible": null,
+          "uso": "Abrir una sesión del Consejo. La sala antes de que se llene."
+        },
+        {
+          "id": "arch-consejo-b",
+          "inicio": 84,
+          "dur": 4,
+          "veo": "economico",
+          "luz": "NOBLE",
+          "refs": [],
+          "encadena_con": null,
+          "imagen": "Close detail of the worn edge of one dark council bench and the empty speaker's floor beyond it, gold light falling across the wood, dust in the air, no people",
+          "video": "The shaft of gold light creeps very slowly across the bench. Dust drifts through it. Camera locked.",
+          "dur_gen": 4,
+          "recorte": [
+            0,
+            4
+          ],
+          "escenario": "consejo",
+          "boca_visible": null,
+          "uso": "Detalle del Consejo. Sirve para el momento en que nadie contesta."
+        },
+        {
+          "id": "arch-casa-renn-a",
+          "inicio": 88,
+          "dur": 4,
+          "veo": "economico",
+          "luz": "BARRIO",
+          "refs": [],
+          "encadena_con": null,
+          "imagen": "Wide establishing shot of the small cellar shrine beneath the merchant house: the carved symbol on the wall, black candles, fresh offerings laid out, swept stone floor, completely empty, no people anywhere in frame",
+          "video": "The black candle flames move together and the carved symbol shifts in and out of shadow. Camera locked. Nothing else moves. No people enter.",
+          "dur_gen": 4,
+          "recorte": [
+            0,
+            4
+          ],
+          "escenario": "casa-renn",
+          "boca_visible": null,
+          "uso": "Abrir cualquier escena de la casa Renn. Lo que hay debajo de una casa normal."
+        },
+        {
+          "id": "arch-casa-renn-b",
+          "inicio": 92,
+          "dur": 4,
+          "veo": "economico",
+          "luz": "BARRIO",
+          "refs": [],
+          "encadena_con": null,
+          "imagen": "Close detail of the black candles and the fresh offerings on the shrine ledge, wax run down the stone, the carved symbol out of focus behind, no people",
+          "video": "The candle flames lean and the wax shines. Very slow push in toward the carved symbol going out of focus behind. Nothing else moves.",
+          "dur_gen": 4,
+          "recorte": [
+            0,
+            4
+          ],
+          "escenario": "casa-renn",
+          "boca_visible": null,
+          "uso": "Detalle del culto doméstico. El que dice «esto está en uso» sin decirlo."
+        },
+        {
+          "id": "arch-casa-vharn-a",
+          "inicio": 96,
+          "dur": 4,
+          "veo": "economico",
+          "luz": "NOBLE",
+          "refs": [],
+          "encadena_con": null,
+          "imagen": "Wide establishing shot of the whole seat of the Great House: marble, silver, no dust anywhere, nothing faded, cold and rich, completely empty, no people anywhere in frame",
+          "video": "The light moves very slightly across the marble, as if a cloud passed outside. Camera locked. Nothing else moves. No people enter.",
+          "dur_gen": 4,
+          "recorte": [
+            0,
+            4
+          ],
+          "escenario": "casa-vharn",
+          "boca_visible": null,
+          "uso": "Abrir cualquier escena de Vharn. La casa que hace pequeña a Elserath."
+        },
+        {
+          "id": "arch-casa-vharn-b",
+          "inicio": 100,
+          "dur": 4,
+          "veo": "economico",
+          "luz": "NOBLE",
+          "refs": [],
+          "encadena_con": null,
+          "imagen": "Close detail of a silver piece on a marble surface, the reflection of a tall window across it, no dust, no fingerprints, no people",
+          "video": "The reflection of the window slides very slowly across the silver. Nothing else moves. Camera locked.",
+          "dur_gen": 4,
+          "recorte": [
+            0,
+            4
+          ],
+          "escenario": "casa-vharn",
+          "boca_visible": null,
+          "uso": "Detalle de Vharn. La riqueza sin nadie que la disfrute."
+        },
+        {
+          "id": "arch-vharn-jardin-a",
+          "inicio": 104,
+          "dur": 4,
+          "veo": "economico",
+          "luz": "BARRIO",
+          "refs": [],
+          "encadena_con": null,
+          "imagen": "Wide establishing shot of the whole formal garden of the Great House at night: paper lanterns along gravel paths, clipped stone, cold air, completely empty, no people anywhere in frame",
+          "video": "The paper lanterns sway slightly and their light moves on the gravel. Camera locked. Nothing else moves. No people enter.",
+          "dur_gen": 4,
+          "recorte": [
+            0,
+            4
+          ],
+          "escenario": "vharn-jardin",
+          "boca_visible": null,
+          "uso": "Abrir una escena de jardín Vharn. Lo bonito y lo frío a la vez."
+        },
+        {
+          "id": "arch-vharn-jardin-b",
+          "inicio": 108,
+          "dur": 4,
+          "veo": "economico",
+          "luz": "BARRIO",
+          "refs": [],
+          "encadena_con": null,
+          "imagen": "Close detail of one paper lantern hanging over a gravel path at night, the paper glowing from within, clipped stone out of focus behind, no people",
+          "video": "The lantern turns slowly on its cord and the light on the gravel turns with it. Nothing else moves.",
+          "dur_gen": 4,
+          "recorte": [
+            0,
+            4
+          ],
+          "escenario": "vharn-jardin",
+          "boca_visible": null,
+          "uso": "Detalle de jardín Vharn. Para cerrar una escena sin resolverla."
+        },
+        {
+          "id": "arch-registros-a",
+          "inicio": 112,
+          "dur": 4,
+          "veo": "economico",
+          "luz": "CRIPTA",
+          "refs": [],
+          "encadena_con": null,
+          "imagen": "Wide establishing shot of the whole record vault beneath the Great House: shelves from floor to ceiling, four centuries of ledgers, one lantern alone in the dark, completely empty, no people anywhere in frame",
+          "video": "The single lantern light shifts and the shelves recede further into the dark. Camera locked. Nothing else moves. No people enter.",
+          "dur_gen": 4,
+          "recorte": [
+            0,
+            4
+          ],
+          "escenario": "registros",
+          "boca_visible": null,
+          "uso": "Abrir cualquier escena de los registros. La cantidad de papel es el argumento."
+        },
+        {
+          "id": "arch-registros-b",
+          "inicio": 116,
+          "dur": 4,
+          "veo": "economico",
+          "luz": "CRIPTA",
+          "refs": [],
+          "encadena_con": null,
+          "imagen": "Close detail of a row of ledger spines on one shelf, leather worn at the top edge, dust along the shelf, lantern light falling from one side, no people, no readable writing",
+          "video": "The lantern light travels slowly along the row of spines and dust lifts in it. Very slow lateral pan to the right.",
+          "dur_gen": 4,
+          "recorte": [
+            0,
+            4
+          ],
+          "escenario": "registros",
+          "boca_visible": null,
+          "uso": "Detalle de registros. Bajo la búsqueda, sin enseñar a nadie buscando."
+        },
+        {
+          "id": "arch-bosque-a",
+          "inicio": 120,
+          "dur": 4,
+          "veo": "economico",
+          "luz": "BARRIO",
+          "refs": [],
+          "encadena_con": null,
+          "imagen": "Wide establishing shot among the enormous trunks of the ancient forest, the canopy so high the sky is only a rumour, moss, shafts of daylight coming down, completely empty, no people anywhere in frame",
+          "video": "The shafts of daylight shift as the canopy moves far above. Camera locked. Nothing else moves. No people enter.",
+          "dur_gen": 4,
+          "recorte": [
+            0,
+            4
+          ],
+          "escenario": "bosque",
+          "boca_visible": null,
+          "uso": "Abrir cualquier escena de bosque. La escala es lo que cuenta el plano."
+        },
+        {
+          "id": "arch-bosque-b",
+          "inicio": 124,
+          "dur": 4,
+          "veo": "economico",
+          "luz": "BARRIO",
+          "refs": [],
+          "encadena_con": null,
+          "imagen": "Close detail of moss on the base of an enormous trunk, one shaft of daylight falling across it, the forest floor dark beyond, no people",
+          "video": "The shaft of light creeps across the moss and small particles drift through it. Very slow push in.",
+          "dur_gen": 4,
+          "recorte": [
+            0,
+            4
+          ],
+          "escenario": "bosque",
+          "boca_visible": null,
+          "uso": "Detalle de bosque. Un respiro entre dos escenas duras."
+        },
+        {
+          "id": "arch-bosque-lago-a",
+          "inicio": 128,
+          "dur": 4,
+          "veo": "economico",
+          "luz": "BARRIO",
+          "refs": [],
+          "encadena_con": null,
+          "imagen": "Wide establishing shot of the still black lake inside the forest at night, moonlight lying on the water, reeds along the near edge, completely empty, no people anywhere in frame, no boats",
+          "video": "The moonlight on the water breathes with the smallest movement of the surface. The reeds move once. Camera locked. Nothing else moves.",
+          "dur_gen": 4,
+          "recorte": [
+            0,
+            4
+          ],
+          "escenario": "bosque-lago",
+          "boca_visible": null,
+          "uso": "Abrir la escena del lago. Casi no se usa, y por eso vale que sea el mismo plano."
+        },
+        {
+          "id": "arch-bosque-lago-b",
+          "inicio": 132,
+          "dur": 4,
+          "veo": "economico",
+          "luz": "BARRIO",
+          "refs": [],
+          "encadena_con": null,
+          "imagen": "Close detail of reeds at the edge of still black water at night, moonlight on the surface between them, no people",
+          "video": "The reeds move in the night air and the reflection breaks and re-forms. Camera locked.",
+          "dur_gen": 4,
+          "recorte": [
+            0,
+            4
+          ],
+          "escenario": "bosque-lago",
+          "boca_visible": null,
+          "uso": "Detalle del lago. El que se pone debajo de una voz que canta."
+        },
+        {
+          "id": "arch-bosque-cabana-a",
+          "inicio": 136,
+          "dur": 4,
+          "veo": "economico",
+          "luz": "BARRIO",
+          "refs": [],
+          "encadena_con": null,
+          "imagen": "Wide establishing shot of the interior of the small raised wooden cabin: plain bed, herbs drying from the beams, green light coming through the window, completely empty, no people anywhere in frame",
+          "video": "The hanging herbs turn slightly and the green light shifts on the floor. Camera locked. Nothing else moves. No people enter.",
+          "dur_gen": 4,
+          "recorte": [
+            0,
+            4
+          ],
+          "escenario": "bosque-cabana",
+          "boca_visible": null,
+          "uso": "Abrir la escena de la cabaña."
+        },
+        {
+          "id": "arch-bosque-cabana-b",
+          "inicio": 140,
+          "dur": 4,
+          "veo": "economico",
+          "luz": "BARRIO",
+          "refs": [],
+          "encadena_con": null,
+          "imagen": "Close detail of bunches of herbs drying from a wooden beam, green light through the window behind them, no people",
+          "video": "The herbs turn very slowly on their strings. The green light moves behind them. Camera locked.",
+          "dur_gen": 4,
+          "recorte": [
+            0,
+            4
+          ],
+          "escenario": "bosque-cabana",
+          "boca_visible": null,
+          "uso": "Detalle de cabaña. Sirve de cierre suave."
+        },
+        {
+          "id": "arch-campamento-a",
+          "inicio": 144,
+          "dur": 4,
+          "veo": "economico",
+          "luz": "BARRIO",
+          "refs": [],
+          "encadena_con": null,
+          "imagen": "Wide establishing shot of the refugee camp by the river outside the walls, seen from a distance: hundreds of cloth and mud tents, small fires, smoke, churned ground, distant anonymous figures far too small to make out, no faces visible anywhere",
+          "video": "Smoke rises from the small fires and drifts across the tents. Camera locked. The distant figures do not come closer and none of them is ever in focus.",
+          "dur_gen": 4,
+          "recorte": [
+            0,
+            4
+          ],
+          "escenario": "campamento",
+          "boca_visible": null,
+          "uso": "Abrir cualquier escena de campamento. La escala del desastre, sin un solo primer plano.",
+          "figurantes_lejanos": true
+        },
+        {
+          "id": "arch-campamento-b",
+          "inicio": 148,
+          "dur": 4,
+          "veo": "economico",
+          "luz": "BARRIO",
+          "refs": [],
+          "encadena_con": null,
+          "imagen": "Close detail of one small fire between cloth tent walls, churned mud around it, smoke rising, no people in frame",
+          "video": "The fire burns low and the smoke rises and bends. Camera locked. Nothing else moves. No people enter.",
+          "dur_gen": 4,
+          "recorte": [
+            0,
+            4
+          ],
+          "escenario": "campamento",
+          "boca_visible": null,
+          "uso": "Detalle de campamento. Bajo una conversación de los que quedaron."
+        },
+        {
+          "id": "arch-orilla-a",
+          "inicio": 152,
+          "dur": 4,
+          "veo": "economico",
+          "luz": "BARRIO",
+          "refs": [],
+          "encadena_con": null,
+          "imagen": "Wide establishing shot of the river bank below the camp: flat stones, reeds, grey water moving, the city wall far behind in the haze, completely empty, no people anywhere in frame",
+          "video": "The grey water moves past and the reeds bend with it. Camera locked. Nothing else moves. No people enter.",
+          "dur_gen": 4,
+          "recorte": [
+            0,
+            4
+          ],
+          "escenario": "orilla",
+          "boca_visible": null,
+          "uso": "Abrir cualquier escena de la orilla. Es donde se dicen las cosas importantes."
+        },
+        {
+          "id": "arch-orilla-b",
+          "inicio": 156,
+          "dur": 4,
+          "veo": "economico",
+          "luz": "BARRIO",
+          "refs": [],
+          "encadena_con": null,
+          "imagen": "Close detail of flat wet stones at the edge of grey moving water, reeds at the frame edge, no people",
+          "video": "The water washes over the flat stones and pulls back. Camera locked. Nothing else moves.",
+          "dur_gen": 4,
+          "recorte": [
+            0,
+            4
+          ],
+          "escenario": "orilla",
+          "boca_visible": null,
+          "uso": "Detalle de orilla. Se usa mucho para dejar caer un silencio."
+        },
+        {
+          "id": "arch-casa-juego-a",
+          "inicio": 160,
+          "dur": 4,
+          "veo": "economico",
+          "luz": "BARRIO",
+          "refs": [],
+          "encadena_con": null,
+          "imagen": "Wide establishing shot of the whole gambling house seen before it fills: crowded tables standing empty, low lamps, smoke still hanging, spilled drink on the boards, completely empty, no people anywhere in frame",
+          "video": "The smoke drifts under the low lamps. One lamp flame moves. Camera locked. Nothing else moves. No people enter.",
+          "dur_gen": 4,
+          "recorte": [
+            0,
+            4
+          ],
+          "escenario": "casa-juego",
+          "boca_visible": null,
+          "uso": "Abrir una escena de la casa de juego, antes del corte a la mesa llena."
+        },
+        {
+          "id": "arch-casa-juego-b",
+          "inicio": 164,
+          "dur": 4,
+          "veo": "economico",
+          "luz": "BARRIO",
+          "refs": [],
+          "encadena_con": null,
+          "imagen": "Close detail of a table top in the gambling house: scattered tokens, a spilled cup, wet rings on the wood, smoke crossing the low lamp light above, no people, no hands in frame",
+          "video": "Smoke crosses the lamp light above the table and the shadows move over the tokens. Camera locked. Nothing else moves.",
+          "dur_gen": 4,
+          "recorte": [
+            0,
+            4
+          ],
+          "escenario": "casa-juego",
+          "boca_visible": null,
+          "uso": "Detalle de casa de juego. El que se pone bajo una apuesta dicha en voz baja."
+        },
+        {
+          "id": "arch-puerto-a",
+          "inicio": 168,
+          "dur": 4,
+          "veo": "economico",
+          "luz": "BARRIO",
+          "refs": [],
+          "encadena_con": null,
+          "imagen": "Wide establishing shot of the whole port warehouse at night: stacked crates receding into the dark, one lantern, water sounds implied outside, completely empty, no people anywhere in frame",
+          "video": "The single lantern swings very slightly and the shadows of the crates move with it. Camera locked. Nothing else moves. No people enter.",
+          "dur_gen": 4,
+          "recorte": [
+            0,
+            4
+          ],
+          "escenario": "puerto",
+          "boca_visible": null,
+          "uso": "Abrir la escena del almacén."
+        },
+        {
+          "id": "arch-puerto-b",
+          "inicio": 172,
+          "dur": 4,
+          "veo": "economico",
+          "luz": "BARRIO",
+          "refs": [],
+          "encadena_con": null,
+          "imagen": "Close detail of stacked wooden crates in lantern light, the grain and the rope binding them, darkness beyond, no people",
+          "video": "The lantern light swings across the crates and back. Nothing else moves. Camera locked.",
+          "dur_gen": 4,
+          "recorte": [
+            0,
+            4
+          ],
+          "escenario": "puerto",
+          "boca_visible": null,
+          "uso": "Detalle de puerto. Para una espera."
+        },
+        {
+          "id": "arch-camino-norte-a",
+          "inicio": 176,
+          "dur": 4,
+          "veo": "economico",
+          "luz": "BARRIO",
+          "refs": [],
+          "encadena_con": null,
+          "imagen": "Wide establishing shot of the north road: bare hills, then stone, then snow further on, cold grey light, the road empty from edge to edge, completely empty, no people anywhere in frame, no carts",
+          "video": "Wind moves across the bare hills and the loose snow drifts over the road. Camera locked. Nothing else moves. No people enter.",
+          "dur_gen": 4,
+          "recorte": [
+            0,
+            4
+          ],
+          "escenario": "camino-norte",
+          "boca_visible": null,
+          "uso": "Abrir cualquier escena del camino. También sirve de paso de tiempo entre episodios."
+        },
+        {
+          "id": "arch-camino-norte-b",
+          "inicio": 180,
+          "dur": 4,
+          "veo": "economico",
+          "luz": "BARRIO",
+          "refs": [],
+          "encadena_con": null,
+          "imagen": "Close detail of the stone surface of the north road with loose snow blowing across it, bare ground at the edge, cold grey light, no people, no footprints",
+          "video": "Loose snow blows across the stone in gusts. Camera locked. Nothing else moves.",
+          "dur_gen": 4,
+          "recorte": [
+            0,
+            4
+          ],
+          "escenario": "camino-norte",
+          "boca_visible": null,
+          "uso": "Detalle del camino. El frío, sin enseñar a nadie pasándolo."
+        },
+        {
+          "id": "arch-kadre-a",
+          "inicio": 184,
+          "dur": 4,
+          "veo": "economico",
+          "luz": "BARRIO",
+          "refs": [],
+          "encadena_con": null,
+          "imagen": "Wide establishing shot of the northern village: dark timber houses under heavy snow, smoke rising from the chimneys, the lane between them untouched, completely empty, no people anywhere in frame",
+          "video": "Smoke rises steadily from the chimneys and fine snow drifts down. Camera locked. Nothing else moves. No people enter.",
+          "dur_gen": 4,
+          "recorte": [
+            0,
+            4
+          ],
+          "escenario": "kadre",
+          "boca_visible": null,
+          "uso": "Abrir cualquier escena de Kadre. El sitio donde nadie le tiene miedo."
+        },
+        {
+          "id": "arch-kadre-b",
+          "inicio": 188,
+          "dur": 4,
+          "veo": "economico",
+          "luz": "BARRIO",
+          "refs": [],
+          "encadena_con": null,
+          "imagen": "Close detail of snow settled on the timber wall and sill of a village house, warm light showing at the edge of a shutter, no people",
+          "video": "Fine snow drifts down past the timber and settles. The warm light at the shutter edge steadies. Camera locked.",
+          "dur_gen": 4,
+          "recorte": [
+            0,
+            4
+          ],
+          "escenario": "kadre",
+          "boca_visible": null,
+          "uso": "Detalle de Kadre. El calor visto desde fuera."
+        },
+        {
+          "id": "arch-casa-ilmen-a",
+          "inicio": 192,
+          "dur": 4,
+          "veo": "economico",
+          "luz": "NOBLE",
+          "refs": [],
+          "encadena_con": null,
+          "imagen": "Wide establishing shot of the interior of the prosperous northern farmhouse: timber walls, the big hearth burning, the scrubbed table, boots by the door, warm firelight, completely empty, no people anywhere in frame",
+          "video": "The hearth fire moves and the firelight shifts across the timber walls and the table. Camera locked. Nothing else moves. No people enter.",
+          "dur_gen": 4,
+          "recorte": [
+            0,
+            4
+          ],
+          "escenario": "casa-ilmen",
+          "boca_visible": null,
+          "uso": "Abrir cualquier escena de la casa Ilmen. La casa que sí funciona."
+        },
+        {
+          "id": "arch-casa-ilmen-b",
+          "inicio": 196,
+          "dur": 4,
+          "veo": "economico",
+          "luz": "NOBLE",
+          "refs": [],
+          "encadena_con": null,
+          "imagen": "Close detail of the big hearth burning, the stone surround, one pair of boots by the door out of focus at the frame edge, no people",
+          "video": "The fire burns and settles, and one piece of wood shifts. The firelight moves across the stone. Camera locked.",
+          "dur_gen": 4,
+          "recorte": [
+            0,
+            4
+          ],
+          "escenario": "casa-ilmen",
+          "boca_visible": null,
+          "uso": "Detalle de la casa Ilmen. Bajo una conversación de familia."
+        },
+        {
+          "id": "arch-puerta-ciudad-a",
+          "inicio": 200,
+          "dur": 4,
+          "veo": "economico",
+          "luz": "BARRIO",
+          "refs": [],
+          "encadena_con": null,
+          "imagen": "Wide establishing shot of the north gate of Feyrond at grey dawn, seen from a distance: a queue of carts along the road, the gate arch, distant anonymous figures far too small to make out, no faces visible anywhere",
+          "video": "The queue does not move. Breath and dust hang in the cold air. Camera locked. The distant figures stay distant and none of them is ever in focus.",
+          "dur_gen": 4,
+          "recorte": [
+            0,
+            4
+          ],
+          "escenario": "puerta-ciudad",
+          "boca_visible": null,
+          "uso": "Abrir cualquier escena de la puerta. La ciudad vista como un trámite.",
+          "figurantes_lejanos": true
+        },
+        {
+          "id": "arch-puerta-ciudad-b",
+          "inicio": 204,
+          "dur": 4,
+          "veo": "economico",
+          "luz": "BARRIO",
+          "refs": [],
+          "encadena_con": null,
+          "imagen": "Close detail of the great stone arch of the city gate at dawn, the ironwork, the worn edge of the road beneath it, no people in frame",
+          "video": "Cold light strengthens very slightly on the stone as the dawn comes up. Camera locked. Nothing else moves.",
+          "dur_gen": 4,
+          "recorte": [
+            0,
+            4
+          ],
+          "escenario": "puerta-ciudad",
+          "boca_visible": null,
+          "uso": "Detalle de la puerta. El paso de fuera a dentro, sin nadie."
+        },
+        {
+          "id": "arch-ciudad-a",
+          "inicio": 208,
+          "dur": 4,
+          "veo": "economico",
+          "luz": "NOBLE",
+          "refs": [],
+          "encadena_con": null,
+          "imagen": "Wide high establishing shot of Feyrond working, seen from far above: the port, the gate, the grain carts on the roads, distant anonymous figures far too small to make out, no faces visible anywhere, wide and functional",
+          "video": "The city works: smoke from the roofs, carts crawling along the roads. Camera locked and very high. The figures stay distant and none of them is ever in focus.",
+          "dur_gen": 4,
+          "recorte": [
+            0,
+            4
+          ],
+          "escenario": "ciudad",
+          "boca_visible": null,
+          "uso": "El plano de ciudad. Se usa para abrir un episodio o para saltar de un sitio a otro.",
+          "figurantes_lejanos": true
+        },
+        {
+          "id": "arch-ciudad-b",
+          "inicio": 212,
+          "dur": 4,
+          "veo": "economico",
+          "luz": "NOBLE",
+          "refs": [],
+          "encadena_con": null,
+          "imagen": "Close detail of stacked grain sacks on a cart bed in the city, rope over them, worn boards, no people in frame, no hands",
+          "video": "The cart rocks once as if loaded out of frame and settles. Dust lifts from the sacks. Camera locked.",
+          "dur_gen": 4,
+          "recorte": [
+            0,
+            4
+          ],
+          "escenario": "ciudad",
+          "boca_visible": null,
+          "uso": "Detalle de ciudad. El comercio, que es de lo que se habla todo el rato."
+        },
+        {
+          "id": "arch-tunel-a",
+          "inicio": 216,
+          "dur": 4,
+          "veo": "economico",
+          "luz": "BARRIO",
+          "refs": [],
+          "encadena_con": null,
+          "imagen": "Wide establishing shot down the flooded stone service tunnel: shallow standing water over worn flagstones, dripping vaulted brick, iron grates along the walls, faint cold daylight far ahead, completely empty, no people anywhere in frame",
+          "video": "Drops fall from the vault into the standing water and rings spread. The far daylight steadies. Camera locked. Nothing else moves. No people enter.",
+          "dur_gen": 4,
+          "recorte": [
+            0,
+            4
+          ],
+          "escenario": "tunel",
+          "boca_visible": null,
+          "uso": "Abrir la escena del túnel inundado, o cualquier tránsito por debajo de la ciudad."
+        },
+        {
+          "id": "arch-tunel-b",
+          "inicio": 220,
+          "dur": 4,
+          "veo": "economico",
+          "luz": "BARRIO",
+          "refs": [],
+          "encadena_con": null,
+          "imagen": "Close detail of shallow standing water over worn flagstones, an iron grate half submerged, drips falling from above, no people",
+          "video": "One drop falls and the rings spread across the still water. Then another. Camera locked. Nothing else moves.",
+          "dur_gen": 4,
+          "recorte": [
+            0,
+            4
+          ],
+          "escenario": "tunel",
+          "boca_visible": null,
+          "uso": "Detalle de túnel. El que se pone bajo pasos que se oyen y no se ven."
+        }
+      ]
     }
   },
   "musica": {
@@ -1567,7 +2645,7 @@
       {
         "personaje": "iven",
         "lineas": 12,
-        "porcentaje": 3.0,
+        "porcentaje": 3,
         "episodios": [
           1,
           2,
@@ -1688,7 +2766,7 @@
       {
         "personaje": "vharn",
         "lineas": 8,
-        "porcentaje": 2.0,
+        "porcentaje": 2,
         "episodios": [
           4,
           7,

@@ -475,6 +475,10 @@ function piezasDeLaSerie(serie) {
   const piezas = esObjeto(serie.piezas) ? serie.piezas : {};
   return Object.keys(piezas)
     .filter((id) => esObjeto(piezas[id]))
+    // El archivo no tiene ni música ni diálogo: es una biblioteca de planos de
+    // ambiente. Ofrecerlo aquí sería una pieza que solo puede decir que no tiene
+    // nada, y esta pantalla ya tiene bastante que enseñar.
+    .filter((id) => piezas[id].archivo !== true)
     .map((id) => ({
       id,
       titulo: soloTexto(piezas[id].titulo) || id,

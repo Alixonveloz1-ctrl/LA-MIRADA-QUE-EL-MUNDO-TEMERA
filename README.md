@@ -83,12 +83,99 @@ distingue entre un teaser de 24 planos y un episodio de 400.
 | `teaser` | 24 | 78 s | Una vez. Ya venía desglosada: se puede generar el primer día. |
 | `opening` | 27 | 90 s | **Una vez para toda la serie.** Se pega como capa en los doce episodios. |
 | `ending` | 15 | 90 s | **Una vez para toda la serie.** Igual. |
+| `archivo` | 56 | — | **Una vez para toda la serie.** No es una película: es una biblioteca. |
 | `epNN` | ~400 | 22 min | Por episodio, con el desglose. Se añaden al lado. |
 
 El montaje de un episodio queda `opening + actos + ending`, todo pegado como capa
 ya montada. Regenerar el opening en cada episodio serían 504 planos tirados y doce
 openings ligeramente distintos, que es lo que hace que una serie parezca hecha a
 trozos.
+
+### El archivo: 56 planos en vez de 289
+
+La cripta sale en **24 escenas repartidas por 8 episodios**. Los túneles, en **46
+repartidas por 11**. Si cada escena paga su propio plano de ambiente, son 289
+keyframes y 289 clips para enseñar veintiocho sitios.
+
+El archivo son **56 planos de ambiente que se generan una vez y se reutilizan en
+los doce episodios**, igual que el opening, el ending y el banco de música. Son
+**233 planos que no se pagan**, y el espectador no lo nota, porque un plano de
+ambiente no cuenta nada: dice dónde estamos y se quita. Es exactamente lo que
+hace el anime de verdad.
+
+**Dos por sitio, y a propósito dos cosas distintas:**
+
+- **El general vacío** — el sitio entero, sin nadie, para abrir una escena.
+- **El detalle que se mueve solo** — humo, lluvia, una llama, agua, polvo en un
+  haz de luz. Es lo que hace que el sitio parezca vivo sin que haya nadie.
+
+Dos planos iguales se notarían al repetirse. Un general y un detalle no, porque
+el ojo no los compara.
+
+**Qué NO puede entrar en el archivo**, y esto es la regla entera: nada con un
+personaje dentro, nada que pase una sola vez, y nada que cuente algo. Si en un
+plano de archivo ocurre algo, al repetirlo en el episodio 9 vuelve a ocurrir. Lo
+comprueba `npm run invariantes`, que rechaza un plano de archivo con referencias
+de personaje, con encadenado o sin decir cuándo se usa, y avisa —con la palabra
+señalada— cuando el texto nombra a alguien sin negarlo.
+
+La excepción son **tres sitios cuyo sentido ES la gente**: la ciudad trabajando,
+la cola de carros en la puerta y el campamento. Vacíos contarían lo contrario de
+lo que son. Ahí se admiten figurantes a lo lejos, el plano se marca
+`figurantes_lejanos`, y a cambio se le exige que prometa `no faces visible`: un
+figurante reconocible en un plano que sale en cuatro episodios sería un personaje
+sin ficha.
+
+**El archivo vive dentro de `piezas`** para que toda la maquinaria de Tomas, la
+cola y el estado le sirva sin tocar una línea. El precio es que las pantallas que
+no deben ofrecerlo tienen que decirlo: **Montaje** no lo ofrece —montarlo daría
+un rollo de cuatro minutos que nadie va a ver, pagado entero— y **Audio** tampoco
+—no tiene ni música ni diálogo—. `npm run banco` comprueba las dos cosas, porque
+es un fallo que no se ve mirando.
+
+Se escriben con `node herramientas/escribir-archivo.mjs`: son 56 planos de doce
+campos, y once de esos doce son siempre lo mismo. A mano son 672 casillas donde
+equivocarse en una sola tira una comprobación que no dice dónde.
+
+#### Cómo se usa un plano de archivo
+
+El ahorro no lo hace el archivo: lo hace el **desglose**, que es quien decide si
+un plano se encarga nuevo o se coge del archivo. Por eso el archivo se montó
+**antes** de desglosar ningún episodio — hecho después, el dinero ya estaría
+gastado.
+
+Al desglosar una escena, el modelo recibe la lista de planos de archivo **de ese
+escenario y de esa luz**, con lo que se ve, lo que se mueve y para qué está
+pensado cada uno. Se le dice que los use siempre que el plano que iba a proponer
+sea sitio y nada más, y que no los use cuando tenga que verse alguien o pasar
+algo.
+
+Cuando los usa, el plano que devuelve es **un puntero, no una descripción**:
+
+```json
+{ "id": "12-1", "de_archivo": "arch-cripta-a", "imagen": "", "video": "",
+  "refs": [], "boca_visible": null, "encadena_con": null, "dur": 3 }
+```
+
+Y a partir de ahí, todo el estudio lee ese plano del archivo:
+
+- **Tomas** no le pone botones. Dice, con palabras, que ese plano se genera en el
+  archivo y que rehacerlo ahí lo cambia en todos los sitios donde sale a la vez.
+- **Montaje** pone en el manifiesto la ruta del clip del archivo. Es el mismo
+  material, no una copia: copiarlo obligaría a pagarlo otra vez.
+- **El desglose** no le crea entrada propia en el estado, para que no aparezca en
+  Tomas como si le faltara todo.
+
+La regla de dónde vive el material de un plano está en **un solo sitio**,
+`app/planos.js`, porque la necesitan tres pantallas que no se hablan entre ellas.
+Escrita tres veces, el día que cambiara cambiaría en dos, y el fallo sería un
+episodio montado con un hueco. Eso no se ve leyendo el código: se ve viendo el
+vídeo.
+
+**Se puede usar menos de lo que dura, nunca más.** Coger dos segundos de un plano
+de cuatro es montar y no cuesta nada; pedir ocho de uno de cuatro sería encargar
+un tramo que no existe. Lo rechazan la comprobación del desglose y
+`npm run invariantes`, cada una en su momento.
 
 ### Las canciones
 
@@ -630,7 +717,8 @@ ejecutándolo y midiendo. Si algo no cumple, sale con error y lo dice en españo
 
 Cada paso se puede lanzar por separado con `npm run datos`, `npm run invariantes`,
 `npm run cola`, `npm run audio`, `npm run ajustes`, `npm run freno`,
-`npm run anotar`, `npm run banco` y `npm run pesar`.
+`npm run anotar`, `npm run banco` y `npm run pesar`. Y `npm run archivo` reescribe
+los 56 planos de ambiente desde su tabla.
 
 ### Lo que manda Google no es siempre lo mismo
 

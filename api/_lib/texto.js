@@ -589,8 +589,33 @@ function contextoDeLaEscena(episodio, escena) {
     escenario: elEscenario,
     luz: clave,
     descripcionDeLuz: descripcionDeLuz.trim(),
-    placas: placasDeLaEscena(personajes)
+    placas: placasDeLaEscena(personajes),
+    archivo: archivoDeLaEscena(idEscenario, clave)
   };
+}
+
+/**
+ * Los planos de archivo que sirven para esta escena: los de su escenario y su
+ * misma luz.
+ *
+ * El archivo son planos de ambiente generados UNA vez para toda la temporada. La
+ * cripta sale en 24 escenas de 8 episodios: si cada una encarga su propio plano
+ * general de la cripta, se pagan 24 veces lo mismo. Ofrecérselos aquí al modelo
+ * es lo único que hace que el ahorro exista de verdad — un archivo que el
+ * desglose no conoce es una biblioteca que nadie abre.
+ *
+ * Se filtra por LUZ además de por escenario: el mismo sitio de día y de noche no
+ * es el mismo plano, y colar uno por otro se ve en pantalla.
+ *
+ * @param {string} idEscenario
+ * @param {string} luz
+ * @returns {object[]} los planos de archivo tal cual están en serie.json
+ */
+function archivoDeLaEscena(idEscenario, luz) {
+  const piezas = serie.piezas || {};
+  const laPieza = Object.values(piezas).find((una) => una && una.archivo === true);
+  const tomas = (laPieza && Array.isArray(laPieza.tomas) && laPieza.tomas) || [];
+  return tomas.filter((una) => una && una.escenario === idEscenario && una.luz === luz);
 }
 
 /**
@@ -677,6 +702,7 @@ function promptDeDesglose(ctx) {
 
     bloque('LA ESCENA', laEscenaEnPalabras(ctx)),
     bloque('LAS PLACAS DEL BANCO QUE PUEDES USAR EN «refs»', lasPlacasEnPalabras(ctx)),
+    bloque('EL ARCHIVO: PLANOS DE AMBIENTE QUE YA ESTÁN HECHOS', elArchivoEnPalabras(ctx)),
     bloque('CÓMO SE MONTA UNA ESCENA HABLADA EN ESTE ANIMÉ', laGramaticaDelDialogo()),
     bloque('LAS REGLAS DEL DESGLOSE', numerada(REGLAS_DEL_DESGLOSE) +
       '\nSe comprueban una a una sobre lo que devuelvas. Si se rompe cualquiera, el desglose ' +
@@ -725,6 +751,44 @@ function laEscenaEnPalabras(ctx) {
   }
 
   return lineas.join('\n');
+}
+
+/**
+ * El archivo, dicho al modelo. Es lo que convierte el ahorro en real: sin esta
+ * lista delante, propondría un plano general nuevo para cada escena y las 24
+ * escenas de la cripta pagarían 24 criptas.
+ */
+function elArchivoEnPalabras(ctx) {
+  if (!ctx.archivo.length) {
+    return 'No hay planos de archivo para este escenario con esta luz. Todos los planos de esta ' +
+      'escena se describen enteros, con su «imagen» y su «video», y ninguno lleva «de_archivo».';
+  }
+
+  const filas = ctx.archivo.map(
+    (plano) =>
+      `- «${plano.id}» — ${plano.dur} s\n` +
+      `  Se ve: ${plano.imagen}\n` +
+      `  Se mueve: ${plano.video}\n` +
+      `  Está pensado para: ${plano.uso || 'sin escribir'}`
+  );
+
+  return [
+    'Estos planos de ambiente YA ESTÁN GENERADOS y pagados. Son de este mismo escenario y de ' +
+    'esta misma luz, y se reutilizan en los doce episodios: usarlos no cuesta nada y describir ' +
+    'uno nuevo que enseñe lo mismo cuesta un vídeo entero.',
+    '',
+    filas.join('\n'),
+    '',
+    'ÚSALOS siempre que el plano que ibas a proponer sea sitio y nada más: el plano de llegada ' +
+    'con el que se abre la escena, un corte de respiro entre dos frases, un puente entre dos ' +
+    'momentos. Para usar uno, el plano que devuelvas lleva «de_archivo» con su id, y entonces ' +
+    '«imagen» y «video» van vacíos —la cadena vacía—, «refs» va vacío y «boca_visible» va null: ' +
+    'no se describe lo que ya está hecho.',
+    '',
+    'NO los uses cuando en el plano tenga que verse alguien, cuando ocurra algo de la acción de ' +
+    'la escena, o cuando el plano tenga que decir algo concreto de ESTE momento. Un plano de ' +
+    'archivo sale en varios episodios: lo que pase dentro, pasa en todos.'
+  ].join('\n');
 }
 
 /** La lista de placas disponibles, que es lo que hace que las refs existan. */
@@ -841,7 +905,8 @@ function loQueSeEspera(ctx) {
     `      "escenario": "${ctx.escenario.id}",`,
     `      "refs": ${primera},`,
     '      "boca_visible": null,',
-    '      "encadena_con": null',
+    '      "encadena_con": null,',
+    '      "de_archivo": null',
     '    }',
     '  ]',
     '}'
@@ -871,6 +936,8 @@ function loQueSeEspera(ctx) {
     `- «boca_visible»: null, o el id del personaje cuya boca se ve en cuadro. Solo puede ser uno ` +
     `de estos: ${ctx.personajes.map((p) => `«${p}»`).join(', ') || 'ninguno, porque no sale nadie'}.`,
     '- «encadena_con»: null, o el id del plano SIGUIENTE cuando la acción continúa sin corte.',
+    '- «de_archivo»: null casi siempre. Si este plano es uno de los del archivo, aquí va su id, ' +
+    'y entonces «imagen» y «video» van vacíos, «refs» vacío y «boca_visible» null.',
     '',
     'Todo lo que no sea «imagen» y «video» son identificadores: van tal cual, sin traducir.'
   ].join('\n');
@@ -942,6 +1009,93 @@ function listaDeQuejas(quejas) {
 
 const COMPROBACIONES = [
   {
+    // UN PLANO DE ARCHIVO ES UN PUNTERO, NO UNA DESCRIPCIÓN.
+    //
+    // Aquí se vigilan dos maneras de equivocarse que cuestan dinero de verdad.
+    // La primera: inventarse un id de archivo que no existe, y entonces el
+    // episodio se monta con un hueco donde tenía que ir un plano. La segunda,
+    // más callada: apuntar al archivo Y describir el plano igualmente, con lo
+    // que alguien acabaría generando la descripción sin darse cuenta de que ese
+    // material ya estaba hecho. Y la tercera, la peor: meter un personaje o una
+    // boca en un plano que va a salir en cuatro episodios.
+    nombre: 'el-archivo-se-usa-como-puntero',
+    revisar(planos, ctx) {
+      const quejas = [];
+      const permitidos = new Set(ctx.archivo.map((una) => una.id));
+
+      for (const plano of planos) {
+        if (!plano.de_archivo) continue;
+
+        if (!permitidos.has(plano.de_archivo)) {
+          quejas.push(
+            `el plano ${plano.id} dice usar «${plano.de_archivo}» del archivo, y ese plano no ` +
+            `está entre los que sirven para este escenario y esta luz. Los que hay son: ` +
+            `${[...permitidos].join(', ') || 'ninguno, así que ningún plano puede llevar «de_archivo»'}.`
+          );
+          continue;
+        }
+
+        if (plano.imagen || plano.video) {
+          quejas.push(
+            `el plano ${plano.id} usa «${plano.de_archivo}» del archivo y además lo describe. Un ` +
+            'plano de archivo ya está generado: «imagen» y «video» van vacíos, o alguien acabaría ' +
+            'pagando otra vez lo que ya está hecho.'
+          );
+        }
+
+        if (Array.isArray(plano.refs) && plano.refs.length) {
+          quejas.push(
+            `el plano ${plano.id} usa «${plano.de_archivo}» del archivo y lleva referencias de ` +
+            'personaje. Un plano de archivo sale en varios episodios: quien esté dentro, sale en ' +
+            'todos. Si en este plano tiene que verse alguien, descríbelo entero y no uses el archivo.'
+          );
+        }
+
+        if (plano.boca_visible) {
+          quejas.push(
+            `el plano ${plano.id} usa «${plano.de_archivo}» del archivo y declara boca visible. En ` +
+            'un plano de archivo no hay nadie hablando.'
+          );
+        }
+
+        if (plano.encadena_con) {
+          quejas.push(
+            `el plano ${plano.id} usa «${plano.de_archivo}» del archivo y encadena con ` +
+            `${plano.encadena_con}. Encadenar interpola hacia el keyframe del siguiente, y un ` +
+            'plano de archivo es el mismo en todos los episodios: no puede llevar a ningún sitio ' +
+            'concreto.'
+          );
+        }
+
+        // NO SE PUEDE CORTAR MÁS PELÍCULA DE LA QUE HAY.
+        //
+        // El clip del archivo dura lo que dura. Si aquí se pidieran ocho
+        // segundos de un clip de cuatro, el montaje encargaría un tramo que no
+        // existe y el episodio saldría con un salto justo donde debería haber
+        // aire. Usar MENOS sí vale: coger dos segundos de un plano de cuatro es
+        // montar, y no cuesta nada.
+        const original = ctx.archivo.find((una) => una.id === plano.de_archivo);
+        const cabe = Number(original && original.dur);
+        if (Number.isFinite(cabe) && Number(plano.dur) > cabe) {
+          quejas.push(
+            `el plano ${plano.id} pide ${plano.dur} s de «${plano.de_archivo}», y ese plano de ` +
+            `archivo dura ${cabe} s. Se puede usar menos, nunca más: pon «dur» en ${cabe} o menos, ` +
+            `con «dur_gen» ${original.dur_gen} y «recorte» [0, dur].`
+          );
+        }
+        if (Number.isFinite(cabe) && Number(plano.dur_gen) !== Number(original.dur_gen)) {
+          quejas.push(
+            `el plano ${plano.id} dice «dur_gen» ${plano.dur_gen} y «${plano.de_archivo}» se ` +
+            `generó con ${original.dur_gen}. Un plano de archivo no se vuelve a generar, así que ` +
+            'ese número tiene que ser el suyo.'
+          );
+        }
+      }
+
+      return quejas;
+    }
+  },
+  {
     nombre: 'los-ids-son-unicos-y-correlativos',
     revisar(planos, ctx) {
       const quejas = [];
@@ -969,6 +1123,10 @@ const COMPROBACIONES = [
     revisar(planos) {
       const quejas = [];
       for (const plano of planos) {
+        // Un plano de archivo no se describe: apunta a uno ya hecho, y su
+        // descripción está escrita en el archivo desde hace meses. Exigirle
+        // «imagen» aquí sería exigir que se vuelva a escribir lo mismo.
+        if (plano.de_archivo) continue;
         for (const campo of ['imagen', 'video']) {
           const valor = plano[campo];
           if (!valor) {
@@ -1366,7 +1524,8 @@ function normalizarPlano(crudo) {
       ? crudo.refs.map(comoCadena)
       : (crudo.refs === null || crudo.refs === undefined ? [] : crudo.refs),
     boca_visible: vacio(crudo.boca_visible) ? null : comoCadena(crudo.boca_visible),
-    encadena_con: vacio(crudo.encadena_con) ? null : comoCadena(crudo.encadena_con)
+    encadena_con: vacio(crudo.encadena_con) ? null : comoCadena(crudo.encadena_con),
+    de_archivo: vacio(crudo.de_archivo) ? null : comoCadena(crudo.de_archivo)
   };
 }
 

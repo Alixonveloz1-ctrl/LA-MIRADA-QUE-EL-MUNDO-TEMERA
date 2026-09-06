@@ -36,6 +36,7 @@
 import { ErrorDeCara, llamar } from '../api.js';
 import { actual, alCambiar, cambiar } from '../estado.js';
 import { encolar, encolarVarios } from '../cola.js';
+import { claveDelMaterial } from '../planos.js';
 import {
   aviso,
   barra,
@@ -488,6 +489,11 @@ function piezasDeLaSerie(serie) {
   const piezas = esObjeto(serie.piezas) ? serie.piezas : {};
   return Object.keys(piezas)
     .filter((id) => esObjeto(piezas[id]))
+    // El archivo NO se monta. Es una biblioteca de planos de ambiente, no una
+    // película: sus 56 tomas están puestas una detrás de otra porque hay que
+    // ponerlas en algún orden, no porque cuenten nada seguido. Montarlo daría
+    // un rollo de cuatro minutos que nadie va a ver, pagado entero.
+    .filter((id) => piezas[id].archivo !== true)
     .map((id) => ({ id, titulo: soloTexto(piezas[id].titulo) || id, datos: piezas[id] }));
 }
 
@@ -525,7 +531,11 @@ function construirModelo(serie, pieza) {
         hasta: Number.isFinite(hasta) ? hasta : null,
         pasoDeDos: pasoDeDos.includes(String(una.id)),
         escena: una.escena === undefined || una.escena === null ? null : String(una.escena),
-        acto: una.acto === undefined || una.acto === null ? null : String(una.acto)
+        acto: una.acto === undefined || una.acto === null ? null : String(una.acto),
+        // Se arrastra hasta aquí porque es lo que decide DE DÓNDE sale el clip
+        // de este plano. Perderlo en la normalización dejaría el plano sin
+        // origen y el episodio se montaría con un hueco.
+        de_archivo: soloTexto(una.de_archivo) || null
       };
     })
     .sort((a, b) => (a.inicio ?? 0) - (b.inicio ?? 0));
@@ -998,7 +1008,10 @@ function componerVideo(modelo, ambito, estado, faltas) {
   const sinClip = [];
 
   for (const toma of ambito.tomas) {
-    const origen = clipElegido(estado, `${modelo.id}/${toma.id}`);
+    // Un plano de ambiente que apunta al archivo lee el clip del archivo: es el
+    // mismo material, no una copia. Copiarlo obligaría a pagarlo otra vez, que
+    // es exactamente lo que el archivo existe para evitar.
+    const origen = clipElegido(estado, claveDelMaterial(modelo.id, toma));
     if (!origen) {
       sinClip.push(toma.id);
       continue;

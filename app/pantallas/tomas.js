@@ -53,6 +53,7 @@
 import { llamar, ErrorDeCara } from '../api.js';
 import { actual, alCambiar, cambiar } from '../estado.js';
 import { encolar, encolarVarios } from '../cola.js';
+import { claveDelMaterial, esDeArchivo, porQueNoSeGenera } from '../planos.js';
 import {
   aviso,
   barra,
@@ -679,7 +680,7 @@ function estadoDeToma(guardado, enLaCola) {
 function progresoDe(tomas, ctx) {
   const cuenta = { total: tomas.length, keyframes: 0, elegidos: 0, sinNada: 0 };
   for (const una of tomas) {
-    const guardado = leerToma(ctx.estado, `${ctx.pieza.id}/${una.id}`);
+    const guardado = leerToma(ctx.estado, claveDelMaterial(ctx.pieza.id, una));
     if (guardado.keyframe) cuenta.keyframes += 1;
     if (guardado.clip) cuenta.elegidos += 1;
     if (!guardado.keyframe && !guardado.intentosKeyframe.length) cuenta.sinNada += 1;
@@ -705,6 +706,11 @@ function progresoDe(tomas, ctx) {
  * @returns {string|null}
  */
 function porQueNoSePuedeKeyframe(laToma, ctx) {
+  // Un plano que apunta al archivo no genera nada suyo: su keyframe y su clip ya
+  // existen, hechos una vez para toda la temporada. Ofrecer aquí un botón de
+  // generar sería ofrecer pagar dos veces lo mismo.
+  if (esDeArchivo(laToma)) return porQueNoSeGenera(laToma);
+
   const faltan = [];
   const inexistentes = [];
 
@@ -754,6 +760,9 @@ function porQueNoSePuedeKeyframe(laToma, ctx) {
  * @returns {string|null}
  */
 function porQueNoHayBotonDeVideo(laToma, guardado, ctx) {
+  // Igual que con el keyframe: el clip de un plano de archivo ya está pagado.
+  if (esDeArchivo(laToma)) return porQueNoSeGenera(laToma);
+
   if (!guardado.keyframe) {
     return (
       'Primero hay que aprobar el keyframe. Mientras no lo esté, aquí no hay botón de generar ' +
@@ -764,7 +773,11 @@ function porQueNoHayBotonDeVideo(laToma, guardado, ctx) {
 
   const siguiente = soloTexto(laToma.encadena_con);
   if (siguiente) {
-    const suyo = leerToma(ctx.estado, `${ctx.pieza.id}/${siguiente}`);
+    // El keyframe al que hay que llegar puede estar en el archivo, si el plano
+    // siguiente es uno de ambiente. Buscarlo siempre a nombre de esta pieza
+    // diría que falta un keyframe que existe y está aprobado desde hace meses.
+    const laSiguiente = ctx.pieza.tomas.find((una) => una.id === siguiente) || { id: siguiente };
+    const suyo = leerToma(ctx.estado, claveDelMaterial(ctx.pieza.id, laSiguiente));
     if (!suyo.keyframe) {
       return (
         `Esta toma encadena con ${siguiente}, y para encadenar hace falta el keyframe de ` +
@@ -923,7 +936,7 @@ function construir(modelo, repintar, repintarLuego) {
 
   const rutas = [];
   for (const una of enPantalla) {
-    rutas.push(...rutasDeLaTarjeta(leerToma(estado, `${pieza.id}/${una.id}`)));
+    rutas.push(...rutasDeLaTarjeta(leerToma(estado, claveDelMaterial(pieza.id, una))));
   }
   // Las firmas llegan solas, sin que nadie las haya pedido a mano: su repintado
   // es de los que esperan a que termine el clip que se esté mirando.
@@ -1103,7 +1116,7 @@ function accionesDeTanda(ctx) {
   const clipsQueEsperan = [];
 
   for (const una of pieza.tomas) {
-    const clave = `${pieza.id}/${una.id}`;
+    const clave = claveDelMaterial(pieza.id, una);
     const guardado = leerToma(ctx.estado, clave);
 
     if (!guardado.keyframe && !guardado.intentosKeyframe.length) {
@@ -1412,7 +1425,9 @@ function separadorDeBloque(bloque, ctx) {
  */
 function tarjetaDeToma(laToma, ctx) {
   const { pieza } = ctx;
-  const clave = `${pieza.id}/${laToma.id}`;
+  // De dónde sale el material de este plano. Casi siempre es suyo; si apunta al
+  // archivo, es el del archivo, que es el mismo y no una copia.
+  const clave = claveDelMaterial(pieza.id, laToma);
   const guardado = leerToma(ctx.estado, clave);
   const trabajoKeyframe = ctx.trabajos.get(`keyframe:${clave}`) || null;
   const trabajoClip = ctx.trabajos.get(`clip:${clave}`) || null;
@@ -1423,6 +1438,13 @@ function tarjetaDeToma(laToma, ctx) {
   const pie = [];
 
   pie.push(h('p', { clase: 'tarjeta-texto' }, datosDeLaToma(laToma)));
+
+  // Para qué sirve, si es un plano de archivo. En una biblioteca de 56 planos de
+  // ambiente lo que hace falta saber no es cuánto dura: es cuándo se pone.
+  if (soloTexto(laToma.uso)) {
+    pie.push(h('p', { clase: 'tarjeta-texto' }, soloTexto(laToma.uso)));
+  }
+
   pie.push(h('p', { clase: 'tarjeta-texto suave' }, comoSeUsaLaToma(laToma)));
 
   if (bloqueoKeyframe) pie.push(h('p', { clase: 'tarjeta-texto' }, bloqueoKeyframe));
@@ -2141,7 +2163,7 @@ function tomasVisibles(ctx) {
 /** Si una toma cae dentro del filtro de estado que se le pase. */
 function pasaElEstado(laToma, ctx, cual) {
   if (cual === 'todo') return true;
-  const clave = `${ctx.pieza.id}/${laToma.id}`;
+  const clave = claveDelMaterial(ctx.pieza.id, laToma);
   const guardado = leerToma(ctx.estado, clave);
   return estadoDeToma(guardado, ctx.trabajos.get(`clip:${clave}`) || null) === cual;
 }

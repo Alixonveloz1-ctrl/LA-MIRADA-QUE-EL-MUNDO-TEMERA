@@ -1275,7 +1275,11 @@ async function armarLaPieza(episodio, modelo, sello) {
         encadena_con: texto(plano.encadena_con) || null,
         boca_visible: texto(plano.boca_visible) || null,
         imagen: texto(plano.imagen),
-        video: texto(plano.video)
+        video: texto(plano.video),
+        // El puntero al archivo, si el desglose ha decidido reutilizar un plano
+        // de ambiente en vez de encargar uno nuevo. Es el campo que decide si
+        // este plano se paga o no se paga.
+        de_archivo: texto(plano.de_archivo) || null
       });
       inicio += dur;
     }
@@ -1305,7 +1309,9 @@ async function armarLaPieza(episodio, modelo, sello) {
     acabado: modelo.acabado
       ? {
           cadena_ffmpeg: modelo.acabado.cadena_ffmpeg,
-          paso_de_dos: tomas.filter((una) => una.veo !== 'economico').map((una) => una.id)
+          paso_de_dos: tomas
+            .filter((una) => una.veo !== 'economico' && !una.de_archivo)
+            .map((una) => una.id)
         }
       : null,
     tomas
@@ -1320,6 +1326,10 @@ async function armarLaPieza(episodio, modelo, sello) {
     // keyframe aprobado de un plano que sigue llamándose igual sigue valiendo.
     if (!vivo.tomas || typeof vivo.tomas !== 'object') vivo.tomas = {};
     for (const una of tomas) {
+      // Un plano que apunta al archivo NO tiene entrada propia: su material vive
+      // a nombre del archivo y ya está generado. Crearle una vacía lo pintaría
+      // en Tomas como si le faltara todo, y alguien acabaría generándolo.
+      if (una.de_archivo) continue;
       const clave = `${episodio.idPieza}/${una.id}`;
       if (vivo.tomas[clave] && typeof vivo.tomas[clave] === 'object') continue;
       vivo.tomas[clave] = {
