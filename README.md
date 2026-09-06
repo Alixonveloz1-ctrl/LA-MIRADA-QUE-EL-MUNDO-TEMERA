@@ -126,6 +126,24 @@ lo que son. Ahí se admiten figurantes a lo lejos, el plano se marca
 figurante reconocible en un plano que sale en cuatro episodios sería un personaje
 sin ficha.
 
+**El banco se elige, no se acumula.** Al principio se pintaba SIEMPRE debajo de
+la pieza, en su propia sección, con la idea de que se viera que no era de nadie.
+En el teléfono se lee al revés: eliges el teaser, ves sus dos pistas, y debajo
+aparecen dieciocho más — y lo que parece es que la música de la temporada se ha
+comido la de la pieza. El título de la sección no salva eso: para cuando se llega
+a él ya se ha desplazado media pantalla.
+
+Ahora el banco es **una opción más del mismo selector**, al lado del teaser, el
+opening y el ending. O una pieza, o el banco; nunca las dos cosas a la vez. Y
+mirando el banco, la pantalla dice con cuántas pistas cuenta la pieza que tenías
+puesta, para que no haya que ir a comprobarlo. La elección **no** se guarda en
+`pieza_activa` del estado: esa la comparten Tomas y Montaje, y el banco no es una
+pieza para ellas.
+
+Cada pieza de música dice de quién es en su campo `pieza`; las del banco llevan
+`temporada`. `npm run banco` dibuja la pantalla y comprueba que con el teaser
+salen dos pistas y **ni una** del banco, y que el selector trae la opción.
+
 **El archivo vive dentro de `piezas`** para que toda la maquinaria de Tomas, la
 cola y el estado le sirva sin tocar una línea. El precio es que las pantallas que
 no deben ofrecerlo tienen que decirlo: **Montaje** no lo ofrece —montarlo daría

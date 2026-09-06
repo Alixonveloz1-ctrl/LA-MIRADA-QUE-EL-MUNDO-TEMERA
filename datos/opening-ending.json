@@ -4,6 +4,7 @@
   "musica": [
     {
       "id": "opening-tema",
+      "pieza": "opening",
       "duracion_s": 90,
       "pista": "canción con letra cantada en japonés",
       "encargo": "Opening theme for a bleak adult anime drama, ninety seconds, building to a full chorus. A female lead vocal, low and worn rather than bright, singing over a sparse dark orchestral arrangement. Opens with a solo wooden flute playing a broken folk melody. Low strings enter underneath at fifteen seconds. The vocal enters at eighteen seconds. A dry hand-drum pulse with no reverb begins at thirty seconds and grows. The chorus arrives at fifty-five seconds, full ensemble, the vocal exhausted rather than triumphant. Ends unresolved. The song is sung in JAPANESE, with these exact lyrics and no others:\n灰の中で 目を開けた\n誰も名を 呼ばなかった\n濡れた石の 冷たさだけ\n覚えている\n見つからないで と あなたは言った\nここは 輝くものを壊すから\nだから僕は 光を消した\n誰にも 見えないように\nいつか この目が\n世界を 黙らせる\n二度と 奪わせない\nClear diction, the words must be intelligible. No English anywhere in the vocal. No brass fanfare, no electronic drums, no synth pads, no major-key triumph, no pop production.",
@@ -13,6 +14,7 @@
     },
     {
       "id": "ending-tema",
+      "pieza": "ending",
       "duracion_s": 90,
       "pista": "canción con letra cantada en japonés",
       "encargo": "Ending theme for a bleak adult anime drama, ninety seconds, almost still. A solo female voice, low breathy mezzo, exhausted and intimate, as if singing to a child in a dark room. Recorded close and dry. A single sustained low string underneath that never moves. The voice enters at twelve seconds. A wooden flute answers once near the end and does not finish its phrase. Fades to nothing. The song is sung in JAPANESE, with these exact lyrics and no others:\n眠りなさい 小さな手\n血の匂いは すぐ消える\nわたしの声を 忘れても\nこの歌だけ 残るでしょう\n神になる前の あなたを\n見た者を 忘れないで\n花は枯れても\nここに あるから\nClear diction, the words must be intelligible. No English anywhere in the vocal. No percussion of any kind, no choir, no harmony, no build, no climax, no resolution.",

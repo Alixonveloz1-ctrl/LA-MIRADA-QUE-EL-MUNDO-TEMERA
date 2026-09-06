@@ -104,6 +104,16 @@ const MAXIMO_DE_LYRIA_S = 180;
  */
 const PIEZA_DE_LA_TEMPORADA = 'temporada';
 
+/**
+ * La opción del selector que enseña el banco de la temporada.
+ *
+ * NO se guarda en `pieza_activa` del estado a propósito: esa la comparten Tomas,
+ * Montaje y esta pantalla, y el banco no es una pieza de la serie. Ponerla ahí
+ * dejaría a las otras dos pantallas apuntando a algo que para ellas no existe.
+ * Es una elección de esta pantalla y mientras esté abierta.
+ */
+const OPCION_DEL_BANCO = 'banco-de-la-temporada';
+
 // ---------------------------------------------------------------------------
 // Lo que esta pantalla recuerda mientras la aplicación está abierta
 // ---------------------------------------------------------------------------
@@ -125,6 +135,9 @@ let quejaDeEnlaces = null;
 
 /** El último fallo de una acción de esta pantalla, para pintarlo arriba. */
 let queja = null;
+
+/** Si lo que se está mirando es el banco de la temporada y no una pieza. */
+let mirandoElBanco = false;
 
 /** Las rutas que se han llegado a reproducir aquí. Sin esto no se aprueba nada. */
 const oidos = new Set();
@@ -807,6 +820,10 @@ function construir(serie, repintar, repintarLuego) {
   const banco = bancoDeLaTemporada(serie);
   const bloques = bloquesDeVoz(pieza.datos);
 
+  // El banco es una elección de esta pantalla, no una pieza: si se elige y luego
+  // el banco desaparece de los datos, se vuelve solo a la pieza que hubiera.
+  const enElBanco = mirandoElBanco && banco.length > 0;
+
   const ctx = {
     serie,
     estado,
@@ -814,6 +831,7 @@ function construir(serie, repintar, repintarLuego) {
     todas,
     musica,
     banco,
+    enElBanco,
     bloques,
     trabajos: indexarCola(estado),
     repintar,
@@ -833,12 +851,19 @@ function construir(serie, repintar, repintarLuego) {
   }
   pedirEnlacesQueFalten(rutas, repintarLuego);
 
+  // O una pieza, o el banco. Nunca las dos cosas a la vez.
+  //
+  // Antes el banco se pintaba SIEMPRE debajo, en su propia sección, con la idea
+  // de que se viera que no era de nadie. En el teléfono se lee al revés: eliges
+  // el teaser, ves sus dos pistas y debajo aparecen dieciocho más, y lo que
+  // parece es que la música de la temporada se ha comido la de la pieza. El
+  // título de la sección no salva eso: para cuando se llega a él ya se ha
+  // scrolleado media pantalla.
   return pantalla(
     'Audio',
     seccionCabecera(ctx),
-    seccionMusica(ctx),
-    seccionBanco(ctx),
-    seccionVoces(ctx)
+    enElBanco ? seccionBanco(ctx) : seccionMusica(ctx),
+    enElBanco ? null : seccionVoces(ctx)
   );
 }
 
@@ -853,7 +878,7 @@ function construir(serie, repintar, repintarLuego) {
  * @returns {HTMLElement}
  */
 function seccionCabecera(ctx) {
-  const { pieza, todas, repintar } = ctx;
+  const { pieza, todas, banco, enElBanco, repintar } = ctx;
   const partes = [];
 
   if (queja) {
@@ -889,20 +914,32 @@ function seccionCabecera(ctx) {
     h(
       'p',
       { clase: 'tarjeta-texto suave' },
-      todas.length > 1
+      enElBanco
+        ? 'Banco de la temporada: la música que suena DENTRO de los episodios. No es de ninguna ' +
+          'pieza porque suena en las doce, así que se elige aquí como si lo fuera.'
+        : todas.length > 1
         ? 'Pieza que se está produciendo. Todo lo de abajo es de la pieza puesta.'
         : `Pieza que se está produciendo: ${pieza.titulo}. Cuando se desglose un episodio aparecerá ` +
           'aquí al lado, con esta misma pantalla.'
     )
   );
 
-  if (todas.length > 1) {
+  // El banco va en el mismo selector que las piezas, no debajo de todas ellas.
+  const opciones = todas.map((una) => ({ id: una.id, texto: una.titulo }));
+  if (banco.length) opciones.push({ id: OPCION_DEL_BANCO, texto: 'Banco de la temporada' });
+
+  if (opciones.length > 1) {
     partes.push(
-      filtro(
-        todas.map((una) => ({ id: una.id, texto: una.titulo })),
-        pieza.id,
-        (id) => cambiarDePieza(id, ctx)
-      )
+      filtro(opciones, enElBanco ? OPCION_DEL_BANCO : pieza.id, (id) => {
+        if (id === OPCION_DEL_BANCO) {
+          mirandoElBanco = true;
+          repintar();
+          return;
+        }
+        mirandoElBanco = false;
+        if (id === pieza.id) return repintar();
+        cambiarDePieza(id, ctx);
+      })
     );
   }
 
@@ -915,6 +952,20 @@ function seccionCabecera(ctx) {
         'que la pantalla de Montaje deja mezclar.'
     )
   );
+
+  // Que se sepa que lo de la pieza sigue ahí, sin tener que ir a mirarlo.
+  if (enElBanco) {
+    const suyas = musicaDeLaPieza(ctx.serie, pieza.id, todas.length).lista;
+    partes.push(
+      h(
+        'p',
+        { clase: 'tenue' },
+        `La música de «${pieza.titulo}» no se ha ido a ninguna parte: son ` +
+          `${plural(suyas.length, 'pista', 'pistas')} y están donde siempre, eligiendo esa pieza ` +
+          'aquí arriba.'
+      )
+    );
+  }
 
   return seccion(null, partes);
 }
@@ -1001,13 +1052,12 @@ function seccionMusica(ctx) {
 /**
  * El banco de la temporada: la música que suena DENTRO de los episodios.
  *
- * Está aparte de la sección de arriba y no cambia al cambiar de pieza, porque
- * eso es exactamente lo que son: piezas que se componen una vez y suenan en los
- * doce episodios. Un anime de verdad no compone música por escena; tiene una
- * biblioteca de temas con una función cada uno y los repite toda la temporada.
- * Repetirlos NO es pobreza: es lo que hace que la serie suene a una sola cosa, y
- * es lo que convierte la melodía de la madre en un hilo que el espectador
- * reconoce sin darse cuenta.
+ * Se elige en el mismo selector que las piezas y ocupa su sitio, no el de
+ * debajo. Un anime de verdad no compone música por escena; tiene una biblioteca
+ * de temas con una función cada uno y los repite toda la temporada. Repetirlos
+ * NO es pobreza: es lo que hace que la serie suene a una sola cosa, y es lo que
+ * convierte la melodía de la madre en un hilo que el espectador reconoce sin
+ * darse cuenta.
  *
  * @param {object} ctx
  * @returns {HTMLElement|null} `null` si no hay banco escrito todavía.

@@ -46,19 +46,72 @@ function suelto(ruta, extra, exporta) {
 
 const serie = JSON.parse(readFileSync(`${RAIZ}datos/serie.json`, 'utf8'));
 
-const aud = await suelto(
-  'app/pantallas/audio.js',
-  `
+// Los dibujos de mentira APUNTAN lo que se les pide, para poder mirar después
+// qué secciones salen, con qué título y con cuántas tarjetas. Sin esto solo se
+// puede probar la lógica, y lo que se rompió la última vez fue el sitio.
+const PINTADO = `
 const ErrorDeCara = class extends Error {}, llamar = async () => ({});
 const actual = () => ({}), alCambiar = () => {}, cambiar = () => {};
 const encolar = () => {}, encolarVarios = () => {};
-const aviso = () => null, barra = () => null, boton = () => null, confirmar = () => {};
-const espera = () => null, filtro = () => null, h = () => null, pantalla = () => null;
-const seccion = () => null, tarjeta = () => null, vaciar = () => {};
-const plural = () => '', segundos = () => '';
-`,
-  'bancoDeLaTemporada, musicaDeLaPieza, todaLaMusica, aNombreDeQuien, piezasDeLaSerie, PIEZA_DE_LA_TEMPORADA'
+const nodo = (etiqueta, extra = {}) => {
+  const n = { etiqueta, hijos: [], ...extra };
+  n.appendChild = (hijo) => { if (hijo) n.hijos.push(hijo); return hijo; };
+  n.remove = () => {};
+  n.setAttribute = () => {};
+  return n;
+};
+const meter = (n, hijos) => {
+  for (const hijo of hijos.flat()) {
+    if (hijo === null || hijo === undefined || hijo === false) continue;
+    n.hijos.push(typeof hijo === 'object' ? hijo : { etiqueta: '#texto', texto: String(hijo), hijos: [] });
+  }
+  return n;
+};
+const aviso = (t, o = {}) => nodo('aviso', { texto: String(t), tono: (o && o.tono) || 'nota' });
+const barra = () => nodo('barra');
+const boton = (t) => nodo('boton', { texto: String(t) });
+const confirmar = async () => true;
+const espera = () => nodo('espera');
+const filtro = (opciones, puesto) => nodo('filtro', { opciones, puesto });
+const h = (etiqueta, atributos, ...hijos) => meter(nodo(etiqueta), hijos);
+const pantalla = (titulo, ...secciones) => meter(nodo('pantalla', { titulo }), secciones);
+const seccion = (titulo, ...hijos) => meter(nodo('seccion', { titulo }), hijos);
+const tarjeta = (o = {}) => nodo('tarjeta', { titulo: o.titulo });
+const vaciar = (n) => { if (n) n.hijos = []; };
+const plural = (n, u, m) => \`\${n} \${n === 1 ? u : m}\`;
+const segundos = (n) => \`\${n} s\`;
+`;
+
+const aud = await suelto(
+  'app/pantallas/audio.js',
+  PINTADO,
+  'bancoDeLaTemporada, musicaDeLaPieza, todaLaMusica, aNombreDeQuien, piezasDeLaSerie, ' +
+    'seccionMusica, seccionBanco, seccionCabecera, PIEZA_DE_LA_TEMPORADA, OPCION_DEL_BANCO'
 );
+
+/** Todas las tarjetas que hay dentro de un nodo, por su título. */
+const tarjetasDe = (nodo) => {
+  if (!nodo) return [];
+  const salida = [];
+  const mirar = (n) => {
+    if (!n || typeof n !== 'object') return;
+    if (n.etiqueta === 'tarjeta') salida.push(n.titulo);
+    for (const hijo of n.hijos || []) mirar(hijo);
+  };
+  mirar(nodo);
+  return salida;
+};
+
+/** El primer nodo de una etiqueta que haya dentro. */
+const buscar = (nodo, etiqueta) => {
+  if (!nodo || typeof nodo !== 'object') return null;
+  if (nodo.etiqueta === etiqueta) return nodo;
+  for (const hijo of nodo.hijos || []) {
+    const encontrado = buscar(hijo, etiqueta);
+    if (encontrado) return encontrado;
+  }
+  return null;
+};
 
 let mal = 0;
 const di = (bien, que, extra = '') => {
@@ -100,6 +153,14 @@ for (const idPieza of piezas) {
 di(coladas === 0, 'El banco no se cuela en la lista de ninguna pieza', `coladas: ${coladas}`);
 
 // Y lo contrario: que las de siempre sigan saliendo donde salían.
+for (const idPieza of piezas) {
+  if (serie.piezas[idPieza].archivo === true) continue;
+  const suya = aud.musicaDeLaPieza(serie, idPieza, piezas.length);
+  di(suya.como === 'campo',
+    `«${idPieza}» dice de quién es su música con todas las letras, no por el id`,
+    `emparejada por ${suya.como}`);
+}
+
 const delTeaser = aud.musicaDeLaPieza(serie, 'teaser', piezas.length);
 di(
   delTeaser.lista.length === 2 &&
@@ -107,8 +168,6 @@ di(
   'El teaser sigue teniendo su lecho y su canto',
   delTeaser.lista.map((u) => u.id).join(', ') || 'ninguna'
 );
-di(delTeaser.como === 'campo', 'Y ya se emparejan por el campo «pieza», no adivinando por el id');
-
 for (const idPieza of ['opening', 'ending']) {
   const suya = aud.musicaDeLaPieza(serie, idPieza, piezas.length);
   di(suya.lista.length === 1, `«${idPieza}» tiene su tema`, suya.lista.map((u) => u.id).join(', '));
@@ -140,6 +199,73 @@ di(
 // La suma, que es lo que decide si esto es una banda sonora o un adorno.
 const total = banco.reduce((n, una) => n + Number(una.duracion_s), 0);
 di(total >= 900, 'El banco da para una temporada entera', `${Math.round(total / 60)} minutos de música`);
+
+// ── Y AHORA LO QUE DE VERDAD SE VIO MAL: DÓNDE SALE CADA COSA ──────────────
+//
+// El banco se pintaba SIEMPRE debajo de la pieza, en su propia sección. En el
+// teléfono eso se lee al revés de como se pensó: eliges el teaser, ves sus dos
+// pistas, y debajo aparecen dieciocho más. Lo que parece es que la música de la
+// temporada se ha comido la de la pieza. El título de la sección no salva eso.
+//
+// Ahora el banco es una opción del mismo selector: o una pieza, o el banco.
+// Nunca las dos cosas a la vez. Esto lo comprueba dibujando.
+console.log('\n  DÓNDE SALE CADA COSA\n');
+
+const estadoVacio = { audio: { musica: {}, voz: {} }, tomas: {}, cola: [] };
+const contexto = (idPieza, enElBanco = false) => {
+  const laPieza = { id: idPieza, titulo: serie.piezas[idPieza].titulo, datos: serie.piezas[idPieza] };
+  const lista = aud.piezasDeLaSerie(serie);
+  return {
+    serie,
+    estado: estadoVacio,
+    pieza: laPieza,
+    todas: lista,
+    musica: aud.musicaDeLaPieza(serie, idPieza, lista.length),
+    banco,
+    enElBanco,
+    trabajos: new Map(),
+    repintar: () => {},
+    repintarLuego: () => {},
+  };
+};
+
+for (const [idPieza, cuantas] of [['teaser', 2], ['opening', 1], ['ending', 1]]) {
+  const pintada = aud.seccionMusica(contexto(idPieza));
+  const dentro = tarjetasDe(pintada);
+  di(dentro.length === cuantas,
+    `Con «${idPieza}» elegido salen SUS ${cuantas === 1 ? 'pista' : 'pistas'} y nada más`,
+    dentro.join(', ') || 'ninguna');
+  di(!dentro.some((id) => String(id).startsWith('bso-')),
+    `Y ni una del banco se cuela debajo de «${idPieza}»`);
+}
+
+const pintadoElBanco = tarjetasDe(aud.seccionBanco(contexto('teaser', true)));
+di(pintadoElBanco.length === banco.length,
+  'Eligiendo el banco salen sus dieciocho', `${pintadoElBanco.length}`);
+di(pintadoElBanco.every((id) => String(id).startsWith('bso-')),
+  'Y solo las suyas: ninguna pista de una pieza');
+
+// El selector: el banco tiene que estar ahí, que es donde se busca.
+const cabecera = aud.seccionCabecera(contexto('teaser'));
+const elFiltro = buscar(cabecera, 'filtro');
+di(Boolean(elFiltro), 'La cabecera trae el selector');
+if (elFiltro) {
+  const ids = elFiltro.opciones.map((una) => una.id);
+  di(ids.includes(aud.OPCION_DEL_BANCO),
+    'Y el banco es una opción más del selector, no algo pegado debajo',
+    ids.join(', '));
+  di(elFiltro.puesto === 'teaser', 'Con el teaser marcado cuando el teaser es lo elegido');
+}
+
+const cabeceraDelBanco = aud.seccionCabecera(contexto('teaser', true));
+const filtroDelBanco = buscar(cabeceraDelBanco, 'filtro');
+di(filtroDelBanco && filtroDelBanco.puesto === aud.OPCION_DEL_BANCO,
+  'Y el banco marcado cuando el banco es lo elegido');
+
+// Y que se diga que lo de la pieza sigue estando: esa fue la duda.
+const texto = JSON.stringify(cabeceraDelBanco);
+di(/no se ha ido a ninguna parte/.test(texto),
+  'Mirando el banco, la pantalla dice que la música de la pieza sigue donde estaba');
 
 // ── EL ARCHIVO DE PLANOS DE AMBIENTE ───────────────────────────────────────
 //
