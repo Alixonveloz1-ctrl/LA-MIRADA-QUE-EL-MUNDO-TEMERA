@@ -26,7 +26,7 @@ imágenes: todo lo visual lo genera la herramienta.
 1. Se pone en marcha una vez, y casi todo lo hace un script. Desde el móvil, sin
    teclear nada:
 
-   **[▶ Abrir en Cloud Shell e instalar](https://shell.cloud.google.com/cloudshell/open?cloudshell_git_repo=https%3A%2F%2Fgithub.com%2FAlixonveloz1-ctrl%2FLA-MIRADA-QUE-EL-MUNDO-TEMERA&cloudshell_git_branch=claude%2Fnew-session-4grflv&cloudshell_tutorial=despliegue%2Ftutorial.md)**
+   **[▶ Abrir en Cloud Shell e instalar](https://shell.cloud.google.com/cloudshell/open?cloudshell_git_repo=https%3A%2F%2Fgithub.com%2FAlixonveloz1-ctrl%2FLA-MIRADA-QUE-EL-MUNDO-TEMERA&cloudshell_git_branch=main&cloudshell_tutorial=despliegue%2Ftutorial.md)**
 
    Clona el repositorio y abre un tutorial con botones que meten cada comando en
    el terminal. Habilita las APIs, crea o detecta el bucket, le aplica el CORS,
@@ -39,17 +39,20 @@ imágenes: todo lo visual lo genera la herramienta.
 
    **Para volver a desplegar solo el montador** —hay que hacerlo cada vez que ese
    contenedor aprende algo nuevo, porque se despliega a mano y siempre va por
-   detrás del repositorio— hay un camino corto que no pregunta nada:
+   detrás del repositorio— hay su propio tutorial, también con botones:
 
-   ```
-   bash <repo>/instalar.sh montador
-   ```
+   **[▶ Volver a desplegar el montador](https://shell.cloud.google.com/cloudshell/open?cloudshell_git_repo=https%3A%2F%2Fgithub.com%2FAlixonveloz1-ctrl%2FLA-MIRADA-QUE-EL-MUNDO-TEMERA&cloudshell_git_branch=main&cloudshell_tutorial=despliegue%2Fmontador.md)**
 
-   Lee del propio job el bucket y la clave que ya tiene puestos y lo vuelve a
-   desplegar igual. Que la clave salga de ahí y no se genere de nuevo es lo
-   importante: una clave nueva invalidaría la `MONTAJE_KEY` de Vercel y el
-   montaje empezaría a fallar por una razón que no se parece en nada a la
-   verdadera.
+   Son dos botones: traer lo último y desplegar. No pregunta nada, no toca ni el
+   bucket ni la cuenta, y lee del propio job el bucket y la clave que ya tiene
+   puestos. Que la clave salga de ahí y no se genere de nuevo es lo importante:
+   una clave nueva invalidaría la `MONTAJE_KEY` de Vercel y el montaje empezaría
+   a fallar por una razón que no se parece en nada a la verdadera.
+
+   **Ningún enlace de este repositorio lleva dentro un id de proyecto ni una
+   cuenta.** Cloud Shell pregunta en cuál instalar; el que hace falta añadirle
+   `?authuser=` o `&project=` para su cuenta, se lo añade y no lo escribe aquí:
+   esto es público.
 2. Se abre la dirección de Vercel en el teléfono y se añade a la pantalla de
    inicio, que es como se abre a pantalla completa.
 3. Se entra en **Salud** y se pulsa **Comprobar los modelos**. No lo hace solo, y
@@ -80,7 +83,7 @@ planos, al volver a entrar se reanuda sola.
 | `docs/` | El contrato interno, el plan de construcción, las decisiones, la guía de despliegue y la explicación del parche de datos. |
 | `herramientas/` | Lo que se ejecuta sin red: el parche de datos, los invariantes y el pesaje de las respuestas. |
 | `montador/` | El contenedor de ffmpeg que corre como Job de Cloud Run: recorta, concatena, aplica el acabado, mezcla el audio y quema los subtítulos. |
-| `despliegue/` | Lo que Google Cloud necesita, como archivos y no como comandos que alguien dicte: `apis.txt`, `cors.json`, `permisos.txt` y el tutorial de Cloud Shell. `instalar.sh` los lee. |
+| `despliegue/` | Lo que Google Cloud necesita, como archivos y no como comandos que alguien dicte: `apis.txt`, `cors.json`, `permisos.txt` y los dos tutoriales de Cloud Shell —el de instalar y el de volver a desplegar el montador—. `instalar.sh` los lee. |
 
 En la raíz, `index.html` (lo único que se sirve), `instalar.sh` (todo lo de Google
 Cloud en un comando), `package.json`, `vercel.json` y este archivo.

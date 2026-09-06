@@ -1882,6 +1882,88 @@ bloque('Código · el orden de la puerta');
 }
 
 // ===========================================================================
+// DOCS · Los enlaces de Cloud Shell
+// ===========================================================================
+
+bloque('Docs · los enlaces de Cloud Shell');
+
+{
+  // UN ENLACE QUE INSTALA CÓDIGO VIEJO NO SE DISTINGUE DE UNO QUE FUNCIONA.
+  //
+  // Los enlaces de Cloud Shell llevan dentro la rama que se clona. El trabajo se
+  // fusiona en `main`, pero los enlaces se escribieron un día apuntando a una
+  // rama de trabajo y ahí se quedaron: pulsarlos instalaba el estudio de
+  // entonces. Y no falla nada —clona, instala, funciona—, solo que instala otra
+  // cosa. Eso no se ve mirando: se ve cuando algo que se arregló hace un mes
+  // sigue roto.
+  //
+  // Se comprueban también dos cosas más, y las dos son de seguridad: este
+  // repositorio es público, así que ningún enlace puede llevar dentro un
+  // proyecto ni una cuenta; eso se lo añade quien lo use, en su móvil.
+  const CLOUDSHELL = /shell\.cloud\.google\.com\/cloudshell\/open\?[^)\s]+/g;
+
+  const quejas = [];
+  const notas = [];
+  let cuantos = 0;
+
+  for (const rel of archivos.filter((r) => r.endsWith('.md') || r.endsWith('.sh'))) {
+    const fuente = fuenteDe(rel);
+    if (!fuente) continue;
+
+    for (const encaje of fuente.matchAll(CLOUDSHELL)) {
+      cuantos += 1;
+      const enlace = encaje[0];
+      const linea = fuente.slice(0, encaje.index).split('\n').length;
+      const donde = `${rel}:${linea}`;
+
+      const rama = /cloudshell_git_branch=([^&)\s]+)/.exec(enlace);
+      if (!rama) {
+        notas.push(
+          `${donde} no dice qué rama clona. Cloud Shell cogerá la que sea la ` +
+            'principal del repositorio, que hoy es la buena; decirlo quita la duda.'
+        );
+      } else if (decodeURIComponent(rama[1]) !== 'main') {
+        quejas.push(
+          `${donde} clona la rama «${decodeURIComponent(rama[1])}» y el trabajo se ` +
+            'fusiona en «main». Ese enlace instala el estudio de otro día, y no ' +
+            'falla: instala otra cosa, que es peor.'
+        );
+      }
+
+      if (/[?&]project=/.test(enlace)) {
+        quejas.push(`${donde} lleva un proyecto dentro. Este repositorio es público.`);
+      }
+      if (/[?&]authuser=/.test(enlace)) {
+        quejas.push(`${donde} lleva una cuenta dentro. Este repositorio es público.`);
+      }
+
+      const tutorial = /cloudshell_tutorial=([^&)\s]+)/.exec(enlace);
+      if (tutorial) {
+        const ruta = decodeURIComponent(tutorial[1]);
+        if (!archivos.includes(ruta)) {
+          quejas.push(
+            `${donde} abre el tutorial «${ruta}» y ese archivo no está en el ` +
+              'repositorio. Cloud Shell abriría el terminal sin ninguna guía, y ' +
+              'desde un móvil no se puede pegar en él.'
+          );
+        }
+      } else {
+        quejas.push(
+          `${donde} no abre ningún tutorial. Sin botones hay que teclear los ` +
+            'comandos a mano, y el terminal de Cloud Shell no deja pegar desde el móvil.'
+        );
+      }
+    }
+  }
+
+  comprobar(
+    `Los ${cuantos} enlaces de Cloud Shell clonan «main», abren su tutorial y no llevan cuenta`,
+    quejas,
+    notas
+  );
+}
+
+// ===========================================================================
 // CÓDIGO · Campos en forma corta que nombran una variable que no existe
 // ===========================================================================
 

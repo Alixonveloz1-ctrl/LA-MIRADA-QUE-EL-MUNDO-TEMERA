@@ -20,17 +20,30 @@ Cloud Shell sabe clonar un repositorio y abrir un tutorial con **botones** que
 meten cada comando en el terminal por ti. Con eso no hay que teclear **nada**, y
 el problema de que el terminal no deje pegar desde el móvil desaparece.
 
-**[▶ Abrir en Cloud Shell e instalar](https://shell.cloud.google.com/cloudshell/open?cloudshell_git_repo=https%3A%2F%2Fgithub.com%2FAlixonveloz1-ctrl%2FLA-MIRADA-QUE-EL-MUNDO-TEMERA&cloudshell_git_branch=claude%2Fnew-session-4grflv&cloudshell_tutorial=despliegue%2Ftutorial.md)**
+**[▶ Abrir en Cloud Shell e instalar](https://shell.cloud.google.com/cloudshell/open?cloudshell_git_repo=https%3A%2F%2Fgithub.com%2FAlixonveloz1-ctrl%2FLA-MIRADA-QUE-EL-MUNDO-TEMERA&cloudshell_git_branch=main&cloudshell_tutorial=despliegue%2Ftutorial.md)**
 
 Ese enlace clona el repositorio y abre `despliegue/tutorial.md` en el panel
 lateral. Vas pulsando Siguiente y el botón de cada comando. Son seis pasos y
 unos diez minutos.
 
-Cuando el código esté en `main`, el enlace se queda sin la parte de la rama:
+**Y para volver a desplegar solo el montador**, que es lo que hay que hacer cada
+vez que ese contenedor aprende algo nuevo:
 
-```
-https://shell.cloud.google.com/cloudshell/open?cloudshell_git_repo=https%3A%2F%2Fgithub.com%2FAlixonveloz1-ctrl%2FLA-MIRADA-QUE-EL-MUNDO-TEMERA&cloudshell_tutorial=despliegue%2Ftutorial.md
-```
+**[▶ Volver a desplegar el montador](https://shell.cloud.google.com/cloudshell/open?cloudshell_git_repo=https%3A%2F%2Fgithub.com%2FAlixonveloz1-ctrl%2FLA-MIRADA-QUE-EL-MUNDO-TEMERA&cloudshell_git_branch=main&cloudshell_tutorial=despliegue%2Fmontador.md)**
+
+Dos botones y unos tres minutos. No pregunta nada, no toca ni el bucket ni la
+cuenta, y no hay que redesplegar nada en Vercel: lo que cambia es el contenedor
+de Google, no la aplicación.
+
+**Los dos enlaces clonan `main` a propósito, y lo comprueba `npm run
+invariantes`.** Un enlace que apunta a una rama de trabajo no falla: clona,
+instala y funciona — pero instala el estudio de otro día, y eso no se ve hasta
+que algo que se arregló hace un mes sigue roto.
+
+**Ninguno lleva dentro un proyecto ni una cuenta**, y también se comprueba: este
+repositorio es público. Cloud Shell pregunta en qué proyecto instalar; quien
+necesite fijarlo le añade `&project=` y `?authuser=` en su móvil, y eso no se
+escribe aquí.
 
 <details>
 <summary>Si prefieres las dos líneas a mano</summary>
