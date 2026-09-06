@@ -13,30 +13,28 @@ importa: el terminal de Cloud Shell no deja pegar.
 Esto **no toca nada más**: ni el bucket, ni la cuenta de servicio, ni los
 permisos, ni tus variables de Vercel.
 
-Tarda unos tres o cuatro minutos, casi todo construyendo. Pulsa **Siguiente**.
+Tarda unos tres o cuatro minutos, casi todo construyendo.
 
-## Traer lo último
-
-Cloud Shell clona el repositorio la primera vez, pero si ya lo tenías de otra
-ocasión **no lo actualiza solo**. Este comando trae los cambios:
-
-```bash
-cd ~/cloudshell_open/LA-MIRADA-QUE-EL-MUNDO-TEMERA && git pull
-```
-
-<walkthrough-footnote>Si dice «Already up to date», es que ya estaba al día y no
-pasa nada: sigue al paso siguiente igualmente.</walkthrough-footnote>
+**Es un solo paso.** Pulsa **Siguiente**.
 
 ## Desplegarlo
 
-Una sola línea, y es la única que hace algo:
+Tres caracteres, y es lo único que hay que hacer:
 
 ```bash
-bash ~/cloudshell_open/LA-MIRADA-QUE-EL-MUNDO-TEMERA/instalar.sh montador
+./m
 ```
 
-No te va a preguntar nada. Busca el montador que ya tienes, lee **del propio
-job** el bucket y la clave que ya tiene puestos, y lo vuelve a desplegar igual.
+Pulsa el botón de la derecha del recuadro y luego Enter.
+
+**Y si los botones no te funcionan** —el editor de Cloud Shell avisa de que los
+navegadores del móvil no están soportados, y a veces el panel de esta guía no
+carga—, tecléalo tú: son tres caracteres y el terminal ya está dentro de la
+carpeta correcta.
+
+Eso trae lo último del repositorio y despliega. No te va a preguntar nada: busca
+el montador que ya tienes, lee **del propio job** el bucket y la clave que ya
+tiene puestos, y lo vuelve a desplegar igual.
 
 Que la clave salga de ahí y no se genere de nuevo es lo importante: una clave
 nueva invalidaría la `MONTAJE_KEY` que tienes en Vercel, y el montaje empezaría a
@@ -45,8 +43,8 @@ para y te lo dice, en vez de arriesgarse.
 
 <walkthrough-footnote>Si te dice que no encuentra el job, es que nunca se llegó a
 instalar: entonces hace falta la instalación completa una vez, con
-<code>bash ~/cloudshell_open/LA-MIRADA-QUE-EL-MUNDO-TEMERA/instalar.sh</code>, y a
-partir de ahí ya sirve este camino corto.</walkthrough-footnote>
+<code>bash instalar.sh</code>, y a partir de ahí ya sirve este camino
+corto.</walkthrough-footnote>
 
 ## Ya está
 

@@ -1964,6 +1964,42 @@ bloque('Docs · los enlaces de Cloud Shell');
 }
 
 // ===========================================================================
+// DOCS · Los tutoriales no escriben la ruta del clon a mano
+// ===========================================================================
+
+bloque('Docs · la ruta del clon');
+
+{
+  // LA CARPETA CLONADA NO SIEMPRE SE LLAMA IGUAL.
+  //
+  // Cloud Shell clona en `~/cloudshell_open/<repo>`, pero si ya había un clon de
+  // otra vez lo deja al lado como `<repo>-0`, `<repo>-1`… y abre el terminal
+  // DENTRO del nuevo. Un comando del tutorial con la ruta escrita a mano entra
+  // entonces en la copia vieja: despliega el estudio de la semana pasada y no
+  // falla nada. Pasó, y lo que se vio en pantalla fue «-TEMERA-0».
+  //
+  // Los comandos del tutorial van sin ruta: el terminal ya está donde tiene que
+  // estar.
+  const quejas = [];
+
+  for (const rel of archivos.filter((r) => r.startsWith('despliegue/') && r.endsWith('.md'))) {
+    const fuente = fuenteDe(rel);
+    if (!fuente) continue;
+    fuente.split('\n').forEach((linea, i) => {
+      if (!linea.includes('cloudshell_open/')) return;
+      quejas.push(
+        `${rel}:${i + 1} escribe a mano la ruta del clon. Cuando Cloud Shell clona ` +
+          'encima de un clon anterior, la carpeta se llama «…-0» y ese comando ' +
+          'entra en la copia vieja: despliega lo de otro día y no falla nada. Los ' +
+          'comandos del tutorial van sin ruta, que el terminal ya está dentro.'
+      );
+    });
+  }
+
+  comprobar('Ningún tutorial escribe a mano la ruta de la carpeta clonada', quejas);
+}
+
+// ===========================================================================
 // CÓDIGO · Campos en forma corta que nombran una variable que no existe
 // ===========================================================================
 

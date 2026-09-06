@@ -45,8 +45,13 @@ Una sola línea. Habilita las APIs, crea o detecta el bucket, le aplica el CORS,
 crea la cuenta de servicio con sus permisos y su clave, y despliega el montador:
 
 ```bash
-bash ~/cloudshell_open/LA-MIRADA-QUE-EL-MUNDO-TEMERA/instalar.sh
+bash instalar.sh
 ```
+
+El terminal ya está dentro de la carpeta que Cloud Shell acaba de clonar, así
+que no hace falta ninguna ruta. Eso importa más de lo que parece: cuando se
+clona encima de un clon anterior, la carpeta se llama `…-TEMERA-0` y una ruta
+escrita a mano entraría en la copia vieja.
 
 Mientras trabaja te va a preguntar tres cosas, y ninguna es larga:
 

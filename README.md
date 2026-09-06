@@ -43,7 +43,17 @@ imágenes: todo lo visual lo genera la herramienta.
 
    **[▶ Volver a desplegar el montador](https://shell.cloud.google.com/cloudshell/open?cloudshell_git_repo=https%3A%2F%2Fgithub.com%2FAlixonveloz1-ctrl%2FLA-MIRADA-QUE-EL-MUNDO-TEMERA&cloudshell_git_branch=main&cloudshell_tutorial=despliegue%2Fmontador.md)**
 
-   Son dos botones: traer lo último y desplegar. No pregunta nada, no toca ni el
+   **Y si el panel del tutorial no carga** —el editor de Cloud Shell avisa de
+   que los navegadores del móvil no están soportados—, en el terminal, que se
+   abre ya dentro de la carpeta clonada:
+
+   ```
+   ./m
+   ```
+
+   Tres caracteres. Ese archivo existe por eso y solo por eso: aquí solo hay un
+   móvil, el terminal no deja pegar, y todo lo que haya que ejecutar se teclea
+   con el pulgar. Trae lo último y despliega. No pregunta nada, no toca ni el
    bucket ni la cuenta, y lee del propio job el bucket y la clave que ya tiene
    puestos. Que la clave salga de ahí y no se genere de nuevo es lo importante:
    una clave nueva invalidaría la `MONTAJE_KEY` de Vercel y el montaje empezaría
@@ -86,7 +96,8 @@ planos, al volver a entrar se reanuda sola.
 | `despliegue/` | Lo que Google Cloud necesita, como archivos y no como comandos que alguien dicte: `apis.txt`, `cors.json`, `permisos.txt` y los dos tutoriales de Cloud Shell —el de instalar y el de volver a desplegar el montador—. `instalar.sh` los lee. |
 
 En la raíz, `index.html` (lo único que se sirve), `instalar.sh` (todo lo de Google
-Cloud en un comando), `package.json`, `vercel.json` y este archivo.
+Cloud en un comando), `m` (tres caracteres para volver a desplegar el montador
+desde el móvil), `package.json`, `vercel.json` y este archivo.
 
 ---
 
