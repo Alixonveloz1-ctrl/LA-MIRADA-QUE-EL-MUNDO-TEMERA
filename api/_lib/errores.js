@@ -164,11 +164,13 @@ function mensajeDeCodigo(codigo, ctx, textoCrudo) {
 
     case 429:
       return `${donde}Se ha pasado de cuota en Vertex (429)${cual}. No es falta de acceso, ` +
-        'aunque el texto lo parezca. El estudio ya genera de una en una, así que esto no se ' +
-        'arregla bajando ningún número: es la cuota de la cuenta, que en una cuenta nueva es ' +
-        'corta. La cola espera y lo reintenta sola —2 s, 4 s, 8 s y 16 s—, y si aun así vuelve, ' +
-        'se pide más cuota para ese modelo en la consola de Google Cloud, en «IAM y ' +
-        'administración → Cuotas».';
+        'aunque el texto lo parezca, y no es un fallo del estudio: es la cuota de tu cuenta de ' +
+        'Google, que en una cuenta nueva es muy corta. El estudio ya genera de una en una, así ' +
+        'que esto no se arregla bajando ningún número ni generando más despacio. Al recibirlo se ' +
+        'para LA COLA ENTERA —no solo este trabajo— y se vuelve a probar a los 30 s, al minuto y ' +
+        'al minuto y medio, porque las cuotas de Vertex se reponen por minutos. Si aun así vuelve, ' +
+        'lo único que lo arregla es pedir más cuota para ese modelo en la consola de Google Cloud, ' +
+        'en «IAM y administración → Cuotas», buscando por el nombre del modelo.';
 
     case 499:
       return `${donde}La llamada se ha cancelado antes de que Google terminara (499). Suele ser ` +
