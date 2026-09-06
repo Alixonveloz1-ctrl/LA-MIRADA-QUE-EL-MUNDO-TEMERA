@@ -1866,14 +1866,18 @@ bloque('Código · los tiempos cuadran de arriba abajo');
 
   const enPuerta = numeroDe('api/g.js', /const PRESUPUESTO_MS = ([\d_]+);/);
   const enNavegador = numeroDe('app/api.js', /const LIMITE_MS = ([\d_]+);/);
+  const techoDeVertex = numeroDe('api/_lib/vertex.js', /const LIMITE_MAXIMO_MS = ([\d_]+);/);
+  const enImagen = numeroDe('api/_lib/imagen.js', /const LIMITE_MS = ([\d_]+);/);
 
   const quejas = [];
 
-  if (enVercel === null || enPuerta === null || enNavegador === null) {
+  if (enVercel === null || enPuerta === null || enNavegador === null
+      || techoDeVertex === null || enImagen === null) {
     quejas.push(
-      'No se han podido leer los tres tiempos: maxDuration en vercel.json, PRESUPUESTO_MS en ' +
-        'api/g.js y LIMITE_MS en app/api.js. Si se les ha cambiado el nombre, hay que cambiarlo ' +
-        'también aquí: sin esta comprobación se vuelven a separar sin que nadie lo vea.',
+      'No se han podido leer los CINCO tiempos: maxDuration en vercel.json, PRESUPUESTO_MS en ' +
+        'api/g.js, LIMITE_MS en app/api.js, LIMITE_MAXIMO_MS en api/_lib/vertex.js y LIMITE_MS en ' +
+        'api/_lib/imagen.js. Si se les ha cambiado el nombre, hay que cambiarlo también aquí: sin ' +
+        'esta comprobación se vuelven a separar sin que nadie lo vea.',
     );
   } else {
     // El plazo que la función se cree suyo NUNCA puede pasar del que pide
@@ -1915,6 +1919,32 @@ bloque('Código · los tiempos cuadran de arriba abajo');
           'plan», y cambiar aquí el techo por lo que salga.',
       );
     }
+    // EL TECHO ESCONDIDO DE VERTEX. Este invariante nació mirando tres números y
+    // le faltaba el cuarto, que es el que de verdad manda: `vertex.js` recorta
+    // TODAS las llamadas a `LIMITE_MAXIMO_MS`, así que da igual lo que pida
+    // quien llama. Cuando el plazo subió de 55 a 200 s y la imagen de 45 a 170,
+    // ese techo se quedó en 55 y las imágenes siguieron muriendo a los 55
+    // segundos exactos — con el resto del código convencido de tener 200.
+    //
+    // Un tope escondido en otro archivo es peor que no tener tope: el mensaje de
+    // error dice un número que no está escrito en ninguna parte que se mire.
+    if (techoDeVertex > enPuerta) {
+      quejas.push(
+        `vertex.js recorta las llamadas a ${techoDeVertex / 1000} s y la función solo se cree con ` +
+          `${enPuerta / 1000}. Un techo por encima del plazo no sirve de nada: quien corta antes ` +
+          'es el plazo. Sobra, y hace pensar que se puede esperar más de lo que se puede.',
+      );
+    }
+    if (enImagen > techoDeVertex) {
+      quejas.push(
+        `imagen.js pide ${enImagen / 1000} s y vertex.js recorta a ${techoDeVertex / 1000}. Ese ` +
+          'recorte es silencioso: la imagen se cree con su límite, muere en el de vertex.js, y el ' +
+          'mensaje nombra un número que no está escrito donde nadie lo busca. Los dos tienen que ' +
+          'cuadrar, y este es exactamente el descuido que dejó las imágenes muriendo a los 55 s ' +
+          'con el resto del código convencido de tener 200.',
+      );
+    }
+
     if (enNavegador <= enVercel) {
       quejas.push(
         `El navegador corta a los ${enNavegador / 1000} s y la función tiene ${enVercel / 1000}. ` +

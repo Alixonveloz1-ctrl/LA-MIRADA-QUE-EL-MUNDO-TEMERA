@@ -22,15 +22,23 @@ import { token, AMBITOS } from './auth.js';
 import { ErrorDeCara, deGoogle } from './errores.js';
 import { plazoPara } from './plazo.js';
 
-// Por debajo de los 60 s de la plataforma, con quince segundos de margen para
-// que dé tiempo a componer la respuesta y a escribirla.
+// Lo que espera una llamada a Vertex si nadie dice otra cosa. Quien necesita más
+// —la imagen— lo pide, y `plazoPara` lo recorta a lo que quede de plazo.
 const LIMITE_MS = 45_000;
 
-// Suelos y techos del límite. Menos de un segundo no es un límite, es un corte;
-// más de 55 s deja de estar por debajo del de la plataforma, que es lo único
-// que este límite tiene que garantizar.
+// Suelos y techos del límite. Menos de un segundo no es un límite, es un corte.
+//
+// EL TECHO ESTUVO EN 55 s Y FUE UN DESCUIDO CARO. Cuando el plazo de la función
+// subió de 55 a 200 —medidos, ver api/g.js— y el límite de la imagen de 45 a 170,
+// ESTE número se quedó atrás, y como recorta TODAS las llamadas a Vertex daba
+// igual lo que pidiera nadie: seguían muriendo a los 55 s. Un tope escondido en
+// otro archivo, tres números que tenían que cuadrar y solo dos actualizados.
+//
+// Ahora es 180 s: por debajo del plazo de la función menos su margen, que es lo
+// único que este techo tiene que garantizar. Y los tres números los compara un
+// invariante, para que no se puedan volver a separar.
 const LIMITE_MINIMO_MS = 1_000;
-const LIMITE_MAXIMO_MS = 55_000;
+const LIMITE_MAXIMO_MS = 180_000;
 
 // La versión de la API de Vertex que usa todo el estudio.
 const VERSION = 'v1';
