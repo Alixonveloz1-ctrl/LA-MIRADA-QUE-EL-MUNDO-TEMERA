@@ -398,14 +398,62 @@ function sinImagen(respuesta, modelo, candidatos) {
     ? `Google dice, literalmente: «${recorte(motivo)}».`
     : 'Google no ha dicho por qué: ha contestado sin imagen y sin motivo.';
 
+  // NO TODOS LOS «NO HAY IMAGEN» SON EL FILTRO, Y TRATARLOS IGUAL SALE CARO.
+  //
+  // Antes esto decía siempre «suele ser el filtro de seguridad, repetir da el
+  // mismo resultado» y lo marcaba como NO reintentable. Con un bloqueo de
+  // contenido eso es verdad y es útil. Pero Google también contesta «OTHER», que
+  // significa literalmente «no digo por qué», y eso pasa con placas que no tienen
+  // nada que pueda molestar a nadie —un plano medio de un adulto vestido, de
+  // tres cuartos, sin expresión—. Ahí el mensaje mandaba a reescribir una
+  // descripción que estaba perfectamente bien, y la cola daba el trabajo por
+  // muerto sin volver a intentarlo ni una vez.
+  if (esBloqueoDeContenido(motivo)) {
+    return new ErrorDeCara(
+      `El modelo «${modelo.id}» no ha devuelto ninguna imagen: la ha bloqueado el filtro de ` +
+      `contenido. ${porQue} Ese filtro se dispara sobre todo con la violencia y con la edad de un ` +
+      'personaje descritas en el prompt, y es especialmente estricto con los menores. Repetir tal ' +
+      'cual da el mismo resultado: hay que cambiar la descripción de la placa o de la toma en ' +
+      `datos/serie.json. El modelo no se sustituye por otro (se cambia a conciencia con la ` +
+      `variable ${modelo.variable}).`,
+      { detalle: comoTexto(respuesta), reintentable: false, http: 502 }
+    );
+  }
+
   return new ErrorDeCara(
-    `El modelo «${modelo.id}» no ha devuelto ninguna imagen. ${porQue} ` +
-    'Suele ser el filtro de seguridad, que se dispara con la violencia o con la edad de un ' +
-    'personaje descritas en el prompt. Repetir tal cual da el mismo resultado: hay que cambiar la ' +
-    `descripción de la placa o de la toma en datos/serie.json. El modelo no se sustituye por otro ` +
-    `(se cambia a conciencia con la variable ${modelo.variable}).`,
-    { detalle: comoTexto(respuesta), reintentable: false, http: 502 }
+    `El modelo «${modelo.id}» ha contestado sin imagen y SIN DECIR POR QUÉ. ${porQue} ` +
+    'Eso no es lo mismo que un bloqueo de contenido: cuando el filtro corta algo, lo dice con su ' +
+    'nombre. Aquí no lo dice, así que muchas veces es pasajero y sale a la siguiente. La cola lo ' +
+    'reintenta sola. Si vuelve a pasar tres o cuatro veces con la misma placa, entonces sí es la ' +
+    'descripción: mírala en datos/serie.json.',
+    { detalle: comoTexto(respuesta), reintentable: true, http: 502 }
   );
+}
+
+/**
+ * Los motivos con los que Google dice, con todas las letras, que ha bloqueado el
+ * contenido. Cualquier otra cosa —«OTHER», nada, un mensaje que no reconocemos—
+ * es ambigua, y ante la duda se reintenta: cuesta una llamada, y dar por muerto
+ * un trabajo que iba a salir cuesta que el usuario reescriba a mano una
+ * descripción que estaba bien.
+ */
+const BLOQUEOS_DE_CONTENIDO = [
+  'PROHIBITED_CONTENT',
+  'IMAGE_PROHIBITED_CONTENT',
+  'SAFETY',
+  'IMAGE_SAFETY',
+  'BLOCKLIST',
+  'IMAGE_BLOCKLIST',
+  'RECITATION',
+  'IMAGE_RECITATION',
+  'SPII',
+  'IMAGE_OTHER_PROHIBITED',
+];
+
+/** @param {string} motivo lo que dijo Google, ya juntado */
+function esBloqueoDeContenido(motivo) {
+  const dicho = String(motivo || '').toUpperCase();
+  return BLOQUEOS_DE_CONTENIDO.some((clave) => dicho.includes(clave));
 }
 
 // ---------------------------------------------------------------------------

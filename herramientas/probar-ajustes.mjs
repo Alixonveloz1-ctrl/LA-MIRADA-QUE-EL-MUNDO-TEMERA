@@ -77,7 +77,7 @@ class ErrorDeCara extends Error { constructor(m,o={}){super(m);this.mensaje=m;Ob
 const entorno = () => ({ sa: { project_id: 'x' } });
 const nivelImagen = () => ({ id: 'gemini-3.1-flash-image', ids: [], region: 'global' });
 const llamar = async () => ({}), urlModelo = () => '', conGrafias = async () => ({}), comoGrafia = (m) => m;
-`, 'resolucionValida, cuerpoPara');
+`, 'resolucionValida, cuerpoPara, esBloqueoDeContenido');
 
 di(img.resolucionValida('1K') === '1K', 'La resolución 1K se acepta');
 di(img.resolucionValida('2k') === '2K', 'La k minúscula se arregla sola (Google la rechazaría)');
@@ -116,6 +116,20 @@ const ritmoLoco = est.asegurar({ ajustes: { ritmo: { por_minuto: 9999, aprendido
 di(ritmoLoco.ajustes.ritmo.por_minuto === 60 && ritmoLoco.ajustes.ritmo.aprendido_ms === 0,
   'Un ritmo imposible se recorta en vez de romper el estado',
   `salió ${ritmoLoco.ajustes.ritmo.por_minuto} y ${ritmoLoco.ajustes.ritmo.aprendido_ms}`);
+
+// ── UN «NO HAY IMAGEN» NO ES SIEMPRE EL FILTRO ─────────────────────────────
+//
+// Google bloquea contenido diciéndolo con su nombre («IMAGE_PROHIBITED_CONTENT»)
+// y eso NO se reintenta: repetir da lo mismo y hay que reescribir la
+// descripción. Pero también contesta «OTHER», que significa «no digo por qué», y
+// eso pasa con placas que no tienen nada raro. Tratar las dos igual dejaba
+// trabajos muertos y mandaba a reescribir descripciones que estaban bien.
+console.log('\n  UN «NO HAY IMAGEN» NO ES SIEMPRE EL FILTRO');
+di(img.esBloqueoDeContenido('IMAGE_PROHIBITED_CONTENT · Unable to show the generated image'),
+  'Un bloqueo de contenido se reconoce como tal');
+di(img.esBloqueoDeContenido('SAFETY'), 'Y los demás nombres del filtro también');
+di(!img.esBloqueoDeContenido('OTHER'), '«OTHER» NO se toma por un bloqueo: es «no digo por qué»');
+di(!img.esBloqueoDeContenido(''), 'Y no decir nada tampoco');
 
 console.log(mal === 0 ? '\nTodo bien.\n' : `\n${mal} MAL.\n`);
 process.exit(mal ? 1 : 0);

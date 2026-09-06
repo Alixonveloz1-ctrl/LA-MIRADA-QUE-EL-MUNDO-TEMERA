@@ -438,6 +438,23 @@ escena de un niño «desnudo, flaco, lleno de cicatrices» ante los sacerdotes. 
 tampoco se van a generar mostrando lo que describen, y la salida es la misma: el
 plano cuenta lo que pasa sin ponerlo en cuadro.
 
+### «No hay imagen» no siempre es el filtro
+
+Cuando el modelo contesta sin imagen, Google dice por qué — o no lo dice. Y son
+dos cosas distintas que estaban tratadas igual:
+
+| Lo que dice Google | Qué significa | Qué se hace |
+|---|---|---|
+| `IMAGE_PROHIBITED_CONTENT`, `SAFETY`, `BLOCKLIST`… | El filtro ha cortado, y con su nombre | **No se reintenta.** Repetir da lo mismo: hay que cambiar la descripción |
+| `OTHER`, o nada | «No digo por qué» | **Se reintenta.** Muchas veces sale a la siguiente |
+
+Antes todo caía en el primer caso: el mensaje mandaba a reescribir una
+descripción y la cola daba el trabajo por muerto. Y salía con placas que no
+tienen absolutamente nada que pueda molestar a un filtro — un plano medio de un
+adulto vestido, de tres cuartos, sin expresión. Ante la duda se reintenta: cuesta
+una llamada, y dar por muerto un trabajo que iba a salir cuesta que alguien
+reescriba a mano algo que estaba bien.
+
 ### Apuntar lo que ya está pagado
 
 Salía esto, que es la peor combinación posible:
