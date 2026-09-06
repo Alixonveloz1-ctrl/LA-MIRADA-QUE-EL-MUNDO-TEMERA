@@ -3001,6 +3001,128 @@ bloque('Datos · los pósters y las miniaturas');
 }
 
 // ===========================================================================
+// DATOS Y CÓDIGO · Los reels
+// ===========================================================================
+
+bloque('Datos y código · los reels');
+
+{
+  const reels = (serie.difusion && serie.difusion.reels) || {};
+
+  // 1. Los números del corte. Un mínimo por encima del máximo no da un error:
+  //    da un reel vacío, porque ningún plano cabe entre los dos.
+  {
+    const quejas = [];
+    const duracion = Number(reels.duracion_s);
+    const minimo = Number(reels.minimo_plano_s);
+    const maximo = Number(reels.maximo_plano_s);
+
+    if (!(duracion > 0)) {
+      quejas.push('difusion.reels.duracion_s no es un número de segundos mayor que cero.');
+    }
+    if (!(minimo > 0) || !(maximo > minimo)) {
+      quejas.push(
+        `El mínimo de plano (${reels.minimo_plano_s}) y el máximo (${reels.maximo_plano_s}) no ` +
+          'tienen sentido juntos. Con el mínimo por encima del máximo no cabe ningún plano y el ' +
+          'reel saldría vacío, sin dar ningún error.'
+      );
+    }
+    if (duracion > 0 && maximo > 0 && maximo > duracion) {
+      quejas.push(
+        `Un plano puede durar hasta ${maximo} s y el reel entero dura ${duracion} s: el primer ` +
+          'plano se comería el reel.'
+      );
+    }
+    comprobar('Los números del corte del reel tienen sentido', quejas);
+  }
+
+  // 2. El formato. Un lado impar lo rechaza el códec, y un formato apaisado
+  //    haría un «reel» que ninguna plataforma de móvil pone a pantalla completa.
+  {
+    const quejas = [];
+    const formato = (reels.formato && typeof reels.formato === 'object') ? reels.formato : {};
+    const ancho = Number(formato.ancho);
+    const alto = Number(formato.alto);
+    const fps = Number(formato.fps);
+
+    if (!Number.isInteger(ancho) || !Number.isInteger(alto) || !(fps > 0)) {
+      quejas.push('difusion.reels.formato no dice ancho, alto y fps como números enteros.');
+    } else {
+      if (alto <= ancho) {
+        quejas.push(
+          `El formato del reel es ${ancho} × ${alto}, que no es vertical. Un reel apaisado no lo ` +
+            'pone a pantalla completa ninguna plataforma de móvil.'
+        );
+      }
+      if (ancho % 2 !== 0 || alto % 2 !== 0) {
+        quejas.push(
+          `El formato del reel es ${ancho} × ${alto} y los códecs de vídeo no aceptan un lado ` +
+            'impar: ffmpeg fallaría en el montador, después de los minutos de espera.'
+        );
+      }
+    }
+    comprobar('El formato del reel es vertical y lo acepta un códec', quejas);
+  }
+
+  // 3. LA CAPA. Este es el que de verdad importa. El reel se le encarga al
+  //    montador con una capa, y el montador que ESTÁ DESPLEGADO la comprueba
+  //    contra su propia lista. Una capa que él no conozca no da un error aquí:
+  //    da un trabajo que falla en la nube diez minutos después, y obliga a
+  //    volver a desplegar el montador desde un móvil.
+  {
+    const quejas = [];
+    const fuente = fuenteDe('app/reel.js');
+    const dicha = fuente ? fuente.match(/CAPA_DEL_REEL\s*=\s*'([^']+)'/) : null;
+    const capa = dicha ? dicha[1] : null;
+
+    if (!capa) {
+      quejas.push('app/reel.js ya no declara CAPA_DEL_REEL, o ha cambiado de forma.');
+    } else {
+      for (const rel of ['api/_lib/montaje.js', 'montador/montador.mjs']) {
+        const texto = fuenteDe(rel);
+        const lista = texto ? texto.match(/const CAPAS\s*=\s*\[([^\]]*)\]/) : null;
+        if (!lista) {
+          quejas.push(`${rel} ya no declara CAPAS, así que no se puede comprobar la capa del reel.`);
+          continue;
+        }
+        const capas = lista[1]
+          .split(',')
+          .map((una) => una.trim().replace(/^['"]|['"]$/g, ''))
+          .filter(Boolean);
+        if (!capas.includes(capa)) {
+          quejas.push(
+            `El reel se encarga con la capa «${capa}» y ${rel} solo conoce ${capas.join(', ')}. ` +
+              'Eso no falla aquí: falla en la nube, minutos después de encargarlo.'
+          );
+        }
+      }
+    }
+    comprobar('La capa con la que se encarga el reel la entiende el montador', quejas);
+  }
+
+  // 4. Un reel no lleva voz ni subtítulos, y eso está escrito en el código, no
+  //    solo en un comentario: si algún día se le pusieran, treinta segundos de
+  //    diálogo contarían el capítulo entero.
+  {
+    const quejas = [];
+    const fuente = fuenteDe('app/reel.js');
+    if (fuente && !/subtitulos:\s*\[\]/.test(fuente)) {
+      quejas.push(
+        'app/reel.js ya no pide el manifiesto con «subtitulos: []». Un reel con subtítulos de ' +
+          'treinta segundos cuenta el capítulo entero antes de que nadie lo vea.'
+      );
+    }
+    if (fuente && !/agacha:\s*false/.test(fuente)) {
+      quejas.push(
+        'La música del reel ya no va con «agacha: false». Agacharse es dejarle sitio a una voz, ' +
+          'y en el reel no hay ninguna: la música bajaría de volumen sola y sin motivo.'
+      );
+    }
+    comprobar('El reel no lleva voz ni subtítulos, y está escrito en el código', quejas);
+  }
+}
+
+// ===========================================================================
 // Resumen
 // ===========================================================================
 

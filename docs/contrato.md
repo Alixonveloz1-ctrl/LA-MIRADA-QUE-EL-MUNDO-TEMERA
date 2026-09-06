@@ -460,6 +460,13 @@ Tipos: `placa`, `escenario`, `poster`, `keyframe`, `clip`, `clip-consultar`,
 En `poster`, el **formato entra en la identidad** del trabajo: encolar el 9:16 y
 el 16:9 de la misma pieza no es encolar dos veces lo mismo.
 
+El **reel** no es un tipo de trabajo aparte: es un `montaje` con capa `pieza`,
+salida `montaje/reel-{pieza}-{version}.mp4` y `formato` vertical. Se dice así a
+propósito —y no con una capa nueva— porque el montador comprueba la capa contra
+su propia lista, y una capa que él no conozca no falla al encolarla: falla en la
+nube, minutos después. Lo compone `app/reel.js`, que no llama a ningún modelo:
+solo junta clips ya elegidos y música ya aprobada.
+
 - Concurrencia máxima = `CONCURRENCIA` (por defecto 3), visible y ajustable en
   pantalla. Saturar las cuotas de Vertex devuelve errores que parecen falta de
   acceso.
@@ -554,7 +561,8 @@ veo/{pieza}/{toma}/{n}/                veo/{pieza}/{toma}/elegido.mp4
 audio/musica/{id}.wav                  audio/voz/{pieza}/{bloque}.wav
 muestras/{personaje}/{voz_id}.wav      montaje/{trabajo}/…
 montaje/{pieza}-{version}.mp4          estado.json
-difusion/{pieza}.zip                   difusion/posters/{id}/{formato}/{n}.png
+montaje/reel-{pieza}-{version}.mp4     difusion/{pieza}.zip
+difusion/posters/{id}/{formato}/{n}.png
 ```
 
 El `{formato}` de un póster es `9-16` o `16-9`: los dos puntos no viajan a una

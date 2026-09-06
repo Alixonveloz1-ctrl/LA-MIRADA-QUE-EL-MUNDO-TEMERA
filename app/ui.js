@@ -321,12 +321,20 @@ export function seccion(titulo, ...hijos) {
  * si es audio, que no tiene forma). Va antes que las acciones a propósito: la
  * regla del contrato dice que no hay botón de aprobar sin la imagen al lado.
  *
+ * `proporcion` cambia ese marco cuando lo que se mira NO es 16:9: un póster
+ * vertical dentro de un marco apaisado se recorta por arriba y por abajo, y lo
+ * que se recorta es justo la banda donde va el título. Se escribe como se lee
+ * —«9:16»— y además pone la imagen ENTERA dentro del marco en vez de llenarlo:
+ * en una pantalla donde se aprueba mirando, esconder un trozo es peor que dejar
+ * dos franjas negras.
+ *
  * `estado` pinta el punto de color con su etiqueta legible; acepta una cadena
  * («en_curso») o un objeto { tipo, texto } cuando la etiqueta de la tabla no
  * dice bastante en esa pantalla.
  */
-export function tarjeta({ titulo, media, pie, acciones, estado } = {}) {
+export function tarjeta({ titulo, media, pie, acciones, estado, proporcion } = {}) {
   const marca = estado ? puntoDeEstado(estado) : null;
+  const forma = formaDelMarco(proporcion);
 
   const cabecera = (titulo || marca)
     ? h('header', { clase: 'tarjeta-cabecera' },
@@ -341,7 +349,16 @@ export function tarjeta({ titulo, media, pie, acciones, estado } = {}) {
 
   return h('article', { clase: 'tarjeta' },
     cabecera,
-    media ? h('div', { clase: ['tarjeta-media', claseDeMedia(media)] }, media) : null,
+    media
+      ? h(
+          'div',
+          {
+            clase: ['tarjeta-media', claseDeMedia(media), forma ? 'media-entera' : null],
+            estilo: forma ? { 'aspect-ratio': forma } : null
+          },
+          media
+        )
+      : null,
     pie != null && pie !== ''
       ? h('div', { clase: 'tarjeta-pie' },
           typeof pie === 'string' || typeof pie === 'number'
@@ -362,6 +379,26 @@ export function tarjeta({ titulo, media, pie, acciones, estado } = {}) {
 function claseDeMedia(media) {
   const etiqueta = media && media.tagName ? String(media.tagName).toLowerCase() : '';
   return etiqueta === 'audio' ? 'media-audio' : 'media-visual';
+}
+
+/**
+ * «9:16» → «9 / 16», que es lo que entiende `aspect-ratio` de CSS. Se acepta con
+ * dos puntos o con barra, porque las dos formas se escriben. Cualquier otra cosa
+ * devuelve null y el marco se queda como siempre: una proporción inventada no
+ * puede dejar la tarjeta sin altura y la fila entera del alto de la pantalla.
+ *
+ * @param {string|null|undefined} proporcion
+ * @returns {string|null}
+ */
+function formaDelMarco(proporcion) {
+  const dicha = typeof proporcion === 'string' ? proporcion.trim() : '';
+  if (!dicha) return null;
+  const partes = dicha.split(/[:/]/);
+  if (partes.length !== 2) return null;
+  const ancho = Number(partes[0]);
+  const alto = Number(partes[1]);
+  if (!Number.isFinite(ancho) || !Number.isFinite(alto) || ancho <= 0 || alto <= 0) return null;
+  return `${ancho} / ${alto}`;
 }
 
 /**

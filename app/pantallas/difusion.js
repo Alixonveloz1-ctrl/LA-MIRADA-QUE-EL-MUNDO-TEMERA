@@ -43,14 +43,26 @@
 //      y las eñes, así que puede salir con letras inventadas. Por eso el botón de
 //      «Otro intento» está siempre a mano y cada intento se queda guardado.
 //
-// LO QUE TODAVÍA NO ESTÁ, y se dice para que no se busque: los reels de treinta
-// segundos. Van en esta misma pantalla. El paquete de descarga va primero porque
-// es lo primero que hace falta: en cuanto haya un teaser montado, ya se puede
-// subir.
+//   5. UN REEL NO GENERA NADA. Los treinta segundos en vertical se arman con los
+//      clips que YA están elegidos y la música que YA está aprobada, en el orden
+//      del guion. Ni una llamada a un modelo, ni un céntimo: es un montaje de
+//      material ya pagado. Por eso su botón puede estar apagado con todo bien
+//      escrito —lo que falta no es una decisión, es material—, y por eso se
+//      rehace sin pensarlo en cuanto hay un clip más.
+//
+//      Y las BARRAS NEGRAS son a propósito. Todo está rodado en 16:9; recortar
+//      a vertical dejaría media cara fuera de cuadro en casi todos los planos.
+//      Se escala el plano entero y lo que sobra se rellena de negro.
+//
+// EL ORDEN DE LA PANTALLA no es casual: primero el paquete de descarga, que es
+// lo primero que hace falta —en cuanto haya un teaser montado ya se puede
+// subir—, luego los reels, que salen de ese mismo material, y al final los
+// pósters, que son lo único de aquí que sí cuesta dinero.
 
 import { ErrorDeCara, llamar } from '../api.js';
 import { actual, alCambiar, cambiar } from '../estado.js';
 import { encolar } from '../cola.js';
+import { ajustesDelReel, manifiestoDelReel, nombreDelReel, esReelDe, CAPA_DEL_REEL } from '../reel.js';
 import {
   aviso,
   boton,
@@ -257,13 +269,39 @@ function construir(serie, repintar) {
   pedirEnlacesQueFalten(rutas, repintar);
   pedirLosPesos(repintar);
 
+  // Los reels ya montados, para poder verlos y descargarlos.
+  for (const una of piezas) {
+    const suyo = elReelDe(montajes, una.id);
+    if (suyo) rutas.push(suyo.ruta);
+  }
+
   return pantalla(
     'Difusión',
     seccionCabecera(ctx),
     seccionPiezas(ctx),
-    seccionPosters(ctx),
-    seccionLoQueFalta()
+    seccionReels(ctx),
+    seccionPosters(ctx)
   );
+}
+
+/** El último reel montado de una pieza, si lo hay. */
+function elReelDe(montajes, idPieza) {
+  const suyos = montajes.filter(
+    (uno) => esObjeto(uno) && soloTexto(uno.ruta) && esReelDe(uno.ruta, idPieza)
+  );
+  return suyos.length ? suyos[suyos.length - 1] : null;
+}
+
+/** Qué versión de reel toca. Se mira lo ya montado, no lo intentado. */
+function siguienteVersionDeReel(montajes, idPieza) {
+  let mayor = 0;
+  for (const uno of montajes) {
+    if (!esObjeto(uno) || !esReelDe(soloTexto(uno.ruta), idPieza)) continue;
+    const nombre = soloTexto(uno.ruta).replace(/^montaje\//, '').replace(/\.mp4$/i, '');
+    const numero = Number(nombre.slice(`reel-${idPieza}-`.length));
+    if (Number.isFinite(numero) && numero > mayor) mayor = numero;
+  }
+  return mayor + 1;
 }
 
 /**
@@ -621,6 +659,166 @@ function comoTexto(etiquetas) {
 }
 
 // ---------------------------------------------------------------------------
+// Los reels
+// ---------------------------------------------------------------------------
+
+/**
+ * Un reel por pieza: treinta segundos en vertical, armados solos.
+ *
+ * No genera NADA. Coge los clips que ya están elegidos y la música que ya está
+ * aprobada y los pone uno detrás de otro. Por eso el botón puede estar apagado
+ * teniendo todo bien escrito: lo que falta no es una decisión, es material.
+ *
+ * @param {object} ctx
+ * @returns {HTMLElement}
+ */
+function seccionReels(ctx) {
+  const { serie, piezas } = ctx;
+  const ajustes = ajustesDelReel(serie);
+  const partes = [];
+
+  partes.push(
+    h(
+      'p',
+      { clase: 'tarjeta-texto suave' },
+      `Un reel por pieza: ${ajustes.duracionS} segundos en vertical, armados solos con los clips ` +
+        'que YA están elegidos y la música que YA está aprobada. No genera vídeo nuevo y no cuesta ' +
+        'ni un céntimo de modelo: es un montaje de material que ya está pagado.'
+    ),
+    h(
+      'p',
+      { clase: 'tenue' },
+      `Salen a ${ajustes.formato.ancho} × ${ajustes.formato.alto} con barras negras arriba y ` +
+        'abajo. El material está rodado apaisado, y recortarlo a vertical dejaría media cara ' +
+        'fuera de cuadro en casi todos los planos.'
+    ),
+    h(
+      'p',
+      { clase: 'tenue' },
+      'Los planos van en el orden del guion. Los que duran menos de ' +
+        `${ajustes.minimoS} s se saltan —parpadean—, y los que duran más de ${ajustes.maximoS} s ` +
+        'se cortan por el final: en medio minuto caben diez o doce planos, no cuatro. Sin voz ni ' +
+        'subtítulos: en treinta segundos, el diálogo o no se entiende o cuenta el capítulo.'
+    )
+  );
+
+  if (!piezas.length) return seccion('Reels', partes);
+
+  for (const una of piezas) partes.push(tarjetaDeReel(ctx, una));
+
+  return seccion('Reels', partes);
+}
+
+/**
+ * Una pieza y su reel: lo que ya se puede armar, lo que falta y el botón.
+ * @param {object} ctx
+ * @param {{id:string, titulo:string}} laPieza
+ * @returns {HTMLElement}
+ */
+function tarjetaDeReel(ctx, laPieza) {
+  const { serie, estado, montajes, trabajos } = ctx;
+
+  const version = siguienteVersionDeReel(montajes, laPieza.id);
+  const armado = manifiestoDelReel(serie, estado, laPieza.id, version);
+  const hecho = elReelDe(montajes, laPieza.id);
+  const enLaCola = trabajos.get(`montaje:${nombreDelReel(laPieza.id, version)}`) || null;
+  const enMarcha = Boolean(enLaCola && estaEnMarcha(enLaCola));
+
+  const pie = h('div', null);
+
+  if (armado.corte.planos.length) {
+    pie.appendChild(
+      h(
+        'p',
+        { clase: 'tarjeta-texto' },
+        `Se armaría con ${plural(armado.corte.planos.length, 'plano', 'planos')} y duraría ` +
+          `${segundosCortos(armado.corte.duracionS)}.`
+      )
+    );
+  }
+
+  for (const falta of armado.faltas) {
+    pie.appendChild(h('p', { clase: 'tarjeta-texto' }, falta));
+  }
+  for (const nota of armado.notas) {
+    pie.appendChild(h('p', { clase: 'tenue' }, nota));
+  }
+
+  if (enMarcha) {
+    pie.appendChild(espera('Montándose en la nube. Tarda, y no hace falta tener esto abierto.'));
+  }
+  if (enLaCola && enLaCola.error) {
+    pie.appendChild(aviso(enLaCola.error, { tono: 'error', detalle: enLaCola.detalle }));
+  }
+
+  let media = null;
+  if (hecho) {
+    const url = enlaceDe(hecho.ruta);
+    pie.appendChild(
+      h(
+        'p',
+        { clase: 'tarjeta-texto' },
+        `Reel hecho el ${fecha(hecho.cuando)}` +
+          `${pesoDe(hecho.ruta) ? `, ${bytes(pesoDe(hecho.ruta))}` : ''}.`
+      )
+    );
+    if (url) {
+      media = h('video', { src: url, controls: true, playsinline: true, preload: 'metadata' });
+      pie.appendChild(
+        h(
+          'p',
+          { clase: 'tarjeta-texto' },
+          h('a', { href: url, download: '', clase: 'enlace' }, 'Descargar el reel')
+        )
+      );
+    }
+  }
+
+  const acciones = h('div', { clase: 'tarjeta-acciones' });
+  acciones.appendChild(
+    boton(
+      hecho ? 'Rehacer el reel' : 'Armar el reel',
+      () => armarElReel(ctx, laPieza, armado),
+      {
+        tono: hecho ? 'suave' : 'principal',
+        desactivado: porQueNoSeArmaElReel(armado, enMarcha)
+      }
+    )
+  );
+
+  return tarjeta({
+    titulo: `Reel · ${laPieza.titulo}`,
+    estado: comoVaElReel(armado, hecho, enMarcha),
+    media,
+    // Vertical, como sale: enseñarlo en un marco apaisado sería enseñar otra cosa.
+    proporcion: media ? `${ajustesDelReel(serie).formato.ancho}:${ajustesDelReel(serie).formato.alto}` : null,
+    pie,
+    acciones
+  });
+}
+
+/** Por qué todavía no se puede armar el reel, con palabras. Null si se puede. */
+function porQueNoSeArmaElReel(armado, enMarcha) {
+  if (enMarcha) return 'Ya se está montando.';
+  if (!armado.manifiesto) return armado.faltas[0] || 'Todavía falta material.';
+  return null;
+}
+
+/** El punto de estado de un reel. */
+function comoVaElReel(armado, hecho, enMarcha) {
+  if (enMarcha) return { tipo: 'en_curso', texto: 'Montándose' };
+  if (hecho) return { tipo: 'listo', texto: 'Listo para subir' };
+  if (!armado.manifiesto) return { tipo: 'pendiente', texto: 'Falta material' };
+  return { tipo: 'pendiente', texto: 'Listo para armar' };
+}
+
+/** «28,5 s», que es como se leen los segundos en una tarjeta. */
+function segundosCortos(n) {
+  const numero = Number(n) || 0;
+  return `${String(Math.round(numero * 10) / 10).replace('.', ',')} s`;
+}
+
+// ---------------------------------------------------------------------------
 // Los pósters y las miniaturas
 // ---------------------------------------------------------------------------
 
@@ -826,6 +1024,10 @@ function tarjetaDePoster(ctx, elPoster) {
     titulo: `${soloTexto(elPoster.nombre) || id} · ${forma}`,
     estado: comoVaElPoster(guardado, enMarcha),
     media: marcoDePoster(ruta, guardado, `${soloTexto(elPoster.nombre) || id}, ${forma}`),
+    // El marco toma la forma del póster. Sin esto, un 9:16 se enseña dentro de
+    // un hueco 16:9 y se recorta justo la banda del título, que es lo único que
+    // hay que mirar antes de aprobarlo.
+    proporcion: forma,
     pie,
     acciones
   });
@@ -959,32 +1161,6 @@ function enumerarCorto(lista) {
 }
 
 // ---------------------------------------------------------------------------
-// Lo que todavía no está
-// ---------------------------------------------------------------------------
-
-/**
- * Se dice con todas las letras, y no es un adorno: quien abre esta pantalla
- * buscando los reels tiene que saber que no están todavía y no ponerse a
- * buscarlos por las otras siete.
- */
-function seccionLoQueFalta() {
-  return seccion(
-    'Lo que falta aquí',
-    h(
-      'p',
-      { clase: 'tarjeta-texto suave' },
-      'Esta pantalla va a llevar una cosa más, y todavía no está:'
-    ),
-    h(
-      'p',
-      { clase: 'tarjeta-texto' },
-      'Los REELS de treinta segundos, en vertical, armados solos con los clips y la música que ya ' +
-        'existan. Necesitan clips aprobados: hoy hay muy pocos.'
-    )
-  );
-}
-
-// ---------------------------------------------------------------------------
 // Las acciones
 // ---------------------------------------------------------------------------
 
@@ -993,6 +1169,35 @@ function pedirLaFicha(ctx, laPieza) {
   try {
     encolar('ficha', { pieza: laPieza.id });
     leidas.delete(laPieza.id);
+    queja = null;
+  } catch (fallo) {
+    queja = comoErrorDeCara(fallo);
+  }
+  ctx.repintar();
+}
+
+/**
+ * Encola el reel de una pieza. El manifiesto ya está armado —se armó para
+ * decidir si el botón se enciende—, así que aquí solo se manda.
+ */
+async function armarElReel(ctx, laPieza, armado) {
+  if (!armado.manifiesto) return;
+
+  const cuantos = armado.corte.planos.length;
+  const pregunta =
+    `¿Armo el reel de «${laPieza.titulo}»? Son ${plural(cuantos, 'plano', 'planos')} y ` +
+    `${segundosCortos(armado.corte.duracionS)} de vídeo. No genera nada nuevo: usa los clips que ` +
+    'ya están elegidos. Tarda unos minutos de máquina.';
+
+  if (!(await confirmar(pregunta))) return;
+
+  try {
+    encolar('montaje', {
+      trabajo: armado.manifiesto.trabajo,
+      capa: CAPA_DEL_REEL,
+      id: armado.manifiesto.trabajo,
+      manifiesto: armado.manifiesto
+    });
     queja = null;
   } catch (fallo) {
     queja = comoErrorDeCara(fallo);

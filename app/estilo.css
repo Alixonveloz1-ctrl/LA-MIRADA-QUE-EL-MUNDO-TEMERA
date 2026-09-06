@@ -395,6 +395,16 @@ body > nav a[aria-current="page"]::before {
   background: var(--negro);
 }
 
+/* Lo que NO es 16:9 —un póster vertical, una miniatura— trae su proporción
+   escrita en el atributo «style» y se enseña ENTERO. `cover` recortaría por
+   arriba y por abajo, y eso es justo la banda donde va el título: quien tiene
+   que aprobar la imagen mirándola no vería lo que tiene que juzgar. Dos franjas
+   negras al lado son mejores que un trozo escondido. */
+.tarjeta-media.media-entera > img,
+.tarjeta-media.media-entera > video {
+  object-fit: contain;
+}
+
 /* El audio no tiene forma: no se le pone marco 16:9, se le da la fila entera. */
 .tarjeta-media.media-audio {
   aspect-ratio: auto;

@@ -5179,6 +5179,22 @@
           "uso": "La miniatura con la que se sube el episodio 12, «La mirada que el mundo temerá»."
         }
       ]
+    },
+    "reels": {
+      "regla": "Un reel por pieza: treinta segundos en vertical, armados solos con los clips que YA estan aprobados y la musica que YA esta aprobada. No se genera nada nuevo, no se paga nada: es un montaje de material que ya existe.",
+      "duracion_s": 30,
+      "formato": {
+        "ancho": 1080,
+        "alto": 1920,
+        "fps": 24
+      },
+      "nota_formato": "El material esta rodado en 16:9. El montador escala cada plano hasta que quepa entero y rellena lo que sobra con negro, asi que el reel sale con barras negras arriba y abajo. Es lo que se eligio: recortar a vertical dejaria media cara fuera en casi todos los planos.",
+      "minimo_plano_s": 1.2,
+      "maximo_plano_s": 3.5,
+      "nota_planos": "Los planos se toman en el orden del guion. Uno mas corto que el minimo parpadea y se lee como un fallo, asi que se salta; uno mas largo que el maximo se corta, porque en un reel treinta segundos son diez o doce planos y no cuatro. Del plano se coge SU PRINCIPIO, que es donde esta lo que se queria contar.",
+      "ganancia_musica_db": -3,
+      "nota_musica": "Debajo va la musica de la pieza, la primera que este aprobada, desde su segundo cero. Sin voz: un reel con dialogo en japones no se entiende en el movil de nadie, y con dialogo en espanol contaria el capitulo entero.",
+      "nota_capa": "El reel se le encarga al montador como capa «pieza», que es exactamente lo que es: planos con su audio y sin capas previas. Asi funciona con el montador que ya esta desplegado, sin volver a desplegarlo."
     }
   }
 }

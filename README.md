@@ -393,7 +393,8 @@ que se probaba un solo nombre— y por eso hoy se mide en vez de darse por hecho
    el resultado por URL firmada.
 9. **Difusión** — lo que hace falta para PUBLICAR, que no es lo mismo que lo que
    hace falta para producir: la ficha con la que se sube cada pieza, el zip con
-   el vídeo y esa ficha dentro, y los pósters y miniaturas en 9:16 o 16:9.
+   el vídeo y esa ficha dentro, los reels de treinta segundos en vertical
+   armados solos, y los pósters y miniaturas en 9:16 o 16:9.
 
 ---
 
@@ -939,6 +940,13 @@ aprobado. Eso lo comprueba `npm run difusion` ejecutándolo, porque es justo la
 clase de fallo que no avisa: se perdería una imagen ya pagada sin un solo error
 en pantalla.
 
+Y **el marco de la tarjeta toma la forma de lo que enseña**. Toda la aplicación
+mira en 16:9, que es la proporción de la serie, y un póster vertical dentro de un
+hueco apaisado se recortaba por arriba y por abajo — justo la banda donde va el
+título. En una pantalla donde aprobar es *mirar*, esconder lo que hay que juzgar
+es el peor fallo posible. Ahora la tarjeta acepta su proporción y enseña la
+imagen **entera**: dos franjas negras al lado son mejores que un trozo escondido.
+
 #### El título va dentro de la imagen
 
 `LA MIRADA QUE EL MUNDO TEMERÁ` se le pide al modelo **escrito dentro del
@@ -960,14 +968,66 @@ acepta, que cada póster referencia placas que existen y que **hay una miniatura
 por cada guion escrito**: si algún día hay un episodio trece, el que se quede sin
 la suya se subiría sin portada.
 
-### Lo que falta en esta pantalla
+### Los reels
 
-Se dice ahí dentro, para que no se busque por las otras ocho:
+Un reel por pieza: **treinta segundos en vertical, armados solos**.
 
-- Los **reels** de treinta segundos, en vertical, armados solos con los clips y
-  la música que ya existan. El montador ya sabe montar en vertical —el formato va
-  en el manifiesto—, así que no hace falta volver a desplegarlo. Lo que hace
-  falta son clips aprobados.
+**No genera nada.** Ni una llamada a un modelo, ni un céntimo de Vertex. Coge los
+clips que YA están elegidos y la música que YA está aprobada y los pone uno
+detrás de otro. Lo único que gasta es el rato de máquina del montador, igual que
+cualquier otro montaje. Por eso su botón puede estar apagado con todo bien
+escrito: lo que falta no es una decisión, es material. Y por eso se rehace sin
+pensarlo en cuanto hay un clip más.
+
+**Barras negras, a propósito.** Salen a 1080 × 1920. Todo el material está rodado
+en 16:9, así que el montador escala cada plano hasta que quepa entero y rellena
+lo que sobra de negro. Recortar a vertical dejaría media cara fuera de cuadro en
+casi todos los planos, y eso es peor que una franja.
+
+**Cómo se corta**, y las cuatro reglas están en `difusion.reels` de
+`datos/serie.json` para cambiarlas ahí y no en el código:
+
+1. **El orden es el del guion.** En los datos no hay ninguna nota que diga qué
+   plano es «el bueno», así que inventarse un orden sería inventarse un criterio.
+   En el orden del guion, el reel del teaser es el teaser contado corto.
+2. **Los planos de menos de 1,2 s se saltan.** Por debajo de eso un plano
+   parpadea y se lee como un fallo de reproducción, no como montaje.
+3. **Los de más de 3,5 s se cortan, y se cortan por el final**: se coge su
+   principio, que es donde está lo que se quería contar. En medio minuto caben
+   diez o doce planos; con cuatro de ocho segundos no hay reel, hay un vídeo
+   lento.
+4. **Aterriza exactamente en los treinta.** Cuando del ajuste sobra un pico —queda
+   un segundo y ya no cabe ni el plano más corto que se acepta—, ese pico se
+   reparte estirando planos **desde el último hacia atrás**, hasta donde llegue el
+   material de cada clip. Un reel de veintinueve segundos no es «casi treinta»:
+   es un vídeo que se corta antes de tiempo, y se nota.
+
+   Y **solo si el reel se llenó**. Si lo que se acabaron fueron los clips, el
+   hueco no es un pico: es que no hay material. Entonces el reel sale corto y lo
+   dice, en vez de estirar tres planos hasta el medio minuto y entregar tres
+   planos lentísimos.
+
+**Sin voz y sin subtítulos.** Con el diálogo en japonés no se entiende en el móvil
+de nadie, y con el diálogo en español un reel de treinta segundos cuenta el
+capítulo entero. Va la música, desde su segundo cero, recortada a lo que dure el
+reel y sin agacharse: agacharse es dejarle sitio a una voz que aquí no hay.
+
+**La capa con la que se le encarga al montador es `pieza`**, y eso no es un
+descuido: un reel *es* una capa de planos con su audio y sin capas ya montadas
+debajo. Decirlo así hace que funcione con **el montador que ya está desplegado**.
+Una capa nueva no daría un error al encolarla: daría un trabajo que falla en la
+nube diez minutos después y que obliga a volver a desplegar el montador desde el
+móvil. Un invariante comprueba que la capa que usa `app/reel.js` está en la lista
+que conocen tanto la función como `montador/montador.mjs`.
+
+**Y el corte se comprueba ejecutándolo.** Un reel mal cortado no da ningún error:
+da un vídeo, con un parpadeo o con tres segundos de negro al final, y eso solo se
+ve mirándolo, después de esperar los minutos del montador. `npm run reel` corta
+reels contra estados de mentira y comprueba que los planos van pegados, que
+ninguno queda por debajo del mínimo, que el total no se pasa, que con poco
+material sale corto en vez de estirado — y le pasa el manifiesto al **mismo
+validador que usa la función en producción**. Esa última es la que importa: es
+enterarse aquí en un segundo, o enterarse en la nube dentro de diez minutos.
 
 ---
 
@@ -977,7 +1037,7 @@ Se dice ahí dentro, para que no se busque por las otras ocho:
 npm run comprobar
 ```
 
-Encadena las catorce herramientas y no necesita red ni credenciales: regenera
+Encadena las quince herramientas y no necesita red ni credenciales: regenera
 `datos/serie.json` desde `serie.base.json` con el parche, comprueba los
 invariantes sobre los datos y sobre el árbol de código, **ejecuta** la cola
 contra un Google de mentira, **le da audio de verdad** al lector de formatos,
@@ -987,14 +1047,17 @@ encima, comprueba que **ninguna pieza de música se quede sin pantalla donde
 salir**, **recupera** un clip lanzado con otro nivel de Veo, **ejecuta** la pantalla de
 Cola con un vídeo en vuelo, **repite** un fallo doce veces para ver que el aviso
 no se apila, **escribe un zip y lo abre con el `unzip` del sistema**, **tira** las
-etiquetas que se inventa el modelo, y **pesa** la respuesta de cada modo con material del tamaño real para
+etiquetas que se inventa el modelo, **corta un reel de treinta segundos y le pasa
+el manifiesto al mismo validador que usa la función en producción**, y **pesa** la
+respuesta de cada modo con material del tamaño real para
 verificar que cabe en los 4,5 MB. Casi ninguno se ve leyendo el código: se ven
 ejecutándolo y midiendo. Si algo no cumple, sale con error y lo dice en español.
 
 Cada paso se puede lanzar por separado con `npm run datos`, `npm run invariantes`,
 `npm run cola`, `npm run audio`, `npm run ajustes`, `npm run freno`,
 `npm run anotar`, `npm run banco`, `npm run veo`, `npm run pantalla`,
-`npm run fallos`, `npm run zip`, `npm run difusion` y `npm run pesar`. Y
+`npm run fallos`, `npm run zip`, `npm run difusion`, `npm run reel` y
+`npm run pesar`. Y
 `npm run archivo` reescribe los 56 planos de ambiente desde su tabla.
 
 ### Lo que manda Google no es siempre lo mismo
