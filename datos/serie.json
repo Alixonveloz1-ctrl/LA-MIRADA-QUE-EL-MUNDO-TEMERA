@@ -212,12 +212,12 @@
       "genero": "masculina"
     },
     "saharis-5": {
-      "identidad": "gaunt boy of five, dark hair grown out unevenly, red eyes, filthy oversized rag tunic, bare feet, no expression",
+      "identidad": "boy of five, dark hair grown out unevenly, red eyes, an oversized worn tunic with long sleeves, patched and travel-stained, simple cloth shoes, quiet serious face",
       "nota": "Encadena al ancla de linaje de saharis: misma estructura osea, mismos pomulos, mismo color de ojos. Solo cambia la edad.",
       "genero": "masculina"
     },
     "saharis-10": {
-      "identidad": "wiry boy of ten, dark hair to the jaw, red eyes, a fresh ritual scar across the left palm, thin scavenged dark clothing",
+      "identidad": "boy of ten, dark hair to the jaw, red eyes, a healed scar across the left palm, dark mended clothes that do not fit him, worn but whole",
       "nota": "Encadena al ancla de linaje de saharis: misma estructura osea, mismos pomulos, mismo color de ojos. Solo cambia la edad.",
       "genero": "masculina"
     },
@@ -760,7 +760,7 @@
         "id": "saharis-5-manos",
         "personaje": "saharis-5",
         "luz": "CRIPTA",
-        "encuadre": "Close detail of a small five year old child's hands only, filthy and thin, dirt in every crease, no face in frame",
+        "encuadre": "Close detail of a young child's hands only, small, a little dust across the knuckles, no face in frame",
         "detalle": true,
         "instruccion_referencia": "CHARACTER ANCHOR above: this is Saharis at five. This new plate shows ONLY his hands. Copy from the anchor exactly: the exact skin tone (pale olive), how thin and undernourished the hands are, the size and proportions of a five year old's hands, the dirt worked into every crease. Do NOT draw his face, his head or his body — it is not in frame in this plate. Do NOT copy the pose, the framing, the scale or the background: redraw them as this plate describes."
       },

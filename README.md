@@ -400,6 +400,30 @@ del modelo, que es lo que hay que buscar en la tarifa de Vertex AI. Lo que sí s
 cuenta de verdad es **cuántas imágenes y cuántos segundos de vídeo** se llevan
 generados con cada nivel, en `estado.gasto`.
 
+### El filtro de seguridad y los personajes niños
+
+Google bloquea con `IMAGE_PROHIBITED_CONTENT` cualquier imagen de un menor
+descrita con un catálogo de carencias sobre su cuerpo. No distingue un drama
+serio de algo dañino: ve las palabras y corta, y hace bien.
+
+Aquí se disparaba con Saharis a los cinco años, que estaba escrito así:
+
+> `gaunt boy of five … filthy oversized rag tunic, bare feet`
+
+Demacrado, sucio y descalzo. La historia es la misma sin eso: **la pobreza se
+cuenta por la ropa, no por el cuerpo del niño**. Ahora lleva una túnica grande y
+gastada, remendada, con mangas largas y zapatos de tela. Se lee igual de pobre y
+no describe a un niño desnutrido y desnudo. Lo mismo con sus manos y con el de
+diez años.
+
+**Y hay un plano que probablemente no se pueda generar nunca: `OP03`,** el primer
+plano de los ojos de un recién nacido en la cripta. No es cuestión de palabras:
+un bebé en un ritual de culto es justo lo que ese filtro existe para no hacer.
+Buscarle la vuelta sería saltarse la protección, no arreglar un error. La salida
+buena es de cine y no de código: **contarlo sin enseñarlo** — las manos de la
+madre, la sombra del celebrante, el reflejo del fuego en la piedra. Da más miedo
+y se puede generar.
+
 ---
 
 ## Antes de desplegar

@@ -143,7 +143,7 @@ const PLACAS_NUEVAS = [
     id: 'saharis-5-manos',
     personaje: 'saharis-5',
     luz: 'CRIPTA',
-    encuadre: 'Close detail of a small five year old child\'s hands only, filthy and thin, dirt in every crease, no face in frame',
+    encuadre: 'Close detail of a young child\'s hands only, small, a little dust across the knuckles, no face in frame',
     detalle: true,
     instruccion_referencia: DETALLE(
       'Saharis at five',
