@@ -231,9 +231,14 @@ function exigirRutas(cuerpo, campo, paraQue) {
 
 /**
  * Aplica un cambio al estado del bucket con `ifGenerationMatch`, y si otro ha
- * guardado por debajo vuelve a leer, reaplica el cambio y guarda otra vez. Una
- * sola vez: si al segundo intento sigue habiendo carrera, es que hay algo mal y
- * seguir dando vueltas dentro de la función solo agota el minuto.
+ * guardado por debajo vuelve a leer, reaplica el cambio y guarda otra vez.
+ *
+ * CUATRO VUELTAS, NO DOS. Eran dos con el argumento de que dar vueltas agota el
+ * minuto de la función, y el argumento era bueno pero la cuenta estaba mal: una
+ * vuelta es leer y escribir, cosa de un segundo, y el latido de la cola escribe
+ * cada quince. Con dos vueltas bastaba un latido mal caído para perder la
+ * anotación de algo YA PAGADO. Cuatro vuelven a ser menos de cinco segundos, que
+ * caben de sobra, y hacen falta tres latidos seguidos para agotarlas.
  *
  * @param {(estado:object) => any} aplicar cambia el estado EN EL SITIO. Se
  *   ejecuta una vez por vuelta, así que no puede tener efectos fuera del estado.
@@ -241,10 +246,12 @@ function exigirRutas(cuerpo, campo, paraQue) {
  *   leído que se aprovecha para la primera vuelta y ahorra una lectura.
  * @returns {Promise<{estado:object, generacion:string, devuelto:any}>}
  */
+const VUELTAS_DEL_ESTADO = 4;
+
 async function cambiarElEstado(aplicar, yaLeido = null) {
   let partida = yaLeido;
 
-  for (let vuelta = 1; vuelta <= 2; vuelta += 1) {
+  for (let vuelta = 1; vuelta <= VUELTAS_DEL_ESTADO; vuelta += 1) {
     const actual = partida || (await leerElEstado());
     partida = null; // la segunda vuelta relee siempre: es de lo que va el reintento
 
@@ -255,7 +262,7 @@ async function cambiarElEstado(aplicar, yaLeido = null) {
       return { estado: actual.estado, generacion, devuelto };
     } catch (fallo) {
       const esCarrera = fallo instanceof ErrorDeCara && fallo.http === 409;
-      if (!esCarrera || vuelta === 2) throw fallo;
+      if (!esCarrera || vuelta === VUELTAS_DEL_ESTADO) throw fallo;
     }
   }
 
@@ -273,14 +280,27 @@ async function cambiarElEstado(aplicar, yaLeido = null) {
  * el mensaje lleva su ruta dentro y el fallo no se reintenta (repetir volvería a
  * gastar).
  *
+ * EL ESTADO LEÍDO ANTES DE GENERAR NO SIRVE PARA ESCRIBIR, Y POR ESO SE IGNORA.
+ *
+ * Aquí se llega DESPUÉS de una generación, que son treinta o cuarenta segundos.
+ * En ese rato el navegador ha escrito el latido de la cola dos o tres veces, así
+ * que el número de versión que se leyó al empezar ya no vale: escribir con él es
+ * un 409 GARANTIZADO. Y como `cambiarElEstado` solo reintenta una vez, ese choque
+ * seguro se comía el único reintento que había, y el segundo intento —el bueno—
+ * se estrellaba con cualquier latido que cayera en su ventana.
+ *
+ * El resultado era el peor posible: la imagen generada, subida y PAGADA, y un
+ * error diciendo que no se pudo apuntar. Releyendo aquí, los dos intentos quedan
+ * para las carreras de verdad.
+ *
  * @param {(estado:object) => any} aplicar
- * @param {{estado:object, generacion:string}|null} yaLeido
+ * @param {{estado:object, generacion:string}|null} yaLeido se ignora a propósito
  * @param {string} queSeGuardo frase en español: «la imagen», «la música»…
  * @param {string} donde la ruta lógica de lo generado.
  */
 async function anotarLoGenerado(aplicar, yaLeido, queSeGuardo, donde) {
   try {
-    await cambiarElEstado(aplicar, yaLeido);
+    await cambiarElEstado(aplicar, null);
   } catch (fallo) {
     throw new ErrorDeCara(
       `${queSeGuardo} se ha generado bien y está guardada en el bucket, en «${donde}». Lo único ` +

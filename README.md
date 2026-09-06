@@ -438,6 +438,37 @@ escena de un niño «desnudo, flaco, lleno de cicatrices» ante los sacerdotes. 
 tampoco se van a generar mostrando lo que describen, y la salida es la misma: el
 plano cuenta lo que pasa sin ponerlo en cuadro.
 
+### Apuntar lo que ya está pagado
+
+Salía esto, que es la peor combinación posible:
+
+> «La imagen se ha generado bien y está guardada en el bucket. Lo único que ha
+> fallado es apuntarla en el estado de la producción.»
+
+Generada, subida y **cobrada**, y sin apuntar. La causa solo se ve mirando la
+secuencia entera:
+
+1. La función **lee** el estado — versión 100.
+2. **Genera** la imagen: treinta o cuarenta segundos.
+3. Intenta **escribir** con la versión 100.
+
+Pero en esos cuarenta segundos el navegador ha escrito el latido de la cola dos o
+tres veces y la versión ya va por la 103. El paso 3 no era una carrera
+desafortunada: era **un choque garantizado**. Y como solo había un reintento, ese
+choque seguro se lo comía entero y el segundo intento se estrellaba con cualquier
+latido que cayera en su ventana.
+
+Dos cambios, y el primero es el que importa:
+
+- **Al apuntar lo generado se RELEE el estado**, en vez de reutilizar el que se
+  leyó antes de generar. Ese ya no vale para escribir, por definición.
+- Y las vueltas pasan de dos a **cuatro**. Una vuelta es leer y escribir, cosa de
+  un segundo; el latido escribe cada quince. Con dos bastaba un latido mal caído.
+
+`npm run anotar` lo comprueba con latidos cayendo encima: que releyendo se apunta
+a la primera, que con el estado viejo se apunta igual aunque cueste dos intentos,
+y que ante una tormenta de verdad se rinde diciendo que fue una carrera.
+
 ---
 
 ## Antes de desplegar

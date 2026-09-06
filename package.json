@@ -11,10 +11,11 @@
     "datos": "node herramientas/parche-datos.mjs",
     "invariantes": "node herramientas/invariantes.mjs",
     "pesar": "node herramientas/pesar.mjs",
-    "comprobar": "npm run datos && npm run invariantes && npm run cola && npm run audio && npm run ajustes && npm run freno && npm run pesar",
+    "comprobar": "npm run datos && npm run invariantes && npm run cola && npm run audio && npm run ajustes && npm run freno && npm run anotar && npm run pesar",
     "cola": "node herramientas/probar-cola.mjs && node herramientas/probar-cola.mjs 24 && node herramientas/probar-cola.mjs cuota",
     "audio": "node herramientas/probar-audio.mjs",
     "ajustes": "node herramientas/probar-ajustes.mjs",
-    "freno": "node herramientas/probar-freno.mjs"
+    "freno": "node herramientas/probar-freno.mjs",
+    "anotar": "node herramientas/probar-anotar.mjs"
   }
 }
