@@ -119,8 +119,27 @@ let pidiendoLaClave = null;
 /** Dónde se apilan los fallos que nadie recogió. */
 let bandejaDeFallos = null;
 
-/** Lo último que se apiló ahí, para no repetir el mismo mensaje diez veces. */
-let ultimoFalloSuelto = '';
+/**
+ * Los fallos sueltos que hay puestos ahora mismo, por su firma, con su tarjeta y
+ * cuántas veces ha pasado.
+ *
+ * NO es «el último», que es lo que había antes y no bastaba: eso solo evitaba
+ * repetir dos seguidos, así que un fallo que se dispara con cada latido de la
+ * cola —cada diez segundos— volvía a pintarse una y otra vez. Y «Entendido»
+ * borraba la memoria, con lo que el siguiente latido lo traía de vuelta. Se
+ * cerraba y volvía, se cerraba y volvía.
+ *
+ * @type {Map<string, {tarjeta: HTMLElement, veces: number, contador: HTMLElement}>}
+ */
+const fallosPuestos = new Map();
+
+/**
+ * Los que ya se han cerrado con «Entendido». Cerrar uno es decir «ya lo he
+ * visto»: si vuelve a pasar lo mismo, no se vuelve a pintar en toda la sesión.
+ * Al recargar la aplicación se empieza de cero, que es lo que se quiere.
+ * @type {Set<string>}
+ */
+const fallosDescartados = new Set();
 
 // ---------------------------------------------------------------------------
 // El arranque
@@ -1231,16 +1250,29 @@ function elNavegadorNoLoCuenta(fallo) {
 function contarFalloSuelto(fallo) {
   console.error('Fallo sin recoger', fallo);
 
+  // ¿ES NUESTRO O NO ES NUESTRO? De eso depende todo lo demás.
+  //
+  // Cuando el navegador dice «Script error.» a secas está diciendo que no puede
+  // atribuirlo a ningún archivo de esta página. Un fallo de este estudio SIEMPRE
+  // llega con su archivo y su línea —así se encontró el de la pantalla de Cola—,
+  // así que este no lo es: es una extensión, un bloqueador o algo que el propio
+  // navegador ha metido en la página.
+  //
+  // Y si no es nuestro, no puede tratarse como si lo fuera. Una tarjeta roja a
+  // pantalla completa, tapando el plano que estabas mirando, con un botón de
+  // recargar que no va a arreglar nada, sobre algo que no podemos tocar y que se
+  // repite cada pocos segundos: eso no es avisar, es estorbar.
+  const ajeno = elNavegadorNoLoCuenta(fallo);
+
   const error = fallo instanceof ErrorDeCara
     ? fallo
-    : elNavegadorNoLoCuenta(fallo)
+    : ajeno
     ? new ErrorDeCara(
-        'Se ha roto algo y el navegador se ha negado a decir qué: eso es lo que significa «Script ' +
-          'error.», y significa además que NO viene de este estudio. El navegador solo tapa así lo ' +
-          'que no puede atribuir a un archivo de esta página: una extensión, un bloqueador de ' +
-          'contenido o algo que el propio Safari haya metido. Si el estudio está haciendo su ' +
-          'trabajo, esto se puede ignorar; si algo se ha quedado a medias, prueba en una ventana ' +
-          'privada o con los bloqueadores desactivados.',
+        'El navegador ha dado un error que se niega a identificar («Script error.»). Eso significa ' +
+          'que NO viene de este estudio: solo tapa así lo que no puede atribuir a un archivo de esta ' +
+          'página, o sea una extensión, un bloqueador de contenido o algo que el propio navegador ha ' +
+          'metido. El estudio sigue funcionando. Si algo se queda a medias, prueba en una ventana ' +
+          'privada.',
         { detalle: 'Script error.', reintentable: false, http: 0 }
       )
     : new ErrorDeCara(
@@ -1252,15 +1284,32 @@ function contarFalloSuelto(fallo) {
       );
 
   const firma = `${error.mensaje} · ${error.detalle || ''}`;
-  if (firma === ultimoFalloSuelto) return;   // el mismo fallo diez veces seguidas no son diez fallos
-  ultimoFalloSuelto = firma;
+
+  // Cerrado con «Entendido» es cerrado para siempre, hasta recargar.
+  if (fallosDescartados.has(firma)) return;
+
+  // Si ya está en pantalla, no se apila otra igual: se cuenta.
+  const yaPuesto = fallosPuestos.get(firma);
+  if (yaPuesto) {
+    yaPuesto.veces += 1;
+    vaciar(yaPuesto.contador);
+    yaPuesto.contador.appendChild(
+      document.createTextNode(`Ha vuelto a pasar ${yaPuesto.veces} veces desde que se abrió esto.`)
+    );
+    return;
+  }
+
+  const contador = h('p', {
+    clase: 'tenue',
+    estilo: { margin: 'var(--espacio-2) 0 0', 'font-size': '12px' },
+  });
 
   const bandeja = laBandejaDeFallos();
   const tarjeta = h('div', { estilo: { position: 'relative' } },
     // Sin `detalle` a propósito: el detalle va abajo, a la vista, en el <pre>. Si
     // se le pasa también aquí sale DOS VECES —una en el desplegable de aviso() y
     // otra en el <pre>—, que es justo lo que se vio en el teléfono.
-    aviso(error.mensaje, { tono: 'error' }),
+    aviso(error.mensaje, { tono: ajeno ? 'nota' : 'error' }),
 
     // LO QUE DIJO EL NAVEGADOR, A LA VISTA Y SIN TENER QUE ABRIR NADA.
     //
@@ -1283,18 +1332,36 @@ function contarFalloSuelto(fallo) {
           },
         }, error.detalle)
       : null,
+    contador,
     h('div', { clase: 'tarjeta-acciones' },
       boton('Entendido', () => {
+        // Cerrarlo es decir «ya lo he visto». Se recuerda, y si el mismo fallo
+        // vuelve a dispararse —y uno que salta con cada latido de la cola va a
+        // volver— ya no se pinta más. Antes esto borraba la memoria y el
+        // siguiente latido lo traía de vuelta: se cerraba y volvía a salir.
+        fallosDescartados.add(firma);
+        fallosPuestos.delete(firma);
         tarjeta.remove();
         if (!bandeja.firstChild) bandeja.remove();
-        ultimoFalloSuelto = '';
       }, { tono: 'suave' }),
-      boton('Recargar la aplicación', () => window.location.reload(), { tono: 'peligro' })
+      // Recargar solo se ofrece cuando el fallo es NUESTRO y puede haber dejado
+      // algo a medias. Con uno que el navegador ni siquiera atribuye a esta
+      // página, recargar no arregla nada y sí tira lo que estuvieras mirando.
+      ajeno
+        ? null
+        : boton('Recargar la aplicación', () => window.location.reload(), { tono: 'peligro' })
     )
   );
 
+  fallosPuestos.set(firma, { tarjeta, veces: 1, contador });
   bandeja.appendChild(tarjeta);
-  while (bandeja.childElementCount > MAXIMO_FALLOS_SUELTOS) bandeja.firstElementChild.remove();
+  while (bandeja.childElementCount > MAXIMO_FALLOS_SUELTOS) {
+    const sobra = bandeja.firstElementChild;
+    for (const [clave, puesto] of fallosPuestos) {
+      if (puesto.tarjeta === sobra) fallosPuestos.delete(clave);
+    }
+    sobra.remove();
+  }
 }
 
 /**

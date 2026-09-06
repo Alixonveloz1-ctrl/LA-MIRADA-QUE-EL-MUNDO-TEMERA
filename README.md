@@ -525,6 +525,27 @@ Las dos se probaron contra el código de antes, y las dos lo cazan. La primera
 versión de la comprobación de invariantes **no** lo cazaba —se daba por buena a
 sí misma— y eso se vio ejecutándola contra el commit anterior, no leyéndola.
 
+#### Y el aviso que no se callaba
+
+El mismo aviso, cerrado y vuelto a salir, cerrado y vuelto a salir. Eran dos
+defectos encima del mismo sitio:
+
+- **Solo se comparaba con el último.** Un fallo que salta con cada latido de la
+  cola —cada diez segundos— se repintaba entero cada vez.
+- **«Entendido» borraba esa memoria.** Cerrarlo era pedirle que volviera.
+
+Y el que más se repetía era precisamente el que el navegador **se niega a
+identificar**, que por definición no viene de aquí. O sea: una tarjeta roja
+tapando el plano que estabas mirando, con un botón de recargar que no iba a
+arreglar nada, por algo que este código no puede tocar.
+
+Ahora un fallo repetido es **una** tarjeta con un contador («ha vuelto a pasar 12
+veces»), cerrarla lo silencia para el resto de la sesión, y los que el navegador
+no atribuye a esta página se pintan como **nota** y sin botón de recargar. Los
+que sí son del estudio siguen gritando en rojo, que es lo que tienen que hacer.
+`npm run fallos` lo ejecuta con un DOM de mentira y repite el fallo doce veces
+para verlo.
+
 ### Con qué se genera, y cuánto cuesta
 
 **Salud → «Con qué se genera».** Ahí se elige el modelo de imagen, el de vídeo y
@@ -753,20 +774,22 @@ Lo comprueban los invariantes: si alguien quita cualquiera de los dos frenos, el
 npm run comprobar
 ```
 
-Encadena las diez herramientas y no necesita red ni credenciales: regenera
+Encadena las once herramientas y no necesita red ni credenciales: regenera
 `datos/serie.json` desde `serie.base.json` con el parche, comprueba los
 invariantes sobre los datos y sobre el árbol de código, **ejecuta** la cola
 contra un Google de mentira, **le da audio de verdad** al lector de formatos,
 **sigue** el ajuste de con qué se genera hasta el cuerpo de la petición,
 **frena** contra un reloj de mentira, **apunta** lo generado con latidos cayendo
 encima, comprueba que **ninguna pieza de música se quede sin pantalla donde
-salir**, **ejecuta** la pantalla de Cola con un vídeo en vuelo, y **pesa** la respuesta de cada modo con material del tamaño real para
+salir**, **ejecuta** la pantalla de Cola con un vídeo en vuelo, **repite** un fallo doce
+veces para ver que el aviso no se apila, y **pesa** la respuesta de cada modo con material del tamaño real para
 verificar que cabe en los 4,5 MB. Casi ninguno se ve leyendo el código: se ven
 ejecutándolo y midiendo. Si algo no cumple, sale con error y lo dice en español.
 
 Cada paso se puede lanzar por separado con `npm run datos`, `npm run invariantes`,
 `npm run cola`, `npm run audio`, `npm run ajustes`, `npm run freno`,
-`npm run anotar`, `npm run banco`, `npm run pantalla` y `npm run pesar`. Y
+`npm run anotar`, `npm run banco`, `npm run pantalla`, `npm run fallos` y
+`npm run pesar`. Y
 `npm run archivo` reescribe los 56 planos de ambiente desde su tabla.
 
 ### Lo que manda Google no es siempre lo mismo
