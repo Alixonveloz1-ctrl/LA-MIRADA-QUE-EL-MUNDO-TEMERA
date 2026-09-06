@@ -130,6 +130,22 @@ let formaElegida = null;
 /** «{poster}/{forma}» → qué intento se está mirando de esa tarjeta. */
 const mirandoPoster = new Map();
 
+/**
+ * Con qué modelo se generan los pósters en esta visita.
+ *
+ * Por defecto el que digan los datos, que es el bueno: son trece imágenes en
+ * toda la serie y son las únicas que va a ver alguien que no ha visto nada.
+ *
+ * Pero se puede bajar aquí mismo, y eso NO es un adorno. El modelo bueno, a 2K y
+ * con tres referencias delante, es la petición más pesada que hace este estudio
+ * entera, y cuando Google contesta 502 con una página de error —no con un error
+ * de la API— lo que ha fallado está delante del modelo, no en él. Con eso pasado,
+ * la única salida era irse a Salud a cambiar el ajuste de TODO el estudio para
+ * poder generar un póster. Ahora se baja un nivel, se genera, y se vuelve a
+ * subir: dos toques, y sin tocar lo que usan las demás pantallas.
+ */
+let nivelElegido = null;
+
 /** Si ya se ha preguntado por los pesos en esta visita. */
 let pesosPedidos = false;
 
@@ -882,6 +898,8 @@ function seccionPosters(ctx) {
     );
   }
 
+  partes.push(...selectorDeModelo(ctx));
+
   if (ajustesDePoster(serie).titulo_en_la_imagen === true) {
     partes.push(
       h(
@@ -908,6 +926,83 @@ function seccionPosters(ctx) {
   for (const uno of piezas) partes.push(tarjetaDePoster(ctx, uno));
 
   return seccion('Pósters y miniaturas', partes);
+}
+
+/** Los tres niveles, de caro a barato, tal como se leen en Salud. */
+const NIVELES = [
+  { id: 'calidad', nombre: 'Calidad' },
+  { id: 'medio', nombre: 'Medio' },
+  { id: 'economico', nombre: 'Económico' }
+];
+
+/**
+ * El nivel con el que se generan los pósters: el elegido aquí, y si no el que
+ * dicen los datos. Nunca el ajuste general de Salud: un póster no es un
+ * keyframe, y bajar de nivel para que salga barato no ahorra nada cuando son
+ * trece imágenes en toda la serie.
+ * @param {object} serie
+ * @returns {string}
+ */
+function nivelDePoster(serie) {
+  if (nivelElegido && NIVELES.some((uno) => uno.id === nivelElegido)) return nivelElegido;
+  const escrito = soloTexto(ajustesDePoster(serie).nivel);
+  return NIVELES.some((uno) => uno.id === escrito) ? escrito : 'calidad';
+}
+
+/**
+ * Las pastillas para elegir con qué modelo se genera, y por qué existen.
+ *
+ * NO es un ajuste de gusto: es la salida cuando el modelo bueno no contesta. La
+ * combinación de modelo de calidad + 2K + tres referencias es la petición más
+ * pesada de todo el estudio, y cuando Google devuelve un 502 con una página de
+ * error —una página HTML, no un error de la API— lo que ha fallado está DELANTE
+ * del modelo: un balanceador que se ha cansado de esperar. Eso no lo arregla
+ * insistir muchas veces.
+ *
+ * @param {object} ctx
+ * @returns {HTMLElement[]}
+ */
+function selectorDeModelo(ctx) {
+  const { serie, repintar } = ctx;
+  const familia = esObjeto(serie.modelos) && esObjeto(serie.modelos.imagen) ? serie.modelos.imagen : {};
+  const hay = NIVELES.filter((uno) => esObjeto(familia[uno.id]) && soloTexto(familia[uno.id].id));
+  if (hay.length < 2) return [];
+
+  const puesto = nivelDePoster(serie);
+  const botones = h('div', { clase: 'tarjeta-acciones' });
+  for (const uno of hay) {
+    botones.appendChild(
+      boton(
+        uno.nombre,
+        () => {
+          nivelElegido = uno.id;
+          repintar();
+        },
+        { tono: uno.id === puesto ? 'principal' : 'suave' }
+      )
+    );
+  }
+
+  return [
+    botones,
+    h(
+      'p',
+      { clase: 'tenue' },
+      `Se generan con el modelo de ${puesto === 'calidad' ? 'CALIDAD' : puesto}, que es lo que ` +
+        'dicen los datos: son trece imágenes en toda la serie y son las únicas que va a ver ' +
+        'alguien que no ha visto nada, así que ahorrar aquí no ahorra nada. Es además el que más ' +
+        'imágenes de referencia admite, y un póster lleva el sitio Y las caras a la vez.'
+    ),
+    h(
+      'p',
+      { clase: 'tenue' },
+      'Si el bueno contesta un 502 una y otra vez, baja un nivel y prueba: esa combinación —el ' +
+        'modelo grande, a 2K y con tres referencias delante— es la petición más pesada de todo ' +
+        'el estudio, y un 502 con página de error de Google es algo que se ha cansado de esperar ' +
+        'antes de llegar al modelo. Esto solo cambia los pósters; el resto del estudio sigue con ' +
+        'lo que haya elegido en Salud.'
+    )
+  ];
 }
 
 /**
@@ -1227,7 +1322,7 @@ function generarPoster(ctx, id, forma) {
   // ha visto nada: ahorrar aquí no ahorra nada. Y es además el modelo que más
   // referencias admite, que es lo que hace falta para llevar el sitio Y las
   // caras a la vez. El nivel sale de los datos, no está escrito aquí.
-  const nivel = soloTexto(ajustesDePoster(ctx.serie).nivel);
+  const nivel = nivelDePoster(ctx.serie);
   try {
     encolar('poster', nivel ? { id, proporcion: forma, nivel } : { id, proporcion: forma });
     queja = null;

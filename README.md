@@ -989,15 +989,30 @@ que no es ancla obliga a aprobarla a ella *y* al ancla de su personaje, dos
 imágenes antes de que el botón se encienda. La pantalla dice cuáles faltan, por su
 nombre.
 
-#### Los pósters se generan con el modelo bueno, siempre
+#### Los pósters se generan con el modelo bueno, y con su propio selector
 
-`difusion.posters.nivel` es `calidad`, y no mira lo que esté elegido en Salud.
+`difusion.posters.nivel` es `calidad`, y **no mira lo que esté elegido en Salud**.
 
 Son **trece imágenes en toda la serie**, y son las únicas que va a ver alguien que
 no ha visto nada: ahorrar ahí no ahorra nada. Y hay una razón técnica encima:
 `gemini-3-pro-image` es el que admite más imágenes de referencia (6 de objeto + 5
 de personaje), que es justo lo que hace falta para llevar el sitio **y** las caras
 en la misma llamada.
+
+Pero encima de las tarjetas hay un **selector de modelo**, y no es un adorno.
+
+Modelo de calidad + 2K + tres referencias delante es **la petición más pesada que
+hace este estudio entero**. Cuando Google contesta un **502 con una página HTML de
+error** —no con un error de la API—, lo que ha fallado está *delante* del modelo:
+un balanceador que se ha cansado de esperar. Eso no lo arregla insistir.
+
+Sin el selector, la única salida sería irse a Salud a cambiar el ajuste de **todo
+el estudio** para poder generar un póster. Con él se baja un nivel, se genera y se
+vuelve a subir: dos toques, y las demás pantallas siguen con lo suyo.
+
+Y si falla en los tres niveles, el problema no es la carga: es el modelo. **Salud
+→ Comprobar los modelos** llama a cada nivel y dice cuál contesta y cuál no. Para
+eso existe esa pantalla.
 
 El botón de generar **no se enciende** mientras falte una de esas placas por
 aprobar, y dice cuál falta. Lo comprueba también la función, que es quien manda:
