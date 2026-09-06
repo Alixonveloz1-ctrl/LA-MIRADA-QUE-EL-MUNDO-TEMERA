@@ -267,7 +267,11 @@ const INSTRUCCION_ESCENARIO_POR_DEFECTO =
   'colours, the same objects and where they are placed, the same wear, damp and dirt. ' +
   'Do NOT copy the framing, the camera angle, the scale or the composition of the ' +
   'reference: this shot looks at the same place from where it needs to, and everything ' +
-  'in it is drawn at the size, position and perspective this shot describes.';
+  'in it is drawn at the size, position and perspective this shot describes. ' +
+  // Y esto, que es lo que evita que un figurante inventado se herede en cadena:
+  'If any people or figures appear in this reference, IGNORE THEM COMPLETELY - they ' +
+  'are not part of the place. The only people in this shot are the ones this shot ' +
+  'names, and nobody else.';
 
 /**
  * La instrucción que acompaña a la placa de escenario, de serie.json si está
@@ -453,6 +457,32 @@ export function promptPlaca(idPlaca) {
  * @param {string} id
  * @returns {{texto:string, negativo:string, referencias:[]}}
  */
+/**
+ * UN ESCENARIO SE GENERA VACÍO, Y ESTO NO ES UNA MANÍA.
+ *
+ * La placa del escenario viaja como referencia de OBJETO en TODOS los planos que
+ * ocurren ahí —es lo que hace que once planos de la cripta sean la misma cripta—.
+ * Así que si la placa sale con tres encapuchados de relleno, esos tres
+ * encapuchados se heredan en los once planos, se colarán al lado del personaje
+ * que sí toca, y no hay forma de quitarlos después: habría que regenerar la placa
+ * y con ella todos los planos que ya se hubieran hecho contra ella.
+ *
+ * Y el modelo los pone solo. A un «plano general de un santuario con altar y
+ * antorchas» le salen figuras encapuchadas sin que nadie las pida, porque es lo
+ * que se ve en cualquier imagen parecida. Hay que decirlo, y decirlo dos veces:
+ * en el prompt y en el negativo.
+ *
+ * La gente la ponen los PLANOS, cada uno la suya, con sus placas de personaje.
+ */
+const SITIO_VACIO =
+  'The location is completely EMPTY: no people, no figures, no characters, nobody ' +
+  'at all anywhere in frame. Only the place itself.';
+
+/** Y lo mismo por el otro lado, que es donde el modelo hace más caso. */
+const NEGATIVO_DE_GENTE =
+  'people, person, figures, characters, crowd, silhouettes of people, hooded figures, ' +
+  'monks, worshippers, bystanders, anyone in frame';
+
 export function promptEscenario(id) {
   const elEscenario = escenario(id);
 
@@ -468,10 +498,15 @@ export function promptEscenario(id) {
   const cuerpo = unir(
     elEscenario.descripcion,
     elEscenario.encuadre,
+    SITIO_VACIO,
     luzDe(elEscenario.luz, `El escenario «${id}»`)
   );
 
-  return { texto: sellar(cuerpo), negativo: negativoDeEstilo(), referencias: [] };
+  return {
+    texto: sellar(cuerpo),
+    negativo: unir(negativoDeEstilo(), NEGATIVO_DE_GENTE),
+    referencias: []
+  };
 }
 
 /**

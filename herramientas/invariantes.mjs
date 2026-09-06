@@ -1381,6 +1381,65 @@ const RUTA_PROMPT = 'api/_lib/prompt.js';
   comprobar('Todo prompt de prompt.js pasa por sellar()', quejas);
 }
 
+{
+  // UN ESCENARIO SE GENERA VACÍO, Y SU REFERENCIA IGNORA A QUIEN SE COLARA.
+  //
+  // La placa del escenario viaja como referencia de objeto en TODOS los planos
+  // que ocurren ahí. Si sale con figurantes de relleno —y el modelo los pone
+  // solo: a un «plano general de un santuario con antorchas» le salen
+  // encapuchados sin que nadie los pida—, esos figurantes se heredan en los once
+  // planos de esa localización y no hay forma de quitarlos después sin regenerar
+  // la placa Y todo lo hecho contra ella.
+  //
+  // Son dos frenos y hacen falta los dos: pedir el sitio vacío al generarlo, y
+  // decirle al keyframe que ignore a cualquiera que aparezca en la referencia.
+  // Esto comprueba que los dos siguen ahí.
+  const quejas = [];
+  const fuente = fuenteDe(RUTA_PROMPT);
+
+  if (fuente === null) {
+    quejas.push(`No se puede leer ${RUTA_PROMPT}.`);
+  } else {
+    const codigo = soloCodigo(fuente, { tambienRegex: false });
+
+    const abre = codigo.indexOf('promptEscenario');
+    const cuerpo = abre < 0 ? null : cuerpoDeLaFuncion(codigo, abre);
+    if (!cuerpo) {
+      quejas.push(
+        `${RUTA_PROMPT} ya no exporta promptEscenario, o ha cambiado de nombre. ` +
+          'Es la función que compone el prompt de una localización.'
+      );
+    } else {
+      if (!/SITIO_VACIO/.test(cuerpo)) {
+        quejas.push(
+          'promptEscenario ya no pide el sitio VACÍO. Sin esa frase el modelo ' +
+            'rellena la localización de figurantes por su cuenta, y esa placa viaja ' +
+            'como referencia a todos los planos que ocurren ahí: los figurantes ' +
+            'inventados acaban al lado del personaje que sí toca, en todos.'
+        );
+      }
+      if (!/NEGATIVO_DE_GENTE/.test(cuerpo)) {
+        quejas.push(
+          'promptEscenario ya no manda gente en el negativo. Hace falta decirlo por ' +
+            'los dos lados: en el prompt y en el negativo, que es donde el modelo hace ' +
+            'más caso.'
+        );
+      }
+    }
+
+    if (!/IGNORE THEM COMPLETELY/i.test(codigo)) {
+      quejas.push(
+        'La instrucción que acompaña a la placa de escenario ya no le dice al ' +
+          'keyframe que IGNORE a la gente que aparezca en la referencia. Es el ' +
+          'segundo freno: sin él, un figurante que se colara en una placa ya ' +
+          'aprobada se seguiría heredando en cada plano de esa localización.'
+      );
+    }
+  }
+
+  comprobar('El escenario se genera vacío y su referencia ignora a los figurantes', quejas);
+}
+
 /**
  * El texto entre las llaves de una función, contando llaves. `desde` apunta al
  * paréntesis de apertura de los argumentos.

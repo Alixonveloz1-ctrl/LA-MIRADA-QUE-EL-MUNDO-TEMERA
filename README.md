@@ -469,6 +469,35 @@ Dos cambios, y el primero es el que importa:
 a la primera, que con el estado viejo se apunta igual aunque cueste dos intentos,
 y que ante una tormenta de verdad se rinde diciendo que fue una carrera.
 
+### Los escenarios se generan VACÍOS
+
+Un escenario se genera una vez y su placa viaja como referencia de objeto en
+**todos** los planos que ocurren ahí — es lo que hace que once planos de la cripta
+sean la misma cripta. Y de ahí sale una trampa que no es evidente:
+
+**si la placa sale con figurantes de relleno, esos figurantes se heredan en los
+once planos**, aparecen al lado del personaje que sí toca, y no hay forma de
+quitarlos después sin regenerar la placa y todo lo hecho contra ella.
+
+Y el modelo los pone solo. A un «plano general de un santuario con altar y
+antorchas» le salen encapuchados sin que nadie los pida, porque es lo que se ve en
+cualquier imagen parecida. Así que se dice, y por los dos lados:
+
+- **En el prompt**: «the location is completely EMPTY: no people, no figures, no
+  characters, nobody at all anywhere in frame».
+- **En el negativo**, que es donde el modelo hace más caso: gente, figuras,
+  siluetas, encapuchados, monjes, cualquiera en cuadro.
+
+Y un segundo freno para lo que ya esté generado: la instrucción que acompaña a la
+placa en cada keyframe dice ahora **«si aparece gente en esta referencia,
+ignórala por completo: no es parte del sitio»**. Antes decía «copia los objetos y
+dónde están» y nada sobre la gente, así que un figurante colado se leía como
+mobiliario.
+
+La gente la ponen los **planos**, cada uno la suya, con sus placas de personaje.
+Lo comprueban los invariantes: si alguien quita cualquiera de los dos frenos, el
+árbol de código no pasa.
+
 ---
 
 ## Antes de desplegar
