@@ -119,7 +119,7 @@ const PLACAS_NUEVAS = [
     id: 'saharis-noble-nuca',
     personaje: 'saharis',
     luz: 'NOBLE',
-    encuadre: 'Medium shot from directly behind: back of the head and shoulders only, immaculate dark noble coat with a high collar, face not visible',
+    encuadre: 'Medium shot from directly behind: back of the head and shoulders only, immaculate dark noble coat with the collar turned down and low, the nape of the neck bare, short black hair hacked off unevenly at the back, face not visible',
     detalle: true,
     instruccion_referencia: DETALLE(
       'Saharis',
