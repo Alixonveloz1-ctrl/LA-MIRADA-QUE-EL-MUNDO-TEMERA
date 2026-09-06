@@ -38,7 +38,14 @@ imágenes: todo lo visual lo genera la herramienta.
    archivos que el instalador lee.
 2. Se abre la dirección de Vercel en el teléfono y se añade a la pantalla de
    inicio, que es como se abre a pantalla completa.
-3. Se entra en **Salud** y no se gasta nada hasta que esté todo en verde.
+3. Se entra en **Salud** y se pulsa **Comprobar los modelos**. No lo hace solo, y
+   esa es la razón: comprobar un modelo es LLAMARLO, y esas llamadas gastan la
+   misma cuota por minuto que hace falta para generar. Cuando se hacía sola al
+   entrar —y Salud es la pantalla en la que abre la aplicación—, abrir el estudio
+   y darle a generar en el mismo minuto se llevaba la cuota entera antes del
+   primer intento: salía «se ha pasado de cuota» en la PRIMERA generación, sin
+   haber generado nada. La pantalla que existe para decir si algo funciona era la
+   que lo impedía.
 4. A partir de ahí, se trabaja por pantallas, en el orden que dice la guía:
    anclas del banco, resto del banco, escenarios, voces, keyframes, clips, audio
    y montaje.

@@ -137,9 +137,10 @@ export default {
 
     /** Cuándo se hizo la última comprobación, para el «comprobado hace…». */
     let cuando = null;
-    const reloj = h('p', { clase: 'tenue' }, 'Sin comprobar todavía.');
+    const reloj = h('p', { clase: 'tenue' },
+      'Sin comprobar todavía. Comprobar gasta cuota, así que solo se hace cuando se pide.');
 
-    const botonDeComprobar = boton('Volver a comprobar', () => comprobar(), {
+    const botonDeComprobar = boton('Comprobar los modelos', () => comprobar(), {
       tono: 'principal',
     });
 
@@ -147,8 +148,9 @@ export default {
       'Salud',
       h('p', { clase: 'suave' },
         'Qué modelos tiene permitidos esta cuenta, si el bucket contesta y cuánto pesa cada ' +
-        'respuesta. Nada de lo que hay aquí gasta una generación: a cada modelo se le manda la ' +
-        'petición más barata que demuestra acceso.'),
+        'respuesta. A cada modelo se le manda la petición más barata que demuestra acceso, así que ' +
+        'no gasta ninguna generación ni cuesta dinero — pero SÍ gasta cuota por minuto, que es la ' +
+        'misma que hace falta para generar. Por eso hay que pedirlo, y no se hace solo.'),
       seccion('Las variables', huecos.variables),
       seccion('La cuenta', huecos.cuenta),
       seccion('El bucket', huecos.bucket),
@@ -261,18 +263,33 @@ export default {
         // Salud con el botón encallado en «Comprobando…» es un callejón, porque
         // esta es justo la pantalla a la que se viene cuando algo va mal.
         comprobando = false;
-        botonDeComprobar.textContent = 'Volver a comprobar';
+        botonDeComprobar.textContent = 'Comprobar otra vez';
       }
     }
 
-    // Se lanza sin esperarla: así la pantalla aparece entera y con su rueda en
-    // vez de quedarse en blanco los veinte segundos que puede tardar la
-    // comprobación de los nueve modelos.
-    comprobar().catch((fallo) => {
-      if (!vivo) return;
-      vaciar(huecos.cuenta);
-      pintarElFalloEntero(huecos.cuenta, fallo);
-    });
+    // NO SE COMPRUEBA SOLA AL ENTRAR, Y ESTO NO ES PEREZA.
+    //
+    // Comprobar un modelo es llamarlo. Con las tres calidades de imagen y sus dos
+    // grafías cada una, entrar aquí eran hasta SEIS llamadas de imagen, y esas
+    // gastan la MISMA cuota por minuto que hace falta para generar. En una cuenta
+    // nueva —cuotas cortas, que es el caso— abrir Salud y darle a generar en el
+    // mismo minuto se llevaba la cuota entera antes del primer intento: el
+    // usuario veía «se ha pasado de cuota» en la PRIMERA generación, sin haber
+    // generado nada. La pantalla que existe para decir si algo funciona era la
+    // que lo impedía.
+    //
+    // Y es peor todavía porque el sitio donde se eligen los modelos está en esta
+    // misma pantalla: cambiar de calidad para gastar menos costaba seis llamadas.
+    //
+    // Así que se comprueba cuando se pide, y no antes. Lo que se pierde es que la
+    // pantalla ya no llega con todo en verde al abrirla; lo que se gana es que
+    // abrirla no cuesta nada.
+    huecos.cuenta.appendChild(aviso(
+      'Comprobar los modelos es LLAMARLOS, y esas llamadas gastan la misma cuota por minuto que ' +
+      'hace falta para generar. Por eso esta pantalla ya no lo hace sola al entrar: si la abres ' +
+      'para cambiar con qué se genera, no te cuesta nada. Dale al botón de abajo cuando quieras ' +
+      'comprobarlo, y mejor no justo antes de mandar a generar.',
+      { tono: 'nota' }));
 
     return () => {
       vivo = false;
