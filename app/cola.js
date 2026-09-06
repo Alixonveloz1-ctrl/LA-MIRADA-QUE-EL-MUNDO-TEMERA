@@ -670,9 +670,37 @@ function prepararEncolado(tipo, args) {
  */
 export function encolar(tipo, args) {
   const { id, cambio } = prepararEncolado(tipo, args);
-  escribirYa(cambio);
-  ponerse();
+  ponerAlObreroCuandoElTrabajoEsteEscrito(escribirYa(cambio));
   return id;
+}
+
+/**
+ * Pone al obrero DESPUÉS de que el trabajo esté escrito en el bucket, no antes.
+ *
+ * ESTE ERA EL FALLO, y explicaba lo que se veía: pulsabas «oír esta voz», la
+ * tarjeta decía «pedida, empieza en cuanto la cola la coja», y no empezaba
+ * nunca. Con una sola cosa pedida y nada más en la cola.
+ *
+ * Lo que pasaba, en orden:
+ *
+ *   1. `encolar` mandaba escribir el trabajo en el bucket. Eso es una petición
+ *      de red: tarda medio segundo largo.
+ *   2. Y acto seguido, SIN ESPERAR, llamaba al obrero.
+ *   3. El obrero leía la cola —que todavía no tenía el trabajo, porque se estaba
+ *      escribiendo—, veía que no había nada que hacer y se iba a casa.
+ *   4. Medio segundo después el trabajo aparecía en el bucket. Pero ya no había
+ *      nadie mirando, y nada vuelve a mirar: el bucle no escucha los cambios de
+ *      estado, solo se le llama al encolar.
+ *
+ * Se llama a las dos: al obrero AHORA por si ya estaba trabajando —así coge el
+ * nuevo en su siguiente vuelta— y OTRA VEZ cuando la escritura ha terminado, que
+ * es la que de verdad arranca el bucle cuando estaba parado.
+ *
+ * @param {Promise<*>} escritura
+ */
+function ponerAlObreroCuandoElTrabajoEsteEscrito(escritura) {
+  ponerse();
+  Promise.resolve(escritura).then(ponerse, ponerse);
 }
 
 /**
@@ -753,10 +781,14 @@ export function encolarVarios(trabajos) {
   }
 
   if (cambios.length) {
-    escribirYa((estado) => {
-      for (const cambio of cambios) cambio(estado);
-    });
-    ponerse();
+    // Igual que en `encolar`: al obrero se le llama DESPUÉS de que los trabajos
+    // estén escritos. Este es el botón de «generar los 24 keyframes que faltan»,
+    // así que aquí el fallo era el mismo pero con veinticuatro.
+    ponerAlObreroCuandoElTrabajoEsteEscrito(
+      escribirYa((estado) => {
+        for (const cambio of cambios) cambio(estado);
+      })
+    );
   }
 
   return ids;
@@ -797,7 +829,7 @@ function anotar(cambio) {
  * @param {(estado:object) => void} cambio
  */
 function escribirYa(cambio) {
-  cambiar((estado) => aplicarCambios([cambio], estado)).catch(contarFallo);
+  return cambiar((estado) => aplicarCambios([cambio], estado)).catch(contarFallo);
 }
 
 /**

@@ -238,6 +238,17 @@ margen; si el plan concede más, no se usa y no pasa nada. Para subirlo hay que
 comprobar antes, con una generación real que tarde más de un minuto, que la
 plataforma lo está concediendo. `npm run invariantes` no deja subirlo a ciegas.
 
+**Y el obrero se pone cuando el trabajo ya está escrito, no antes.** Parece un
+detalle y era el fallo que dejaba la aplicación sin generar nada: `encolar()`
+mandaba escribir el trabajo al bucket —una petición de red, medio segundo— y sin
+esperar llamaba al obrero; el obrero leía la cola, todavía no estaba el trabajo,
+decía «no hay nada que hacer» y se iba. Medio segundo después el trabajo
+aparecía y ya no había nadie mirando. Se quedaba «pedida» para siempre, sin
+error, sin excepción y sin una línea en los registros. Lo vigila
+`npm run cola`, que EJECUTA la cola contra un Google de mentira y un bucket que
+tarda lo que tarda uno de verdad — sin ese retardo la carrera no ocurre y la
+prueba pasaría mintiendo.
+
 **Y con la cuota se tiene paciencia.** Cuando lo que falla es un 429, la cola no
 insiste a los 2, 4, 8 y 16 segundos como con lo demás: espera medio minuto, uno,
 minuto y medio y luego de dos en dos — nueve minutos repartidos en seis intentos.

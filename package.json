@@ -4,11 +4,14 @@
   "private": true,
   "type": "module",
   "description": "Estudio de producción de La mirada que el mundo temerá. Un animé, un camino.",
-  "engines": { "node": "22.x" },
+  "engines": {
+    "node": "22.x"
+  },
   "scripts": {
     "datos": "node herramientas/parche-datos.mjs",
     "invariantes": "node herramientas/invariantes.mjs",
     "pesar": "node herramientas/pesar.mjs",
-    "comprobar": "npm run datos && npm run invariantes && npm run pesar"
+    "comprobar": "npm run datos && npm run invariantes && npm run cola && npm run pesar",
+    "cola": "node herramientas/probar-cola.mjs && node herramientas/probar-cola.mjs 24"
   }
 }
