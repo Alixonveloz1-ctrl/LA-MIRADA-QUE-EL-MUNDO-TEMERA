@@ -106,6 +106,14 @@ const ESPERAS_DE_REINTENTO = [2000, 4000, 8000, 16000];
 const ESPERAS_POR_CUOTA = [30_000, 60_000, 90_000];
 
 /**
+ * Lo máximo que el obrero se echa a dormir de una vez esperando la cuota. La
+ * espera puede ser de minuto y medio, y dormirla entera de un tirón dejaría la
+ * cola sorda: si el usuario detiene un trabajo o cierra la pestaña, nadie se
+ * enteraría hasta que pasara. Se duerme a cachos y se vuelve a mirar.
+ */
+const ESPERA_MAXIMA_DE_CUOTA_MS = 5_000;
+
+/**
  * NO SE INSISTE MÁS QUE ESO, Y ES A PROPÓSITO.
  *
  * Con una generación cada vez, un 429 casi no puede pasar: son dos o tres
@@ -118,6 +126,26 @@ const ESPERAS_POR_CUOTA = [30_000, 60_000, 90_000];
  * media hora para acabar en el mismo sitio con media hora menos.
  */
 const HTTP_CUOTA = 429;
+
+/**
+ * Hasta cuándo espera LA COLA ENTERA porque Google ha dicho que no hay cuota.
+ * Es un instante en milisegundos, o 0 si no hay ninguna espera puesta.
+ *
+ * POR QUÉ ESTO NO PUEDE SER UNA ESPERA DE CADA TRABAJO, que es como estaba y
+ * era un fallo de bulto. La cuota es UNA SOLA para toda la cuenta. Cuando se
+ * agota, el trabajo que la encuentra agotada se apuntaba su espera de treinta
+ * segundos... y la cola cogía inmediatamente el siguiente, que se estrellaba
+ * contra la misma pared en el mismo segundo. Y el siguiente. Y el siguiente.
+ *
+ * Eso se vio tal cual en los registros de producción: SEIS errores de cuota
+ * entre las 04:39:36 y las 04:39:42. Seis segundos, seis trabajos quemados, y
+ * ninguno generó nada. Con la cuota agotada, insistir con el siguiente de la
+ * lista no es «seguir trabajando»: es gastar la lista entera contra una puerta
+ * cerrada, y dejarle al usuario seis tarjetas en rojo que no dicen la verdad.
+ *
+ * Si Google dice que no hay cuota, no la hay para nadie. Espera todo el mundo.
+ */
+let laCuotaSeAgotoHasta = 0;
 
 /** Cada cuánto se vuelve a preguntar por un clip de Veo que sigue generándose. */
 const ESPERA_CONSULTA_BASE = 12000;
@@ -1065,6 +1093,14 @@ async function bucle() {
     //
     // Los huérfanos no cuentan: ese trabajo lo cogió un navegador que ya no
     // existe, y `revivirHuerfanos` lo devolverá a la cola.
+    // LA CUOTA MANDA SOBRE TODO. Antes de mirar huecos y trabajos: si Google ha
+    // dicho hace poco que no hay cuota, no hay nada que intentar. Se espera y se
+    // vuelve a mirar, sin gastar ni un trabajo más.
+    if (laCuotaSeAgotoHasta > ahora) {
+      await dormir(Math.min(laCuotaSeAgotoHasta - ahora, ESPERA_MAXIMA_DE_CUOTA_MS));
+      continue;
+    }
+
     const trabajando = cola.filter(
       (trabajo) => trabajo && trabajo.estado === EN_CURSO && !pareceHuerfano(trabajo, ahora)
     ).length;
@@ -1231,7 +1267,16 @@ function resolver(trabajo, resolucion) {
   // Cuánto se espera depende de QUÉ falló. Una cuota agotada se repone por
   // minutos, así que insistir en segundos es tirar los intentos; lo demás —una
   // caída pasajera de Google, un tiempo agotado— sí se arregla enseguida.
-  const esperas = resolucion.http === HTTP_CUOTA ? ESPERAS_POR_CUOTA : ESPERAS_DE_REINTENTO;
+  const esCuota = resolucion.http === HTTP_CUOTA;
+  const esperas = esCuota ? ESPERAS_POR_CUOTA : ESPERAS_DE_REINTENTO;
+
+  // Y si ha sido la cuota, PARA TODA LA COLA. No es este trabajo el que ha
+  // fallado: es que no hay cuota, y el siguiente de la lista se estrellaría
+  // contra lo mismo un segundo después.
+  if (esCuota) {
+    const cuanto = esperas[Math.min(trabajo.intentos, esperas.length) - 1];
+    laCuotaSeAgotoHasta = Math.max(laCuotaSeAgotoHasta, Date.now() + cuanto);
+  }
 
   if (resolucion.fin === 'reintentar' && trabajo.intentos <= esperas.length) {
     trabajo.proximo = dentroDe(esperas[trabajo.intentos - 1]);

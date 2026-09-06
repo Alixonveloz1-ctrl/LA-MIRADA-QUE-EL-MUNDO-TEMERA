@@ -258,6 +258,17 @@ da el trabajo por perdido treinta segundos después de empezar. Un 429 no genera
 nada y no se cobra: lo único que cuesta es esperar, que es justo lo que hay que
 hacer.
 
+**Y la cuota la espera la cola entera, no cada trabajo.** La cuota es una sola
+para toda la cuenta: si Google dice que no hay, no la hay para el siguiente de la
+lista tampoco. Antes cada trabajo se apuntaba su espera y la cola cogía
+inmediatamente el siguiente, que se estrellaba contra la misma pared en el mismo
+segundo. En producción se vio tal cual: **seis errores de cuota en seis
+segundos**, seis trabajos quemados y nada generado. Ahora el primer «no hay
+cuota» para el estudio entero, y se vuelve a mirar cada pocos segundos hasta que
+la cuota se repone. Lo comprueba `npm run cola cuota`, que le pone delante un
+Google sin cuota y exige que se pruebe una vez y se pare: con el código de antes
+hacía ocho llamadas en seis segundos, con este hace una.
+
 El hueco se cuenta sobre el estado del **bucket**, no sobre la pestaña que
 tienes delante, así que «una cada vez» vale para todo el estudio aunque dejes
 otra ventana abierta. Para poder distinguir «lo está haciendo otro» de «lo cogió

@@ -77,18 +77,23 @@ export async function generar({ texto, negativo = null, referencias = [], nivel,
   // Se prueban las grafías del modelo en orden: Vertex publica el mismo modelo
   // con el nombre de preview y el definitivo, y cuál contesta depende del
   // proyecto. Pedir solo uno y recibir 404 se lee como «no lo tienes».
-  const respuesta = await conGrafias(modelo, (id) =>
-    llamar(urlModelo(comoGrafia(modelo, id), 'generateContent', ent.sa.project_id), cuerpoPara(id, partes, tamano), {
-      metodo: 'POST',
-      limiteMs: LIMITE_MS,
-      contexto: {
-        que: 'generar la imagen',
-        modelo: id,
-        region: modelo.region,
-        variable: modelo.variable
-      }
-    }),
-  );
+  let respuesta;
+  try {
+    respuesta = await conGrafias(modelo, (id) =>
+      llamar(urlModelo(comoGrafia(modelo, id), 'generateContent', ent.sa.project_id), cuerpoPara(id, partes, tamano), {
+        metodo: 'POST',
+        limiteMs: LIMITE_MS,
+        contexto: {
+          que: 'generar la imagen',
+          modelo: id,
+          region: modelo.region,
+          variable: modelo.variable
+        }
+      }),
+    );
+  } catch (fallo) {
+    throw quizaEsElTamano(fallo, tamano, modelo);
+  }
 
   return sacarImagen(respuesta, modelo);
 }
@@ -107,6 +112,34 @@ export async function generar({ texto, negativo = null, referencias = [], nivel,
  * @param {object[]} partes
  * @returns {object}
  */
+/**
+ * Un tiempo agotado generando una imagen a 2K casi nunca es mala suerte: es que
+ * no cabe.
+ *
+ * Una imagen no es como un vídeo. El vídeo se lanza y se consulta después, así
+ * que puede tardar lo que quiera; la imagen se pide y se espera, y lo que se
+ * puede esperar es lo que la plataforma deje vivir a la función: menos de un
+ * minuto en el plan gratuito. A 2K, una imagen con referencias se acerca
+ * demasiado a ese techo y unas veces entra y otras no.
+ *
+ * El mensaje de siempre dice «se puede volver a intentar», y ahí eso es medio
+ * engañoso: volver a intentarlo a 2K vuelve a tardar lo mismo. Lo que de verdad
+ * lo arregla es bajar a 1K, así que se dice, y se dice DÓNDE se cambia.
+ */
+function quizaEsElTamano(fallo, tamano, modelo) {
+  if (!fallo || fallo.http !== 504 || tamano !== '2K') return fallo;
+
+  return new ErrorDeCara(
+    'La imagen se ha pasado del tiempo que la función puede esperar. Con «2K» pasa a menudo: una ' +
+      'imagen de ese tamaño con referencias se acerca al minuto, y ahí es donde la plataforma corta. ' +
+      'Volver a intentarlo a 2K vuelve a tardar lo mismo. Lo que lo arregla es bajar a «1K» en ' +
+      'Salud, en «Con qué se genera»: se genera de sobra dentro del tiempo y para un keyframe ' +
+      'sobra, porque el vídeo sale a 720p de todas formas. El 2K solo se nota en las placas del ' +
+      'banco, que son las que se miran de cerca.',
+    { detalle: fallo.detalle || null, reintentable: true, http: 504 }
+  );
+}
+
 function resolucionValida(pedida) {
   const texto = typeof pedida === 'string' ? pedida.trim().toUpperCase() : '';
 
