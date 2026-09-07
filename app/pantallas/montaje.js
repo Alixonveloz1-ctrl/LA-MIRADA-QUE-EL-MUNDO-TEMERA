@@ -1268,7 +1268,11 @@ function componerVoz(modelo, ambito, estado, salida) {
           conLosLabios >= 0 &&
           conLosLabios >= finAnterior &&
           conLosLabios + largo <= tope + MARGEN_S &&
-          conLosLabios + largo <= duracion + MARGEN_S
+          conLosLabios + largo <= duracion + MARGEN_S &&
+          // Y SOBRE TODO: sin caerle encima a otro. Traer la frase de quien mueve
+          // los labios para tapar un silencio y plantarla sobre la voz en off de
+          // otro personaje sería cambiar un fallo por uno peor.
+          !pisaAOtroPersonaje(modelo, linea, conLosLabios, conLosLabios + largo, ambito)
         ) {
           if (conLosLabios !== escrito) {
             movidas.push({
@@ -1362,19 +1366,43 @@ function componerVoz(modelo, ambito, estado, salida) {
   // toca y se dice, que es lo único honrado que se puede hacer con ello.
   if (!ambito.previas && colocadas.length) {
     const mudas = [];
+    const ajenas = [];
+
     for (const toma of Array.isArray(ambito.tomas) ? ambito.tomas : []) {
       if (!toma.bocaVisible || !toma.bocaSeMueve || toma.inicio === null) continue;
+
       const callado = mudezDebajoDe(toma, colocadas, ambito.desde);
       if (callado >= MUDEZ_QUE_SE_VE_S) {
         mudas.push(`${toma.id} (${segundos(callado)} de ${toma.bocaVisible})`);
       }
+
+      // Y EL FALLO CONTRARIO, que se ve igual de mal: los labios son de uno y la
+      // voz que suena es de otro.
+      const equivocada = vozEquivocadaDebajoDe(toma, colocadas, ambito.desde);
+      if (equivocada.cuanto >= MUDEZ_QUE_SE_VE_S) {
+        ajenas.push(
+          `${toma.id} enseña la boca de ${toma.bocaVisible} y durante ${segundos(equivocada.cuanto)} ` +
+            `se oye a ${enumerar(equivocada.quienes, 3)}`
+        );
+      }
     }
+
     if (mudas.length) {
       notas.push(
         `${plural(mudas.length, 'plano enseña', 'planos enseñan')} una boca moviéndose con ` +
           `silencio debajo: ${enumerar(mudas, 6)}. Se ven los labios y no se oye nada. Esto no se ` +
           'arregla moviendo la voz —ya está donde tiene que estar—: o el plano dura más de lo que ' +
           'se dice encima y hay que acortarlo en datos/serie.json, o falta diálogo ahí.'
+      );
+    }
+
+    if (ajenas.length) {
+      notas.push(
+        `En ${plural(ajenas.length, 'un plano la voz que suena no es la de quien mueve los labios',
+          'varios planos la voz que suena no es la de quien mueve los labios')}: ` +
+          `${enumerar(ajenas, 6)}. En pantalla parece que esa persona está diciendo las palabras ` +
+          'de otra. No se arregla moviendo la voz: o ese plano no va ahí, o la boca que enseña no ' +
+          'es la que tiene que enseñar. Se cambia en datos/serie.json.'
       );
     }
   }
@@ -1622,6 +1650,107 @@ function yaSuenaAlEntrar(modelo, toma) {
     if (linea.t <= entra + ARRANQUE_MUDO_S && linea.hasta > entra + 0.001) return true;
   }
   return false;
+}
+
+/**
+ * Si poner una línea entre `en` y `fin` la haría sonar encima de OTRO personaje.
+ *
+ * ESTA GUARDA FALTABA Y EL CASO ES REAL. Se ve una voz en off de A mientras la
+ * cámara está en otra cosa, y a mitad de esa frase entra un plano de la boca de B
+ * moviéndose. La boca de B arranca muda —la voz de A no cuenta, es de otro—, así
+ * que se traía la frase de B para cubrirla… y se plantaba encima de la voz de A.
+ * Dos personas hablando a la vez, que es peor que el silencio que se arreglaba.
+ *
+ * Dentro de un mismo bloque de eso ya se encargaban `finAnterior` y la línea
+ * siguiente. Pero un bloque es una persona —o dos—, y A y B pueden estar en
+ * bloques distintos: entonces no había nada mirando.
+ *
+ * Se compara contra los segundos ESCRITOS de los demás, no contra dónde acaben
+ * sonando. Es lo que hay disponible cuando se decide el movimiento, y además es
+ * lo correcto: lo escrito es lo que quiso quien escribió la escena.
+ *
+ * @param {object} modelo
+ * @param {object} linea la que se quiere mover
+ * @param {number} en dónde entraría, en segundos del ámbito
+ * @param {number} fin dónde acabaría
+ * @param {object} ambito
+ * @returns {boolean}
+ */
+function pisaAOtroPersonaje(modelo, linea, en, fin, ambito) {
+  const desde = en + ambito.desde;
+  const hasta = fin + ambito.desde;
+
+  for (const otra of modelo.lineas) {
+    if (otra === linea) continue;
+    // Al de su mismo bloque ya lo guardan la línea anterior y la siguiente; y dos
+    // frases de la MISMA persona nunca deberían solaparse de todas formas.
+    if (otra.quien === linea.quien) continue;
+    if (otra.t < hasta - 0.001 && otra.hasta > desde + 0.001) return true;
+  }
+
+  return false;
+}
+
+/**
+ * Los trozos de un plano de boca en los que se oye a OTRO y no a quien mueve los
+ * labios.
+ *
+ * ES EL FALLO CONTRARIO AL SILENCIO Y SE VE IGUAL DE MAL: se ven los labios de B
+ * moviéndose y lo que suena es la voz de A. En pantalla parece que B está
+ * diciendo las palabras de A.
+ *
+ * Esto NO se arregla moviendo nada —haría falta cambiar el plano o mover el
+ * diálogo—, así que solo se cuenta para poder decirlo.
+ *
+ * @param {object} toma
+ * @param {{quien:string, en:number, fin:number}[]} colocadas
+ * @param {number} desplazamiento
+ * @returns {{cuanto:number, quienes:string[]}}
+ */
+function vozEquivocadaDebajoDe(toma, colocadas, desplazamiento) {
+  const entra = redondear(Number(toma.inicio) - desplazamiento);
+  const sale = redondear(entra + largoDeLaToma(toma));
+  const dentro = (una) => una.fin > entra + 0.001 && una.en < sale - 0.001;
+  const recortar = (una) => ({
+    quien: una.quien,
+    en: Math.max(una.en, entra),
+    fin: Math.min(una.fin, sale)
+  });
+
+  const ajenas = colocadas.filter((una) => una.quien !== toma.bocaVisible && dentro(una));
+  if (!ajenas.length) return { cuanto: 0, quienes: [] };
+
+  const suyas = colocadas.filter((una) => una.quien === toma.bocaVisible && dentro(una)).map(recortar);
+
+  let cuanto = 0;
+  const quienes = new Set();
+
+  for (const ajena of ajenas.map(recortar)) {
+    // De cada trozo ajeno se le quita lo que la voz buena tape por encima: si él
+    // también está hablando ahí, no es un momento mudo ni equivocado.
+    let pedazos = [ajena];
+    for (const suya of suyas) {
+      const siguiente = [];
+      for (const pedazo of pedazos) {
+        if (suya.fin <= pedazo.en || suya.en >= pedazo.fin) {
+          siguiente.push(pedazo);
+          continue;
+        }
+        if (suya.en > pedazo.en) siguiente.push({ en: pedazo.en, fin: suya.en });
+        if (suya.fin < pedazo.fin) siguiente.push({ en: suya.fin, fin: pedazo.fin });
+      }
+      pedazos = siguiente;
+    }
+    for (const pedazo of pedazos) {
+      const dura = pedazo.fin - pedazo.en;
+      if (dura > 0.001) {
+        cuanto += dura;
+        quienes.add(ajena.quien);
+      }
+    }
+  }
+
+  return { cuanto: redondear(cuanto), quienes: [...quienes] };
 }
 
 /**

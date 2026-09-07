@@ -1558,11 +1558,38 @@ debajo de una boca en marcha**.
 
 | Cómo llega el plano de labios | Qué se hace |
 | --- | --- |
-| ya tiene voz encima cuando entra | **nada**. Es el caso normal en un episodio |
+| ya tiene **su** voz encima cuando entra | **nada**. Es el caso normal en un episodio |
 | arranca en silencio | se trae la frase más cercana de esa persona |
 | ninguna frase puede cubrirlo | no se inventa: se dice |
 
 Una línea sin ningún plano de boca es voz en off, y su `t` se respeta tal cual.
+
+#### Y tiene que ser **su** voz, no cualquier voz
+
+La regla tiene una trampa, y se preguntó antes de que llegara a pasar:
+
+> se oye una voz en off de una persona hablando y luego pasa a un plano donde se
+> le ve la boca moviéndose a la **otra** persona que le está respondiendo. ¿Esa
+> voz que se escucha es la correcta?
+
+No basta con que suene **una** voz: tiene que sonar **la suya**. Si se ven los
+labios de B y lo que suena es A, en pantalla parece que B está diciendo las
+palabras de A — y eso se ve tan mal como el silencio.
+
+De ahí salieron dos cosas. Una ya estaba bien: la cobertura se mira **por
+personaje**, así que la voz en off de A nunca da por cubierta la boca de B.
+
+La otra **faltaba, y era el fallo de verdad**. Al traer la frase de B para tapar
+su boca muda, nada impedía plantarla **encima de la voz en off de A**: dos
+personas hablando a la vez, peor que el silencio que se arreglaba. Dentro de un
+bloque de voz eso ya estaba guardado, pero un bloque es una persona —o dos— y A y
+B pueden estar en bloques distintos: ahí no miraba nadie. Ahora una frase no se
+mueve nunca sobre el hueco de otro.
+
+Y cuando la voz equivocada ya está ahí de fábrica —el plano de B cae en medio de
+la narración de A— eso el montaje **no puede** arreglarlo: haría falta cambiar el
+plano o mover el diálogo. Así que es **fallo** de `npm run comprobar`, para que
+salte antes de gastar un céntimo generando ese clip.
 
 #### `boca_visible` no significa «está hablando»
 

@@ -66,14 +66,16 @@ function bloquesDeVoz(pieza) {
     PRESTADO +
       codigo.replace(/^export (?=(async )?function |const |class )/gm, '') +
       '\nexport { partirElSubtitulo, juntarLosMasCortos, respiraDespuesDe,\n' +
-      '  bocasQueHablan, claveDeLinea, pideMoverLaBoca, construirModelo };\n'
+      '  bocasQueHablan, claveDeLinea, pideMoverLaBoca, construirModelo,\n' +
+      '  pisaAOtroPersonaje, vozEquivocadaDebajoDe, mudezDebajoDe };\n'
   );
   return import(pathToFileURL(archivo).href);
 }
 
 const {
   partirElSubtitulo, juntarLosMasCortos, respiraDespuesDe,
-  bocasQueHablan, claveDeLinea, pideMoverLaBoca, construirModelo
+  bocasQueHablan, claveDeLinea, pideMoverLaBoca, construirModelo,
+  pisaAOtroPersonaje, vozEquivocadaDebajoDe, mudezDebajoDe
 } = await traerDelMontaje();
 
 /** La serie de verdad, para probar contra los datos que se van a montar. */
@@ -453,6 +455,123 @@ comprobar('Un ámbito que solo concatena capas no revienta ni empareja nada', ()
   const modelo = { id: 'ep1', lineas: [{ quien: 'madre', t: 5, hasta: 8, es: 'x' }], tomas: [] };
   if (bocasQueHablan(modelo, { desde: 0, hasta: 40, previas: [] }).size !== 0) {
     throw new Error('empareja algo en un ámbito sin planos');
+  }
+});
+
+
+
+// ---------------------------------------------------------------------------
+// LA VOZ TIENE QUE SER LA DE QUIEN MUEVE LOS LABIOS
+// ---------------------------------------------------------------------------
+//
+// La regla «si se ven labios, que se oiga voz» tiene una trampa que se preguntó
+// antes de que llegara a pasar:
+//
+//     «se oye una voz en off de una persona hablando y luego pasa a un plano
+//      donde se le ve la boca moviéndose a la OTRA persona que le está
+//      respondiendo. ¿Esa voz que se escucha es la correcta?»
+//
+// No basta con que suene UNA voz: tiene que sonar LA SUYA. Si se ven los labios
+// de B y lo que suena es A, en pantalla parece que B está diciendo las palabras
+// de A, y eso se ve tan mal como el silencio.
+//
+// Hay dos maneras de meter la pata aquí, y las dos se prueban:
+//
+//   1. Dar por cubierta la boca de B porque hay voz encima, aunque sea de A.
+//   2. Traer la frase de B para cubrir su boca Y PLANTARLA ENCIMA de la voz en
+//      off de A. Esta era la de verdad: dentro de un bloque estaba guardado, pero
+//      A y B pueden estar en bloques distintos y ahí no miraba nadie.
+
+console.log('\nLA VOZ TIENE QUE SER LA SUYA\n');
+
+comprobar('La voz en off de A no da por cubierta la boca de B', () => {
+  const suya = { quien: 'saharis', t: 26, hasta: 29, es: 'lo que responde él' };
+  const modelo = {
+    id: 'ep1',
+    lineas: [{ quien: 'madre', t: 12, hasta: 24, es: 'la narración de ella' }, suya],
+    tomas: []
+  };
+  const ambito = { desde: 0, hasta: 60, tomas: [planoDeBoca('E9', 22, 3, 'saharis')] };
+
+  if (!bocasQueHablan(modelo, ambito).get(claveDeLinea(suya))) {
+    throw new Error('da por buena la boca de Saharis porque se está oyendo a la madre');
+  }
+});
+
+comprobar('Y al traerla, NO se le planta encima a la voz en off de A', () => {
+  // Este es el caso de verdad. La madre habla en off del 12 al 24. En el 18 entra
+  // un plano de la boca de Saharis. Su frase está en el 26. Traerla al 18 la
+  // pondría a hablar encima de ella.
+  const suya = { quien: 'saharis', t: 26, hasta: 29, es: 'lo que responde él' };
+  const modelo = {
+    id: 'ep1',
+    lineas: [{ quien: 'madre', t: 12, hasta: 24, es: 'la narración de ella' }, suya],
+    tomas: []
+  };
+  const ambito = { desde: 0, hasta: 60, tomas: [planoDeBoca('E9', 18, 4, 'saharis')] };
+
+  // El emparejado la reclama —su boca arranca muda—, pero la guarda de componerVoz
+  // tiene que impedir el movimiento.
+  if (!bocasQueHablan(modelo, ambito).get(claveDeLinea(suya))) {
+    throw new Error('ni siquiera la reclama; la boca de Saharis arranca muda');
+  }
+  if (!pisaAOtroPersonaje(modelo, suya, 18, 21, ambito)) {
+    throw new Error('no ve que del 18 al 21 está hablando la madre');
+  }
+});
+
+comprobar('Si el hueco está libre, la guarda no estorba', () => {
+  const suya = { quien: 'saharis', t: 26, hasta: 29, es: 'lo que responde él' };
+  const modelo = {
+    id: 'ep1',
+    lineas: [{ quien: 'madre', t: 12, hasta: 17, es: 'la narración de ella' }, suya],
+    tomas: []
+  };
+  const ambito = { desde: 0, hasta: 60, tomas: [planoDeBoca('E9', 18, 4, 'saharis')] };
+
+  if (pisaAOtroPersonaje(modelo, suya, 18, 21, ambito)) {
+    throw new Error('dice que pisa a alguien y la madre acabó en el 17');
+  }
+});
+
+comprobar('Se cuenta cuánto tiempo se oye la voz equivocada debajo de una boca', () => {
+  // Plano de la boca de Saharis, del 18 al 22. Debajo suena la madre entera y él
+  // no dice nada: cuatro segundos de voz equivocada.
+  const toma = planoDeBoca('E9', 18, 4, 'saharis');
+  const colocadas = [{ quien: 'madre', en: 12, fin: 24 }];
+
+  const mal = vozEquivocadaDebajoDe(toma, colocadas, 0);
+  if (mal.cuanto !== 4) throw new Error(`cuenta ${mal.cuanto} s y son 4`);
+  if (mal.quienes.join() !== 'madre') throw new Error(`dice que suena ${mal.quienes.join()}`);
+});
+
+comprobar('Si además suena la voz buena por encima, eso no cuenta como equivocada', () => {
+  // Los dos hablan a la vez durante el plano. No es lo ideal, pero SÍ se le está
+  // oyendo a él mientras mueve los labios, que es lo que pedía la regla.
+  const toma = planoDeBoca('E9', 18, 4, 'saharis');
+  const colocadas = [
+    { quien: 'madre', en: 12, fin: 24 },
+    { quien: 'saharis', en: 18, fin: 22 }
+  ];
+  const mal = vozEquivocadaDebajoDe(toma, colocadas, 0);
+  if (mal.cuanto !== 0) throw new Error(`cuenta ${mal.cuanto} s y su voz tapa el plano entero`);
+});
+
+comprobar('Un plano con su voz correcta y nadie más no da ninguna queja', () => {
+  const toma = planoDeBoca('E9', 18, 4, 'saharis');
+  const colocadas = [{ quien: 'saharis', en: 18, fin: 22 }];
+
+  if (vozEquivocadaDebajoDe(toma, colocadas, 0).cuanto !== 0) throw new Error('inventa voz ajena');
+  if (mudezDebajoDe(toma, colocadas, 0) !== 0) throw new Error('inventa silencio');
+});
+
+comprobar('El silencio se mide solo con la voz de quien mueve los labios', () => {
+  // Debajo del plano suena la madre, pero el que mueve la boca es él y él no dice
+  // nada: para su boca, eso es silencio de los cuatro segundos.
+  const toma = planoDeBoca('E9', 18, 4, 'saharis');
+  const colocadas = [{ quien: 'madre', en: 12, fin: 24 }];
+  if (mudezDebajoDe(toma, colocadas, 0) !== 4) {
+    throw new Error('da por sonora la boca de Saharis porque habla la madre');
   }
 });
 

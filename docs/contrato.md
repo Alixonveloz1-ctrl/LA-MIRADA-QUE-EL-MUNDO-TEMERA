@@ -1177,6 +1177,10 @@ boca parada. Le faltaba el reverso, y el reverso se ve igual de mal:
 > La regla no dice qué frase ni dónde empieza: dice que no puede haber silencio
 > debajo de una boca en marcha. Que los labios no cuadren con las palabras se
 > sabe y se acepta.
+>
+> **Y tiene que ser SU voz.** No basta con que suene una voz cualquiera: si se ven
+> los labios de B y lo que suena es A, en pantalla parece que B dice las palabras
+> de A. La cobertura se mide **por personaje**, siempre.
 
 Se vio en el teaser montado. El plano `B2` es un primerísimo plano de los labios
 de la madre y su `video` pide que la boca se mueva **todo** el plano. `B2` va del
@@ -1208,7 +1212,7 @@ teaser esa formulación acierta por casualidad, porque son cuatro frases sueltas
 
 | Cómo llega | Qué se hace |
 | --- | --- |
-| ya tiene voz encima al entrar | **nada**. Caso normal en un episodio |
+| ya tiene **su** voz encima al entrar | **nada**. Caso normal en un episodio |
 | arranca en silencio (> 0,4 s) | se trae la frase más cercana de ese personaje |
 | ninguna frase puede cubrirlo | no se inventa: se dice |
 
@@ -1225,7 +1229,11 @@ plano.
 
 - **No mueve si no cabe**: ni antes del ámbito, ni pisando la línea anterior ni la
   siguiente del mismo bloque —sería ponerse a hablar encima de sí mismo—, ni
-  saliéndose por el final. Cuando no cabe, lo dice y deja la línea donde estaba.
+  saliéndose por el final, **ni cayéndole encima a otro personaje**. Esto último
+  no lo guardaba nadie: un bloque es una persona (o dos), así que A y B pueden
+  estar en bloques distintos, y traer la frase de B sobre la voz en off de A
+  cambiaría un fallo por otro peor. Cuando no cabe, lo dice y deja la línea donde
+  estaba.
 - **No toca `datos/serie.json`.** El `t` escrito se queda escrito.
 - **No se lo calla.** Cada línea movida sale en el resumen del montaje, con el
   segundo de antes y el de después.
@@ -1245,3 +1253,9 @@ así que se dice y no se toca nada.
 de cada episodio y cada episodio entero—, porque es `componerVoz()` quien compone
 la voz de todo lo que se monta. Las capas que solo concatenan lo ya montado no
 vuelven a mezclar voz, así que tampoco pasan por aquí.
+
+**La voz equivocada es un fallo, no un aviso.** Si un plano enseña la boca de B
+moviéndose y durante ese plano habla A y no B, el montaje **no puede** arreglarlo:
+haría falta cambiar el plano o mover el diálogo. `herramientas/invariantes.mjs` lo
+da por fallo, para que salte antes de generar el clip. Si además suena la voz de B
+ahí, no cuenta: eso es diálogo solapado y lo juzga quien lo oiga.

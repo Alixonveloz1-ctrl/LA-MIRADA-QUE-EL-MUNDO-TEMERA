@@ -977,6 +977,54 @@ bloque('Datos · la regla de la boca');
   }
 
   comprobar('Ninguna boca se mueve sin tener nada que decir', sueltas, seMueven);
+
+  // ── Y LA VOZ QUE SUENA DEBAJO TIENE QUE SER LA SUYA ────────────────────────
+  //
+  // La regla «si se ven labios, que se oiga voz» tiene una trampa, y se preguntó
+  // antes de que llegara a pasar:
+  //
+  //     «se oye una voz en off de una persona y luego pasa a un plano donde se le
+  //      ve la boca moviéndose a la OTRA persona que le está respondiendo.
+  //      ¿Esa voz que se escucha es la correcta?»
+  //
+  // No. Y no basta con que suene UNA voz: tiene que sonar LA SUYA. Si se ven los
+  // labios de B y lo que suena es A, en pantalla parece que B está diciendo las
+  // palabras de A. Eso se ve tan mal como el silencio y, a diferencia del
+  // silencio, el montaje no puede arreglarlo: haría falta cambiar el plano o
+  // mover el diálogo. Por eso es FALLO y se caza aquí, antes de generar el clip.
+  const cruzadas = [];
+
+  for (const [idPieza, pieza] of Object.entries(piezas)) {
+    const lineas = Array.isArray(pieza && pieza.audio && pieza.audio.voz) ? pieza.audio.voz : [];
+    const tomas = Array.isArray(pieza && pieza.tomas) ? pieza.tomas : [];
+
+    for (const toma of tomas) {
+      if (!toma.boca_visible) continue;
+      if (!pideQueLaBocaSeMueva(toma.video)) continue;
+      const empieza = Number(toma.inicio);
+      const acaba = empieza + Number(toma.dur);
+      if (!Number.isFinite(empieza) || !Number.isFinite(acaba)) continue;
+
+      const dentro = (linea) => Number(linea.t) < acaba - CASI && Number(linea.hasta) > empieza + CASI;
+      const ajenas = lineas.filter((linea) => linea.quien !== toma.boca_visible && dentro(linea));
+      if (!ajenas.length) continue;
+      // Si la suya también suena ahí, al menos se le oye a él mientras mueve los
+      // labios. Eso ya no es «la voz equivocada»: es diálogo solapado, y eso lo
+      // juzga quien lo oiga.
+      if (lineas.some((linea) => linea.quien === toma.boca_visible && dentro(linea))) continue;
+
+      const quienes = [...new Set(ajenas.map((linea) => linea.quien))];
+      cruzadas.push(
+        `${nombreDeToma(idPieza, toma)} enseña la boca de «${toma.boca_visible}» moviéndose ` +
+          `(${redondear(empieza)}–${redondear(acaba)} s) y ahí no habla ${toma.boca_visible}: ` +
+          `habla ${quienes.join(' y ')}. En pantalla parece que ${toma.boca_visible} está diciendo ` +
+          'las palabras de otro. O ese plano no va ahí, o la boca que enseña no es la que tiene ' +
+          'que enseñar.'
+      );
+    }
+  }
+
+  comprobar('La voz que suena bajo una boca es la de quien mueve esa boca', cruzadas);
 }
 
 // ===========================================================================
