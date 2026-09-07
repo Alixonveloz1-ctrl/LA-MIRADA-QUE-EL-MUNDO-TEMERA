@@ -605,6 +605,16 @@ function construirModelo(serie, pieza) {
     duracion: Number.isFinite(duracionEscrita) && duracionEscrita > 0 ? duracionEscrita : finDeLosPlanos,
     bloques: bloquesDeVoz(datos),
     lineas: lineasDeVoz(datos),
+    // LA LETRA DE LA CANCIÓN Y EL AUDIO DE LA PIEZA, que no estaban y hacían
+    // falta. `componerLetra()` los lee los dos y, al no existir ninguno, se
+    // rendía en su primera línea: el opening y el ending se montaban SIN NINGÚN
+    // SUBTÍTULO y sin decir una palabra. Ni una falta, ni un aviso: silencio.
+    //
+    // Se comprobó ejecutándolo con los once versos del opening ya marcados a
+    // mano: salían cero subtítulos y cero quejas. El camino de guardar las
+    // marcas funcionaba perfectamente; lo que faltaba era esto.
+    letra: Array.isArray(datos.letra) ? datos.letra : [],
+    audio: esObjeto(datos.audio) ? datos.audio : {},
     musica: musicaDeLaPieza(serie, pieza.id, piezasDeLaSerie(serie).length),
     silencios: silenciosDeLaPieza(datos),
     cartela: cartelaDeLaPieza(serie, datos, tomas),
@@ -1618,6 +1628,19 @@ function bocasQueHablan(modelo, ambito) {
 }
 
 /**
+ * Cuántas letras, como poco, tiene que llevar un pedazo de subtítulo.
+ *
+ * No es un número de estilo: es el que separa un subtítulo de un destello. Por
+ * debajo de esto salen pedazos de una palabra suelta —«que», «y», «pero»— que en
+ * pantalla no se leen, se parpadean, y que además parten la frase por donde no
+ * se parte.
+ *
+ * Doce letras dejan pasar «te vean.» pegado a lo suyo y cortan «No dejes que te
+ * vean.» de una pieza, que es como se lee.
+ */
+const LETRAS_POR_PEDAZO = 12;
+
+/**
  * Cuánto silencio se aguanta al principio de un plano de boca antes de que se
  * note. Menos de esto no lo ve nadie; más, se ve a alguien moviendo los labios
  * sin que salga sonido, que es de lo que va todo esto.
@@ -1853,10 +1876,28 @@ function partirElSubtitulo(texto, tramo) {
   const medidos = Array.isArray(tramo.trozos) ? tramo.trozos : [];
   if (medidos.length < 2 || palabras.length < 2) return entero;
 
-  // NO SE PUEDE PARTIR EN MÁS PEDAZOS QUE PALABRAS HAY. Con tres pausas y dos
-  // palabras, alguno se quedaría vacío: se juntan los más cortos hasta que
-  // quepan.
-  const trozos = juntarLosMasCortos(medidos, Math.min(medidos.length, palabras.length));
+  // CUÁNTOS PEDAZOS CABEN DE VERDAD. Tres topes, y el tercero se aprendió
+  // simulando el teaser con los datos reales:
+  //
+  //   · No más que pausas hay.
+  //   · No más que palabras hay: alguno se quedaría vacío.
+  //   · Y no más de los que dan un pedazo LEGIBLE.
+  //
+  // El tercero faltaba, y sin él salía esto de «No dejes que te vean.»:
+  //
+  //       21   → 22,8   «No dejes»
+  //       22,8 → 24,9   «que»          ← dos segundos con «que» en pantalla
+  //       24,9 → 26,6   «te vean.»
+  //
+  // Un subtítulo de una preposición no es un subtítulo. Y partir una frase corta
+  // no arregla nada: el problema que esto vino a resolver es una frase LARGA que
+  // se queda entera en pantalla mientras se dicen cosas distintas. Una frase de
+  // cinco palabras se lee de un vistazo y se deja quieta.
+  const cuantosCaben = Math.max(1, Math.floor(palabras.join(' ').length / LETRAS_POR_PEDAZO));
+  const trozos = juntarLosMasCortos(
+    medidos,
+    Math.min(medidos.length, palabras.length, cuantosCaben)
+  );
   if (trozos.length < 2) return entero;
 
   const cortes = repartirLasPalabras(palabras, trozos);
@@ -1981,6 +2022,23 @@ function componerMusica(modelo, ambito, estado, duracion, salida) {
   let acumulado = 0;
   const seguidas = ambito.musica.filter((una) => !esCanto(una)).length > 1;
 
+  // ¿HAY UN LECHO DEBAJO? Sin esto, el ending empezaba en el segundo 18.
+  //
+  // «El canto» es una VOZ QUE ENTRA SOBRE UN INSTRUMENTAL, y por eso entra tarde:
+  // primero suena el lecho solo y a los dieciocho segundos se le pone la voz
+  // encima. Eso es el teaser, que tiene sus dos pistas.
+  //
+  // Pero el tema del ending —y el del opening— NO es una capa: es la canción
+  // entera, y es la única música de la pieza. No hay ningún lecho debajo que
+  // esperar. Aun así se le aplicaba el retraso del canto, porque `esCanto()`
+  // mira si el texto de la pista lleva «cant» y la pista del ending dice
+  // «canción con letra CANTada en japonés». Resultado: la pieza arrancaba con
+  // dieciocho segundos de silencio y la canción entrando a la mitad.
+  //
+  // Así que el retraso del canto solo se aplica cuando hay algo debajo sobre lo
+  // que entrar. Si la música va sola, empieza cuando empieza la pieza.
+  const hayLecho = ambito.musica.some((una) => !esCanto(una));
+
   for (const laMusica of ambito.musica) {
     const guardado = musicaGuardada(estado, String(laMusica.id));
 
@@ -1993,7 +2051,7 @@ function componerMusica(modelo, ambito, estado, duracion, salida) {
     const propia = Number(laMusica.entra_s);
     const en = Number.isFinite(propia) && propia >= 0
       ? propia
-      : esCanto(laMusica)
+      : esCanto(laMusica) && hayLecho
         ? modelo.cantoEntraS
         : acumulado;
 
@@ -2803,6 +2861,20 @@ function tarjetaDeLoMontado(ctx, montaje) {
     );
   }
 
+  // BORRAR ESTE MONTAJE Y NADA MÁS.
+  //
+  // Cada montaje que sale se queda apuntado para siempre, y como se remonta
+  // varias veces hasta que queda bien, se acumulan: los buenos, los viejos y los
+  // que salieron mal, todos juntos en la misma lista y todos ocupando bucket.
+  //
+  // Lo que NO se hace es que un montaje nuevo pise al anterior. Es tentador y es
+  // peligroso: si el montaje nuevo sale peor —o falla a mitad— se habría perdido
+  // el bueno, y volver a hacerlo son otra vez los minutos de máquina. Aquí se
+  // borra a mano, mirando el vídeo, y solo lo que se decida borrar.
+  acciones.appendChild(
+    boton('Borrar', () => borrarLoMontado(ctx, montaje), { tono: 'suave' })
+  );
+
   return tarjeta({
     titulo: montaje.id || montaje.ruta,
     media: reproductorDeMontaje(montaje.ruta, montaje.id || montaje.ruta, repintarLuego),
@@ -2810,6 +2882,56 @@ function tarjetaDeLoMontado(ctx, montaje) {
     pie,
     acciones
   });
+}
+
+/**
+ * Borra un montaje: el archivo del bucket y su apunte.
+ *
+ * SE BORRAN LAS DOS COSAS Y EN ESTE ORDEN. Primero el archivo, y solo si eso ha
+ * salido bien se quita el apunte. Al revés —quitar el apunte y luego fallar al
+ * borrar— dejaría un archivo pagando bucket para siempre sin que nada lo nombre
+ * ya: invisible desde la aplicación y imposible de encontrar desde un teléfono.
+ *
+ * Si el archivo ya no estaba, el apunte se quita igual: eso es exactamente lo que
+ * hay que limpiar.
+ */
+async function borrarLoMontado(ctx, montaje) {
+  const peso = pesos.get(montaje.ruta) || null;
+  const cuanto = peso ? `, que ocupa ${bytes(peso.bytes)}` : '';
+
+  const seguro = await confirmar(
+    `¿Borrar este montaje${cuanto}? Se borra el vídeo del bucket y no se puede deshacer: para ` +
+      'volver a tenerlo habría que montarlo otra vez, con sus minutos de máquina. Lo generado —los ' +
+      'planos, las voces, la música— NO se toca: eso sigue donde está y no hay que pagarlo de nuevo.'
+  );
+  if (!seguro) return;
+
+  try {
+    await llamar('borrar', { rutas: [montaje.ruta] });
+  } catch (fallo) {
+    queja = comoErrorDeCara(fallo);
+    ctx.repintar();
+    return;
+  }
+
+  try {
+    await cambiar((borrador) => {
+      if (!Array.isArray(borrador.montajes)) return;
+      borrador.montajes = borrador.montajes.filter(
+        (uno) => !(uno && String(uno.ruta) === montaje.ruta)
+      );
+    });
+    // Las cajas de esta pantalla también, o la tarjeta seguiría enseñando el peso
+    // y el enlace de algo que ya no existe hasta que se recargue.
+    pesos.delete(montaje.ruta);
+    enlaces.delete(montaje.ruta);
+    enlacesDeDescarga.delete(montaje.ruta);
+    queja = null;
+  } catch (fallo) {
+    queja = comoErrorDeCara(fallo);
+  }
+
+  ctx.repintar();
 }
 
 /** Cómo se llama cada capa cuando hay que escribirla. */

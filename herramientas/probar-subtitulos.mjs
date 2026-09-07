@@ -46,6 +46,12 @@ async function traerDelMontaje() {
   // módulo entero arrastraría medio estudio.
   const PRESTADO = `
 const h = () => ({}), aviso = () => ({}), boton = () => ({}), tarjeta = () => ({});
+// Los de app/formato.js. Aquí solo hacen falta para que las notas y las faltas se
+// puedan escribir; lo que se compara son números, no su redacción.
+const segundos = (n) => String(n) + ' s';
+const plural = (n, uno, varios) => n + ' ' + (n === 1 ? uno : varios);
+const bytes = (n) => n + ' B';
+const fecha = (x) => String(x);
 function lineasDeVoz(pieza) {
   return ((pieza.audio || {}).voz || [])
     .map((l) => ({ quien: String(l.quien), ja: String(l.ja), es: String(l.es),
@@ -67,7 +73,8 @@ function bloquesDeVoz(pieza) {
       codigo.replace(/^export (?=(async )?function |const |class )/gm, '') +
       '\nexport { partirElSubtitulo, juntarLosMasCortos, respiraDespuesDe,\n' +
       '  bocasQueHablan, claveDeLinea, pideMoverLaBoca, construirModelo,\n' +
-      '  pisaAOtroPersonaje, vozEquivocadaDebajoDe, mudezDebajoDe };\n'
+      '  pisaAOtroPersonaje, vozEquivocadaDebajoDe, mudezDebajoDe,\n' +
+      '  componerMusica, componerLetra, ambitosDe };\n'
   );
   return import(pathToFileURL(archivo).href);
 }
@@ -75,7 +82,8 @@ function bloquesDeVoz(pieza) {
 const {
   partirElSubtitulo, juntarLosMasCortos, respiraDespuesDe,
   bocasQueHablan, claveDeLinea, pideMoverLaBoca, construirModelo,
-  pisaAOtroPersonaje, vozEquivocadaDebajoDe, mudezDebajoDe
+  pisaAOtroPersonaje, vozEquivocadaDebajoDe, mudezDebajoDe,
+  componerMusica, componerLetra, ambitosDe
 } = await traerDelMontaje();
 
 /** La serie de verdad, para probar contra los datos que se van a montar. */
@@ -572,6 +580,161 @@ comprobar('El silencio se mide solo con la voz de quien mueve los labios', () =>
   const colocadas = [{ quien: 'madre', en: 12, fin: 24 }];
   if (mudezDebajoDe(toma, colocadas, 0) !== 4) {
     throw new Error('da por sonora la boca de Saharis porque habla la madre');
+  }
+});
+
+
+
+// ---------------------------------------------------------------------------
+// LA MÚSICA DE UNA PIEZA QUE ES UNA CANCIÓN
+// ---------------------------------------------------------------------------
+//
+// POR QUÉ EXISTE. Se montó el ending y la música empezaba en el segundo veinte:
+// veinte segundos de vídeo mudo y la canción entrando a la mitad.
+//
+// La causa era una palabra. «El canto» es una VOZ QUE ENTRA SOBRE UN LECHO
+// INSTRUMENTAL, y por eso entra tarde —en el teaser, a los dieciocho segundos—.
+// Para saber si una pista es canto se mira si su texto lleva «cant»… y la pista
+// del ending dice «canción con letra CANTada en japonés».
+//
+// Pero el tema del ending no es una capa: es la canción entera y es la única
+// música de la pieza. No hay ningún lecho debajo que esperar. Ahora el retraso
+// del canto solo se aplica cuando hay algo debajo sobre lo que entrar.
+
+console.log('\nLA MÚSICA EMPIEZA CUANDO EMPIEZA LA PIEZA\n');
+
+/** Estado con esas piezas de música ya generadas y aprobadas. */
+function conMusica(ids, letraTiempos) {
+  const musica = {};
+  for (const id of ids) {
+    musica[id] = {
+      ruta: `audio/musica/${id}.wav`, dur_s: 90, aprobada: true,
+      letra_tiempos: letraTiempos || []
+    };
+  }
+  return { audio: { musica, voz: {} } };
+}
+
+/** Dónde entra cada pista de música de una pieza de verdad. */
+function musicaDe(idPieza, estado) {
+  const modelo = construirModelo(serie, {
+    id: idPieza, titulo: idPieza, datos: serie.piezas[idPieza]
+  });
+  const { corta } = ambitosDe(modelo);
+  const salida = { audio: [], faltas: [], notas: [] };
+  componerMusica(modelo, corta, estado, corta.hasta - corta.desde, salida);
+  return salida.audio;
+}
+
+for (const id of ['ending', 'opening']) {
+  comprobar(`La canción del ${id} entra en el segundo 0, no a la mitad`, () => {
+    const pistas = musicaDe(id, conMusica(serie.piezas[id].audio.musica));
+    if (!pistas.length) throw new Error('no sale ninguna pista de música');
+    for (const pista of pistas) {
+      if (pista.en !== 0) {
+        throw new Error(`entra en ${pista.en} s; la pieza empieza en 0 y no hay nada debajo`);
+      }
+    }
+  });
+}
+
+comprobar('Pero el canto del teaser SÍ entra tarde: ahí sí hay un lecho debajo', () => {
+  const pistas = musicaDe('teaser', conMusica(['teaser-lecho', 'teaser-canto']));
+  const lecho = pistas.find((una) => /lecho/.test(una.origen));
+  const canto = pistas.find((una) => /canto/.test(una.origen));
+  if (!lecho || !canto) throw new Error('faltan pistas del teaser');
+  if (lecho.en !== 0) throw new Error(`el lecho entra en ${lecho.en} y debería abrir la pieza`);
+  if (!(canto.en > 0)) throw new Error('el canto entra en 0 y debería entrar sobre el lecho');
+});
+
+// ---------------------------------------------------------------------------
+// LOS SUBTÍTULOS DE UNA CANCIÓN
+// ---------------------------------------------------------------------------
+//
+// POR QUÉ EXISTE. El opening y el ending se montaban SIN NINGÚN SUBTÍTULO y sin
+// decir una palabra: ni una falta, ni un aviso. Silencio.
+//
+// `componerLetra()` lee `modelo.letra` y `modelo.audio`, y `construirModelo()` no
+// creaba ninguno de los dos, así que la función se rendía en su primera línea.
+// Se podían marcar los once versos con el dedo, montar, pagar los minutos de
+// máquina, y el vídeo salía sin letra.
+
+console.log('\nUNA CANCIÓN LLEVA SU LETRA EN PANTALLA\n');
+
+for (const id of ['opening', 'ending']) {
+  const versos = (serie.piezas[id].letra || []).length;
+
+  comprobar(`El ${id} saca sus ${versos} subtítulos cuando la letra está marcada`, () => {
+    const marcas = serie.piezas[id].letra.map((v) => ({ inicio: v.t, fin: v.hasta }));
+    const estado = conMusica(serie.piezas[id].audio.musica, marcas);
+    const modelo = construirModelo(serie, { id, titulo: id, datos: serie.piezas[id] });
+    const { corta } = ambitosDe(modelo);
+    const salida = { subtitulos: [], faltas: [], notas: [] };
+    componerLetra(modelo, corta, estado, salida);
+
+    if (salida.subtitulos.length !== versos) {
+      throw new Error(`salen ${salida.subtitulos.length} subtítulos y hay ${versos} versos`);
+    }
+    for (const uno of salida.subtitulos) {
+      if (!uno.texto) throw new Error('un subtítulo sin texto');
+      if (!(uno.hasta > uno.desde)) throw new Error(`un subtítulo sin duración: ${JSON.stringify(uno)}`);
+    }
+  });
+
+  comprobar(`Y si NO está marcada, el ${id} no se monta callando: lo dice`, () => {
+    const estado = conMusica(serie.piezas[id].audio.musica, []);
+    const modelo = construirModelo(serie, { id, titulo: id, datos: serie.piezas[id] });
+    const { corta } = ambitosDe(modelo);
+    const salida = { subtitulos: [], faltas: [], notas: [] };
+    componerLetra(modelo, corta, estado, salida);
+
+    if (salida.subtitulos.length) throw new Error('saca subtítulos sin nada marcado');
+    if (!salida.faltas.length) {
+      throw new Error('se monta sin letra y sin decir nada, que es justo el fallo que hubo');
+    }
+  });
+}
+
+// ---------------------------------------------------------------------------
+// UN SUBTÍTULO NO SE QUEDA EN UNA PALABRA SUELTA
+// ---------------------------------------------------------------------------
+//
+// Salió simulando el teaser con los datos reales: la frase «No dejes que te
+// vean.» se partía en tres y el pedazo del medio era «que», dos segundos en
+// pantalla. Partir una frase corta no arregla nada; lo que esto vino a resolver
+// es una frase LARGA que se queda entera mientras se dicen cosas distintas.
+
+console.log('\nUN PEDAZO DE SUBTÍTULO SE TIENE QUE PODER LEER\n');
+
+comprobar('«No dejes que te vean.» no se parte, por muchas pausas que traiga', () => {
+  const tramo = {
+    inicio: 0.2, fin: 5.8,
+    trozos: [{ inicio: 0.2, fin: 1.3 }, { inicio: 2.0, fin: 3.2 }, { inicio: 4.1, fin: 5.8 }]
+  };
+  const salida = partirElSubtitulo('No dejes que te vean.', tramo);
+  if (salida.length !== 1) {
+    throw new Error(`sale en ${salida.length} pedazos: ${textos(salida).join(' | ')}`);
+  }
+});
+
+comprobar('Ningún pedazo se queda por debajo de lo que se puede leer', () => {
+  const tramo = {
+    inicio: 0, fin: 9,
+    trozos: [{ inicio: 0, fin: 3 }, { inicio: 3, fin: 6 }, { inicio: 6, fin: 9 }]
+  };
+  for (const texto of [
+    'No dejes que te vean.',
+    'Este lugar destruye lo que brilla.',
+    'No olvides quién te vio antes de que fueras dios.',
+    'Nunca más.',
+    'Duerme, manita pequeña.'
+  ]) {
+    for (const pedazo of partirElSubtitulo(texto, tramo)) {
+      const solo = pedazo.texto.trim();
+      if (solo.split(/\s+/).length === 1 && solo.length < 8) {
+        throw new Error(`«${texto}» deja el pedazo «${solo}» solo en pantalla`);
+      }
+    }
   }
 });
 

@@ -1681,6 +1681,78 @@ siempre.
 > vuelve a pulsar «Medir los tiempos» en Audio. La voz **no** hay que volver a
 > generarla: se mide sobre la que ya está.
 
+### Tres fallos que solo se vieron ejecutando el código con los datos de verdad
+
+Los tres salieron de una revisión en la que no se leyó código: se **montó** el
+teaser, el opening y el ending en seco, con `datos/serie.json` de verdad, y se
+miró qué manifiesto salía. Ninguno de los tres se ve leyendo.
+
+#### La canción del ending empezaba en el segundo 18
+
+Veinte segundos de vídeo mudo y la canción entrando a la mitad.
+
+La causa era **una palabra**. «El canto» es una voz que entra **sobre un lecho
+instrumental**, y por eso entra tarde: en el teaser, el lecho abre y a los
+dieciocho segundos se le pone la voz encima. Para saber si una pista es canto se
+mira si su texto lleva `cant`… y la pista del ending dice *«canción con letra
+**cant**ada en japonés»*.
+
+Pero el tema del ending **no es una capa**: es la canción entera y es la única
+música de la pieza. No hay ningún lecho debajo que esperar. Ahora el retraso del
+canto solo se aplica **cuando hay algo debajo sobre lo que entrar**. El canto del
+teaser sigue entrando tarde, porque allí sí hay lecho.
+
+#### El opening y el ending salían sin subtítulos, y sin decir nada
+
+Este es el peor de los tres, porque no era un error: era **silencio**.
+
+`componerLetra()` lee `modelo.letra` y `modelo.audio`, y `construirModelo()` no
+creaba **ninguno de los dos**, así que la función se rendía en su primera línea.
+Se podían marcar los once versos con el dedo, montar, pagar los minutos de
+máquina, y el vídeo salía sin letra sin que nada hubiera avisado.
+
+Se comprobó ejecutándolo con los once versos ya marcados: **cero subtítulos y cero
+quejas**. El camino de guardar las marcas funcionaba perfectamente; lo que faltaba
+era pasar la letra al modelo. Dos líneas.
+
+Y de paso se recuperó la red de seguridad: ahora, si la letra **no** está marcada,
+eso **bloquea** el montaje y dice qué hacer, que es lo que la función siempre
+quiso hacer y nunca llegaba a ejecutar.
+
+Se barrió el archivo entero buscando más campos de esa clase: se leen 16 campos de
+`modelo` y solo esos dos no se creaban nunca.
+
+#### Un subtítulo se quedaba en «que»
+
+Simulando el teaser salió esto:
+
+```
+21   → 22,8   «No dejes»
+22,8 → 24,9   «que»          ← dos segundos con una preposición en pantalla
+24,9 → 26,6   «te vean.»
+```
+
+Al repartir el español entre las pausas solo se garantizaba **una palabra** por
+pedazo. Ahora hay un tercer tope —doce letras— y una frase corta no se parte:
+partirla no arregla nada, porque lo que esto vino a resolver es una frase **larga**
+que se queda entera mientras se dicen cosas distintas.
+
+### Cada montaje se puede borrar, uno por uno
+
+Un montaje que sale se queda apuntado para siempre, y como una pieza se remonta
+varias veces hasta que queda bien, se acumulan: los buenos, los viejos y los que
+salieron mal, todos en la misma lista y todos ocupando bucket.
+
+Cada tarjeta de «Lo montado» lleva ahora su botón de **Borrar**: borra el vídeo
+del bucket y quita su apunte, en ese orden. Al revés —quitar el apunte y fallar al
+borrar— dejaría un archivo pagando bucket para siempre sin que nada lo nombre ya.
+
+Lo que **no** se hace es que un montaje nuevo pise al anterior. Es tentador y es
+peligroso: si el nuevo sale peor, o falla a mitad, se habría perdido el bueno y
+volver a tenerlo son otra vez los minutos de máquina. Se borra a mano, mirando el
+vídeo, y solo lo que se decida borrar. Lo generado —los planos, las voces, la
+música— no se toca: eso sigue donde está y no hay que pagarlo otra vez.
+
 #### Por qué el opening y el ending no tienen ese botón
 
 Porque ahí no hay nadie hablando: hay una **canción**. Y son dos caminos
