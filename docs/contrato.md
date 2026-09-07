@@ -273,9 +273,23 @@ la ruta del manifiesto**. El montador no conoce ningún archivo por su nombre.
 
 ### `montaje-estado`
 ```js
-{ modo:"montaje-estado", ejecucion }
+{ modo:"montaje-estado", trabajo:"teaser-3" }
 → { ok:true, hecho:bool, bien:bool, queja:string|null, salidas:[rutas] }
 ```
+Se pregunta por el **nombre del trabajo**, no por el de la ejecución.
+
+**El nombre de una ejecución de Cloud Run no puede salir de la función.** Es
+`projects/{NÚMERO DE PROYECTO}/locations/…/executions/…`, y el censor de §1 tacha
+el número al salir — hace su trabajo. Lo que llegaría al navegador es
+`projects/«tachado»/…`, se guardaría así, y en la vuelta siguiente Google
+contestaría **403 `CONSUMER_INVALID`** sobre ese nombre roto: un error que se lee
+como falta de permisos y no lo es.
+
+Es la misma razón por la que `veo-consultar` recibe `pieza` y `toma` y no su
+operación. `lanzar()` deja la ejecución en `montaje/{trabajo}/ejecucion.txt` y la
+función la lee de ahí.
+
+Un `ejecucion` que llegue con `«tachado»` dentro se rechaza sin llamar a Google.
 `queja` sale del archivo que el montador escribe en el bucket
 (`montaje/{trabajo}/queja.txt`). Un código de salida no es un mensaje de error.
 

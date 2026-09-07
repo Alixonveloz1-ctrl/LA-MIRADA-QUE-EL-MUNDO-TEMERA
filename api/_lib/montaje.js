@@ -65,6 +65,11 @@ const NOMBRE_DE_REGION = /^[a-z][a-z0-9-]*$/;
 // El host de Cloud Run. No identifica ninguna cuenta: es la puerta pública.
 const HOST_RUN = 'run.googleapis.com';
 
+// Lo que deja el censor donde había un secreto. Se escribe aquí y no se importa
+// de censor.js a propósito: este módulo solo necesita RECONOCERLO, no producirlo,
+// y hacerlo depender del censor los ataría sin ganar nada.
+const TACHADO = '«tachado»';
+
 // Lanzar un job es meterlo en una cola: Google contesta en un segundo. Consultar
 // una ejecución es leer cuatro campos. Los dos límites van muy por debajo de los
 // 60 s de la plataforma, que es lo único que tienen que garantizar.
@@ -148,6 +153,31 @@ async function apuntarLaEjecucion(ejecucion, trabajo) {
     await escribir(rutaDelIndice(identificadorDe(ejecucion)), `${trabajo}\n`);
   } catch {
     // A propósito en silencio: ver arriba.
+  }
+
+  // Y AL REVÉS: del trabajo a la ejecución. Este es el que de verdad hace falta,
+  // y el que faltaba.
+  //
+  // EL NOMBRE DE UNA EJECUCIÓN NO PUEDE VIAJAR AL NAVEGADOR. Lleva dentro el
+  // NÚMERO DE PROYECTO —`projects/802391847265/locations/…`— y el censor de la
+  // puerta lo tacha al salir, que es exactamente su trabajo. Lo que llega al
+  // navegador es `projects/«tachado»/locations/…`, se guarda así en la cola, y
+  // en la siguiente vuelta se le manda a Google ese nombre roto. Google contesta
+  // 403 CONSUMER_INVALID sobre `projects/«tachado»`, que se lee como «esta
+  // cuenta no tiene permiso» y no tiene nada que ver con los permisos.
+  //
+  // Costó una tarde entera: se revisaron los papeles de la cuenta, las APIs del
+  // proyecto y hasta se volvió a ejecutar el instalador, y todo estaba bien.
+  //
+  // Es EL MISMO FALLO que ya estaba resuelto para Veo, con esta misma solución y
+  // por este mismo motivo —está escrito en app/cola.js, en el normalizador de
+  // `clip-consultar`—, y no se llevó al montaje. Aquí queda escrito para que no
+  // vuelva a pasar en el tercero.
+  try {
+    await escribir(rutaDeLaEjecucion(trabajo), `${ejecucion}\n`);
+  } catch {
+    // Si no se puede apuntar, el montaje YA está en marcha. Se pierde poder
+    // preguntar cómo va, pero el resultado aparecerá igual en el bucket.
   }
 }
 
@@ -242,7 +272,7 @@ function nombreDeLaEjecucion(respuesta, trabajo, manifiestoRuta) {
  */
 export async function estado(ejecucion, trabajo = null) {
   const pedido = leerQueSeConsulta(ejecucion, trabajo);
-  const nombre = await resolverEjecucion(pedido.ejecucion);
+  const nombre = await resolverEjecucion(await nombreBueno(pedido));
 
   const respuesta = await llamar(urlDeRecurso(nombre), null, {
     metodo: 'GET',
@@ -288,11 +318,30 @@ function leerQueSeConsulta(ejecucion, trabajo) {
   const nombre = String((objeto ? objeto.ejecucion : ejecucion) ?? '').trim();
   const cual = String(trabajo ?? (objeto ? objeto.trabajo : '') ?? '').trim();
 
+  // CON EL NOMBRE DEL TRABAJO BASTA, y es lo que se manda desde el navegador: la
+  // ejecución se lee del bucket. Ver `apuntarLaEjecucion()`.
+  if (!nombre && cual) return { ejecucion: '', trabajo: cual };
+
   if (!nombre) {
     throw new ErrorDeCara(
-      'Se ha pedido saber cómo va un montaje sin decir cuál. El nombre de la ejecución es lo que ' +
-        'devuelve el montador al encargarle el trabajo y lo que queda guardado en el estado; sin él ' +
-        'no hay nada por lo que preguntar.',
+      'Se ha pedido saber cómo va un montaje sin decir cuál. Hace falta el nombre del trabajo, ' +
+        'que es el que se le puso al encargarlo; con él se busca en el bucket qué ejecución lo ' +
+        'está haciendo.',
+      { reintentable: false, http: 400 },
+    );
+  }
+
+  // Un nombre tachado por el censor NO es un nombre: es lo que queda de uno.
+  // Si viene con el trabajo al lado, se tira y se lee el bueno del bucket; si
+  // viene solo, se dice con palabras en vez de mandárselo a Google, que
+  // contestaría un 403 que se lee como falta de permisos.
+  if (nombre.includes(TACHADO)) {
+    if (cual) return { ejecucion: '', trabajo: cual };
+    throw new ErrorDeCara(
+      'El nombre de esta ejecución llegó tachado por el censor —lleva dentro el número de ' +
+        'proyecto— y así no se le puede preguntar a Google: contestaría que no hay permiso, que no ' +
+        'es lo que pasa. Vuelve a lanzar el montaje: ahora el nombre se guarda en el bucket y ya ' +
+        'no viaja.',
       { reintentable: false, http: 400 },
     );
   }
@@ -314,6 +363,34 @@ function leerQueSeConsulta(ejecucion, trabajo) {
  * caso en que se hace una llamada de más, y existe para que un montaje no se
  * quede huérfano por no haber podido leer un campo al lanzarlo.
  */
+/**
+ * El nombre con el que preguntar. Si quien llama solo trae el trabajo —que es lo
+ * normal, porque el nombre de la ejecución no puede viajar—, se lee del bucket.
+ *
+ * @param {{ejecucion:string, trabajo:string}} pedido
+ * @returns {Promise<string>}
+ */
+async function nombreBueno(pedido) {
+  if (pedido.ejecucion) return pedido.ejecucion;
+
+  let guardado = null;
+  try {
+    guardado = await leer(rutaDeLaEjecucion(pedido.trabajo));
+  } catch {
+    // Se cuenta abajo con palabras.
+  }
+
+  const nombre = guardado && guardado.texto ? guardado.texto.trim() : '';
+  if (nombre.includes('/executions/') || nombre.includes('/operations/')) return nombre;
+
+  throw new ErrorDeCara(
+    `No hay apuntado ningún montaje en marcha para «${pedido.trabajo}». O ya terminó, o nunca se ` +
+      'llegó a lanzar, o se lanzó antes de que esto se guardara en el bucket. Vuelve a lanzarlo: ' +
+      'si ya estaba montado, el archivo está en el bucket y no se pierde nada.',
+    { reintentable: false, http: 404 },
+  );
+}
+
 async function resolverEjecucion(nombre) {
   if (nombre.includes('/executions/')) return nombre;
 
@@ -1358,6 +1435,18 @@ function rutaDelManifiesto(trabajo) {
 /** `montaje/{trabajo}/queja.txt` — lo que el montador escribe antes de salir mal. */
 function rutaDeLaQueja(trabajo) {
   return `${CARPETA}/${trabajo}/queja.txt`;
+}
+
+/**
+ * `montaje/{trabajo}/ejecucion.txt` — qué ejecución está haciendo este trabajo.
+ *
+ * Es el índice al revés del de abajo, y es el que permite que el nombre de la
+ * ejecución NO tenga que viajar al navegador: el navegador manda el nombre del
+ * trabajo, que es suyo y no lleva ningún secreto dentro, y la ejecución se lee
+ * de aquí.
+ */
+function rutaDeLaEjecucion(trabajo) {
+  return `${CARPETA}/${trabajo}/ejecucion.txt`;
 }
 
 /** `montaje/ejecuciones/{id}.txt` — a qué trabajo pertenece cada ejecución. */

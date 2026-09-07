@@ -1769,8 +1769,28 @@ async function modoMontar(cuerpo) {
  * con el código de salida: un código de salida no es un mensaje de error.
  */
 async function modoMontajeEstado(cuerpo) {
-  const ejecucion = exigirTexto(cuerpo, 'ejecucion', 'por qué montaje se pregunta');
-  const como = await estadoDeMontaje(ejecucion);
+  // SE PREGUNTA POR EL NOMBRE DEL TRABAJO, no por el de la ejecución.
+  //
+  // El nombre de una ejecución de Cloud Run lleva dentro el número de proyecto,
+  // así que el censor lo tacha al salir —hace su trabajo— y lo que llegaría de
+  // vuelta sería `projects/«tachado»/…`: un nombre roto con el que Google
+  // contesta un 403 que se lee como falta de permisos y no lo es. Es el mismo
+  // motivo por el que `veo-consultar` tampoco recibe su operación.
+  //
+  // El trabajo sí puede viajar: lo puso el navegador, no lleva nada dentro, y
+  // con él se lee del bucket qué ejecución lo está haciendo.
+  const trabajo = textoSiViene(cuerpo, 'trabajo');
+  const ejecucion = textoSiViene(cuerpo, 'ejecucion');
+
+  if (!trabajo && !ejecucion) {
+    throw new ErrorDeCara(
+      'Se ha preguntado por un montaje sin decir cuál. Hace falta «trabajo», que es el nombre que ' +
+        'se le puso al encargarlo.',
+      { reintentable: false, http: 400 }
+    );
+  }
+
+  const como = await estadoDeMontaje({ ejecucion, trabajo });
   return {
     hecho: Boolean(como.hecho),
     bien: Boolean(como.bien),

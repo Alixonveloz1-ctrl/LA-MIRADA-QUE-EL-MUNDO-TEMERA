@@ -160,6 +160,20 @@ const ESPERA_CONSULTA_BASE = 12000;
 const ESPERA_CONSULTA_MAX = 60000;
 
 /** Lo mismo para un montaje, que tarda minutos y no segundos. */
+/**
+ * La marca que dice «este montaje YA está lanzado», en el campo donde antes se
+ * guardaba el nombre de la ejecución.
+ *
+ * NO es un nombre y no se le manda a nadie: es un sí o un no. El nombre de la
+ * ejecución lleva dentro el número de proyecto y por eso no puede salir de la
+ * función; vive en el bucket y la función lo busca por el nombre del trabajo.
+ *
+ * Y sirve de paso para los montajes que quedaran encolados de antes, con un
+ * nombre tachado dentro: en cuanto se les pregunta con el nombre del trabajo, la
+ * función lee el bueno del bucket y sigue como si nada.
+ */
+const MONTAJE_LANZADO = 'lanzado';
+
 const ESPERA_MONTAJE_BASE = 20000;
 const ESPERA_MONTAJE_MAX = 120000;
 
@@ -2067,21 +2081,30 @@ export const EJECUTORES = {
    * de Veo: un montaje huérfano es media hora de ffmpeg que nadie recoge.
    */
   async montaje(args, trabajo) {
-    let ejecucion = soloTexto(trabajo.operacion);
+    // EL NOMBRE DE LA EJECUCIÓN NO VIAJA HASTA AQUÍ, y es la misma razón por la
+    // que tampoco viaja el de la operación de Veo: lleva dentro el número de
+    // proyecto, el censor lo tacha al salir —hace su trabajo— y lo que se
+    // guardaría en la cola sería «projects/«tachado»/…». Con ese nombre roto,
+    // Google contesta un 403 que se lee como «esta cuenta no tiene permiso» y no
+    // tiene nada que ver con los permisos: se pierde la tarde revisando papeles
+    // que están perfectos.
+    //
+    // Lo que se guarda es que ESTE trabajo ya está lanzado. La ejecución vive en
+    // el bucket y la busca la función por el nombre del trabajo.
+    let lanzado = soloTexto(trabajo.operacion);
 
-    if (!ejecucion) {
-      const lanzado = await llamar('montar', { manifiesto: args.manifiesto });
-      ejecucion = soloTexto(lanzado.ejecucion);
+    if (!lanzado) {
+      await llamar('montar', { manifiesto: args.manifiesto });
 
       await cambiar((estado) => {
         const suyo = buscarEnCola(estado, trabajo.id);
         if (suyo) {
-          suyo.operacion = ejecucion;
+          suyo.operacion = MONTAJE_LANZADO;
           suyo.actualizado = ahoraIso();
         }
       });
 
-      trabajo.operacion = ejecucion;
+      trabajo.operacion = MONTAJE_LANZADO;
       throw new Aplazamiento(
         ESPERA_MONTAJE_BASE,
         `El montaje «${args.trabajo}» se está haciendo en la nube. Tarda minutos y no hace falta ` +
@@ -2089,7 +2112,7 @@ export const EJECUTORES = {
       );
     }
 
-    const como = await llamar('montaje-estado', { ejecucion });
+    const como = await llamar('montaje-estado', { trabajo: args.trabajo });
 
     if (!como.hecho) {
       const consultas = Number(trabajo.consultas) || 0;

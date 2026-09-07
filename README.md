@@ -1279,6 +1279,39 @@ verdad. Si alguna no aparece, **se para** en vez de seguir: lo que viniera
 después fallaría con un 403 que se lee como «no tienes permiso», y se perdería la
 tarde revisando permisos que están perfectos.
 
+### El censor rompía un nombre, y el error decía otra cosa
+
+Este es el fallo que más caro salió, y era invisible.
+
+El nombre de una ejecución de Cloud Run es
+`projects/802391847265/locations/us-central1/jobs/…/executions/…`: lleva dentro el
+**número de proyecto**. El censor de la puerta lo tacha al salir — eso está bien y
+es exactamente su trabajo, porque este repositorio es público.
+
+Pero ese nombre **viajaba al navegador**, se guardaba en la cola ya roto
+(`projects/«tachado»/…`) y en la vuelta siguiente se le mandaba a Google.
+
+Google contesta **403 `CONSUMER_INVALID`**. Que se lee como *«esta service account
+no tiene permiso»*. Y no tiene **nada** que ver con los permisos.
+
+Se revisaron los papeles de la cuenta. Se revisaron las APIs del proyecto. Se
+volvió a ejecutar el instalador entero. Todo estaba bien, porque todo estaba bien.
+
+**Y era el mismo fallo que ya estaba resuelto para Veo**, con esta misma solución
+y por este mismo motivo — está escrito en `app/cola.js`, en el normalizador de
+`clip-consultar` — y no se había llevado al montaje.
+
+La regla, ahora en los dos sitios y escrita en el contrato §2:
+
+> **Un nombre de recurso de Google no viaja al navegador.** Lleva secretos dentro,
+> el censor los tacha, y lo que vuelve es un nombre que ya no sirve. Se guarda en
+> el bucket y el navegador manda una clave suya —la pieza y la toma, o el nombre
+> del trabajo— con la que la función lo busca.
+
+`npm run fallos` ejecuta el censor de verdad sobre un nombre de ejecución de
+verdad y comprueba que se rompe, que la función lo reconoce en vez de mandárselo
+a Google, y que el navegador ya no lo manda.
+
 ### Un 403 son dos averías distintas que se ven igual
 
 Un 403 de Google puede ser una de estas dos, y se arreglan en sitios distintos:

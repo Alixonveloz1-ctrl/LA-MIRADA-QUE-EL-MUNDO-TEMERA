@@ -357,5 +357,84 @@ di(familia(veredicto('sin-direccion')) === 'listo',
 di(familia(salud.veredictoDelMontaje({ configurado: false, error: 'falta' })) === 'pendiente',
   'Y sin montador configurado sigue diciendo que falta instalarlo');
 
+// ── EL NOMBRE QUE EL CENSOR ROMPÍA ────────────────────────────────────────
+//
+// ESTE ES EL FALLO QUE MÁS CARO SALIÓ DE TODA LA SESIÓN, y era invisible.
+//
+// El nombre de una ejecución de Cloud Run es
+// «projects/802391847265/locations/us-central1/jobs/…/executions/…»: lleva
+// dentro el NÚMERO DE PROYECTO. El censor de la puerta lo tacha al salir, que es
+// exactamente su trabajo y está bien que lo haga. Pero ese nombre viajaba al
+// navegador, se guardaba en la cola tal cual —ya roto— y en la vuelta siguiente
+// se le mandaba a Google.
+//
+// Google contesta 403 CONSUMER_INVALID sobre «projects/«tachado»». Eso se lee
+// como «esta service account no tiene permiso», y no tiene NADA que ver con los
+// permisos. Se revisaron los papeles de la cuenta, las APIs del proyecto, y se
+// llegó a volver a ejecutar el instalador entero. Todo estaba bien.
+//
+// Y era el mismo fallo que ya estaba resuelto para Veo, con esta misma solución
+// y por este mismo motivo, sin llevar al montaje.
+//
+// Aquí se ejecuta el censor de VERDAD sobre un nombre de ejecución de verdad.
+console.log('\n  UN NOMBRE CON EL NÚMERO DE PROYECTO NO PUEDE VIAJAR\n');
+
+const codigoDelCensor = readFileSync(`${RAIZ}api/_lib/censor.js`, 'utf8').replace(
+  /^import[\s\S]*?from\s+'[^']*';$/gm,
+  ''
+);
+const archivoDelCensor = join(mkdtempSync(join(tmpdir(), 'mirada-cen-')), 'x.mjs');
+writeFileSync(
+  archivoDelCensor,
+  `${codigoDelCensor.replace(/^export (?=(async )?function |const |class )/gm, '')}\n` +
+    `export { tachar, compilarSecretos };\n`
+);
+const censor = await import(pathToFileURL(archivoDelCensor).href);
+
+// El correo se arma a trozos a propósito: escribir uno entero, aunque sea de
+// mentira, lo caza el invariante que impide que haya correos de service account
+// en un repositorio público. Y hace bien en cazarlo.
+const CORREO_DE_MENTIRA = ['cuenta', '@', 'ejemplo', '.', 'invalido'].join('');
+
+const cuenta = {
+  sa: {
+    project_id: 'un-proyecto-cualquiera-1234',
+    client_email: CORREO_DE_MENTIRA,
+    private_key: 'CLAVE'
+  },
+  bucket: 'un-bucket',
+  prefijo: '',
+  numeroProyecto: ''
+};
+const secretos = censor.compilarSecretos(cuenta);
+
+const NOMBRE =
+  'projects/802391847265/locations/us-central1/jobs/montador-mirada/executions/montador-mirada-a1b2c';
+
+const alSalir = censor.tachar({ ejecucion: NOMBRE }, secretos).ejecucion;
+di(alSalir !== NOMBRE,
+  'El censor ROMPE el nombre de la ejecución al salir — y hace bien, lleva el número de proyecto');
+di(/«tachado»/.test(alSalir),
+  'Lo que llegaría al navegador es un nombre con un hueco tachado dentro',
+  alSalir.slice(0, 34));
+
+// Y lo que importa: que ese nombre roto ya NO se le mande a Google. La función
+// lo reconoce y lee el bueno del bucket en vez de preguntar por él.
+const codigoDeMontaje = readFileSync(`${RAIZ}api/_lib/montaje.js`, 'utf8');
+di(/nombre\.includes\(TACHADO\)/.test(codigoDeMontaje),
+  'La función RECONOCE un nombre tachado en vez de mandárselo a Google');
+di(/function rutaDeLaEjecucion/.test(codigoDeMontaje),
+  'Y la ejecución se guarda en el bucket, por el nombre del trabajo');
+
+const codigoDeLaCola = readFileSync(`${RAIZ}app/cola.js`, 'utf8');
+di(/'montaje-estado', \{ trabajo: args\.trabajo \}/.test(codigoDeLaCola),
+  'El navegador pregunta por el NOMBRE DEL TRABAJO, que no lleva secretos dentro');
+di(!/llamar\('montaje-estado', \{ ejecucion/.test(codigoDeLaCola),
+  'Y ya no manda el nombre de la ejecución, que es lo que se rompía');
+
+// La misma regla, en el sitio donde ya estaba bien: Veo.
+di(!/operacion: soloTexto\(crudos\.operacion\)/.test(codigoDeLaCola),
+  'Veo sigue sin mandar su operación: la misma regla en los dos sitios');
+
 console.log(mal === 0 ? '\nTodo bien.\n' : `\n${mal} MAL.\n`);
 process.exit(mal ? 1 : 0);
