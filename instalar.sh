@@ -198,6 +198,126 @@ if [ "$SOLO" = "montador" ]; then
   exit 0
 fi
 
+# ---------------------------------------------------------------------------
+# COMPROBAR: mirar y no tocar nada.
+#
+# POR QUÉ EXISTE ESTO. Porque «vuelve a instalar» es la peor respuesta que se le
+# puede dar a alguien que ya ha instalado. Cuando la aplicación dice que Google
+# no deja hacer algo, hay exactamente dos preguntas que contestar —en QUÉ
+# proyecto estamos, y qué hay encendido ahí dentro— y ninguna de las dos se
+# contesta instalando otra vez: se contestan MIRANDO.
+#
+# Y hay una tercera que este script sí puede contestar y es la que más veces
+# engaña: si el proyecto que tiene puesto Cloud Shell es el MISMO que el de la
+# service account que usa Vercel. Si no lo es, todo lo que instale aquí estará
+# perfecto y no servirá de nada, porque la aplicación está mirando otro sitio.
+# Eso se ve comparando lo de abajo con lo que dice la pantalla de Salud.
+#
+# No cambia nada. Se puede ejecutar las veces que haga falta.
+# ---------------------------------------------------------------------------
+if [ "$SOLO" = "comprobar" ]; then
+  titulo "COMPROBAR, SIN TOCAR NADA"
+  echo "Esto solo mira. No enciende, no crea, no"
+  echo "despliega y no cambia ni una variable."
+
+  PROYECTO="$(gcloud config get-value project 2>/dev/null || true)"
+  [ -n "$PROYECTO" ] && [ "$PROYECTO" != "(unset)" ] \
+    || morir "No hay proyecto activo. Ponlo con:
+   gcloud config set project TU_PROYECTO"
+
+  paso "El proyecto que está mirando Cloud Shell"
+  echo "  $PROYECTO"
+  echo
+  echo "  COMPARA ESTE NOMBRE con el que sale en la"
+  echo "  pantalla de Salud de la aplicación. Si no"
+  echo "  son el mismo, ahí está el problema entero:"
+  echo "  estarías instalando en un sitio y la"
+  echo "  aplicación mirando otro."
+
+  paso "La facturación"
+  FACTURA="$(gcloud billing projects describe "$PROYECTO" \
+    --format='value(billingEnabled)' 2>/dev/null || true)"
+  if [ "$FACTURA" = "True" ]; then
+    bien "Activada."
+  elif [ -z "$FACTURA" ]; then
+    ojo "No se ha podido leer. Suele ser que esta"
+    echo "    cuenta no puede ver la facturación, no"
+    echo "    que esté apagada."
+  else
+    ojo "APAGADA. Sin ella Google no deja usar casi"
+    echo "    nada, y los errores dicen «no tienes"
+    echo "    permiso», que no es lo que pasa."
+  fi
+
+  paso "Las APIs, una por una"
+  mapfile -t APIS < <(sed 's/#.*//' "$AQUI/despliegue/apis.txt" | tr -d '[:blank:]' | grep -v '^$')
+  mapfile -t PUESTAS < <(gcloud services list --enabled --project "$PROYECTO" \
+    --format='value(config.name)' 2>/dev/null || true)
+
+  if [ "${#PUESTAS[@]}" -eq 0 ]; then
+    ojo "No se ha podido leer la lista de APIs de"
+    echo "    este proyecto. Sin eso no se puede decir"
+    echo "    cuáles están encendidas."
+  else
+    APAGADAS=()
+    for api in "${APIS[@]}"; do
+      encontrada=0
+      for ya in "${PUESTAS[@]}"; do [ "$ya" = "$api" ] && encontrada=1 && break; done
+      if [ "$encontrada" -eq 1 ]; then
+        bien "$api"
+      else
+        ojo "$api  ← APAGADA"
+        APAGADAS+=("$api")
+      fi
+    done
+  fi
+
+  paso "El montador"
+  REGION_JOB="$(gcloud run jobs list --project "$PROYECTO" \
+    --filter="metadata.name=$NOMBRE_JOB" \
+    --format='value(metadata.labels."cloud.googleapis.com/location")' 2>/dev/null | head -1)"
+  if [ -n "$REGION_JOB" ]; then
+    bien "«$NOMBRE_JOB» existe, en $REGION_JOB."
+  else
+    ojo "No hay ningún job «$NOMBRE_JOB» en ESTE"
+    echo "    proyecto. O no se ha desplegado nunca"
+    echo "    aquí, o está en otro proyecto."
+  fi
+
+  paso "La cuenta que usa la aplicación"
+  CORREO_APP="${NOMBRE_SA}@${PROYECTO}.iam.gserviceaccount.com"
+  if gcloud iam service-accounts describe "$CORREO_APP" --project "$PROYECTO" >/dev/null 2>&1; then
+    bien "Existe en este proyecto."
+    mapfile -t PAPELES < <(gcloud projects get-iam-policy "$PROYECTO" \
+      --flatten='bindings[].members' \
+      --filter="bindings.members:serviceAccount:$CORREO_APP" \
+      --format='value(bindings.role)' 2>/dev/null || true)
+    if [ "${#PAPELES[@]}" -eq 0 ]; then
+      ojo "No se han podido leer sus papeles."
+    else
+      for papel in "${PAPELES[@]}"; do bien "$papel"; done
+    fi
+  else
+    ojo "NO existe «$CORREO_APP»"
+    echo "    en este proyecto. Si la aplicación"
+    echo "    funciona igual, es que su clave es de"
+    echo "    OTRO proyecto: ahí está el problema."
+  fi
+
+  echo
+  echo "======================================================"
+  echo "  ESO ES LO QUE HAY"
+  echo "======================================================"
+  echo
+  echo "  Nada de lo de arriba se ha tocado."
+  echo
+  echo "  Si algo sale con «!», eso es lo que falla,"
+  echo "  y solo eso. Cuéntalo tal cual y se arregla"
+  echo "  eso, sin volver a instalarlo todo."
+  echo
+  exit 0
+fi
+
 titulo "LA MIRADA QUE EL MUNDO TEMERÁ"
 echo "Instalación completa de Google Cloud."
 echo
@@ -272,7 +392,41 @@ else
   for api in "${FALTAN[@]}"; do echo "    $api"; done
   echo "  (esto tarda un poco)"
   gcloud services enable "${FALTAN[@]}" --project "$PROYECTO" --quiet
-  bien "Hechas."
+
+  # Y SE COMPRUEBA QUE DE VERDAD ESTÁN. `services enable` dice que sí en cuanto
+  # Google acepta el encargo, no cuando la API se puede usar, y hay APIs que
+  # tardan un minuto largo en estarlo. Decir «✓ Hechas» sin mirar es firmar algo
+  # que no se ha visto: después la aplicación falla con un 403 que se lee como
+  # «no tienes permiso», se pierde la tarde revisando permisos que están
+  # perfectos, y se acaba volviendo a ejecutar este instalador para nada.
+  paso "Comprobando que están de verdad"
+  QUEDAN=("${FALTAN[@]}")
+  for vuelta in 1 2 3 4 5 6; do
+    mapfile -t AHORA < <(gcloud services list --enabled --project "$PROYECTO" \
+      --format='value(config.name)' 2>/dev/null || true)
+    PENDIENTES=()
+    for api in "${QUEDAN[@]}"; do
+      esta=0
+      for ya in "${AHORA[@]}"; do [ "$ya" = "$api" ] && esta=1 && break; done
+      [ "$esta" -eq 0 ] && PENDIENTES+=("$api")
+    done
+    QUEDAN=("${PENDIENTES[@]}")
+    [ "${#QUEDAN[@]}" -eq 0 ] && break
+    [ "$vuelta" -lt 6 ] && sleep 10
+  done
+
+  if [ "${#QUEDAN[@]}" -eq 0 ]; then
+    bien "Hechas, y comprobadas."
+  else
+    morir "Google ha aceptado encender estas APIs pero
+   siguen sin aparecer como encendidas:
+       ${QUEDAN[*]}
+   No se sigue: lo que venga después fallaría
+   diciendo «no tienes permiso», que no es lo
+   que pasa. Espera un par de minutos y vuelve
+   a ejecutar esto. Si sigue igual, míralo en
+   la consola de Google, en «APIs y servicios»."
+  fi
 fi
 
 # ---------------------------------------------------------------------------

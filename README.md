@@ -97,7 +97,8 @@ planos, al volver a entrar se reanuda sola.
 
 En la raíz, `index.html` (lo único que se sirve), `instalar.sh` (todo lo de Google
 Cloud en un comando), `m` (tres caracteres para volver a desplegar el montador
-desde el móvil), `package.json`, `vercel.json` y este archivo.
+desde el móvil), `c` (tres caracteres para mirar qué hay en Google sin tocar
+nada), `package.json`, `vercel.json` y este archivo.
 
 ---
 
@@ -1204,6 +1205,47 @@ Cada paso se puede lanzar por separado con `npm run datos`, `npm run invariantes
 `npm run fallos`, `npm run zip`, `npm run difusion`, `npm run reel` y
 `npm run pesar`. Y
 `npm run archivo` reescribe los 56 planos de ambiente desde su tabla.
+
+### Antes de reinstalar: mirar
+
+```
+./c
+```
+
+**«Vuelve a instalar» es la peor respuesta que se le puede dar a alguien que ya ha
+instalado.** No dice qué pasa, tarda diez minutos, y si el problema no era ese
+—que casi nunca lo es— deja las cosas donde estaban pero con menos paciencia.
+
+Cuando Google dice que no, hay dos preguntas que contestar: **en qué proyecto
+estamos** y **qué hay encendido ahí dentro**. Ninguna de las dos se contesta
+instalando otra vez. Se contestan mirando.
+
+`./c` —o `bash instalar.sh comprobar`— enseña, sin tocar nada:
+
+- El **proyecto** que tiene puesto Cloud Shell.
+- La **facturación**.
+- Las **APIs una por una**, con un `!` en las que estén apagadas.
+- El **montador**: si existe y en qué región.
+- La **cuenta** de la aplicación y sus papeles.
+
+No enciende, no crea, no despliega y no toca ninguna variable.
+
+Y enseña la que más veces engaña: **si el proyecto de Cloud Shell es el mismo que
+el de la clave que usa Vercel.** Si no lo son, todo lo instalado está perfecto y
+no sirve de nada, porque la aplicación está mirando otro sitio. Eso no lo dice
+ningún error de Google — se ve comparando lo que sale ahí con lo que dice la
+pantalla de **Salud**.
+
+#### Y el instalador ya no firma lo que no ha visto
+
+`gcloud services enable` contesta que sí en cuanto Google **acepta el encargo**,
+no cuando la API se puede usar, y algunas tardan un minuto largo. El instalador
+imprimía «✓ Hechas» ahí mismo.
+
+Ahora vuelve a listar las APIs y espera hasta un minuto a que aparezcan de
+verdad. Si alguna no aparece, **se para** en vez de seguir: lo que viniera
+después fallaría con un 403 que se lee como «no tienes permiso», y se perdería la
+tarde revisando permisos que están perfectos.
 
 ### Un 403 son dos averías distintas que se ven igual
 
