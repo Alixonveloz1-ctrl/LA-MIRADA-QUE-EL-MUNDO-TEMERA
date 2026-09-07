@@ -1255,7 +1255,24 @@ function tarjetaDeMusica(ctx, laMusica, maximo) {
 
   // Si esta pieza lleva letra cantada, aquí va el marcador. Solo aparece cuando
   // ya hay pista: no se puede marcar lo que no suena.
-  const laLetra = Array.isArray(pieza.letra) && pieza.audio?.musica?.includes(id) ? pieza.letra : null;
+  //
+  // LA LETRA VIVE EN «pieza.datos», NO EN «pieza». Aquí se leía un nivel por
+  // encima —`pieza.letra` y `pieza.audio`—, y ahí no hay nada: `pieza` es el
+  // envoltorio `{id, titulo, datos}` que hace `piezasDeLaSerie()`. Así que
+  // `Array.isArray(undefined)` daba falso y EL MARCADOR NO SE PINTABA NUNCA.
+  //
+  // El resultado es de los peores que puede dar esta aplicación: la función
+  // estaba entera y bien escrita, el sitio donde guardar las marcas también, y
+  // en pantalla no había ningún botón. Sin nada roto que mirar, sin error, sin
+  // hueco. Y el opening y el ending no se podían montar con subtítulos porque no
+  // había forma de marcar la letra.
+  //
+  // Se avisó de que no salía la opción, y se contestó que la pantalla existía,
+  // porque se comprobó que la FUNCIÓN existía. Existir y ser alcanzable no es lo
+  // mismo, y comprobar lo primero no comprueba lo segundo.
+  const datos = esObjeto(pieza.datos) ? pieza.datos : {};
+  const suya = Array.isArray(datos.audio?.musica) ? datos.audio.musica.includes(id) : false;
+  const laLetra = Array.isArray(datos.letra) && suya ? datos.letra : null;
   if (laLetra && laLetra.length && media) {
     pie.appendChild(marcadorDeLetra(ctx, id, laLetra, media));
   }

@@ -1219,7 +1219,8 @@ verificar que cabe en los 4,5 MB. Casi ninguno se ve leyendo el código: se ven
 ejecutándolo y midiendo. Si algo no cumple, sale con error y lo dice en español.
 
 Cada paso se puede lanzar por separado con `npm run datos`, `npm run invariantes`,
-`npm run cola`, `npm run audio`, `npm run subtitulos`, `npm run ajustes`,
+`npm run cola`, `npm run audio`, `npm run subtitulos`, `npm run pantalla-audio`,
+`npm run ajustes`,
 `npm run freno`, `npm run anotar`, `npm run banco`, `npm run veo`,
 `npm run pantalla`, `npm run fallos`, `npm run zip`, `npm run difusion`,
 `npm run reel` y `npm run pesar`. Y
@@ -1763,6 +1764,38 @@ Sobre el tercero conviene un apunte, porque la primera versión no valía: acept
 una falta que fuera solo texto y **pasaba en verde con el fallo dentro**. Se
 comprobó volviendo a meter el fallo a propósito. Una prueba que pasa con el fallo
 puesto es peor que no tenerla, porque encima tranquiliza.
+
+### Un botón que existe y no se puede pulsar es un botón que no existe
+
+El opening y el ending llevan letra cantada, y sus subtítulos no se miden: se
+marcan con el dedo, oyendo la canción. Para eso hay una función entera y bien
+escrita —`marcadorDeLetra()`— con su botón, su verso resaltado y su guardado.
+
+**En pantalla no salía nada.** Ni el botón, ni un hueco, ni un error.
+
+La condición que decide si se pinta leía `pieza.letra` y `pieza.audio`, y esos
+campos viven en **`pieza.datos`**: `pieza` es el envoltorio `{id, titulo, datos}`.
+Así que `Array.isArray(undefined)` daba falso y el marcador **no se pintaba
+jamás**. Sin nada roto que mirar, y sin forma de montar el opening ni el ending
+con subtítulos.
+
+Es el mismo fallo que el de `modelo.letra` unas líneas más arriba —leer un campo
+un nivel por encima de donde vive— cometido dos veces en dos archivos distintos
+para lo mismo.
+
+#### La lección, que es más cara que el fallo
+
+Se avisó de que la opción no salía. Y se contestó que **la pantalla existía**,
+porque se había comprobado que la **función** existía.
+
+Un `grep` encuentra código escrito. No dice si alguien puede llegar a él. Existir
+y ser alcanzable no es lo mismo, y comprobar lo primero no comprueba lo segundo.
+
+Por eso `npm run pantalla-audio` no mira si las funciones están: **pinta la
+pantalla** con los datos de verdad, con la pista ya generada, y busca el botón
+dentro del árbol que sale. Se comprobó en las dos direcciones —se volvió a meter
+el fallo a propósito y se puso roja— porque una prueba que no se ha visto fallar
+no se sabe si sirve.
 
 ### Cada montaje se puede borrar, uno por uno
 
