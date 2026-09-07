@@ -44,12 +44,24 @@ imágenes: todo lo visual lo genera la herramienta.
    **[▶ Volver a desplegar el montador](https://shell.cloud.google.com/cloudshell/open?cloudshell_git_repo=https%3A%2F%2Fgithub.com%2FAlixonveloz1-ctrl%2FLA-MIRADA-QUE-EL-MUNDO-TEMERA&cloudshell_git_branch=main&cloudshell_tutorial=despliegue%2Fmontador.md)**
 
    **Y si el panel del tutorial no carga** —el editor de Cloud Shell avisa de
-   que los navegadores del móvil no están soportados—, en el terminal, que se
-   abre ya dentro de la carpeta clonada:
+   que los navegadores del móvil no están soportados—, en el terminal:
 
    ```
    ./m
    ```
+
+   **Ojo: un Cloud Shell abierto a secas empieza en `~`, no dentro del
+   repositorio**, y ahí `./m` no existe. Se arregla UNA VEZ y ya vale para
+   siempre, porque la carpeta de inicio de Cloud Shell sobrevive entre sesiones:
+
+   ```
+   ln -s cloudshell_open/LA*/m ~/m
+   ln -s cloudshell_open/LA*/c ~/c
+   ```
+
+   A partir de ahí, `./m` y `./c` funcionan desde la carpeta de inicio. Los dos
+   resuelven el enlace antes de buscar `instalar.sh`; sin eso, un atajo daría la
+   carpeta de inicio como si fuera el repositorio.
 
    Tres caracteres. Ese archivo existe por eso y solo por eso: aquí solo hay un
    móvil, el terminal no deja pegar, y todo lo que haya que ejecutar se teclea

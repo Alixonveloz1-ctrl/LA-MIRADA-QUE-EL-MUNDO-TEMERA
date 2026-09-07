@@ -30,7 +30,20 @@
 
 set -euo pipefail
 
-AQUI="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+# SE RESUELVEN LOS ENLACES SIMBÓLICOS, y no es un detalle: es lo que permite
+# dejar un atajo en la carpeta de inicio.
+#
+# Cloud Shell abre el terminal en «~», no dentro del repositorio, así que «./m»
+# ahí no existe y hay que teclear la ruta entera con el pulgar cada vez. Con
+# esto se puede hacer UNA VEZ:
+#
+#     ln -s cloudshell_open/LA*/m ~/m
+#
+# y a partir de ahí «./m» funciona desde la carpeta de inicio para siempre,
+# porque la carpeta de inicio de Cloud Shell sobrevive entre sesiones. Sin
+# `readlink -f`, el enlace daría la carpeta de inicio como si fuera el
+# repositorio y no encontraría «instalar.sh».
+AQUI="$(cd "$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")" && pwd)"
 
 echo
 echo "Trayendo lo último del repositorio…"
