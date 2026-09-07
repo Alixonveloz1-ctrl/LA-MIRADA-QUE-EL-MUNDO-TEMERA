@@ -52,6 +52,14 @@ const segundos = (n) => String(n) + ' s';
 const plural = (n, uno, varios) => n + ' ' + (n === 1 ? uno : varios);
 const bytes = (n) => n + ' B';
 const fecha = (x) => String(x);
+// El de app/planos.js, copiado tal cual: decide bajo qué clave está guardado el
+// clip de un plano, y un plano de archivo apunta al archivo y no a la pieza.
+const PIEZA_DEL_ARCHIVO = 'archivo';
+function claveDelMaterial(idPieza, laToma) {
+  const deArchivo = laToma && typeof laToma.de_archivo === 'string' ? laToma.de_archivo.trim() : '';
+  if (deArchivo) return PIEZA_DEL_ARCHIVO + '/' + deArchivo;
+  return idPieza + '/' + ((laToma && laToma.id) || '');
+}
 function lineasDeVoz(pieza) {
   return ((pieza.audio || {}).voz || [])
     .map((l) => ({ quien: String(l.quien), ja: String(l.ja), es: String(l.es),
@@ -74,7 +82,7 @@ function bloquesDeVoz(pieza) {
       '\nexport { partirElSubtitulo, juntarLosMasCortos, respiraDespuesDe,\n' +
       '  bocasQueHablan, claveDeLinea, pideMoverLaBoca, construirModelo,\n' +
       '  pisaAOtroPersonaje, vozEquivocadaDebajoDe, mudezDebajoDe,\n' +
-      '  componerMusica, componerLetra, ambitosDe };\n'
+      '  componerMusica, componerLetra, ambitosDe, revisar, textoDeLaFalta };\n'
   );
   return import(pathToFileURL(archivo).href);
 }
@@ -83,7 +91,7 @@ const {
   partirElSubtitulo, juntarLosMasCortos, respiraDespuesDe,
   bocasQueHablan, claveDeLinea, pideMoverLaBoca, construirModelo,
   pisaAOtroPersonaje, vozEquivocadaDebajoDe, mudezDebajoDe,
-  componerMusica, componerLetra, ambitosDe
+  componerMusica, componerLetra, ambitosDe, revisar, textoDeLaFalta
 } = await traerDelMontaje();
 
 /** La serie de verdad, para probar contra los datos que se van a montar. */
@@ -735,6 +743,117 @@ comprobar('Ningún pedazo se queda por debajo de lo que se puede leer', () => {
         throw new Error(`«${texto}» deja el pedazo «${solo}» solo en pantalla`);
       }
     }
+  }
+});
+
+
+
+// ---------------------------------------------------------------------------
+// NINGUNA FALTA PUEDE SALIR EN BLANCO
+// ---------------------------------------------------------------------------
+//
+// POR QUÉ EXISTE. En pantalla salió la caja de «No se puede montar todavía.
+// Falta esto:» con UNA BARRA NEGRA VACÍA dentro. Ni el fallo, ni una pista, ni
+// por dónde empezar a mirar. Desde un móvil, nada que hacer.
+//
+// La causa: una falta es `{texto, donde}` y la pantalla pinta `falta.texto`.
+// Todas se escriben así menos una, que se coló pelada —solo el texto—, así que
+// `falta.texto` era `undefined` y el párrafo salía vacío.
+//
+// Y llevaba escrita así desde el principio. No se veía porque esa función NUNCA
+// LLEGABA A EJECUTARSE: le faltaban `modelo.letra` y `modelo.audio`, que tampoco
+// existían. Dos fallos en fila en el mismo camino, el segundo escondido por el
+// primero. Al arreglar el de arriba salió el de abajo.
+//
+// Por eso esto no comprueba una función: MONTA EN SECO TODAS LAS PIEZAS, en
+// todos los estados en los que se puede quedar una, y mira que cada falta que
+// salga se pueda leer.
+
+console.log('\nNINGUNA FALTA SALE EN BLANCO\n');
+
+/** Un estado en el que no hay nada hecho: el que más faltas produce. */
+function estadoVacio() {
+  return { audio: { voz: {}, musica: {} }, tomas: {}, montajes: [], cola: [] };
+}
+
+/** Un estado con la música y los clips hechos, pero sin marcar la letra. */
+function estadoCasiListo(datos) {
+  const estado = estadoVacio();
+  for (const id of (datos.audio && datos.audio.musica) || []) {
+    estado.audio.musica[id] = { ruta: `audio/musica/${id}.wav`, dur_s: 90, aprobada: true, letra_tiempos: [] };
+  }
+  for (const toma of datos.tomas || []) {
+    const clave = toma.de_archivo ? `archivo/${String(toma.de_archivo).trim()}` : `x/${toma.id}`;
+    estado.tomas[clave] = { clip_elegido: `clips/${toma.id}.mp4` };
+  }
+  return estado;
+}
+
+for (const id of Object.keys(serie.piezas)) {
+  comprobar(`Las faltas de «${id}» se pueden leer todas`, () => {
+    const datos = serie.piezas[id];
+    const modelo = construirModelo(serie, { id, titulo: datos.titulo || id, datos });
+    const ambitos = ambitosDe(modelo);
+    const todos = [ambitos.corta, ...(ambitos.escenas || []), ...(ambitos.actos || []), ambitos.episodio]
+      .filter(Boolean);
+
+    for (const ambito of todos) {
+      for (const estado of [estadoVacio(), estadoCasiListo(datos)]) {
+        // Los clips se indexan por la pieza de verdad, no por «x».
+        const suyo = estadoCasiListo(datos);
+        suyo.tomas = {};
+        for (const toma of datos.tomas || []) {
+          const clave = toma.de_archivo
+            ? `archivo/${String(toma.de_archivo).trim()}`
+            : `${id}/${toma.id}`;
+          suyo.tomas[clave] = { clip_elegido: `clips/${toma.id}.mp4` };
+        }
+        const cual = estado.tomas && Object.keys(estado.tomas).length ? suyo : estado;
+
+        const salida = revisar(modelo, ambito, cual);
+        for (const falta of salida.faltas) {
+          // SE EXIGE EL CONTRATO, NO «QUE SE PUEDA LEER DE ALGUNA FORMA».
+          //
+          // La primera versión de esta prueba aceptaba una falta que fuera solo
+          // texto, y con eso NO CAZABA EL FALLO: se volvió a meter a propósito y
+          // la prueba siguió en verde. Una prueba que pasa con el fallo dentro es
+          // peor que no tenerla, porque además da tranquilidad.
+          //
+          // Una falta pelada se lee —de eso se encarga `textoDeLaFalta()`— pero
+          // pierde su `donde`, y con él el botón de «Ir a Audio», que en un móvil
+          // es la mitad del arreglo. Así que aquí se exige la forma entera.
+          if (typeof falta !== 'object' || falta === null) {
+            throw new Error(
+              `en «${ambito.clave}» sale una falta que no es {texto, donde}: ` +
+                `${JSON.stringify(falta)}. Se leerá, pero se queda sin su botón.`
+            );
+          }
+          if (typeof falta.texto !== 'string' || !falta.texto.trim()) {
+            throw new Error(
+              `en «${ambito.clave}» sale una falta sin texto: ${JSON.stringify(falta)}`
+            );
+          }
+        }
+        for (const nota of salida.notas) {
+          if (typeof nota !== 'string' || !nota.trim()) {
+            throw new Error(`en «${ambito.clave}» sale un aviso sin texto: ${JSON.stringify(nota)}`);
+          }
+        }
+      }
+    }
+  });
+}
+
+comprobar('Y si aun así se colara una vacía, la pantalla lo dice con palabras', () => {
+  for (const rara of [null, undefined, {}, { donde: '#audio' }, { texto: '   ' }]) {
+    const texto = textoDeLaFalta(rara);
+    if (typeof texto !== 'string' || !texto.trim()) {
+      throw new Error(`con ${JSON.stringify(rara)} sigue saliendo en blanco`);
+    }
+  }
+  // Y una falta pelada se lee igual, aunque pierda su botón.
+  if (textoDeLaFalta('falta la música') !== 'falta la música') {
+    throw new Error('una falta que es solo texto no se lee');
   }
 });
 

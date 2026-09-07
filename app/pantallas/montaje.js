@@ -2673,10 +2673,20 @@ function pintarLoQueFalta(ctx, ambito, faltas) {
             'border-radius': 'var(--radio-chico)'
           }
         },
-        h('p', { estilo: { margin: '0' } }, falta.texto)
+        // SE ACEPTA TAMBIÉN UNA FALTA QUE SEA SOLO TEXTO.
+        //
+        // El trato es `{texto, donde}` y así lo escriben todas menos una, que se
+        // coló pelada. Y lo que se vio en pantalla fue lo peor posible: la caja
+        // de «Falta esto:» con una barra negra vacía dentro. Ni el fallo, ni una
+        // pista, ni por dónde empezar a mirar; desde un móvil, nada que hacer.
+        //
+        // Esto no tapa el fallo —hay una comprobación que lo caza en el origen—:
+        // lo que hace es que el día que se cuele otra, se lea el texto y se
+        // pierda solo el botón, en vez de perderse todo.
+        h('p', { estilo: { margin: '0' } }, textoDeLaFalta(falta))
       );
 
-      if (falta.donde) {
+      if (falta && falta.donde) {
         fila.appendChild(
           h(
             'div',
@@ -2932,6 +2942,26 @@ async function borrarLoMontado(ctx, montaje) {
   }
 
   ctx.repintar();
+}
+
+/**
+ * Lo que se lee de una falta, venga como venga.
+ *
+ * Y si no trae nada legible, se dice ESO en vez de dejar el hueco en blanco. Una
+ * caja vacía es lo peor que puede salir aquí: bloquea el montaje sin decir por
+ * qué, y desde un teléfono no hay forma de averiguarlo.
+ *
+ * @param {{texto?:string}|string} falta
+ * @returns {string}
+ */
+function textoDeLaFalta(falta) {
+  if (typeof falta === 'string' && falta.trim()) return falta;
+  const texto = soloTexto(falta && falta.texto);
+  if (texto) return texto;
+  return (
+    'Falta algo para poder montar, pero el estudio no ha sabido decir qué: es un fallo del propio ' +
+    'estudio, no de tu cuenta ni de tus datos. Lo que se ve en Salud y en Audio sigue valiendo.'
+  );
 }
 
 /** Cómo se llama cada capa cuando hay que escribirla. */
@@ -3314,10 +3344,24 @@ function componerLetra(modelo, ambito, estado, salida) {
   const conMarca = laLetra.filter((una, i) => marcados[i] && Number.isFinite(marcados[i].inicio));
 
   if (!conMarca.length) {
-    salida.faltas.push(
-      `La canción de «${modelo.titulo || 'esta pieza'}» no tiene ningún verso marcado, así que ` +
-        'saldría sin subtítulos. Ve a Audio, dale al play y marca cada verso con el dedo.'
-    );
+    // UNA FALTA ES `{texto, donde}`, NO UN TEXTO PELADO. Aquí iba pelado, y la
+    // pantalla pinta `falta.texto`: salía la caja de «Falta esto:» con una barra
+    // negra vacía dentro, sin una palabra que explicara qué faltaba.
+    //
+    // El fallo llevaba escrito desde el principio y no se veía porque esta
+    // función NUNCA LLEGABA A EJECUTARSE —le faltaban `modelo.letra` y
+    // `modelo.audio`, que tampoco existían—. Al arreglar aquello salió esto
+    // debajo. Dos fallos en fila en el mismo camino, y el segundo escondido por
+    // el primero.
+    //
+    // Y con `donde` puesto, además, sale el botón de ir a Audio, que es
+    // exactamente lo que hay que hacer.
+    salida.faltas.push({
+      texto:
+        `La canción de «${modelo.titulo || 'esta pieza'}» no tiene ningún verso marcado, así que ` +
+        'saldría sin subtítulos. Ve a Audio, dale al play y marca cada verso con el dedo.',
+      donde: '#audio'
+    });
     return;
   }
 

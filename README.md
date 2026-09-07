@@ -1737,6 +1737,33 @@ pedazo. Ahora hay un tercer tope —doce letras— y una frase corta no se parte
 partirla no arregla nada, porque lo que esto vino a resolver es una frase **larga**
 que se queda entera mientras se dicen cosas distintas.
 
+#### Y debajo había un tercero: la falta salía en blanco
+
+Al arreglar lo anterior, esa falta llegó por fin a la pantalla. Y lo que se vio
+fue la caja de «No se puede montar todavía. **Falta esto:**» con **una barra negra
+vacía dentro**. Ni el fallo, ni una pista, ni por dónde empezar a mirar.
+
+Una falta es `{texto, donde}` y la pantalla pinta `falta.texto`. Todas se escriben
+así menos esa, que se coló pelada —solo el texto—, así que `falta.texto` era
+`undefined` y el párrafo salía vacío. Llevaba escrita así desde el principio y no
+se veía **porque esa función nunca llegaba a ejecutarse**. Dos fallos en fila en
+el mismo camino, el segundo escondido por el primero.
+
+Ahora hay tres cerrojos, porque una caja vacía que bloquea el montaje sin decir
+por qué es lo peor que puede salir en un teléfono:
+
+1. La falta se escribe entera, con su `donde`, así que además sale el botón de
+   **Ir a Audio**.
+2. La pantalla lee cualquier forma que llegue, y si no hay nada legible **lo dice
+   con palabras** en vez de dejar el hueco.
+3. `npm run comprobar` **monta en seco todas las piezas**, en todos los estados en
+   los que se pueden quedar, y exige que cada falta traiga su forma entera.
+
+Sobre el tercero conviene un apunte, porque la primera versión no valía: aceptaba
+una falta que fuera solo texto y **pasaba en verde con el fallo dentro**. Se
+comprobó volviendo a meter el fallo a propósito. Una prueba que pasa con el fallo
+puesto es peor que no tenerla, porque encima tranquiliza.
+
 ### Cada montaje se puede borrar, uno por uno
 
 Un montaje que sale se queda apuntado para siempre, y como una pieza se remonta
