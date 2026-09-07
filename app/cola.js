@@ -2033,7 +2033,11 @@ export const EJECUTORES = {
         // pueda saberlo mirando. Pasó: el primer subtítulo se quedaba pegado
         // después de que la voz terminara y a partir de ahí el texto dejaba de
         // corresponder con lo que se oye.
-        estimado: Boolean(linea && linea.estimado)
+        estimado: Boolean(linea && linea.estimado),
+        // Y POR DÓNDE SE PARTE EL SUBTÍTULO DE ESA LÍNEA, si se dice a trozos.
+        // Solo viene cuando quien habla hace una pausa dentro de la frase; si no,
+        // el subtítulo es uno solo y esto va vacío.
+        trozos: trozosMedidos(linea)
       }));
     });
   },
@@ -2241,6 +2245,35 @@ async function cambioDeClipTerminado(idPieza, idToma, ruta) {
       anotarGasto(estado, 'video_s', nivel, Number(laToma.dur_gen) || 0);
     }
   };
+}
+
+/**
+ * Los pedazos medidos de una línea, saneados.
+ *
+ * Vienen de la función y van al estado tal cual, así que se comprueban aquí: un
+ * pedazo al revés o sin números movería un subtítulo a un sitio que no existe, y
+ * un subtítulo se quema en la imagen. Lo que no cuadra no se guarda a medias: se
+ * tira la lista entera y la línea vuelve a ser un subtítulo de una pieza, que es
+ * como funcionaba antes de que existiera esto.
+ *
+ * @param {object} linea
+ * @returns {{inicio:number, fin:number}[]}
+ */
+function trozosMedidos(linea) {
+  const crudos = Array.isArray(linea && linea.trozos) ? linea.trozos : [];
+  if (crudos.length < 2) return [];
+
+  const trozos = [];
+  for (const uno of crudos) {
+    const inicio = Number(uno && uno.inicio);
+    const fin = Number(uno && uno.fin);
+    if (!Number.isFinite(inicio) || !Number.isFinite(fin) || !(fin > inicio)) return [];
+    const anterior = trozos[trozos.length - 1];
+    if (anterior && inicio < anterior.fin) return [];
+    trozos.push({ inicio, fin });
+  }
+
+  return trozos;
 }
 
 /**

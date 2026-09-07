@@ -120,6 +120,21 @@ const enlacesDeDescarga = new Map();
 /** Rutas por las que ya se preguntó y no hay enlace. */
 const sinEnlace = new Set();
 
+/**
+ * Rutas para las que no ha salido la URL DE DESCARGA, que no es lo mismo.
+ *
+ * ESTO EXISTE PORQUE UN BOTÓN SE QUEDÓ «PREPARANDO LA DESCARGA…» PARA SIEMPRE.
+ * Cuando fallaba la firma de mirar, la ruta se apuntaba aquí al lado y se dejaba
+ * de insistir. Cuando fallaba la de descargar, no se apuntaba en ninguna parte:
+ * ni había enlace, ni había queja, ni había manera de saber que se había
+ * intentado. En pantalla solo quedaba ese texto en gris, quieto, sin decir nada.
+ *
+ * Con esto se sabe que ya se preguntó y no salió, y entonces se puede ofrecer lo
+ * que sí hay —la de mirar— en vez de dejar a alguien esperando algo que no va a
+ * llegar.
+ */
+const sinDescarga = new Set();
+
 /** Si hay una petición de firmas en marcha ahora mismo. */
 let pidiendoEnlaces = false;
 
@@ -392,12 +407,32 @@ function piezasQueSePublican(serie) {
     .map((id) => ({ id, titulo: soloTexto(piezas[id].titulo) || id, datos: piezas[id] }));
 }
 
+/**
+ * Si una ruta apuntada es algo que se pueda ver o descargar.
+ *
+ * ESTO EXISTE POR UN ARCHIVO DE 107 BYTES. La cola apunta en `estado.montajes`
+ * todo lo que el montador deja en la carpeta de un trabajo, y ahí dentro había
+ * un índice interno con el nombre de la ejecución. Así que el botón de descargar
+ * el paquete bajaba un texto de una línea en vez del zip, y la ficha decía
+ * «paquete hecho, 107 bytes» tan tranquila.
+ *
+ * La función ya no ofrece ese archivo, pero LO QUE SE APUNTÓ EN SU DÍA SIGUE
+ * APUNTADO: el estado es un archivo del bucket, no se rehace solo, y nadie va a
+ * ir a mano a limpiarlo desde un teléfono. Por eso se filtra también AL LEER, y
+ * con lista blanca: un montaje deja un vídeo y un paquete deja un zip; lo que se
+ * cuele mañana en esa carpeta tampoco llegará a la pantalla.
+ */
+function esArchivoDeSalida(ruta) {
+  return /\.(mp4|mov|mkv|webm|zip)$/i.test(String(ruta || ''));
+}
+
 /** El montaje entero de una pieza, si lo hay: el último que se hizo. */
 function loMontadoDe(montajes, idPieza) {
   const suyos = montajes.filter(
     (uno) =>
       esObjeto(uno) &&
       soloTexto(uno.ruta) &&
+      esArchivoDeSalida(uno.ruta) &&
       uno.capa !== CAPA_DEL_PAQUETE &&
       (soloTexto(uno.id) === idPieza || soloTexto(uno.id).startsWith(`${idPieza}-`))
   );
@@ -410,6 +445,7 @@ function elPaqueteDe(montajes, idPieza) {
     (uno) =>
       esObjeto(uno) &&
       soloTexto(uno.ruta) &&
+      esArchivoDeSalida(uno.ruta) &&
       uno.capa === CAPA_DEL_PAQUETE &&
       soloTexto(uno.id) === paqueteDe(idPieza)
   );
@@ -454,7 +490,9 @@ function seccionCabecera(ctx) {
         { clase: 'tarjeta-acciones' },
         boton('Volver a pedir los enlaces', () => {
           enlaces.clear();
+          enlacesDeDescarga.clear();
           sinEnlace.clear();
+          sinDescarga.clear();
           quejaDeEnlaces = null;
           repintar();
         }, { tono: 'principal' })
@@ -1529,8 +1567,25 @@ function enlaceDe(ruta) {
  */
 function enlaceParaGuardar(ruta, texto) {
   const url = enlaceDeDescarga(ruta);
-  if (!url) return h('span', { clase: 'tenue' }, 'Preparando la descarga…');
-  return h('a', { href: url, download: '', clase: 'enlace' }, texto);
+  if (url) return h('a', { href: url, download: '', clase: 'enlace' }, texto);
+
+  // SI NO HA SALIDO, SE DICE QUE NO HA SALIDO. La tentación es poner aquí la URL
+  // de mirar, que sí está: se descartó, y con razón. Esa URL ABRE el archivo en
+  // una pestaña en vez de guardarlo, y ese fue el fallo original —«le doy a
+  // descargar y lo que hace es abrirse esta página»—. Un botón que no cumple lo
+  // que dice es peor que ninguno.
+  //
+  // Lo que no puede volver a pasar es lo otro: quedarse en «preparando» para
+  // siempre sin que nadie pueda saber si se está intentando o ya se rindió.
+  if (sinDescarga.has(ruta)) {
+    return h(
+      'span',
+      { clase: 'tenue' },
+      'No se ha podido preparar la descarga de este archivo. Con el botón de volver a pedir los ' +
+        'enlaces, arriba, se intenta otra vez.'
+    );
+  }
+  return h('span', { clase: 'tenue' }, 'Preparando la descarga…');
 }
 
 /** El enlace con el que se DESCARGA una ruta, si ya se ha pedido. */
@@ -1553,7 +1608,9 @@ function pedirEnlacesQueFalten(rutas, repintar) {
 
   const todas = [...new Set(rutas)].filter(Boolean);
   const paraVer = todas.filter((ruta) => !enlaceDe(ruta) && !sinEnlace.has(ruta));
-  const paraBajar = todas.filter((ruta) => !enlaceDeDescarga(ruta) && !sinEnlace.has(ruta));
+  const paraBajar = todas.filter(
+    (ruta) => !enlaceDeDescarga(ruta) && !sinEnlace.has(ruta) && !sinDescarga.has(ruta)
+  );
   if (!paraVer.length && !paraBajar.length) return;
 
   pidiendoEnlaces = true;
@@ -1563,12 +1620,22 @@ function pedirEnlacesQueFalten(rutas, repintar) {
     // Dos tandas: las de mirar y las de descargar. Son URLs distintas del mismo
     // archivo, y hacen falta las dos: una se pone en el `<video>` y la otra en
     // el enlace de guardar.
-    await pedirTanda(paraVer, enlaces, false);
-    await pedirTanda(paraBajar, enlacesDeDescarga, true);
+    //
+    // CADA UNA SE INTENTA PASE LO QUE PASE CON LA OTRA. Antes iban seguidas, así
+    // que si fallaba la de mirar, la de descargar no llegaba a pedirse nunca y
+    // el botón de guardar se quedaba en gris sin explicación. Son dos cosas
+    // distintas y una no tiene por qué llevarse a la otra por delante.
+    await pedirTanda(paraVer, enlaces, false).catch((fallo) => {
+      quejaDeEnlaces = comoErrorDeCara(fallo);
+      for (const ruta of paraVer) if (!enlaceDe(ruta)) sinEnlace.add(ruta);
+    });
+    await pedirTanda(paraBajar, enlacesDeDescarga, true).catch((fallo) => {
+      if (!quejaDeEnlaces) quejaDeEnlaces = comoErrorDeCara(fallo);
+      for (const ruta of paraBajar) if (!enlaceDeDescarga(ruta)) sinDescarga.add(ruta);
+    });
   })()
     .catch((fallo) => {
       quejaDeEnlaces = comoErrorDeCara(fallo);
-      for (const ruta of paraVer) if (!enlaceDe(ruta)) sinEnlace.add(ruta);
     })
     .finally(() => {
       pidiendoEnlaces = false;
@@ -1586,9 +1653,12 @@ async function pedirTanda(rutas, caja, descargar) {
       const url = dadas[ruta];
       if (typeof url === 'string' && url) {
         caja.set(ruta, { url, hasta: Date.now() + VIDA_DE_URL_MS });
-      } else if (!descargar) {
-        // Solo las de mirar se apuntan como imposibles: si falla la de
-        // descargar, la imagen se sigue viendo y eso es lo que importa.
+      } else if (descargar) {
+        // Que falle la de descargar no impide ver el archivo, así que no se
+        // apunta con las imposibles. Pero SÍ se apunta: si no, el botón se queda
+        // «preparando la descarga» hasta que se cierre la pantalla.
+        sinDescarga.add(ruta);
+      } else {
         sinEnlace.add(ruta);
       }
     }

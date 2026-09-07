@@ -57,7 +57,7 @@ async function traerDeAudio() {
   const archivo = join(carpeta, 'audio-suelto.mjs');
   writeFileSync(
     archivo,
-    `${delante}\n${sinImportaciones}\nexport { aPista, sinAudio, esBloqueoDeContenido };\n`
+    `${delante}\n${sinImportaciones}\nexport { aPista, sinAudio, esBloqueoDeContenido, repartoMedido, repartoEstimado };\n`
   );
 
   return import(pathToFileURL(archivo).href);
@@ -156,7 +156,7 @@ const MUESTRAS_POR_TRAMA = 1152;
 const HZ = 44100;
 
 const deAudio = await traerDeAudio();
-const { aPista, sinAudio, esBloqueoDeContenido } = deAudio;
+const { aPista, sinAudio, esBloqueoDeContenido, repartoMedido, repartoEstimado } = deAudio;
 
 let bien = 0;
 let mal = 0;
@@ -315,6 +315,112 @@ comprobar('«OTHER» no cuenta como bloqueo de contenido, y «SAFETY» sí', () 
   if (esBloqueoDeContenido('OTHER')) throw new Error('«OTHER» no es un bloqueo');
   if (!esBloqueoDeContenido('SAFETY')) throw new Error('«SAFETY» sí lo es');
 });
+
+
+// ---------------------------------------------------------------------------
+// Dónde acaba una línea y dónde se parte un subtítulo
+// ---------------------------------------------------------------------------
+//
+// POR QUÉ EXISTE ESTA PARTE. El reparto de las palabras entre las líneas era
+// proporcional a los caracteres japoneses y nada más. Eso da MÁS O MENOS el
+// sitio, y en el teaser montado se vio lo que «más o menos» significa cuando lo
+// que se reparte es voz: una línea cortada a mitad de palabra, la siguiente
+// reducida a un rabo de dos décimas —subtítulo en pantalla y nadie hablando— y,
+// dentro de una misma línea, una frase dicha con dos pausas largas plantada
+// entera desde la primera palabra hasta la última.
+//
+// Quien sabe dónde acaba una línea y empieza otra no es la aritmética: es el
+// silencio que hay en el audio. Aquí se le dan palabras con tiempos inventados
+// a mano —con silencios puestos donde se sabe— y se mira si los cortes caen ahí.
+
+/** Palabras seguidas: `[inicio, fin]` en segundos, tal como las da Google. */
+function palabras(...pares) {
+  return pares.map(([inicio, fin]) => ({ inicio, fin }));
+}
+
+comprobar('El corte de línea se va al silencio, no se queda en la cuenta de palabras', () => {
+  // Dos líneas de MUY distinto largo en caracteres: la proporción propone cortar
+  // por la palabra 3, pero el silencio de verdad —medio segundo— está en la 4.
+  const dichas = palabras(
+    [0.0, 0.4], [0.4, 0.8], [0.8, 1.2], [1.2, 1.6],   // primera línea
+    [2.1, 2.5], [2.5, 2.9]                             // segunda, tras 0,5 s
+  );
+  const [una, otra] = repartoMedido([12, 6], dichas, 3.0);
+
+  if (una.fin !== 1.6) throw new Error(`la primera acaba en ${una.fin}, no en 1.6`);
+  if (otra.inicio !== 2.1) throw new Error(`la segunda entra en ${otra.inicio}, no en 2.1`);
+});
+
+comprobar('Ninguna línea se queda sin voz aunque el reparto quede raro', () => {
+  const dichas = palabras([0, 0.5], [0.5, 1.0], [1.4, 1.9], [1.9, 2.4], [2.4, 2.9]);
+  const salida = repartoMedido([40, 2], dichas, 3.0);
+
+  for (const tramo of salida) {
+    if (!(tramo.fin > tramo.inicio)) {
+      throw new Error(`un tramo vacío: ${JSON.stringify(salida)}`);
+    }
+  }
+});
+
+comprobar('Los tramos nunca se solapan ni van hacia atrás', () => {
+  const dichas = palabras([0, 0.3], [0.9, 1.2], [1.8, 2.1], [2.7, 3.0]);
+  const salida = repartoMedido([5, 5, 5], dichas, 3.2);
+
+  let antes = 0;
+  for (const tramo of salida) {
+    if (tramo.inicio < antes) throw new Error(`retrocede: ${JSON.stringify(salida)}`);
+    antes = tramo.fin;
+  }
+});
+
+comprobar('Una frase dicha con pausas dentro trae por dónde se parte el subtítulo', () => {
+  // «No dejes que te vean … este lugar … destruye lo que brilla»: una sola
+  // línea, dos pausas largas de interpretación. Esto es literalmente lo que
+  // pasó en el teaser.
+  const dichas = palabras(
+    [0.0, 0.5], [0.5, 1.1],
+    [2.0, 2.6], [2.6, 3.2],
+    [4.1, 4.7], [4.7, 5.4]
+  );
+  const [linea] = repartoMedido([30], dichas, 5.6);
+
+  if (!Array.isArray(linea.trozos) || linea.trozos.length !== 3) {
+    throw new Error(`salen ${linea.trozos ? linea.trozos.length : 0} pedazos, no 3`);
+  }
+  if (linea.trozos[1].inicio !== 2.0) throw new Error(`el segundo entra en ${linea.trozos[1].inicio}`);
+  if (linea.trozos[2].inicio !== 4.1) throw new Error(`el tercero entra en ${linea.trozos[2].inicio}`);
+  if (linea.trozos[0].inicio !== linea.inicio) throw new Error('el primer pedazo no empieza con la línea');
+  if (linea.trozos[2].fin !== linea.fin) throw new Error('el último pedazo no acaba con la línea');
+});
+
+comprobar('Una frase dicha del tirón NO trae pedazos: el subtítulo es uno solo', () => {
+  const dichas = palabras([0, 0.4], [0.45, 0.9], [0.95, 1.4], [1.45, 1.9]);
+  const [linea] = repartoMedido([20], dichas, 2.0);
+
+  if (linea.trozos !== undefined) {
+    throw new Error(`trae pedazos sin haber pausas: ${JSON.stringify(linea.trozos)}`);
+  }
+});
+
+comprobar('Un pedazo demasiado corto no parpadea: se junta con el de al lado', () => {
+  // La pausa está ahí, pero lo que deja detrás son dos décimas. Un subtítulo de
+  // dos décimas no se lee: se ve un destello.
+  const dichas = palabras([0.0, 1.2], [1.2, 2.4], [2.9, 3.1]);
+  const [linea] = repartoMedido([20], dichas, 3.2);
+
+  if (linea.trozos !== undefined) {
+    throw new Error(`parte por un destello: ${JSON.stringify(linea.trozos)}`);
+  }
+});
+
+comprobar('Lo estimado sigue marcado y sigue sin pedazos: no se ha medido nada', () => {
+  const salida = repartoEstimado([10, 10], 4.0);
+  for (const tramo of salida) {
+    if (tramo.estimado !== true) throw new Error('un tramo estimado sin su marca');
+    if (tramo.trozos !== undefined) throw new Error('un tramo estimado con pedazos inventados');
+  }
+});
+
 
 console.log(`\n${bien + mal} comprobaciones, ${bien} bien${mal ? `, ${mal} MAL` : ''}\n`);
 process.exit(mal === 0 ? 0 : 1);

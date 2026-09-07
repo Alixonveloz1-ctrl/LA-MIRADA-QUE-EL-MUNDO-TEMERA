@@ -391,7 +391,15 @@ function vozGuardada(estado, clave) {
     tramos: lineas.map((tramo) => ({
       inicio: Number(tramo && tramo.inicio) || 0,
       fin: Number(tramo && tramo.fin) || 0,
-      estimado: tramo && typeof tramo.estimado === 'boolean' ? tramo.estimado : null
+      estimado: tramo && typeof tramo.estimado === 'boolean' ? tramo.estimado : null,
+      trozos: Array.isArray(tramo && tramo.trozos)
+        ? tramo.trozos
+            .map((uno) => ({
+              inicio: Number(uno && uno.inicio) || 0,
+              fin: Number(uno && uno.fin) || 0
+            }))
+            .filter((uno) => uno.fin > uno.inicio)
+        : []
     }))
   };
 }
@@ -1230,7 +1238,25 @@ function componerVoz(modelo, ambito, estado, salida) {
         continue;
       }
 
-      subtitulos.push({ desde: en, hasta: redondear(fin), texto: linea.es });
+      // UN SUBTÍTULO POR PEDAZO, NO UNO POR LÍNEA.
+      //
+      // Esto era una sola línea: la frase entera desde la primera palabra hasta
+      // la última. Y se vio en el teaser lo que hace de verdad: la madre dice
+      // «No dejes que te vean… este lugar… destruye lo que brilla» con dos
+      // pausas largas de por medio —no son de escritura, son de interpretación—
+      // y el subtítulo se plantaba entero desde el principio. A mitad de la
+      // frase el texto en pantalla ya no era lo que se estaba oyendo.
+      //
+      // Ahora se parte por las pausas que TIENE el audio, medidas, y el español
+      // se reparte entre los pedazos. Nadie escribe a mano dónde se corta cada
+      // frase de cada episodio: eso no se sostiene en doce capítulos.
+      for (const pedazo of partirElSubtitulo(linea.es, tramo)) {
+        subtitulos.push({
+          desde: redondear(en + (pedazo.inicio - tramo.inicio)),
+          hasta: redondear(en + (pedazo.fin - tramo.inicio)),
+          texto: pedazo.texto
+        });
+      }
     }
   }
 
@@ -1292,6 +1318,151 @@ function componerVoz(modelo, ambito, estado, salida) {
     if (ambito.conSubtitulos) faltas.push(donde);
     else notas.push(donde.texto);
   }
+}
+
+// ---------------------------------------------------------------------------
+// Partir un subtítulo por las pausas de quien habla
+// ---------------------------------------------------------------------------
+
+/**
+ * Un subtítulo de una línea se convierte en varios si la línea se dice con
+ * pausas dentro.
+ *
+ * DÓNDE SE CORTA LO DICE EL AUDIO, NO EL TEXTO. Las pausas vienen medidas de la
+ * pantalla de Audio: son los silencios de verdad que hay entre las palabras
+ * japonesas del archivo. Aquí lo único que se decide es QUÉ PALABRAS ESPAÑOLAS
+ * le tocan a cada pausa, y eso se reparte en proporción a lo que dura cada
+ * pedazo, prefiriendo cortar donde el español ya tiene una coma o un punto.
+ *
+ * No se puede alinear palabra a palabra —el audio va en japonés y el subtítulo
+ * en español, así que ni el número de palabras ni el orden coinciden—, pero el
+ * reparto proporcional acierta el sitio con holgura de sobra para leerlo, que es
+ * de lo que se trata.
+ *
+ * CADA PEDAZO SE QUEDA HASTA QUE ENTRA EL SIGUIENTE. Si cada uno se quitara al
+ * acabar su voz, la pantalla se quedaría en blanco justo durante la pausa —que
+ * es medio segundo largo— y eso se ve como un parpadeo. La frase se sostiene y
+ * cambia en el instante exacto en que empiezan las palabras siguientes.
+ *
+ * @param {string} texto el español de la línea.
+ * @param {{inicio:number, fin:number, trozos:{inicio:number,fin:number}[]}} tramo
+ * @returns {{inicio:number, fin:number, texto:string}[]}
+ */
+function partirElSubtitulo(texto, tramo) {
+  const palabras = String(texto || '').trim().split(/\s+/).filter(Boolean);
+  const entero = [{ inicio: tramo.inicio, fin: tramo.fin, texto: palabras.join(' ') }];
+
+  const medidos = Array.isArray(tramo.trozos) ? tramo.trozos : [];
+  if (medidos.length < 2 || palabras.length < 2) return entero;
+
+  // NO SE PUEDE PARTIR EN MÁS PEDAZOS QUE PALABRAS HAY. Con tres pausas y dos
+  // palabras, alguno se quedaría vacío: se juntan los más cortos hasta que
+  // quepan.
+  const trozos = juntarLosMasCortos(medidos, Math.min(medidos.length, palabras.length));
+  if (trozos.length < 2) return entero;
+
+  const cortes = repartirLasPalabras(palabras, trozos);
+  if (!cortes) return entero;
+
+  const salida = [];
+  for (let i = 0; i < trozos.length; i += 1) {
+    const dicho = palabras.slice(cortes[i], cortes[i + 1]).join(' ');
+    if (!dicho) return entero;
+    salida.push({
+      inicio: i === 0 ? tramo.inicio : trozos[i].inicio,
+      // Se sostiene hasta que entra el siguiente, y el último hasta el final de
+      // la línea.
+      fin: i === trozos.length - 1 ? tramo.fin : trozos[i + 1].inicio,
+      texto: dicho
+    });
+  }
+
+  return salida;
+}
+
+/** Junta los pedazos más cortos con su vecino hasta que quedan `cuantos`. */
+function juntarLosMasCortos(trozos, cuantos) {
+  const juntos = trozos.map((uno) => ({ inicio: uno.inicio, fin: uno.fin }));
+
+  while (juntos.length > cuantos && juntos.length > 1) {
+    let elMasCorto = 0;
+    for (let i = 1; i < juntos.length; i += 1) {
+      if (juntos[i].fin - juntos[i].inicio < juntos[elMasCorto].fin - juntos[elMasCorto].inicio) {
+        elMasCorto = i;
+      }
+    }
+    // Se pega al vecino más corto de los dos: así el resultado queda lo más
+    // parejo posible en vez de dejar un pedazo enorme y otro diminuto.
+    const izquierda = elMasCorto === 0 ? Infinity
+      : juntos[elMasCorto - 1].fin - juntos[elMasCorto - 1].inicio;
+    const derecha = elMasCorto === juntos.length - 1 ? Infinity
+      : juntos[elMasCorto + 1].fin - juntos[elMasCorto + 1].inicio;
+    const con = izquierda <= derecha ? elMasCorto - 1 : elMasCorto + 1;
+    const desde = Math.min(elMasCorto, con);
+
+    juntos.splice(desde, 2, { inicio: juntos[desde].inicio, fin: juntos[desde + 1].fin });
+  }
+
+  return juntos;
+}
+
+/**
+ * Por qué palabra se parte el español para cada pedazo de audio.
+ *
+ * Devuelve los índices de corte, con el 0 y el total puestos, o `null` si no
+ * cabe. Cada pedazo se lleva al menos una palabra.
+ */
+function repartirLasPalabras(palabras, trozos) {
+  const n = trozos.length;
+  if (palabras.length < n) return null;
+
+  const duraciones = trozos.map((uno) => Math.max(uno.fin - uno.inicio, 0.01));
+  const total = duraciones.reduce((a, b) => a + b, 0);
+
+  // El peso de una palabra son sus letras más el espacio: se tarda más en leer
+  // «resplandeciente» que «no», y contar palabras las haría valer igual.
+  const largos = palabras.map((una) => una.length + 1);
+  const letras = largos.reduce((a, b) => a + b, 0);
+  const acumuladas = [0];
+  for (const largo of largos) acumuladas.push(acumuladas[acumuladas.length - 1] + largo);
+
+  // Cortar donde el español ya respira vale un poco de desvío: una frase que
+  // acaba en coma se lee mejor partida por la coma que dos palabras después.
+  const premio = (letras / n) * 0.35;
+
+  const cortes = [0];
+  let reloj = 0;
+
+  for (let i = 0; i < n - 1; i += 1) {
+    reloj += duraciones[i];
+    const objetivo = (letras * reloj) / total;
+
+    const minimo = cortes[i] + 1;
+    const maximo = palabras.length - (n - 1 - i);
+    if (maximo < minimo) return null;
+
+    let donde = minimo;
+    let mejor = Infinity;
+    for (let k = minimo; k <= maximo; k += 1) {
+      const coste = Math.abs(acumuladas[k] - objetivo) - (respiraDespuesDe(palabras[k - 1]) ? premio : 0);
+      if (coste < mejor) {
+        mejor = coste;
+        donde = k;
+      }
+    }
+    cortes.push(donde);
+  }
+
+  cortes.push(palabras.length);
+  return cortes;
+}
+
+/** Si una palabra acaba en un signo por el que se puede partir la frase. */
+function respiraDespuesDe(palabra) {
+  // Se quitan los cierres antes de mirar: en «vean».» el signo que manda es el
+  // punto, no la comilla.
+  const limpia = String(palabra || '').replace(/[»"'”’)\]]+$/, '');
+  return /[,;:.…!?—–-]$/.test(limpia);
 }
 
 /**

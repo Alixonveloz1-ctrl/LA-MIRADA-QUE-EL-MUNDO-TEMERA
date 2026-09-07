@@ -67,6 +67,27 @@ const LIMITE_SINCRONO_S = 60;
 // del redondeo del propio archivo.
 const MARGEN_DEL_LIMITE_S = 0.1;
 
+// CUÁNTO SILENCIO ES UNA PAUSA. Entre dos palabras seguidas de una misma frase
+// hay milésimas; cuando alguien calla a propósito —para que cale lo que acaba de
+// decir, o porque empieza otra frase— hay décimas. El corte está donde deja de
+// ser respiración y empieza a ser intención.
+//
+// Se usa para DOS cosas distintas y en ese orden importa:
+//
+//   1. Dónde acaba una línea y empieza la siguiente dentro del mismo WAV.
+//   2. Dónde se parte el subtítulo de UNA línea que se dice a trozos.
+//
+// Lo segundo salió de ver el teaser: la madre dice «No dejes que te vean… este
+// lugar… destruye lo que brilla» con dos pausas largas de por medio, y el
+// subtítulo entero se plantaba desde la primera palabra hasta la última. A mitad
+// de la frase el texto en pantalla ya no era lo que se estaba oyendo.
+const PAUSA_S = 0.35;
+
+// UN SUBTÍTULO NO PUEDE PARPADEAR. Si una pausa deja un pedazo de dos palabras y
+// tres décimas, no se lee: se ve un destello. Los pedazos más cortos que esto se
+// juntan con el de al lado y se quedan en uno solo.
+const TROZO_MINIMO_S = 0.8;
+
 // Gemini TTS admite dos hablantes en una misma llamada, no más. Los bloques de
 // más de dos se parten por parejas consecutivas en `bloquesDeVoz()`.
 const MAXIMO_DE_HABLANTES = 2;
@@ -664,8 +685,15 @@ function generoEnEspanol(crudo) {
  * y eso se aplica al texto español a nivel de línea.
  *
  * Las palabras reconocidas se reparten entre las líneas EN ORDEN y de forma
- * proporcional a cuántos caracteres tiene cada línea japonesa; de cada tramo se
- * toma el inicio de su primera palabra y el fin de su última.
+ * proporcional a cuántos caracteres tiene cada línea japonesa; después cada
+ * corte se arrastra al silencio más ancho que tenga cerca, porque quien sabe
+ * dónde acaba una línea y empieza otra es el audio y no la aritmética. De cada
+ * tramo se toma el inicio de su primera palabra y el fin de su última.
+ *
+ * Y de cada línea sale además, cuando la hay, la lista de PEDAZOS en los que se
+ * dice: si alguien calla a mitad de frase, el subtítulo se parte por ahí en vez
+ * de plantar la frase entera desde la primera palabra hasta la última. Va en
+ * `trozos` y solo aparece si hay más de uno.
  *
  * Si el reconocimiento vuelve vacío o corto no falla: reparte la duración total
  * en proporción y marca cada línea con `estimado:true`, para que la pantalla
@@ -673,14 +701,17 @@ function generoEnEspanol(crudo) {
  * han medido.
  *
  * FALTA EN EL CONTRATO: docs/contrato.md §12 escribe el resultado como
- * `[{ inicio, fin }]` y no menciona el caso de un reconocimiento vacío. Se añade
- * `estimado:true` en cada línea repartida a ojo —solo en ese caso— porque un
- * tiempo estimado y uno medido no valen lo mismo y el montaje quema los
- * subtítulos con ellos. Conviene apuntarlo en el contrato.
+ * `[{ inicio, fin }]` y no menciona ni el caso de un reconocimiento vacío ni el
+ * de una línea dicha a trozos. Se añaden dos campos, los dos opcionales:
+ * `estimado:true` en cada línea repartida a ojo —porque un tiempo estimado y uno
+ * medido no valen lo mismo y el montaje QUEMA los subtítulos con ellos— y
+ * `trozos` cuando la línea lleva pausas dentro. Conviene apuntarlo en el
+ * contrato.
  *
  * @param {Buffer|Uint8Array} wav el WAV del bloque entero.
  * @param {Array<{ja:string}|string>} lineas las líneas del bloque, en orden.
- * @returns {Promise<Array<{inicio:number, fin:number, estimado?:boolean}>>}
+ * @returns {Promise<Array<{inicio:number, fin:number, estimado?:boolean,
+ *   trozos?:{inicio:number, fin:number}[]}>>}
  */
 export async function alinear(wav, lineas) {
   const datos = aBuffer(wav, 'el audio que se va a alinear');
@@ -799,25 +830,42 @@ function sacarPalabras(respuesta) {
 }
 
 /**
- * Reparte las palabras entre las líneas en orden y en proporción a sus
- * caracteres, y de cada tramo toma el inicio de la primera y el fin de la
- * última. Cada línea se lleva al menos una palabra: un tramo vacío no tendría
- * ni entrada ni salida que tomar.
+ * Reparte las palabras entre las líneas y de cada tramo toma el inicio de la
+ * primera y el fin de la última.
+ *
+ * EL REPARTO PROPORCIONAL ES SOLO EL ESQUELETO, NO LA RESPUESTA. Antes lo era, y
+ * de ahí salieron dos fallos que parecían distintos y eran el mismo:
+ *
+ *   · una línea se cortaba a mitad de palabra y la voz sonaba truncada;
+ *   · la línea siguiente se quedaba con un rabo de dos décimas, así que el
+ *     subtítulo aparecía y no se oía a nadie decirlo.
+ *
+ * Contar caracteres japoneses dice MÁS O MENOS por dónde va cada línea, pero
+ * quien sabe exactamente dónde acaba una y empieza otra es el propio audio: ahí
+ * hay un silencio, y no lo hay en medio de una frase. Así que se calcula el
+ * corte proporcional, y después cada corte se ARRASTRA AL SILENCIO más ancho que
+ * tenga cerca. El esqueleto evita que un silencio dramático a mitad de frase se
+ * confunda con un cambio de línea; el silencio evita cortar donde nadie calla.
+ *
+ * Cada línea se lleva al menos una palabra: un tramo vacío no tendría ni entrada
+ * ni salida que tomar.
  */
 function repartoMedido(pesos, palabras, duracion) {
   const total = palabras.length;
   const n = pesos.length;
   const sumaDePesos = pesos.reduce((a, b) => a + b, 0);
 
-  const cortes = [0];
+  const base = [0];
   let acumulado = 0;
   for (let i = 0; i < n; i += 1) {
     acumulado += pesos[i];
     const propuesta = Math.round((total * acumulado) / sumaDePesos);
-    const minimo = cortes[i] + 1;                 // esta línea se lleva al menos una
-    const maximo = total - (n - 1 - i);           // y deja al menos una a cada siguiente
-    cortes.push(Math.min(Math.max(propuesta, minimo), maximo));
+    const minimo = base[i] + 1;                 // esta línea se lleva al menos una
+    const maximo = total - (n - 1 - i);         // y deja al menos una a cada siguiente
+    base.push(Math.min(Math.max(propuesta, minimo), maximo));
   }
+
+  const cortes = arrastrarALosSilencios(base, palabras);
 
   const salida = [];
   let anterior = 0;
@@ -829,11 +877,122 @@ function repartoMedido(pesos, palabras, duracion) {
     // lado.
     const inicio = Math.max(anterior, Math.min(tramo[0].inicio, duracion));
     const fin = Math.max(inicio, Math.min(tramo[tramo.length - 1].fin, duracion));
-    salida.push({ inicio: redondear(inicio), fin: redondear(fin) });
+    const linea = { inicio: redondear(inicio), fin: redondear(fin) };
+
+    // Y DENTRO DE LA LÍNEA, POR DÓNDE SE PARTE EL SUBTÍTULO. Va aparte de
+    // `inicio`/`fin` a propósito: la voz se corta por la línea entera —es una
+    // sola intervención y suena seguida— y lo que se parte es el TEXTO que se
+    // lee encima. Si la línea se dice de un tirón no viene nada, y entonces el
+    // subtítulo es uno solo, como siempre.
+    const trozos = trozosDeLaLinea(tramo, inicio, fin);
+    if (trozos.length > 1) linea.trozos = trozos;
+
+    salida.push(linea);
     anterior = fin;
   }
 
   return salida;
+}
+
+/**
+ * Mueve cada corte interior al silencio más ancho que haya a su alrededor.
+ *
+ * La ventana de búsqueda es una fracción de la línea más corta de las dos que el
+ * corte separa, y nunca invade los cortes vecinos: un corte puede afinarse, no
+ * puede irse a otra línea. Sin esa cadena, una línea larguísima al lado de una
+ * cortísima se comería a su vecina entera y la vecina se quedaría sin voz.
+ *
+ * @param {number[]} base los cortes proporcionales, con el 0 y el total puestos.
+ * @param {{inicio:number, fin:number}[]} palabras
+ * @returns {number[]}
+ */
+function arrastrarALosSilencios(base, palabras) {
+  const cortes = base.slice();
+
+  for (let i = 1; i < cortes.length - 1; i += 1) {
+    const holgura = Math.max(
+      1,
+      Math.round(0.3 * Math.min(base[i] - base[i - 1], base[i + 1] - base[i]))
+    );
+    const minimo = Math.max(cortes[i - 1] + 1, base[i] - holgura);
+    // El vecino de la derecha todavía no se ha movido, así que se respeta su
+    // sitio proporcional y se le deja al menos una palabra.
+    const maximo = Math.min(base[i + 1] - 1, base[i] + holgura);
+    if (maximo < minimo) continue;
+
+    let donde = Math.min(Math.max(cortes[i], minimo), maximo);
+    let mayor = huecoAntesDe(palabras, donde);
+
+    for (let k = minimo; k <= maximo; k += 1) {
+      const hueco = huecoAntesDe(palabras, k);
+      if (hueco > mayor) {
+        mayor = hueco;
+        donde = k;
+      }
+    }
+
+    cortes[i] = donde;
+  }
+
+  return cortes;
+}
+
+/** El silencio que hay justo antes de la palabra `k`. Cero si no hay hueco. */
+function huecoAntesDe(palabras, k) {
+  if (k <= 0 || k >= palabras.length) return 0;
+  return Math.max(0, palabras[k].inicio - palabras[k - 1].fin);
+}
+
+/**
+ * Los pedazos en los que se dice UNA línea, separados por sus pausas.
+ *
+ * Devuelve vacío si la línea se dice seguida, que es lo normal y lo que no hay
+ * que tocar. Los pedazos que salen más cortos que `TROZO_MINIMO_S` se juntan con
+ * el de al lado: un subtítulo de tres décimas no se lee, parpadea.
+ *
+ * @param {{inicio:number, fin:number}[]} tramo las palabras de esta línea.
+ * @param {number} inicio dónde empieza la línea ya recortada.
+ * @param {number} fin dónde acaba.
+ * @returns {{inicio:number, fin:number}[]}
+ */
+function trozosDeLaLinea(tramo, inicio, fin) {
+  if (tramo.length < 2) return [];
+
+  const trozos = [];
+  let desde = inicio;
+  let ultimo = Math.max(inicio, Math.min(tramo[0].fin, fin));
+
+  for (let k = 1; k < tramo.length; k += 1) {
+    const entra = Math.max(inicio, Math.min(tramo[k].inicio, fin));
+    if (entra - ultimo >= PAUSA_S) {
+      trozos.push({ inicio: desde, fin: ultimo });
+      desde = entra;
+    }
+    ultimo = Math.max(ultimo, Math.min(tramo[k].fin, fin));
+  }
+  trozos.push({ inicio: desde, fin });
+
+  if (trozos.length < 2) return [];
+
+  // Los destellos se pegan al vecino. Hacia atrás si hay uno detrás, y si no,
+  // hacia delante: el primero no tiene con quién juntarse por la izquierda.
+  const juntos = [];
+  for (const trozo of trozos) {
+    const anterior = juntos[juntos.length - 1];
+    if (anterior && trozo.fin - trozo.inicio < TROZO_MINIMO_S) {
+      anterior.fin = trozo.fin;
+      continue;
+    }
+    if (anterior && anterior.fin - anterior.inicio < TROZO_MINIMO_S) {
+      anterior.fin = trozo.fin;
+      continue;
+    }
+    juntos.push({ ...trozo });
+  }
+
+  if (juntos.length < 2) return [];
+
+  return juntos.map((trozo) => ({ inicio: redondear(trozo.inicio), fin: redondear(trozo.fin) }));
 }
 
 /**

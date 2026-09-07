@@ -1219,10 +1219,10 @@ verificar que cabe en los 4,5 MB. Casi ninguno se ve leyendo el código: se ven
 ejecutándolo y midiendo. Si algo no cumple, sale con error y lo dice en español.
 
 Cada paso se puede lanzar por separado con `npm run datos`, `npm run invariantes`,
-`npm run cola`, `npm run audio`, `npm run ajustes`, `npm run freno`,
-`npm run anotar`, `npm run banco`, `npm run veo`, `npm run pantalla`,
-`npm run fallos`, `npm run zip`, `npm run difusion`, `npm run reel` y
-`npm run pesar`. Y
+`npm run cola`, `npm run audio`, `npm run subtitulos`, `npm run ajustes`,
+`npm run freno`, `npm run anotar`, `npm run banco`, `npm run veo`,
+`npm run pantalla`, `npm run fallos`, `npm run zip`, `npm run difusion`,
+`npm run reel` y `npm run pesar`. Y
 `npm run archivo` reescribe los 56 planos de ambiente desde su tabla.
 
 ### «Already up to date» es la mentira más cara del proyecto
@@ -1420,6 +1420,39 @@ Ahora hay lista blanca —solo `.mp4`, `.mov`, `.mkv`, `.webm` y `.zip`— y lo
 interno vive **fuera** de esa carpeta. Dos cerrojos para el mismo fallo, porque
 el primero ya se demostró que no basta.
 
+#### Y un tercero, porque lo apuntado no se desapunta solo
+
+Con los dos cerrojos puestos, el paquete de Difusión **seguía bajando aquel
+texto**. La ficha decía «paquete hecho, 107 bytes» tan tranquila, y 107 bytes son
+exactamente lo que pesa una línea con el nombre de una ejecución.
+
+La causa: la cola apunta en `estado.montajes` lo que había cuando se montó. **El
+estado es un archivo del bucket, no se rehace solo**, y nadie va a ir a mano a
+limpiarlo desde un teléfono. Arreglar lo que se ofrece a partir de ahora no toca
+lo ya apuntado.
+
+Así que la lista blanca se aplica **también al leer**, en las tres pantallas. Lo
+que se apuntó mal deja de aparecer sin que haya que borrar nada.
+
+#### Y el botón que se quedaba «preparando la descarga…» para siempre
+
+Mirar un archivo y guardarlo son **dos URLs firmadas distintas** del mismo
+archivo. Se piden en dos tandas seguidas, y ahí había dos fallos encadenados:
+
+- si fallaba la tanda de **mirar**, la de **descargar** no llegaba a pedirse
+  nunca;
+- y si fallaba la de descargar, **no se apuntaba en ninguna parte**: ni había
+  enlace, ni queja, ni forma de saber que se había intentado. En pantalla solo
+  quedaba ese texto en gris, quieto.
+
+Ahora cada tanda se intenta pase lo que pase con la otra, y lo que no sale se
+apunta y **se dice**, con el botón de volver a pedirlo al lado.
+
+Lo que **no** se hace es poner ahí la URL de mirar, que sí está: esa **abre** el
+archivo en una pestaña en vez de guardarlo, y ese fue el fallo original. Un botón
+que no cumple lo que dice es peor que ninguno. Hay una comprobación que lo
+impide.
+
 ### Un subtítulo estimado se quema igual que uno medido
 
 Los subtítulos salían desplazados: el primero se quedaba pegado después de que la
@@ -1457,6 +1490,73 @@ marca**.
 Así que un bloque medido por la cola quedaba indistinguible de uno bien medido —y
 con él se queman subtítulos a ojo sin que nadie pueda saberlo mirando. Es
 exactamente lo que se vio en el teaser. Ahora las dos rutas guardan lo mismo.
+
+### Dónde acaba una línea lo dice el silencio, no la aritmética
+
+Con los tiempos ya medidos, el teaser **seguía descuadrado**. Y era otra cosa.
+
+Las palabras que reconoce Google se repartían entre las líneas **en proporción a
+cuántos caracteres japoneses tiene cada una**. Eso da *más o menos* el sitio. Con
+voz, «más o menos» significa esto:
+
+- una línea se corta a mitad de palabra y la voz suena truncada;
+- la siguiente se queda con un rabo de dos décimas, así que **el subtítulo
+  aparece y no se oye a nadie decirlo**.
+
+Contar caracteres dice por dónde va cada línea. Quien sabe **exactamente** dónde
+acaba una y empieza otra es el propio audio: ahí hay un silencio, y no lo hay en
+medio de una frase.
+
+Ahora el reparto proporcional es solo el **esqueleto**, y después cada corte se
+**arrastra al silencio más ancho que tenga cerca**, sin poder invadir a los
+vecinos. El esqueleto evita confundir una pausa dramática con un cambio de línea;
+el silencio evita cortar donde nadie calla.
+
+### Un subtítulo tiene que decir lo que se está oyendo mientras se oye
+
+Este no estaba desplazado: estaba **entero**. La madre dice, despacio:
+
+> No dejes que te vean … este lugar … destruye lo que brilla
+
+con dos pausas largas de por medio. **No son de escritura, son de
+interpretación**: no hay ningún punto ahí donde ella calla. Y el subtítulo se
+plantaba completo desde la primera palabra hasta la última, así que durante los
+dos segundos de la segunda pausa el texto en pantalla era, a la vez, algo que ya
+se había dicho y algo que todavía no.
+
+Escribir a mano dónde se parte cada frase de cada episodio no se sostiene: son
+doce capítulos. **Se hace solo.**
+
+La medida de tiempos devuelve ahora, además de la entrada y la salida de cada
+línea, **los pedazos en los que se dice** —separados por las pausas que tiene el
+audio de verdad—. El montaje saca **un subtítulo por pedazo**, y el español se
+reparte entre ellos en proporción a lo que dura cada uno, prefiriendo cortar
+donde la frase ya tiene una coma o un punto. Con esa frase sale exactamente:
+
+| Pedazo | Texto |
+| --- | --- |
+| 1 | `No dejes que te vean.` |
+| 2 | `Este lugar` |
+| 3 | `destruye lo que brilla.` |
+
+Tres detalles que no son adorno:
+
+- **La voz no se parte.** Es una sola intervención y suena seguida. Lo que se
+  parte es el texto que se lee encima.
+- **Cada pedazo se queda hasta que entra el siguiente.** Si se quitara al acabar
+  su voz, la pantalla quedaría en blanco durante la pausa y eso se ve como un
+  parpadeo.
+- **Un pedazo de menos de 0,8 s se junta con el de al lado.** Un subtítulo de
+  tres décimas no se lee: es un destello.
+
+Si la línea se dice del tirón, no vienen pedazos y el subtítulo es uno solo, como
+siempre.
+
+> **Los bloques medidos antes de esto hay que volver a medirlos.** No se rompe
+> nada —una medida vieja no trae pedazos y el subtítulo sale de una pieza, como
+> antes—, pero ni las pausas ni los cortes por silencio existen hasta que se
+> vuelve a pulsar «Medir los tiempos» en Audio. La voz **no** hay que volver a
+> generarla: se mide sobre la que ya está.
 
 ### El censor rompía un nombre, y el error decía otra cosa
 
@@ -1546,6 +1646,22 @@ coloca la pieza en el montaje y arrastra todo lo que va detrás, así que antes 
 inventarse un número se falla y se dice por qué. Y el formato se decide mirando
 los bytes, no la etiqueta: un `audio/mpeg` cuyos bytes no sean de MP3 no se
 guarda como MP3.
+
+`npm run audio` prueba además **dónde acaba cada línea dentro del bloque**: se le
+dan palabras con tiempos puestos a mano —con silencios donde se sabe— y se mira
+si los cortes caen ahí y no en la cuenta de caracteres.
+
+### Y `npm run subtitulos` prueba la frase de verdad
+
+`herramientas/probar-subtitulos.mjs` carga la pantalla de Montaje sin DOM y le
+pide que parta **la frase que salió mal en el teaser**, con los tiempos que tenía,
+contra los tres pedazos que se pidieron. Si algún día alguien toca el reparto y
+esa frase deja de partirse así, se pone rojo con el texto que sale y el que
+debería salir.
+
+Comprueba también lo que hace cuando el reparto no cabe: más pausas que palabras,
+una sola palabra, texto vacío. Ninguno de esos casos puede dejar un subtítulo sin
+texto ni un tiempo sin duración, porque **un subtítulo se quema en la imagen**.
 
 ---
 

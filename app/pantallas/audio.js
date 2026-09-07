@@ -393,11 +393,13 @@ function vozGuardada(estado, clave) {
     tramos: lineas.map((tramo) => ({
       inicio: Number(tramo && tramo.inicio) || 0,
       fin: Number(tramo && tramo.fin) || 0,
-      // `estimado` solo viene cuando la medida se ha pedido desde aquí: la cola
-      // guarda únicamente inicio y fin. Sin el campo no se sabe, y eso también
-      // se dice con palabras en vez de darlo por medido.
+      // Sin el campo no se sabe si se midió o se repartió a ojo, y eso también
+      // se dice con palabras en vez de darlo por medido. Lo guardan los dos
+      // caminos —esta pantalla y la cola—, pero una medida vieja puede no
+      // traerlo, y una medida vieja es justo la que no hay que dar por buena.
       estimado:
-        tramo && typeof tramo.estimado === 'boolean' ? tramo.estimado : null
+        tramo && typeof tramo.estimado === 'boolean' ? tramo.estimado : null,
+      trozos: trozosMedidos(tramo)
     }))
   };
 }
@@ -1834,9 +1836,47 @@ function textoDelTramo(tramo, ruta) {
   const donde = `Dentro del archivo: de ${segundos(tramo.inicio)} a ${segundos(tramo.fin)} ` +
     `(${segundos(dura)}).`;
 
-  if (tramo.estimado === true) return `${donde} Estimado, no medido.`;
-  if (tramo.estimado === false) return `${donde} Medido sobre el audio.`;
-  return `${donde} Sin marca de si se midió o se estimó.`;
+  // CUÁNTAS PAUSAS TIENE DENTRO, que es lo que decide en cuántos subtítulos se
+  // parte. No es un detalle de máquina: se ve en pantalla porque es lo que
+  // explica por qué una frase larga sale en tres pedazos y no en uno.
+  const partido = tramo.trozos.length > 1
+    ? ` Se dice en ${tramo.trozos.length} pedazos, con ` +
+      `${tramo.trozos.length - 1 === 1 ? 'una pausa' : `${tramo.trozos.length - 1} pausas`} ` +
+      'dentro: el subtítulo se parte por ahí.'
+    : '';
+
+  if (tramo.estimado === true) return `${donde} Estimado, no medido.${partido}`;
+  if (tramo.estimado === false) return `${donde} Medido sobre el audio.${partido}`;
+  return `${donde} Sin marca de si se midió o se estimó.${partido}`;
+}
+
+/**
+ * Los pedazos medidos de una línea, saneados.
+ *
+ * Un pedazo al revés, sin números o que se solapa con el anterior movería un
+ * subtítulo a un sitio que no existe, y un subtítulo se QUEMA en la imagen. Lo
+ * que no cuadra no se guarda a medias: se tira la lista entera y la línea vuelve
+ * a ser un subtítulo de una pieza, que es como funcionaba antes de que esto
+ * existiera.
+ *
+ * @param {object} tramo
+ * @returns {{inicio:number, fin:number}[]}
+ */
+function trozosMedidos(tramo) {
+  const crudos = Array.isArray(tramo && tramo.trozos) ? tramo.trozos : [];
+  if (crudos.length < 2) return [];
+
+  const trozos = [];
+  for (const uno of crudos) {
+    const inicio = Number(uno && uno.inicio);
+    const fin = Number(uno && uno.fin);
+    if (!Number.isFinite(inicio) || !Number.isFinite(fin) || !(fin > inicio)) return [];
+    const anterior = trozos[trozos.length - 1];
+    if (anterior && inicio < anterior.fin) return [];
+    trozos.push({ inicio, fin });
+  }
+
+  return trozos;
 }
 
 // ---------------------------------------------------------------------------
@@ -1962,8 +2002,11 @@ async function alinearBloque(ctx, bloque) {
         // como `{inicio, fin}` y §12 no dice qué se hace cuando el
         // reconocimiento vuelve corto y hay que repartir a ojo. Se guarda
         // `estimado` porque un tiempo medido y uno estimado no valen lo mismo y
-        // con ellos se queman los subtítulos. Que se revise.
-        estimado: Boolean(tramo && tramo.estimado)
+        // con ellos se queman los subtítulos. Y se guarda `trozos`, que es por
+        // dónde se parte el subtítulo cuando la línea se dice con pausas dentro.
+        // Que se revise.
+        estimado: Boolean(tramo && tramo.estimado),
+        trozos: trozosMedidos(tramo)
       }));
     });
   } catch (fallo) {

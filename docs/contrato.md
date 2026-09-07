@@ -1099,3 +1099,63 @@ falta.
 Lo que la comprobación **no** hace, y conviene saberlo: no lee la prosa. Puede
 decir que el README nombra el `ending`; no puede decir si lo que cuenta de él es
 verdad. Eso sigue siendo de quien escribe.
+
+### 13.9 `alinear` devuelve además cómo se dice cada línea
+
+Enmienda a §12 (`alinear`) y a §5 (el estado guardado). §12 escribe el resultado
+como `[{inicio, fin}]` y no dice nada de dos casos que sí pasan.
+
+**Firma real:**
+
+```js
+export async function alinear(wav, lineas)
+// → [{ inicio, fin, estimado?: true, trozos?: [{ inicio, fin }] }]
+```
+
+Y por la puerta:
+
+```js
+{ modo:"alinear", ruta:"audio/voz/teaser/madre.wav", lineas:[{ja}] }
+→ { ok:true, lineas:[ { inicio, fin, estimado?, trozos? } ] }
+```
+
+Los dos campos son **opcionales** y ninguno de los dos aparece siempre:
+
+`estimado: true` — solo cuando el reconocimiento vuelve con menos palabras que
+líneas y la duración se ha repartido en proporción al japonés. Un tiempo medido y
+uno a ojo **no valen lo mismo**: con subtítulos, un tramo estimado para el
+montaje, porque un subtítulo se quema en la imagen y no se arregla después.
+
+`trozos` — los pedazos en los que se dice esa línea, separados por las pausas que
+tiene el audio. Solo viene si hay **más de uno**; una línea dicha del tirón no lo
+trae. El primero empieza donde la línea y el último acaba donde la línea. Ningún
+pedazo dura menos de 0,8 s: los más cortos se juntan con el de al lado, porque un
+subtítulo de tres décimas parpadea en vez de leerse.
+
+**Dónde se corta entre líneas.** El reparto proporcional a los caracteres
+japoneses es el esqueleto; después cada corte se arrastra al **silencio más ancho
+que tenga cerca**, sin invadir a los vecinos. Contar caracteres da *más o menos*
+el sitio; quien sabe exactamente dónde acaba una línea y empieza otra es el audio.
+
+**En el estado** (§5), cada entrada de `audio.voz[clave].lineas[]` guarda los
+cuatro campos, y **las dos rutas que miden guardan lo mismo**: la pantalla de
+Audio y la cola. Que una de las dos perdiera un campo ya hizo que se quemaran
+subtítulos a ojo sin que se pudiera saber mirando.
+
+```json
+{ "inicio": 0.2, "fin": 5.8, "estimado": false,
+  "trozos": [ { "inicio": 0.2, "fin": 1.3 },
+              { "inicio": 2.0, "fin": 3.2 },
+              { "inicio": 4.1, "fin": 5.8 } ] }
+```
+
+**Qué hace el montaje con ellos.** Un subtítulo **por trozo**, no por línea. El
+español se reparte entre los trozos en proporción a lo que dura cada uno,
+prefiriendo cortar donde la frase ya tiene una coma o un punto, y cada uno se
+queda puesto **hasta que entra el siguiente** —quitarlo al acabar su voz dejaría
+la pantalla en blanco durante la pausa, y eso parpadea—. La **voz no se parte**:
+es una sola intervención y se corta por `inicio`/`fin` de la línea entera.
+
+Una medida hecha antes de esta enmienda no trae `trozos`, y entonces el subtítulo
+sale de una pieza, como antes. No se rompe nada; hay que volver a medir para que
+existan.
