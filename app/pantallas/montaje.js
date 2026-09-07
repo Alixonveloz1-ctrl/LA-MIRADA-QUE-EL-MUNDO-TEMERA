@@ -113,6 +113,20 @@ let promesaDeLaSerie = null;
 /** Ruta lógica → `{ url, hasta }`. Las URL firmadas se reaprovechan. */
 const enlaces = new Map();
 
+/**
+ * Ruta lógica → `{ url, hasta }`, pero para DESCARGAR. Son otras URLs.
+ *
+ * El atributo `download` de un enlace HTML NO SIRVE entre dominios, y el bucket
+ * siempre es otro dominio: el navegador se lo salta sin decir nada y ABRE el
+ * vídeo en una pestaña en vez de guardarlo. Lo único que lo cambia es que Google
+ * mande `Content-Disposition: attachment`, y eso se le pide al firmar.
+ *
+ * Se guardan aparte de las de mirar porque son dos URLs distintas del mismo
+ * archivo, y porque una URL de descarga puesta en un reproductor es un riesgo
+ * que no hace falta correr.
+ */
+const enlacesDeDescarga = new Map();
+
 /** Rutas por las que ya se preguntó y no hay enlace: no se insiste solo. */
 const sinEnlace = new Set();
 
@@ -1247,11 +1261,36 @@ function componerVoz(modelo, ambito, estado, salida) {
     });
   }
   if (estimados.length) {
-    notas.push(
-      `${plural(estimados.length, 'bloque tiene', 'bloques tienen')} algún tramo estimado en vez de ` +
-        `medido (${enumerar(estimados, 6)}). Se puede montar, pero algún subtítulo puede entrar o ` +
-        'salir un poco desplazado; volver a medirlos en Audio suele arreglarlo.'
-    );
+    // CON SUBTÍTULOS, UN TRAMO ESTIMADO NO ES UN AVISO: ES UN FALLO.
+    //
+    // Esto era una nota que decía «puede entrar o salir un poco desplazado». Y
+    // lo que pasa de verdad es peor: el primer subtítulo se queda pegado después
+    // de que la voz haya terminado, el siguiente entra tarde, el otro pronto, y
+    // a partir de ahí el texto ya no tiene nada que ver con lo que se oye. Se
+    // vio en el teaser montado.
+    //
+    // Un subtítulo se QUEMA en la imagen. No se arregla luego: hay que volver a
+    // montar la pieza entera, otra vez los minutos de máquina. Así que si va a
+    // haber subtítulos, esto para el montaje, igual que para cualquier otra cosa
+    // que no se pueda deshacer.
+    //
+    // Sin subtítulos sigue siendo una nota: ahí lo estimado solo mueve un poco
+    // dónde se corta la voz, y eso se oye y se juzga.
+    const donde = { texto: '', donde: '#audio' };
+    donde.texto =
+      `${plural(estimados.length, 'bloque tiene', 'bloques tienen')} los tiempos ESTIMADOS y no ` +
+      `medidos (${enumerar(estimados, 6)}). ` +
+      (ambito.conSubtitulos
+        ? 'Con tiempos estimados los subtítulos salen desplazados: uno se queda pegado después de ' +
+          'que la voz haya terminado, el siguiente entra tarde, y a partir de ahí el texto deja de ' +
+          'corresponder con lo que se oye. Y un subtítulo se QUEMA en la imagen: no se arregla ' +
+          'después, hay que volver a montar la pieza entera. Mídelos en la pantalla de Audio, con ' +
+          'el botón de medir los tiempos de la voz, y vuelve.'
+        : 'Se puede montar: sin subtítulos, lo estimado solo mueve un poco dónde se corta cada ' +
+          'línea, y eso se oye. Medirlos en Audio lo deja fino.');
+
+    if (ambito.conSubtitulos) faltas.push(donde);
+    else notas.push(donde.texto);
   }
 }
 
@@ -2068,15 +2107,18 @@ function tarjetaDeLoMontado(ctx, montaje) {
 
   const acciones = h('div', { clase: 'tarjeta-acciones' });
 
-  if (url) {
+  const urlDeGuardar = enlaceDeDescarga(montaje.ruta);
+  if (urlDeGuardar) {
     acciones.appendChild(
       h(
         'a',
         {
           clase: 'boton boton-principal',
-          href: url,
+          href: urlDeGuardar,
           download: montaje.ruta.slice(montaje.ruta.lastIndexOf('/') + 1),
-          target: '_blank',
+          // SIN `target: _blank`. Con la cabecera de adjunto, el navegador
+          // descarga y no navega; abrir una pestaña para eso deja una pestaña en
+          // blanco abierta, que en un móvil se acumula y estorba.
           rel: 'noopener'
         },
         peso ? `Descargar (${bytes(peso.bytes)})` : 'Descargar'
@@ -2259,12 +2301,21 @@ function siguienteVersion(estado, ambito) {
 // Las URL firmadas y los pesos
 // ---------------------------------------------------------------------------
 
-/** El enlace de una ruta, si lo hay y todavía sirve. */
+/** El enlace de una ruta para MIRARLA, si lo hay y todavía sirve. */
 function enlaceDe(ruta) {
-  const guardado = enlaces.get(ruta);
+  return deLaCaja(enlaces, ruta);
+}
+
+/** El enlace de una ruta para GUARDARLA. Ver `enlacesDeDescarga`. */
+function enlaceDeDescarga(ruta) {
+  return deLaCaja(enlacesDeDescarga, ruta);
+}
+
+function deLaCaja(caja, ruta) {
+  const guardado = caja.get(ruta);
   if (!guardado) return null;
   if (guardado.hasta <= Date.now()) {
-    enlaces.delete(ruta);
+    caja.delete(ruta);
     return null;
   }
   return guardado.url;
@@ -2274,35 +2325,47 @@ function enlaceDe(ruta) {
 function pedirEnlacesQueFalten(rutas, repintar) {
   if (pidiendoEnlaces) return;
 
-  const faltan = [...new Set(rutas)].filter((ruta) => !enlaceDe(ruta) && !sinEnlace.has(ruta));
-  if (!faltan.length) return;
+  const todas = [...new Set(rutas)].filter(Boolean);
+  const paraVer = todas.filter((ruta) => !enlaceDe(ruta) && !sinEnlace.has(ruta));
+  const paraBajar = todas.filter((ruta) => !enlaceDeDescarga(ruta) && !sinEnlace.has(ruta));
+  if (!paraVer.length && !paraBajar.length) return;
 
   pidiendoEnlaces = true;
   quejaDeEnlaces = null;
 
   (async () => {
-    for (let i = 0; i < faltan.length; i += MAXIMO_POR_FIRMA) {
-      const lote = faltan.slice(i, i + MAXIMO_POR_FIRMA);
-      const respuesta = await llamar('firmar', { rutas: lote });
-      const dadas = esObjeto(respuesta) && esObjeto(respuesta.urls) ? respuesta.urls : {};
-      for (const ruta of lote) {
-        const url = dadas[ruta];
-        if (typeof url === 'string' && url) {
-          enlaces.set(ruta, { url, hasta: Date.now() + VIDA_DE_URL_MS });
-        } else {
-          sinEnlace.add(ruta);
-        }
-      }
-    }
+    // Dos tandas: las de mirar y las de guardar. Son URLs distintas del mismo
+    // archivo y hacen falta las dos.
+    await pedirTanda(paraVer, enlaces, false);
+    await pedirTanda(paraBajar, enlacesDeDescarga, true);
   })()
     .catch((fallo) => {
       quejaDeEnlaces = comoErrorDeCara(fallo);
-      for (const ruta of faltan) if (!enlaceDe(ruta)) sinEnlace.add(ruta);
+      for (const ruta of paraVer) if (!enlaceDe(ruta)) sinEnlace.add(ruta);
     })
     .finally(() => {
       pidiendoEnlaces = false;
       repintar();
     });
+}
+
+/** Pide una tanda de firmas y las guarda en su caja. */
+async function pedirTanda(rutas, caja, descargar) {
+  for (let i = 0; i < rutas.length; i += MAXIMO_POR_FIRMA) {
+    const lote = rutas.slice(i, i + MAXIMO_POR_FIRMA);
+    const respuesta = await llamar('firmar', descargar ? { rutas: lote, descargar: true } : { rutas: lote });
+    const dadas = esObjeto(respuesta) && esObjeto(respuesta.urls) ? respuesta.urls : {};
+    for (const ruta of lote) {
+      const url = dadas[ruta];
+      if (typeof url === 'string' && url) {
+        caja.set(ruta, { url, hasta: Date.now() + VIDA_DE_URL_MS });
+      } else if (!descargar) {
+        // Solo las de mirar cuentan como imposibles: sin la de descargar, el
+        // vídeo se sigue reproduciendo, que es lo que más importa.
+        sinEnlace.add(ruta);
+      }
+    }
+  }
 }
 
 /** Tira todos los enlaces guardados y vuelve a pedirlos. */

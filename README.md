@@ -1316,6 +1316,54 @@ decisión y no un descuido — y quien quiera el cinturón de más lo tiene: pon
 Salud lo dice en la tarjeta del montador, y **nunca enseña el valor**: solo si hay
 clave o no.
 
+### Descargar tenía que descargar
+
+Pulsar «Descargar el montaje» **abría el vídeo en una pestaña**. Se podía ver, y
+no había forma de guardarlo. Lo mismo con el zip.
+
+El atributo `download` de un enlace HTML **no sirve entre dominios**, y aquí
+siempre lo son: todo vive en el bucket. El navegador se lo salta sin decir nada.
+
+Lo único que lo cambia es que **Google mande `Content-Disposition: attachment`**,
+y eso se le pide **dentro de la firma**. Va firmado, así que nadie puede añadirlo
+ni quitarlo por su cuenta: forma parte de la URL o no está.
+
+Cada archivo tiene ahora **dos URLs**: una para mirar —la que va en el `<video>` o
+el `<img>`— y otra para guardar. Se piden en dos tandas y se guardan en dos
+sitios, porque poner una URL de descarga en un reproductor es un riesgo que no
+hace falta correr.
+
+### Un archivo interno ofrecido como si fuera la película
+
+`montaje/{trabajo}/` es donde el montador deja lo que ha hecho, y se listaba
+entera **menos dos archivos**. Eso es una lista negra: se rompe sola en cuanto
+alguien deja ahí un archivo más.
+
+Pasó al día siguiente de escribirla. Un índice interno acabó en esa carpeta, y el
+botón de descargar el montaje abría **un texto con el nombre de una ejecución de
+Cloud Run**.
+
+Ahora hay lista blanca —solo `.mp4`, `.mov`, `.mkv`, `.webm` y `.zip`— y lo
+interno vive **fuera** de esa carpeta. Dos cerrojos para el mismo fallo, porque
+el primero ya se demostró que no basta.
+
+### Un subtítulo estimado se quema igual que uno medido
+
+Los subtítulos salían desplazados: el primero se quedaba pegado después de que la
+voz terminara, el siguiente entraba tarde, y a partir de ahí el texto dejaba de
+corresponder con lo que se oía.
+
+La causa: los tiempos de las líneas estaban **estimados** y no medidos. Y eso era
+solo una **nota** que decía «puede entrar o salir un poco desplazado».
+
+Un subtítulo **se quema en la imagen**. No se arregla después: hay que volver a
+montar la pieza entera, otra vez los minutos de máquina. Así que ahora, **si va a
+haber subtítulos, un tramo estimado para el montaje**, con el mismo criterio que
+todo lo demás que no se puede deshacer. Se miden con un botón en Audio.
+
+Sin subtítulos sigue siendo una nota: ahí lo estimado solo mueve un poco dónde se
+corta cada línea, y eso se oye y se juzga.
+
 ### El censor rompía un nombre, y el error decía otra cosa
 
 Este es el fallo que más caro salió, y era invisible.

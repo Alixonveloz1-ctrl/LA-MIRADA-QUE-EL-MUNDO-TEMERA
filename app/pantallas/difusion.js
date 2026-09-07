@@ -99,8 +99,23 @@ const CAPA_DEL_PAQUETE = 'paquete';
 /** `datos/serie.json`, pedido una sola vez. */
 let promesaDeLaSerie = null;
 
-/** Ruta lógica → `{ url, hasta }`. */
+/** Ruta lógica → `{ url, hasta }`, para MIRAR: la imagen o el vídeo en pantalla. */
 const enlaces = new Map();
+
+/**
+ * Ruta lógica → `{ url, hasta }`, para DESCARGAR. Son otras URLs, y hacen falta.
+ *
+ * El atributo `download` de un enlace HTML NO SIRVE cuando el archivo está en
+ * otro dominio, y aquí siempre lo está: todo vive en el bucket. El navegador se
+ * lo salta sin decir nada y ABRE el archivo en una pestaña en vez de guardarlo.
+ * Eso es lo que pasaba: se pulsaba «Descargar» y se abría el vídeo.
+ *
+ * Lo único que lo cambia es que Google mande `Content-Disposition: attachment`,
+ * y eso se le pide al firmar. Se guardan aparte de las de mirar porque son dos
+ * URLs distintas del mismo archivo, y porque una URL de descarga puesta en un
+ * `<video>` es un riesgo que no hace falta correr.
+ */
+const enlacesDeDescarga = new Map();
 
 /** Rutas por las que ya se preguntó y no hay enlace. */
 const sinEnlace = new Set();
@@ -556,7 +571,7 @@ function tarjetaDePieza(ctx, laPieza) {
         h(
           'p',
           { clase: 'tarjeta-texto' },
-          h('a', { href: url, download: '', clase: 'enlace' }, 'Descargar el paquete')
+          enlaceParaGuardar(paquete.ruta, 'Descargar el paquete')
         )
       );
     }
@@ -784,7 +799,7 @@ function tarjetaDeReel(ctx, laPieza) {
         h(
           'p',
           { clase: 'tarjeta-texto' },
-          h('a', { href: url, download: '', clase: 'enlace' }, 'Descargar el reel')
+          enlaceParaGuardar(hecho.ruta, 'Descargar el reel')
         )
       );
     }
@@ -1089,7 +1104,7 @@ function tarjetaDePoster(ctx, elPoster) {
       h(
         'p',
         { clase: 'tarjeta-texto' },
-        h('a', { href: url, download: '', clase: 'enlace' }, 'Descargar esta imagen')
+        enlaceParaGuardar(ruta, 'Descargar esta imagen')
       )
     );
   }
@@ -1504,10 +1519,30 @@ function estaEnMarcha(trabajo) {
 // ---------------------------------------------------------------------------
 
 function enlaceDe(ruta) {
-  const guardado = enlaces.get(ruta);
+  return deLaCaja(enlaces, ruta);
+}
+
+/**
+ * El enlace de guardar de una ruta. Si su URL de descarga todavía no ha llegado,
+ * se dice con palabras en vez de poner un enlace que abriría el archivo: abrirlo
+ * es justo lo que no se quiere.
+ */
+function enlaceParaGuardar(ruta, texto) {
+  const url = enlaceDeDescarga(ruta);
+  if (!url) return h('span', { clase: 'tenue' }, 'Preparando la descarga…');
+  return h('a', { href: url, download: '', clase: 'enlace' }, texto);
+}
+
+/** El enlace con el que se DESCARGA una ruta, si ya se ha pedido. */
+function enlaceDeDescarga(ruta) {
+  return deLaCaja(enlacesDeDescarga, ruta);
+}
+
+function deLaCaja(caja, ruta) {
+  const guardado = caja.get(ruta);
   if (!guardado) return null;
   if (guardado.hasta <= Date.now()) {
-    enlaces.delete(ruta);
+    caja.delete(ruta);
     return null;
   }
   return guardado.url;
@@ -1516,35 +1551,48 @@ function enlaceDe(ruta) {
 function pedirEnlacesQueFalten(rutas, repintar) {
   if (pidiendoEnlaces) return;
 
-  const faltan = [...new Set(rutas)].filter((ruta) => ruta && !enlaceDe(ruta) && !sinEnlace.has(ruta));
-  if (!faltan.length) return;
+  const todas = [...new Set(rutas)].filter(Boolean);
+  const paraVer = todas.filter((ruta) => !enlaceDe(ruta) && !sinEnlace.has(ruta));
+  const paraBajar = todas.filter((ruta) => !enlaceDeDescarga(ruta) && !sinEnlace.has(ruta));
+  if (!paraVer.length && !paraBajar.length) return;
 
   pidiendoEnlaces = true;
   quejaDeEnlaces = null;
 
   (async () => {
-    for (let i = 0; i < faltan.length; i += MAXIMO_POR_FIRMA) {
-      const lote = faltan.slice(i, i + MAXIMO_POR_FIRMA);
-      const respuesta = await llamar('firmar', { rutas: lote });
-      const dadas = esObjeto(respuesta) && esObjeto(respuesta.urls) ? respuesta.urls : {};
-      for (const ruta of lote) {
-        const url = dadas[ruta];
-        if (typeof url === 'string' && url) {
-          enlaces.set(ruta, { url, hasta: Date.now() + VIDA_DE_URL_MS });
-        } else {
-          sinEnlace.add(ruta);
-        }
-      }
-    }
+    // Dos tandas: las de mirar y las de descargar. Son URLs distintas del mismo
+    // archivo, y hacen falta las dos: una se pone en el `<video>` y la otra en
+    // el enlace de guardar.
+    await pedirTanda(paraVer, enlaces, false);
+    await pedirTanda(paraBajar, enlacesDeDescarga, true);
   })()
     .catch((fallo) => {
       quejaDeEnlaces = comoErrorDeCara(fallo);
-      for (const ruta of faltan) if (!enlaceDe(ruta)) sinEnlace.add(ruta);
+      for (const ruta of paraVer) if (!enlaceDe(ruta)) sinEnlace.add(ruta);
     })
     .finally(() => {
       pidiendoEnlaces = false;
       repintar();
     });
+}
+
+/** Pide una tanda de firmas y las guarda en su caja. */
+async function pedirTanda(rutas, caja, descargar) {
+  for (let i = 0; i < rutas.length; i += MAXIMO_POR_FIRMA) {
+    const lote = rutas.slice(i, i + MAXIMO_POR_FIRMA);
+    const respuesta = await llamar('firmar', descargar ? { rutas: lote, descargar: true } : { rutas: lote });
+    const dadas = esObjeto(respuesta) && esObjeto(respuesta.urls) ? respuesta.urls : {};
+    for (const ruta of lote) {
+      const url = dadas[ruta];
+      if (typeof url === 'string' && url) {
+        caja.set(ruta, { url, hasta: Date.now() + VIDA_DE_URL_MS });
+      } else if (!descargar) {
+        // Solo las de mirar se apuntan como imposibles: si falla la de
+        // descargar, la imagen se sigue viendo y eso es lo que importa.
+        sinEnlace.add(ruta);
+      }
+    }
+  }
 }
 
 /** Lo que pesa algo, si se sabe. */

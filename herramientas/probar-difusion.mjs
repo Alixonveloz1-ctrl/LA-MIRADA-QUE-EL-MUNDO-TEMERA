@@ -479,5 +479,51 @@ try {
     'Una pieza que no existe se rechaza con palabras y con la lista de las que hay');
 }
 
+// ── DESCARGAR TIENE QUE DESCARGAR ─────────────────────────────────────────
+//
+// El atributo `download` de un enlace HTML NO SIRVE entre dominios, y el bucket
+// SIEMPRE es otro dominio. El navegador se lo salta sin decir nada y ABRE el
+// archivo en una pestaña. Así que «Descargar el montaje» abría el vídeo y no
+// había manera de guardarlo, y «Descargar el paquete» abría el zip.
+//
+// Lo único que lo cambia es que Google mande «Content-Disposition: attachment»,
+// y eso va FIRMADO dentro de la URL.
+console.log('\n  DESCARGAR DESCARGA, EN VEZ DE ABRIR\n');
+
+const codigoDeGcs = readFileSync(`${RAIZ}api/_lib/gcs.js`, 'utf8');
+di(/response-content-disposition/.test(codigoDeGcs),
+  'La firma sabe pedirle a Google que mande el archivo como adjunto');
+di(/attachment; filename=/.test(codigoDeGcs),
+  'Y con su nombre, para que no se guarde como un montón de letras');
+di(/function nombreDeArchivo/.test(codigoDeGcs) && /\["\\\\/.test(codigoDeGcs),
+  'Y ese nombre se limpia: una comilla suelta partiría la cabecera en dos');
+
+const codigoDeDifusion = readFileSync(`${RAIZ}app/pantallas/difusion.js`, 'utf8');
+di(/enlacesDeDescarga/.test(codigoDeDifusion),
+  'Difusión guarda las URLs de descargar aparte de las de mirar');
+// Lo que importa no es que no exista un `<a download>` —existe, y es el bueno—,
+// sino DE QUÉ CAJA saca su URL: de la de descargar y no de la de mirar.
+const elAyudante = /function enlaceParaGuardar\(ruta, texto\) \{[\s\S]*?\n\}/.exec(codigoDeDifusion);
+di(Boolean(elAyudante) && /enlaceDeDescarga\(ruta\)/.test(elAyudante[0]),
+  'Y el enlace de guardar saca su URL de la caja de descargar, no de la de mirar');
+di(Boolean(elAyudante) && !/enlaceDe\(ruta\)/.test(elAyudante[0]),
+  'Nunca de la de mirar: esa abre el archivo en una pestaña y no lo guarda');
+
+const codigoDeMontaje = readFileSync(`${RAIZ}app/pantallas/montaje.js`, 'utf8');
+di(/enlaceDeDescarga\(montaje\.ruta\)/.test(codigoDeMontaje),
+  'Y Montaje descarga con la suya, no con la de reproducir');
+
+// ── Y LO INTERNO NO SE OFRECE COMO SI FUERA LA PELÍCULA ───────────────────
+//
+// La carpeta «montaje/{trabajo}/» es donde el montador deja lo que ha hecho, y
+// se listaba entera menos dos archivos. Eso es una lista negra: se rompe sola en
+// cuanto alguien deja ahí un archivo más. Pasó — un índice interno acabó dentro
+// y el botón de descargar abría un texto con un nombre de ejecución.
+const codigoDelMontajeApi = readFileSync(`${RAIZ}api/_lib/montaje.js`, 'utf8');
+di(/function esArchivoDeSalida/.test(codigoDelMontajeApi),
+  'Solo se ofrece lo que puede ser una salida de verdad, con lista blanca');
+di(/CARPETA_DE_EJECUCIONES}\/por-trabajo/.test(codigoDelMontajeApi),
+  'Y lo interno vive FUERA de la carpeta de las salidas');
+
 console.log(mal === 0 ? '\nTodo bien.\n' : `\n${mal} MAL.\n`);
 process.exit(mal ? 1 : 0);

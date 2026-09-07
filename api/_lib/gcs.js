@@ -217,7 +217,7 @@ export async function borrar(ruta) {
  * @param {{minutos?:number}} [opciones] validez; por defecto 6 horas.
  * @returns {Promise<Record<string,string>>} ruta lógica → URL firmada.
  */
-export async function firmar(rutas, { minutos = 360 } = {}) {
+export async function firmar(rutas, { minutos = 360, descargar = false } = {}) {
   const lista = Array.isArray(rutas) ? rutas : [rutas];
 
   if (lista.length > MAXIMO_RUTAS) {
@@ -270,6 +270,25 @@ export async function firmar(rutas, { minutos = 360 } = {}) {
       ['X-Goog-Expires', String(vigencia)],
       ['X-Goog-SignedHeaders', 'host']
     ];
+
+    // PARA QUE EL NAVEGADOR DESCARGUE EN VEZ DE ABRIR.
+    //
+    // El atributo `download` de un enlace HTML NO SIRVE cuando el archivo está
+    // en otro dominio, y aquí siempre lo está: el vídeo vive en el bucket. El
+    // navegador se lo salta sin decir nada y abre el MP4 en una pestaña. Eso es
+    // lo que pasaba al pulsar «Descargar el montaje»: se abría el vídeo, se
+    // podía ver, y no había manera de guardarlo.
+    //
+    // Lo único que lo cambia es que el propio Google mande la cabecera
+    // `Content-Disposition: attachment`, y eso se le pide en la firma. Como va
+    // firmado, nadie puede añadirlo ni quitarlo por su cuenta: forma parte de la
+    // URL o no está.
+    if (descargar) {
+      parametros.push([
+        'response-content-disposition',
+        `attachment; filename="${nombreDeArchivo(ruta)}"`
+      ]);
+    }
     const query = parametros
       .map(([c, v]) => [codificar(c), codificar(v)])
       .sort((a, b) => (a[0] < b[0] ? -1 : a[0] > b[0] ? 1 : a[1] < b[1] ? -1 : a[1] > b[1] ? 1 : 0))
@@ -505,6 +524,22 @@ function codificar(texto) {
   return encodeURIComponent(texto).replace(/[!'()*]/g, (c) =>
     `%${c.charCodeAt(0).toString(16).toUpperCase()}`
   );
+}
+
+/**
+ * El nombre con el que se guarda un archivo al descargarlo: el último tramo de
+ * su ruta lógica.
+ *
+ * Se limpia de comillas y de todo lo que no sea un nombre, porque va DENTRO de
+ * una cabecera entre comillas: una comilla suelta ahí la partiría en dos. Y si
+ * de la limpieza no queda nada, se pone un nombre cualquiera antes que mandar
+ * una cabecera rota.
+ */
+function nombreDeArchivo(ruta) {
+  const entero = String(ruta || '');
+  const ultimo = entero.slice(entero.lastIndexOf('/') + 1);
+  const limpio = ultimo.replace(/["\\\r\n]/g, '').trim();
+  return limpio || 'descarga';
 }
 
 /** Igual que codificar(), pero respetando las barras que separan carpetas. */

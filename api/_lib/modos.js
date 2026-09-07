@@ -1660,7 +1660,11 @@ async function modoEstadoEscribir(cuerpo) {
  */
 async function modoFirmar(cuerpo) {
   const rutas = exigirRutas(cuerpo, 'rutas', 'qué archivos hay que poder mirar u oír');
-  return { urls: await firmarRutas(rutas) };
+  // `descargar` pide que Google mande el archivo como adjunto en vez de
+  // enseñarlo. Hace falta porque el atributo `download` de un enlace HTML no
+  // sirve entre dominios, y el bucket siempre es otro dominio.
+  const descargar = cuerpo.descargar === true;
+  return { urls: await firmarRutas(rutas, { descargar }) };
 }
 
 /**

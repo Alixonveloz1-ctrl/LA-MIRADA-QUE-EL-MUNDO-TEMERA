@@ -620,6 +620,14 @@ async function buscarSalidas(trabajo) {
     for (const objeto of dentro) {
       if (objeto.ruta === rutaDelManifiesto(trabajo)) continue;
       if (objeto.ruta === rutaDeLaQueja(trabajo)) continue;
+      // Y ADEMÁS, SOLO LO QUE PUEDE SER UNA SALIDA DE VERDAD.
+      //
+      // Antes se ofrecía TODO lo que hubiera en la carpeta menos esos dos, y eso
+      // es una lista negra: se rompe sola en cuanto alguien deja ahí un archivo
+      // más. Pasó: un índice interno acabó ahí dentro y el botón de descargar el
+      // montaje abría un texto con un nombre de ejecución. Con una lista blanca,
+      // lo que se cuele mañana no llega a la pantalla.
+      if (!esArchivoDeSalida(objeto.ruta)) continue;
       if (!salidas.includes(objeto.ruta)) salidas.push(objeto.ruta);
     }
   } catch {
@@ -627,6 +635,19 @@ async function buscarSalidas(trabajo) {
   }
 
   return salidas;
+}
+
+/**
+ * Si una ruta puede ser algo que el montador HAYA HECHO, y no una nota suya.
+ *
+ * Un montaje deja un vídeo, y un paquete deja un zip. Cualquier otra cosa que
+ * aparezca en esa carpeta es de la máquina, no de quien mira la pantalla.
+ *
+ * @param {string} ruta
+ * @returns {boolean}
+ */
+function esArchivoDeSalida(ruta) {
+  return /\.(mp4|mov|mkv|webm|zip)$/i.test(String(ruta || ''));
 }
 
 /** La `salida` que pedía el manifiesto de este trabajo, leída del bucket. */
@@ -1511,15 +1532,24 @@ function rutaDeLaQueja(trabajo) {
 }
 
 /**
- * `montaje/{trabajo}/ejecucion.txt` — qué ejecución está haciendo este trabajo.
+ * `montaje/ejecuciones/por-trabajo/{trabajo}.txt` — qué ejecución está haciendo
+ * este trabajo.
  *
  * Es el índice al revés del de abajo, y es el que permite que el nombre de la
  * ejecución NO tenga que viajar al navegador: el navegador manda el nombre del
  * trabajo, que es suyo y no lleva ningún secreto dentro, y la ejecución se lee
  * de aquí.
+ *
+ * Y VIVE FUERA DE «montaje/{trabajo}/» A PROPÓSITO. Esa carpeta es donde el
+ * montador deja LO QUE HA HECHO, y `buscarSalidas()` la lista entera para saber
+ * qué se puede descargar. La primera versión de esto puso el archivo ahí dentro,
+ * y el resultado fue que el botón de descargar el montaje abría un texto con el
+ * nombre de la ejecución: un archivo interno ofrecido como si fuera la película.
+ * Lo interno va aparte, y así ningún archivo que se añada mañana puede colarse
+ * en las descargas.
  */
 function rutaDeLaEjecucion(trabajo) {
-  return `${CARPETA}/${trabajo}/ejecucion.txt`;
+  return `${CARPETA_DE_EJECUCIONES}/por-trabajo/${trabajo}.txt`;
 }
 
 /** `montaje/ejecuciones/{id}.txt` — a qué trabajo pertenece cada ejecución. */
