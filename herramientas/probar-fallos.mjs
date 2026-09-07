@@ -361,13 +361,15 @@ di(familia(salud.veredictoDelMontaje({ configurado: false, error: 'falta' })) ==
 // falla igual porque el job tiene su clave y Vercel no. Eso se sabe aquí, gratis,
 // porque el job ya se ha leído; y no saberlo costó horas buscando en los
 // permisos, en las APIs y hasta volviendo a instalarlo todo.
-const sinClave = veredicto('falta-la-clave');
-di(familia(sinClave) === 'fallido',
-  'Si el job tiene clave y Vercel no, ROJO: el montaje va a fallar siempre');
-di(/MONTAJE_KEY/.test(sinClave.texto) && /Cloud Run/.test(sinClave.texto),
-  'Y dice qué variable falta y de dónde se copia el valor');
-di(/Redeploy/.test(sinClave.texto),
-  'Y recuerda el Redeploy, que es lo que hace que parezca que no se ha puesto');
+const delJob = veredicto('clave-del-job');
+di(familia(delJob) === 'listo',
+  'Si el job tiene clave y Vercel no, NO es un fallo: la función la lee del job');
+di(/no hace falta ponerla/i.test(delJob.texto),
+  'Y lo dice, en vez de mandar a copiar a mano desde Cloud Shell');
+di(/credenciales de Google/.test(delJob.texto),
+  'Y dice cuál es el cerrojo de verdad, que son los papeles sobre Cloud Run');
+di(/Si prefieres/.test(delJob.texto),
+  'Y deja puesto el cinturón de más para quien lo quiera');
 
 const claveDeMas = veredicto('clave-de-mas');
 di(familia(claveDeMas) === 'listo' && /No es un fallo/.test(claveDeMas.texto),
@@ -447,6 +449,15 @@ di(/'montaje-estado', \{ trabajo: args\.trabajo \}/.test(codigoDeLaCola),
   'El navegador pregunta por el NOMBRE DEL TRABAJO, que no lleva secretos dentro');
 di(!/llamar\('montaje-estado', \{ ejecucion/.test(codigoDeLaCola),
   'Y ya no manda el nombre de la ejecución, que es lo que se rompía');
+
+// LA CLAVE DEL MONTADOR. La copia a mano desde Cloud Shell era el paso que
+// fallaba, y lo que protegía era casi nada: para lanzar el job ya hacen falta
+// credenciales de Google. Ahora la función la lee del propio job.
+const codigoDelMontaje = readFileSync(`${RAIZ}api/_lib/montaje.js`, 'utf8');
+di(/async function claveParaElEncargo/.test(codigoDelMontaje),
+  'La función sabe leer del job la clave que Vercel no tenga');
+di(/const deVercel = claveDelMontador\(\);\n  if \(deVercel\) return deVercel;/.test(codigoDelMontaje),
+  'Y la de Vercel MANDA si está: quien quiera el cinturón de más lo tiene');
 
 // La misma regla, en el sitio donde ya estaba bien: Veo.
 di(!/operacion: soloTexto\(crudos\.operacion\)/.test(codigoDeLaCola),

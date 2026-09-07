@@ -788,16 +788,16 @@ function veredictoDelMontaje(montaje) {
         enseñarError: false,
       };
 
-    case 'falta-la-clave':
+    case 'clave-del-job':
       return {
-        estado: { tipo: 'fallido', texto: 'Falta MONTAJE_KEY' },
+        estado: { tipo: 'listo', texto: 'Clave, del job' },
         texto:
-          'EL MONTADOR TIENE SU PROPIA CLAVE Y VERCEL NO. El instalador le graba una al job, y el ' +
-          'montador rechaza cualquier encargo que no traiga LA MISMA en MONTAJE_KEY. Así que el ' +
-          'montaje va a fallar siempre, y va a fallar después de arrancar la máquina y de esperar ' +
-          'los minutos. El valor está en el job, en Cloud Run, en sus variables: se copia de ahí y ' +
-          'se pone en Vercel como MONTAJE_KEY. Y acuérdate del Redeploy: Vercel no aplica una ' +
-          'variable nueva a un despliegue ya construido.',
+          'El montador tiene su propia clave y Vercel no, y NO hace falta ponerla: la función la ' +
+          'lee del propio job al encargar el montaje. Esa copia a mano era el paso que fallaba —se ' +
+          'hace en Cloud Shell, en un móvil, sin poder pegar— y lo que protegía era casi nada: ' +
+          'para lanzar este montador ya hacen falta credenciales de Google con papeles sobre Cloud ' +
+          'Run, y ese es el cerrojo de verdad. Si prefieres el cinturón de más, pon MONTAJE_KEY en ' +
+          'Vercel con el mismo valor y entonces manda esa.',
         enseñarError: false,
       };
 

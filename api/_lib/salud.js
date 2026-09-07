@@ -631,8 +631,13 @@ async function comprobarMontaje(ent) {
     ficha.job_con_clave = jobConClave(elJob);
     ficha.vercel_con_clave = Boolean((process.env.MONTAJE_KEY || '').trim());
 
+    // El job tiene clave y Vercel no. YA NO ES UN FALLO: la función lee esa
+    // clave del propio job al encargar el montaje, porque copiarla a mano desde
+    // un móvil es el paso que falla y lo que protegía era casi nada (está
+    // razonado en `claveParaElEncargo()` de montaje.js). Se dice igual, porque
+    // conviene saber que ahí hay una clave y de dónde sale.
     if (ficha.job_con_clave && !ficha.vercel_con_clave) {
-      ficha.porque = 'falta-la-clave';
+      ficha.porque = 'clave-del-job';
       return ficha;
     }
     if (!ficha.job_con_clave && ficha.vercel_con_clave) {

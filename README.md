@@ -1279,33 +1279,42 @@ verdad. Si alguna no aparece, **se para** en vez de seguir: lo que viniera
 después fallaría con un 403 que se lee como «no tienes permiso», y se perdería la
 tarde revisando permisos que están perfectos.
 
-### La clave del montador no era opcional, y la aplicación decía que sí
+### La clave del montador: una copia a mano que no protegía nada
 
-`MONTAJE_KEY` salía en Salud con esta frase, escrita por mí:
+El instalador genera una clave, se la graba al job (`MONTAJE_CLAVE`) y la imprime
+al final para que un humano la copie en Vercel como `MONTAJE_KEY`. Si no coincide,
+el montador **rechaza el encargo**.
 
-> *«Sin ella el montaje funciona igual: lanzar el Job ya exige las credenciales de
-> la cuenta. Es un cinturón de más, no un requisito.»*
+Ese paso manual es el que falla. Se copia en Cloud Shell, en un móvil, sin poder
+pegar. Y cuando no se copia, el montaje falla **siempre** — después de arrancar la
+máquina y de esperar los minutos— diciendo algo que suena a permisos.
 
-**Es falsa.** El instalador le graba al job su propia clave (`MONTAJE_CLAVE`), y el
-montador **rechaza cualquier encargo que no traiga la misma** en `MONTAJE_KEY`. O
-sea que en cuanto se instala por el camino normal, esa variable pasa a ser
-obligatoria de hecho.
+Encima, Salud llamaba a esa variable *«un cinturón de más, no un requisito»*.
+Falso: con el instalador normal es obligatoria de hecho. Se buscó el fallo en los
+permisos, en las APIs y en volver a instalarlo todo.
 
-Así que el montaje fallaba, Salud decía que esa variable era opcional, y se buscó
-el fallo en los permisos, en las APIs y hasta en volver a ejecutar el instalador.
+#### Qué protegía, mirado de frente
 
-**Ahora Salud lo mira y lo dice**, y le sale gratis: para comprobar el montador ya
-lee el job, y en esa misma respuesta están sus variables.
+- Para lanzar el job hacen falta **credenciales de Google con papeles sobre Cloud
+  Run**. Ese es el cerrojo, y no se toca.
+- Quien pueda lanzarlo puede casi siempre **leer su ficha**, que es de donde sale
+  la clave. Solo frena a quien pueda invocar y no pueda ver: un hueco estrechísimo.
+- Y **no frena nada** de lo que de verdad preocuparía: que alguien dé con la URL
+  pública de la función y pida un montaje. Ahí la función mandaría la clave buena,
+  porque es la suya. De eso protege `CLAVE_ACCESO`, que es otra variable.
 
-| Job | Vercel | Qué dice |
-|---|---|---|
-| tiene clave | tiene clave | Verde |
-| **tiene clave** | **no tiene** | **Rojo: «Falta MONTAJE_KEY»**, con de dónde se copia |
-| no tiene | tiene clave | Verde: sobra una variable, se ignora |
-| no tiene | no tiene | Verde |
+#### Lo que hace ahora
 
-**Nunca sale el valor de la clave.** Solo si hay algo o no, que es lo único que hay
-que saber.
+`MONTAJE_KEY` **si está en Vercel, manda**. Si no está, la función **lee la clave
+del propio job** al encargar el montaje.
+
+Se gana que el montaje funcione sin una copia a mano desde un teléfono. Se pierde
+ese hueco estrecho. Está escrito en `claveParaElEncargo()` para que sea una
+decisión y no un descuido — y quien quiera el cinturón de más lo tiene: pone
+`MONTAJE_KEY` y esa lectura ni ocurre.
+
+Salud lo dice en la tarjeta del montador, y **nunca enseña el valor**: solo si hay
+clave o no.
 
 ### El censor rompía un nombre, y el error decía otra cosa
 

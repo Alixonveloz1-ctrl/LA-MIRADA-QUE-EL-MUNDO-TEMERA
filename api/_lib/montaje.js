@@ -121,7 +121,12 @@ export async function lanzar(manifiesto) {
     // y quedarse sin montar por eso sería mucho peor.
   }
 
-  const respuesta = await llamar(`${direccion}:run`, cuerpoDeLanzamiento(manifiestoRuta, ent), {
+  // La clave del montador. Si no está en Vercel, se le pregunta AL PROPIO JOB.
+  // Ver `claveParaElEncargo()`: es una copia a mano que la función puede hacer
+  // sola, no una frontera de seguridad.
+  const clave = await claveParaElEncargo(direccion);
+
+  const respuesta = await llamar(`${direccion}:run`, cuerpoDeLanzamiento(manifiestoRuta, ent, clave), {
     metodo: 'POST',
     limiteMs: LIMITE_LANZAR_MS,
     contexto: { que: 'encargarle el montaje al montador', servicio: 'run' },
@@ -189,7 +194,76 @@ async function apuntarLaEjecucion(ejecucion, trabajo) {
  * dentro del bucket», y no mandarla dejaría al contenedor con la que llevara
  * dentro de su imagen, que es de cuando se construyó.
  */
-function cuerpoDeLanzamiento(manifiestoRuta, ent) {
+/**
+ * La clave con la que se le encarga el montaje.
+ *
+ * PRIMERO LA DE VERCEL. Si alguien la puso a mano, esa manda y no se toca nada.
+ *
+ * Y SI NO ESTÁ, SE LEE DEL PROPIO JOB. Esto necesita explicación, porque parece
+ * que se está saltando un cerrojo y no es eso.
+ *
+ * El instalador genera una clave, se la graba al job, y la imprime al final para
+ * que un humano la copie a mano en Vercel. Ese paso manual es el que falla: se
+ * copia en Cloud Shell, en un móvil, sin poder pegar. Cuando no se copia —o
+ * cuando un redespliegue la cambia— el montaje falla SIEMPRE, y falla después de
+ * arrancar la máquina y de esperar los minutos, diciendo algo que suena a
+ * permisos. Ha costado horas.
+ *
+ * Y lo que esa clave protege, mirado de frente, es casi nada:
+ *
+ *   · Para lanzar este job hay que tener credenciales de Google con papeles
+ *     sobre Cloud Run. ESE es el cerrojo, y no se toca.
+ *   · Quien pueda lanzarlo puede casi siempre LEER su ficha, que es de donde
+ *     sale la clave. O sea que solo frena a quien pueda invocar y no pueda ver,
+ *     que es un hueco muy estrecho.
+ *   · Y no frena en absoluto lo que de verdad preocuparía: que alguien dé con la
+ *     URL pública de la función y pida un montaje. Ahí la función mandaría la
+ *     clave BUENA, porque es la suya. De eso protege CLAVE_ACCESO, que es otra
+ *     variable y otra conversación.
+ *
+ * Así que se lee. Lo que se gana es que el montaje funcione sin una copia a mano
+ * desde un teléfono; lo que se pierde es ese hueco estrecho. Está escrito aquí
+ * para que sea una decisión y no un descuido, y para que quien quiera el cerrojo
+ * lo tenga: basta con poner MONTAJE_KEY en Vercel y esta lectura ni ocurre.
+ *
+ * Si el job no se deja leer, no pasa nada: se manda lo que haya —normalmente
+ * nada— y el montador dirá lo suyo.
+ *
+ * @param {string} direccion la del job, sin verbo
+ * @returns {Promise<string|null>}
+ */
+async function claveParaElEncargo(direccion) {
+  const deVercel = claveDelMontador();
+  if (deVercel) return deVercel;
+
+  let elJob;
+  try {
+    elJob = await llamar(direccion, null, {
+      metodo: 'GET',
+      limiteMs: LIMITE_CONSULTA_MS,
+      contexto: { que: 'leer la clave que tiene puesta el montador', servicio: 'run' },
+    });
+  } catch {
+    // Sin papeles para leerlo, o sin red. Se sigue sin clave.
+    return null;
+  }
+
+  const plantilla = elJob && elJob.template && elJob.template.template;
+  const contenedores = plantilla && Array.isArray(plantilla.containers) ? plantilla.containers : [];
+
+  for (const contenedor of contenedores) {
+    const variables = contenedor && Array.isArray(contenedor.env) ? contenedor.env : [];
+    for (const una of variables) {
+      if (!una || una.name !== 'MONTAJE_CLAVE') continue;
+      const valor = String(una.value ?? '').trim();
+      if (valor) return valor;
+    }
+  }
+
+  return null;
+}
+
+function cuerpoDeLanzamiento(manifiestoRuta, ent, clave) {
   const variables = [
     // La ruta LÓGICA. El montador le pone delante el bucket y el prefijo, igual
     // que hace gcs.js de este lado.
@@ -198,11 +272,10 @@ function cuerpoDeLanzamiento(manifiestoRuta, ent) {
     { name: 'GCS_PREFIX', value: ent.prefijo },
   ];
 
-  // La clave que solo comparten el endpoint y el montador (enmienda §13.4 del
-  // contrato). Viaja al contenedor y el montador la comprueba antes de
-  // trabajar. Si no está configurada no se manda: el montador dirá con sus
-  // palabras que no la ha recibido.
-  const clave = claveDelMontador();
+  // La clave que comparten el endpoint y el montador (enmienda §13.4 del
+  // contrato). Viene resuelta de `claveParaElEncargo()`: la de Vercel si está, y
+  // si no la que tenga puesta el propio job. Si no hay ninguna no se manda, y un
+  // montador sin clave propia monta igual.
   if (clave) variables.push({ name: 'MONTAJE_KEY', value: clave });
 
   return { overrides: { containerOverrides: [{ env: variables }] } };
