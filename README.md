@@ -1225,6 +1225,32 @@ Cada paso se puede lanzar por separado con `npm run datos`, `npm run invariantes
 `npm run pesar`. Y
 `npm run archivo` reescribe los 56 planos de ambiente desde su tabla.
 
+### «Already up to date» es la mentira más cara del proyecto
+
+Una carpeta puede ser un repositorio de git perfectamente válido y **no estar
+conectada a GitHub**. Si se clonó desde otra carpeta del propio disco —cosa que
+pasa sola cuando alguien copia un clon, o cuando Cloud Shell clona encima de otro
+clon—, su `origin` es una **ruta local**.
+
+Entonces `git pull` dice:
+
+```
+From .
+Already up to date.
+```
+
+Y tiene toda la razón: se lo está trayendo a sí misma. **No trae nada. Nunca.**
+
+Eso pasó, y costó horas. La aplicación fallaba, se arreglaba el fallo, se subía,
+se ejecutaba `./m`… y se desplegaba **otra vez el mismo código viejo**, porque esa
+carpeta no podía recibir nada. Se buscó el fallo en Google, en los permisos, en
+las APIs, en el instalador y en el propio montador. Estaba en dos caracteres de
+la salida de `git`: ese punto de `From .`.
+
+Ahora `m` y `c` **miran de dónde traen antes de traer**, y si no es GitHub se
+paran, lo dicen con todas las letras e imprimen la línea que lo arregla. Un
+despliegue silencioso de código viejo es peor que no desplegar.
+
 ### Antes de reinstalar: mirar. Y se mira desde el teléfono
 
 **«Vuelve a instalar» es la peor respuesta que se le puede dar a alguien que ya ha

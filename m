@@ -45,6 +45,52 @@ set -euo pipefail
 # repositorio y no encontraría «instalar.sh».
 AQUI="$(cd "$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")" && pwd)"
 
+# ¿DE DÓNDE TRAE? Esto se comprueba ANTES de traer nada, y es la comprobación
+# más importante de este archivo.
+#
+# Una carpeta puede ser un repositorio de git perfectamente válido y NO estar
+# conectada a GitHub: si se clonó desde otra carpeta del propio disco, su
+# «origin» es una ruta local. Entonces «git pull» dice «From .» y «Already up to
+# date», con toda la razón, y no trae nada NUNCA.
+#
+# Eso pasó, y costó horas. La aplicación fallaba, se arreglaba el fallo, se
+# subía, se ejecutaba esto… y se desplegaba otra vez el mismo código viejo,
+# porque esta carpeta no podía recibir nada. Se buscó el fallo en Google, en los
+# permisos, en las APIs y en el propio instalador. Estaba aquí.
+#
+# «Already up to date» es la mentira más cara que puede decir esta línea, así que
+# ahora se mira de dónde viene antes de creérsela.
+DE_DONDE_TRAE="$(git -C "$AQUI" remote get-url origin 2>/dev/null || true)"
+case "$DE_DONDE_TRAE" in
+  *github.com*) ;;
+  *)
+    echo
+    echo "!! ESTA CARPETA NO ESTÁ CONECTADA A GITHUB."
+    echo
+    if [ -n "$DE_DONDE_TRAE" ]; then
+      echo "   Trae de:  $DE_DONDE_TRAE"
+    else
+      echo "   No tiene ningún sitio de donde traer."
+    fi
+    echo
+    echo "   Por eso «git pull» dice «Already up to"
+    echo "   date» y no trae nada: se lo trae a sí"
+    echo "   misma. Nada de lo que se arregle llega"
+    echo "   aquí, y esto desplegaría código viejo"
+    echo "   sin que se note."
+    echo
+    echo "   Se arregla en una línea:"
+    echo
+    echo "   git -C $AQUI remote set-url origin https://github.com/Alixonveloz1-ctrl/LA-MIRADA-QUE-EL-MUNDO-TEMERA.git"
+    echo
+    echo "   Y si prefieres empezar limpio, borra la"
+    echo "   carpeta y vuelve a clonar desde el"
+    echo "   enlace del README."
+    echo
+    exit 1
+    ;;
+esac
+
 echo
 echo "Trayendo lo último del repositorio…"
 # Que el «git pull» falle no es motivo para no desplegar: puede no haber red para
