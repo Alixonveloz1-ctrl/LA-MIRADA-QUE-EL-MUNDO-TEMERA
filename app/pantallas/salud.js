@@ -782,8 +782,32 @@ function veredictoDelMontaje(montaje) {
       return {
         estado: 'listo',
         texto:
-          'El montador contesta. Están las tres cosas: la API de Cloud Run encendida en este ' +
-          'proyecto, los papeles de la cuenta, y el job desplegado con ese nombre en esa región.',
+          'El montador contesta. Están las cuatro cosas: la API de Cloud Run encendida en este ' +
+          'proyecto, los papeles de la cuenta, el job desplegado con ese nombre en esa región, y ' +
+          'la clave puesta en los dos sitios (o en ninguno, que también vale).',
+        enseñarError: false,
+      };
+
+    case 'falta-la-clave':
+      return {
+        estado: { tipo: 'fallido', texto: 'Falta MONTAJE_KEY' },
+        texto:
+          'EL MONTADOR TIENE SU PROPIA CLAVE Y VERCEL NO. El instalador le graba una al job, y el ' +
+          'montador rechaza cualquier encargo que no traiga LA MISMA en MONTAJE_KEY. Así que el ' +
+          'montaje va a fallar siempre, y va a fallar después de arrancar la máquina y de esperar ' +
+          'los minutos. El valor está en el job, en Cloud Run, en sus variables: se copia de ahí y ' +
+          'se pone en Vercel como MONTAJE_KEY. Y acuérdate del Redeploy: Vercel no aplica una ' +
+          'variable nueva a un despliegue ya construido.',
+        enseñarError: false,
+      };
+
+    case 'clave-de-mas':
+      return {
+        estado: { tipo: 'listo', texto: 'Clave de más' },
+        texto:
+          'Vercel tiene MONTAJE_KEY puesta y el montador no tiene clave propia, así que la ignora ' +
+          'y monta igual. No es un fallo: es una variable que sobra. Pasa cuando se vuelve a ' +
+          'desplegar el montador sin ella.',
         enseñarError: false,
       };
 

@@ -357,6 +357,22 @@ di(familia(veredicto('sin-direccion')) === 'listo',
 di(familia(salud.veredictoDelMontaje({ configurado: false, error: 'falta' })) === 'pendiente',
   'Y sin montador configurado sigue diciendo que falta instalarlo');
 
+// LA CLAVE. El montador contesta, los papeles están, el job está — y el montaje
+// falla igual porque el job tiene su clave y Vercel no. Eso se sabe aquí, gratis,
+// porque el job ya se ha leído; y no saberlo costó horas buscando en los
+// permisos, en las APIs y hasta volviendo a instalarlo todo.
+const sinClave = veredicto('falta-la-clave');
+di(familia(sinClave) === 'fallido',
+  'Si el job tiene clave y Vercel no, ROJO: el montaje va a fallar siempre');
+di(/MONTAJE_KEY/.test(sinClave.texto) && /Cloud Run/.test(sinClave.texto),
+  'Y dice qué variable falta y de dónde se copia el valor');
+di(/Redeploy/.test(sinClave.texto),
+  'Y recuerda el Redeploy, que es lo que hace que parezca que no se ha puesto');
+
+const claveDeMas = veredicto('clave-de-mas');
+di(familia(claveDeMas) === 'listo' && /No es un fallo/.test(claveDeMas.texto),
+  'Y al revés NO es un fallo: una clave que sobra se ignora y se monta igual');
+
 // ── EL NOMBRE QUE EL CENSOR ROMPÍA ────────────────────────────────────────
 //
 // ESTE ES EL FALLO QUE MÁS CARO SALIÓ DE TODA LA SESIÓN, y era invisible.

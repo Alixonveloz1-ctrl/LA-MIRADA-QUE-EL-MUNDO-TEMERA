@@ -1279,6 +1279,34 @@ verdad. Si alguna no aparece, **se para** en vez de seguir: lo que viniera
 después fallaría con un 403 que se lee como «no tienes permiso», y se perdería la
 tarde revisando permisos que están perfectos.
 
+### La clave del montador no era opcional, y la aplicación decía que sí
+
+`MONTAJE_KEY` salía en Salud con esta frase, escrita por mí:
+
+> *«Sin ella el montaje funciona igual: lanzar el Job ya exige las credenciales de
+> la cuenta. Es un cinturón de más, no un requisito.»*
+
+**Es falsa.** El instalador le graba al job su propia clave (`MONTAJE_CLAVE`), y el
+montador **rechaza cualquier encargo que no traiga la misma** en `MONTAJE_KEY`. O
+sea que en cuanto se instala por el camino normal, esa variable pasa a ser
+obligatoria de hecho.
+
+Así que el montaje fallaba, Salud decía que esa variable era opcional, y se buscó
+el fallo en los permisos, en las APIs y hasta en volver a ejecutar el instalador.
+
+**Ahora Salud lo mira y lo dice**, y le sale gratis: para comprobar el montador ya
+lee el job, y en esa misma respuesta están sus variables.
+
+| Job | Vercel | Qué dice |
+|---|---|---|
+| tiene clave | tiene clave | Verde |
+| **tiene clave** | **no tiene** | **Rojo: «Falta MONTAJE_KEY»**, con de dónde se copia |
+| no tiene | tiene clave | Verde: sobra una variable, se ignora |
+| no tiene | no tiene | Verde |
+
+**Nunca sale el valor de la clave.** Solo si hay algo o no, que es lo único que hay
+que saber.
+
 ### El censor rompía un nombre, y el error decía otra cosa
 
 Este es el fallo que más caro salió, y era invisible.

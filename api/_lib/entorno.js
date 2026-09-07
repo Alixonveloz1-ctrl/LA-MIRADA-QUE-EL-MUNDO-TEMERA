@@ -69,7 +69,17 @@ export const FICHA_DE_VARIABLES = [
   { nombre: 'MONTAJE_URL', obligatoria: false,
     para: 'NO hace falta ponerla: la dirección se compone sola con el proyecto, la región y el nombre del Job. Solo si el montador está en otro sitio.' },
   { nombre: 'MONTAJE_KEY', obligatoria: false,
-    para: 'La clave que solo comparten esta función y el montador. Sin ella el montaje funciona igual: lanzar el Job ya exige las credenciales de la cuenta. Es un cinturón de más, no un requisito.' },
+    // ESTO DECÍA «sin ella el montaje funciona igual», y NO ES VERDAD. El
+    // instalador le graba una clave al job al desplegarlo, y el montador rechaza
+    // cualquier encargo que no traiga LA MISMA. O sea que en cuanto se instala
+    // por el camino normal, esta variable pasa a ser obligatoria de hecho.
+    //
+    // Costó horas: el montaje fallaba, Salud decía que esta variable era
+    // opcional, y se buscó el fallo en todas partes menos aquí. No se pone
+    // `obligatoria: true` porque un montador sin clave propia sí monta sin ella
+    // —y ese caso existe—; lo que hace Salud ahora es MIRAR EL JOB y decir si
+    // esa clave hace falta o no, que es lo único que contesta la pregunta.
+    para: 'La clave que comparten esta función y el montador. Si el job tiene la suya —y el instalador se la pone SIEMPRE—, esta variable hace falta y tiene que valer lo mismo, o el montador rechaza el encargo. Salud mira el job y lo dice.' },
   { nombre: 'CLAVE_ACCESO', obligatoria: false,
     para: 'El pestillo de la puerta. Sin ella la función queda abierta y cualquiera que dé con la URL gasta el dinero del proyecto.' },
   { nombre: 'GCP_PROJECT_NUMBER', obligatoria: false,

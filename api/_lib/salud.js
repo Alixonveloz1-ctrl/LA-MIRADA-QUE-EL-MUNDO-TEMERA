@@ -575,6 +575,9 @@ async function comprobarMontaje(ent) {
     // preguntado y ha dicho que no».
     responde: null,
     porque: null,
+    // Si el job tiene su clave y si Vercel tiene la suya. Nunca los valores.
+    job_con_clave: null,
+    vercel_con_clave: null,
     error: configurado
       ? null
       : 'Todavía no hay montador, así que se puede generar todo pero no montar nada. Falta la ' +
@@ -603,12 +606,40 @@ async function comprobarMontaje(ent) {
   );
 
   try {
-    await llamar(direccion, null, {
+    const elJob = await llamar(direccion, null, {
       metodo: 'GET',
       limiteMs: LIMITE_MS,
       contexto: { que: 'comprobar el montador', servicio: 'run' },
     });
     ficha.responde = true;
+
+    // LA CLAVE, QUE ES LO QUE DE VERDAD PARA UN MONTAJE.
+    //
+    // El instalador le graba al job una clave propia —MONTAJE_CLAVE— y el
+    // montador RECHAZA cualquier encargo que no traiga la misma en MONTAJE_KEY.
+    // O sea que si el job tiene clave y Vercel no, el montaje falla siempre, y
+    // falla DESPUÉS de arrancar la máquina y de esperar los minutos.
+    //
+    // Eso se puede saber aquí, gratis, porque el job ya se ha leído. Y hacía
+    // falta saberlo: la aplicación decía que esa variable era opcional —lo decía
+    // yo— y se buscó el fallo en los permisos, en las APIs y hasta en volver a
+    // instalarlo todo. Estaba en una variable que faltaba en Vercel.
+    //
+    // NUNCA SALE EL VALOR DE AQUÍ. Solo si hay algo o no, que es lo que hay que
+    // saber. El valor es un secreto y además no se puede comparar desde aquí:
+    // el censor tacharía el de Vercel y quedarían dos cosas que no se parecen.
+    ficha.job_con_clave = jobConClave(elJob);
+    ficha.vercel_con_clave = Boolean((process.env.MONTAJE_KEY || '').trim());
+
+    if (ficha.job_con_clave && !ficha.vercel_con_clave) {
+      ficha.porque = 'falta-la-clave';
+      return ficha;
+    }
+    if (!ficha.job_con_clave && ficha.vercel_con_clave) {
+      ficha.porque = 'clave-de-mas';
+      return ficha;
+    }
+
     ficha.porque = 'bien';
     return ficha;
   } catch (fallo) {
@@ -617,6 +648,33 @@ async function comprobarMontaje(ent) {
     ficha.error = textoDeFallo(fallo);
     return ficha;
   }
+}
+
+/**
+ * Si el job tiene grabada su propia clave.
+ *
+ * Se mira el NOMBRE de la variable y nunca su valor: lo que hace falta saber es
+ * si hay clave, no cuál es. Un valor vacío cuenta como no tenerla, que es lo que
+ * hace el propio montador.
+ *
+ * @param {object} elJob lo que devuelve `jobs.get` de Cloud Run v2
+ * @returns {boolean}
+ */
+function jobConClave(elJob) {
+  const plantilla = elJob && elJob.template && elJob.template.template;
+  const contenedores = plantilla && Array.isArray(plantilla.containers) ? plantilla.containers : [];
+
+  for (const contenedor of contenedores) {
+    const variables = contenedor && Array.isArray(contenedor.env) ? contenedor.env : [];
+    for (const una of variables) {
+      if (!una || una.name !== 'MONTAJE_CLAVE') continue;
+      // `value` es el valor a pelo; `valueSource` es un secreto de Secret
+      // Manager. Las dos cuentan como «tiene clave».
+      if (String(una.value ?? '').trim() || una.valueSource) return true;
+    }
+  }
+
+  return false;
 }
 
 /**
