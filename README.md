@@ -55,7 +55,14 @@ imágenes: todo lo visual lo genera la herramienta.
    móvil, el terminal no deja pegar, y todo lo que haya que ejecutar se teclea
    con el pulgar. Trae lo último y despliega. No pregunta nada, no toca ni el
    bucket ni la cuenta, y lee del propio job el bucket y la clave que ya tiene
-   puestos. Que la clave salga de ahí y no se genere de nuevo es lo importante:
+   puestos.
+
+   **Y dice con qué fecha va a desplegar.** Si el `git pull` falla —una carpeta
+   clonada de otra parte, un remoto que no es GitHub, cambios locales— sigue
+   adelante con lo que haya, que es lo correcto: mejor desplegar algo viejo que
+   no desplegar nada. Pero entonces el montador se queda como estaba y desde la
+   aplicación no hay forma de saberlo: se ve el mismo error de siempre y parece
+   que el arreglo no funcionó. Con la fecha delante se ve en un segundo. Que la clave salga de ahí y no se genere de nuevo es lo importante:
    una clave nueva invalidaría la `MONTAJE_KEY` de Vercel y el montaje empezaría
    a fallar por una razón que no se parece en nada a la verdadera.
 

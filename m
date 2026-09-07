@@ -43,4 +43,21 @@ git -C "$AQUI" pull --ff-only || {
   echo "  ! Se despliega lo que hay en esta carpeta."
 }
 
+# QUÉ SE VA A DESPLEGAR, con fecha. Y no es un adorno.
+#
+# Si el «git pull» de arriba falla —una carpeta clonada de otra parte, un remoto
+# que no es GitHub, cambios locales—, esto sigue adelante y despliega lo que
+# haya. Que es lo correcto: mejor desplegar algo viejo que no desplegar nada.
+#
+# Pero entonces el montador se queda como estaba y no hay forma de saberlo desde
+# la aplicación: se ve el mismo error de siempre y parece que el arreglo no
+# funcionó. Con la fecha delante se ve en un segundo. Si dice hoy, es lo último;
+# si dice la semana pasada, el pull no trajo nada y hay que mirar eso primero.
+SELLO="$(git -C "$AQUI" log -1 --format='%h · %cd · %s' --date=format:'%d/%m %H:%M' -- montador 2>/dev/null || true)"
+if [ -n "$SELLO" ]; then
+  echo
+  echo "Lo último que cambió del montador:"
+  echo "  $SELLO"
+fi
+
 exec bash "$AQUI/instalar.sh" montador
