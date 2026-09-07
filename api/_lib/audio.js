@@ -83,6 +83,17 @@ const MARGEN_DEL_LIMITE_S = 0.1;
 // de la frase el texto en pantalla ya no era lo que se estaba oyendo.
 const PAUSA_S = 0.35;
 
+// CON QUÉ VENTANA SE MIDE EL VOLUMEN DE LA VOZ. Cincuenta milésimas: bastante
+// para que una vocal entera caiga dentro y poco para que un silencio entre dos
+// palabras no se mezcle con el habla que tiene al lado.
+const VENTANA_DE_NIVEL_S = 0.05;
+
+// Y CUÁNTO POR DEBAJO DE LO MÁS ALTO SIGUE CONTANDO COMO HABLA. Treinta
+// decibelios recogen desde un grito hasta un susurro de la misma toma, y dejan
+// fuera el ruido de fondo y los silencios entre frases, que es de lo que se
+// trata: si contaran, el número diría que se habla más bajo de lo que se habla.
+const SUELO_DE_HABLA_DB = 30;
+
 // UN SUBTÍTULO NO PUEDE PARPADEAR. Si una pausa deja un pedazo de dos palabras y
 // tres décimas, no se lee: se ve un destello. Los pedazos más cortos que esto se
 // juntan con el de al lado y se quedan en uno solo.
@@ -773,6 +784,103 @@ export async function alinear(wav, lineas) {
   if (palabras.length < pesos.length) return repartoEstimado(pesos, duracion);
 
   return repartoMedido(pesos, palabras, duracion);
+}
+
+/**
+ * Cuánto suena de verdad una grabación de voz: su pico y su nivel de habla.
+ *
+ * POR QUÉ HACE FALTA MEDIRLO. En el montaje la voz iba con ganancia CERO, es
+ * decir tal como la entrega Gemini TTS, y la música a −6 dB con otros −9 dB de
+ * agache debajo de cada línea. Sobre el papel son quince decibelios de
+ * separación y suena de sobra. En el vídeo montado la voz quedaba tapada.
+ *
+ * La razón es que esos quince decibelios son RELATIVOS A CADA ORIGEN, y los dos
+ * orígenes no entregan al mismo nivel: el TTS devuelve archivos flojos y Lyria
+ * los devuelve fuertes. Sumar dos cosas «bien equilibradas» que salen de fábrica
+ * a niveles distintos no da una mezcla equilibrada.
+ *
+ * Y hay algo peor que el volumen: CADA BLOQUE VIENE COMO VIENE. Dos bloques de
+ * la misma persona pueden salir con tres decibelios de diferencia, así que una
+ * escena suena más alta que la siguiente sin que nadie haya pedido nada.
+ *
+ * Con esto medido, el estudio puede subir cada bloque a un nivel conocido en vez
+ * de adivinar una ganancia fija. Se mide aquí porque `alinear()` ya tiene el WAV
+ * delante: no cuesta ni una llamada más.
+ *
+ * QUÉ DEVUELVE Y POR QUÉ DOS NÚMEROS:
+ *
+ *   · `pico_dbfs`  — la muestra más alta. Sirve para NO pasarse: es lo que dice
+ *                    cuánto se puede subir antes de que recorte.
+ *   · `rms_dbfs`   — lo que se percibe como volumen, medido SOLO donde se habla.
+ *                    Un promedio del archivo entero contaría los silencios y
+ *                    daría un número demasiado bajo, así que se mide por
+ *                    ventanas y se descartan las que están muy por debajo de la
+ *                    más alta: eso deja el habla y tira el silencio.
+ *
+ * Devuelve `null` cuando no se puede medir de verdad —otra profundidad de bits,
+ * un archivo vacío— en vez de inventarse un número: una ganancia calculada sobre
+ * un número inventado es peor que no tocar la ganancia.
+ *
+ * @param {Buffer|Uint8Array} wav
+ * @returns {{pico_dbfs:number, rms_dbfs:number}|null}
+ */
+export function nivelDeVoz(wav) {
+  let cabecera;
+  try {
+    cabecera = leerCabeceraWav(aBuffer(wav, 'el audio del que se mide el nivel'));
+  } catch {
+    return null;
+  }
+
+  // Gemini TTS entrega 16 bits con signo. Otra profundidad se podría convertir,
+  // pero aquí no se ha visto ninguna y convertir a ciegas es inventar.
+  if (cabecera.bits !== 16) return null;
+
+  const pcm = cabecera.pcm;
+  const cuantas = Math.floor(pcm.length / 2);
+  if (cuantas < 1) return null;
+
+  const porVentana = Math.max(1, Math.round(cabecera.hz * VENTANA_DE_NIVEL_S) * cabecera.canales);
+
+  let pico = 0;
+  const ventanas = [];
+  let suma = 0;
+  let dentro = 0;
+
+  for (let i = 0; i < cuantas; i += 1) {
+    const muestra = pcm.readInt16LE(i * 2) / 32768;
+    const alto = Math.abs(muestra);
+    if (alto > pico) pico = alto;
+
+    suma += muestra * muestra;
+    dentro += 1;
+
+    if (dentro === porVentana) {
+      ventanas.push(Math.sqrt(suma / dentro));
+      suma = 0;
+      dentro = 0;
+    }
+  }
+  if (dentro > 0) ventanas.push(Math.sqrt(suma / dentro));
+
+  if (!pico || !ventanas.length) return null;
+
+  // Se queda con las ventanas que están cerca de la más alta: eso es donde se
+  // habla. El resto es el silencio entre frases, y contarlo bajaría el número
+  // sin que nadie hable más bajo.
+  const mayor = Math.max(...ventanas);
+  if (!(mayor > 0)) return null;
+  const suelo = mayor * 10 ** (-SUELO_DE_HABLA_DB / 20);
+  const habladas = ventanas.filter((una) => una >= suelo);
+  const cuales = habladas.length ? habladas : ventanas;
+
+  const rms = Math.sqrt(cuales.reduce((a, b) => a + b * b, 0) / cuales.length);
+  if (!(rms > 0)) return null;
+
+  return {
+    pico_dbfs: redondear(20 * Math.log10(pico)),
+    rms_dbfs: redondear(20 * Math.log10(rms))
+  };
 }
 
 /**

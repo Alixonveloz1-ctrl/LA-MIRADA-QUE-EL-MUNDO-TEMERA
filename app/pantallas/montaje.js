@@ -94,6 +94,52 @@ const FUNDIDO_ENTRE_PIEZAS_S = 2.5;
 /** La ganancia de la música bajo las voces, tal como la escribe el contrato §7. */
 const GANANCIA_MUSICA_DB = -6;
 
+// ---------------------------------------------------------------------------
+// A QUÉ VOLUMEN SUENA LA VOZ
+// ---------------------------------------------------------------------------
+//
+// LA VOZ IBA CON GANANCIA CERO: tal como la entregara Gemini TTS. La música iba
+// a −6 dB y se agachaba otros −9 dB debajo de cada línea. Sobre el papel son
+// quince decibelios de separación, que es de sobra.
+//
+// En el vídeo montado la voz quedaba debajo de la música.
+//
+// Porque esos quince decibelios son RELATIVOS A CADA ORIGEN, y los dos orígenes
+// no entregan al mismo nivel: el TTS devuelve archivos flojos y Lyria los
+// devuelve fuertes. Equilibrar dos cosas por su ganancia relativa, cuando salen
+// de fábrica a niveles distintos, no equilibra nada.
+//
+// Y había un segundo problema debajo, más callado: CADA BLOQUE SONABA COMO LE
+// TOCARA. Dos bloques de la misma persona pueden salir del TTS con varios
+// decibelios de diferencia, así que una escena suena más alta que la siguiente
+// sin que nadie lo haya pedido.
+//
+// La solución no es una ganancia fija a ojo —eso arregla un bloque y estropea el
+// siguiente—: es SUBIR CADA BLOQUE A UN NIVEL CONOCIDO. El nivel lo mide la
+// función al alinear, del propio archivo, y con él aquí se calcula cuánto hay
+// que subirlo. Un bloque flojo sube mucho, uno fuerte sube poco, y los dos
+// acaban sonando igual.
+//
+// El techo NO se toca por gusto: el pico medido dice cuánto se puede subir antes
+// de recortar, y de ahí no se pasa aunque el objetivo pida más.
+
+/** A qué nivel de habla se sube cada bloque de voz, en dBFS. */
+const VOZ_OBJETIVO_DBFS = -16;
+
+/** Y hasta dónde puede llegar su pico. Por encima de esto empezaría a recortar. */
+const VOZ_TECHO_DBFS = -1.5;
+
+/**
+ * Cuánto se deja subir o bajar como mucho.
+ *
+ * Subir tiene tope porque un bloque grabado muy bajo trae ruido de fondo, y
+ * subirlo veinte decibelios sube el ruido con él. Bajar tiene tope porque el
+ * problema que esto vino a resolver es que la voz se oía poco: pasarse por el
+ * otro lado sería volver al principio con más pasos.
+ */
+const VOZ_SUBIDA_MAXIMA_DB = 12;
+const VOZ_BAJADA_MAXIMA_DB = -6;
+
 /** El fundido de entrada y salida de la cartela, si la serie no dice otro. */
 const FUNDIDO_DE_CARTELA_S = 0.5;
 
@@ -388,6 +434,9 @@ function vozGuardada(estado, clave) {
     ruta: rutaSiVale(entrada.ruta),
     durS: Number(entrada.dur_s) || 0,
     aprobada: entrada.aprobada === true,
+    // A qué volumen suena este bloque, medido del archivo. Sin él la voz va como
+    // salga del TTS, que es lo que la dejaba debajo de la música.
+    nivel: esObjeto(entrada.nivel) ? entrada.nivel : null,
     tramos: lineas.map((tramo) => ({
       inicio: Number(tramo && tramo.inicio) || 0,
       fin: Number(tramo && tramo.fin) || 0,
@@ -1211,6 +1260,8 @@ function componerVoz(modelo, ambito, estado, salida) {
   const sinMedir = [];
   const estimados = [];
   const movidas = [];
+  const subidas = [];
+  const sinNivel = [];
   // Dónde acaba sonando cada línea de verdad, para poder mirar al final si algún
   // plano de labios se queda mudo. Se apunta después de colocarla, no antes: lo
   // que importa es dónde suena, no dónde estaba escrita.
@@ -1242,6 +1293,13 @@ function componerVoz(modelo, ambito, estado, salida) {
       continue;
     }
     if (!guardado.aprobada) sinAprobar.push(bloque.id);
+
+    // CUÁNTO SE SUBE ESTE BLOQUE, una sola vez: es del archivo entero, no de
+    // cada línea. Todas las líneas de un bloque salen del mismo WAV, así que
+    // subirlas por separado las descuadraría entre ellas.
+    const subida = gananciaDeLaVoz(guardado.nivel);
+    if (subida !== 0) subidas.push({ bloque: bloque.id, db: subida });
+    else if (!guardado.nivel) sinNivel.push(bloque.id);
 
     for (let cual = 0; cual < suyas.length; cual += 1) {
       const { linea, i } = suyas[cual];
@@ -1324,7 +1382,7 @@ function componerVoz(modelo, ambito, estado, salida) {
         desde: redondear(tramo.inicio),
         hasta: redondear(tramo.fin),
         en,
-        ganancia_db: 0,
+        ganancia_db: subida,
         agacha: false
       });
 
@@ -1415,6 +1473,30 @@ function componerVoz(modelo, ambito, estado, salida) {
           'es la que tiene que enseñar. Se cambia en datos/serie.json.'
       );
     }
+  }
+
+  if (subidas.length) {
+    // SE DICE, Y CON LOS DECIBELIOS. Cambiar el volumen de una voz sin avisar es
+    // lo mismo que moverla de segundo sin avisar: quien lo oye tiene derecho a
+    // saber si lo que está juzgando es la grabación o lo que el estudio le ha
+    // hecho encima.
+    notas.push(
+      `${plural(subidas.length, 'bloque de voz sube', 'bloques de voz suben')} para que la voz ` +
+        `quede por encima de la música: ` +
+        `${enumerar(subidas.map((una) => `${una.bloque} ${una.db > 0 ? '+' : ''}${una.db} dB`), 8)}. ` +
+        'Cada bloque se sube a un volumen conocido, medido de su propio archivo, en vez de dejarlo ' +
+        'como lo entregue el TTS: así todos suenan igual y ninguno pasa del techo que empezaría a ' +
+        'recortar.'
+    );
+  }
+
+  if (sinNivel.length) {
+    notas.push(
+      `${plural(sinNivel.length, 'bloque no tiene', 'bloques no tienen')} medido a qué volumen ` +
+        `suena (${enumerar(sinNivel, 6)}), así que su voz va tal como salió del TTS y puede quedar ` +
+        'baja debajo de la música. Se arregla volviendo a darle a «Medir los tiempos» en Audio: el ' +
+        'volumen se mide del mismo archivo y en la misma llamada. La voz NO hay que regenerarla.'
+    );
   }
 
   if (movidas.length) {
@@ -1805,6 +1887,32 @@ function mudezDebajoDe(toma, colocadas, desplazamiento) {
     hasta = Math.max(hasta, una.fin);
   }
   return redondear(Math.max(mayor, sale - hasta));
+}
+
+/**
+ * Cuánto hay que subir un bloque de voz para que suene al nivel de siempre.
+ *
+ * Devuelve 0 —no tocar nada— cuando no hay medida. Es lo que pasa con un bloque
+ * medido antes de que esto existiera, y es lo correcto: sin saber a qué suena, la
+ * única ganancia honrada es ninguna.
+ *
+ * @param {{pico_dbfs:number, rms_dbfs:number}|null} nivel
+ * @returns {number} decibelios, ya redondeados
+ */
+function gananciaDeLaVoz(nivel) {
+  if (!nivel) return 0;
+
+  const rms = Number(nivel.rms_dbfs);
+  const pico = Number(nivel.pico_dbfs);
+  if (!Number.isFinite(rms) || !Number.isFinite(pico)) return 0;
+
+  // Lo que pide el objetivo…
+  const pedida = VOZ_OBJETIVO_DBFS - rms;
+  // …y lo que deja el pico antes de recortar. Manda el más pequeño de los dos.
+  const cabe = VOZ_TECHO_DBFS - pico;
+
+  const cuanto = Math.min(pedida, cabe);
+  return redondear(Math.max(VOZ_BAJADA_MAXIMA_DB, Math.min(VOZ_SUBIDA_MAXIMA_DB, cuanto)));
 }
 
 /**

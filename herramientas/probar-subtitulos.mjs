@@ -82,7 +82,8 @@ function bloquesDeVoz(pieza) {
       '\nexport { partirElSubtitulo, juntarLosMasCortos, respiraDespuesDe,\n' +
       '  bocasQueHablan, claveDeLinea, pideMoverLaBoca, construirModelo,\n' +
       '  pisaAOtroPersonaje, vozEquivocadaDebajoDe, mudezDebajoDe,\n' +
-      '  componerMusica, componerLetra, ambitosDe, revisar, textoDeLaFalta };\n'
+      '  componerMusica, componerLetra, ambitosDe, revisar, textoDeLaFalta,\n' +
+      '  gananciaDeLaVoz };\n'
   );
   return import(pathToFileURL(archivo).href);
 }
@@ -91,7 +92,8 @@ const {
   partirElSubtitulo, juntarLosMasCortos, respiraDespuesDe,
   bocasQueHablan, claveDeLinea, pideMoverLaBoca, construirModelo,
   pisaAOtroPersonaje, vozEquivocadaDebajoDe, mudezDebajoDe,
-  componerMusica, componerLetra, ambitosDe, revisar, textoDeLaFalta
+  componerMusica, componerLetra, ambitosDe, revisar, textoDeLaFalta,
+  gananciaDeLaVoz
 } = await traerDelMontaje();
 
 /** La serie de verdad, para probar contra los datos que se van a montar. */
@@ -855,6 +857,137 @@ comprobar('Y si aun así se colara una vacía, la pantalla lo dice con palabras'
   if (textoDeLaFalta('falta la música') !== 'falta la música') {
     throw new Error('una falta que es solo texto no se lee');
   }
+});
+
+
+
+// ---------------------------------------------------------------------------
+// LA VOZ POR ENCIMA DE LA MÚSICA
+// ---------------------------------------------------------------------------
+//
+// POR QUÉ EXISTE. «Me gustaría que la voz tuviera más volumen, que se sobreponga
+// más por encima de la música. El volumen de la música está muy bien.»
+//
+// La voz iba con ganancia CERO —tal como la entrega el TTS— y la música a −6 dB
+// con otros −9 dB de agache debajo de cada línea: quince decibelios de
+// separación sobre el papel. Pero son relativos A CADA ORIGEN, y el TTS entrega
+// flojo mientras Lyria entrega fuerte, así que en la mezcla quedaban casi a la
+// par.
+//
+// Una ganancia fija a ojo arreglaría un bloque y estropearía el siguiente,
+// porque cada bloque sale del TTS como le toca. Así que se sube CADA BLOQUE A UN
+// NIVEL CONOCIDO, medido de su propio archivo. Eso arregla las dos cosas a la
+// vez: la voz sube, y todos los bloques suenan igual entre ellos.
+
+console.log('\nCADA BLOQUE DE VOZ SUBE A UN VOLUMEN CONOCIDO\n');
+
+comprobar('Un bloque flojo sube y uno fuerte baja: los dos acaban igual', () => {
+  const flojo = { rms_dbfs: -26, pico_dbfs: -14 };
+  const fuerte = { rms_dbfs: -11, pico_dbfs: -3 };
+
+  const quedaFlojo = flojo.rms_dbfs + gananciaDeLaVoz(flojo);
+  const quedaFuerte = fuerte.rms_dbfs + gananciaDeLaVoz(fuerte);
+
+  if (Math.abs(quedaFlojo - quedaFuerte) > 1) {
+    throw new Error(`uno queda en ${quedaFlojo} y el otro en ${quedaFuerte}: no suenan igual`);
+  }
+  if (!(gananciaDeLaVoz(flojo) > 0)) throw new Error('el flojo no sube');
+});
+
+comprobar('El pico manda sobre el objetivo: nunca se empuja hasta recortar', () => {
+  // Habla floja pero con un golpe muy alto: subirla hasta el objetivo metería el
+  // pico por encima de cero y recortaría.
+  const conGolpe = { rms_dbfs: -28, pico_dbfs: -2 };
+  const g = gananciaDeLaVoz(conGolpe);
+  if (conGolpe.pico_dbfs + g > 0) {
+    throw new Error(`el pico acaba en ${conGolpe.pico_dbfs + g} dBFS y recortaría`);
+  }
+});
+
+comprobar('Un bloque muy flojo no se sube sin límite: subiría el ruido con él', () => {
+  const g = gananciaDeLaVoz({ rms_dbfs: -60, pico_dbfs: -45 });
+  if (g > 12) throw new Error(`sube ${g} dB, y por encima de 12 sube el ruido de fondo`);
+});
+
+comprobar('Sin medida no se toca la ganancia: no se inventa un número', () => {
+  if (gananciaDeLaVoz(null) !== 0) throw new Error('toca la ganancia sin saber a qué suena');
+  if (gananciaDeLaVoz({}) !== 0) throw new Error('toca la ganancia con una medida vacía');
+  if (gananciaDeLaVoz({ rms_dbfs: 'x', pico_dbfs: -3 }) !== 0) throw new Error('acepta basura');
+});
+
+comprobar('La voz sube y la música NO se toca: era lo que se pidió', () => {
+  const modelo = construirModelo(serie, {
+    id: 'teaser', titulo: 'Teaser', datos: serie.piezas.teaser
+  });
+  const { corta } = ambitosDe(modelo);
+
+  const estado = { audio: { voz: {}, musica: {} }, tomas: {}, montajes: [], cola: [] };
+  estado.audio.voz['teaser/madre'] = {
+    ruta: 'audio/voz/teaser/madre.wav', dur_s: 12.6, aprobada: true,
+    nivel: { rms_dbfs: -26, pico_dbfs: -12 },
+    lineas: [
+      { inicio: 0.2, fin: 5.8, estimado: false },
+      { inicio: 6.5, fin: 9.4, estimado: false },
+      { inicio: 10.1, fin: 12.6, estimado: false }
+    ]
+  };
+  estado.audio.voz['teaser/saharis'] = {
+    ruta: 'audio/voz/teaser/saharis.wav', dur_s: 1.8, aprobada: true,
+    nivel: { rms_dbfs: -26, pico_dbfs: -12 },
+    lineas: [{ inicio: 0.1, fin: 1.8, estimado: false }]
+  };
+  for (const id of ['teaser-lecho', 'teaser-canto']) {
+    estado.audio.musica[id] = { ruta: `audio/musica/${id}.wav`, dur_s: 78, aprobada: true, letra_tiempos: [] };
+  }
+  for (const toma of modelo.tomas) {
+    const clave = toma.de_archivo ? `archivo/${toma.de_archivo}` : `teaser/${toma.id}`;
+    estado.tomas[clave] = { clip_elegido: `clips/${toma.id}.mp4` };
+  }
+
+  const salida = revisar(modelo, corta, estado);
+  if (!salida.manifiesto) throw new Error(`no sale manifiesto: ${JSON.stringify(salida.faltas)}`);
+
+  const voces = salida.manifiesto.audio.filter((una) => una.pista === 'voz');
+  const musicas = salida.manifiesto.audio.filter((una) => una.pista === 'musica');
+
+  if (!voces.length) throw new Error('no hay voz en el manifiesto');
+  for (const una of voces) {
+    if (!(una.ganancia_db > 0)) throw new Error(`una voz va a ${una.ganancia_db} dB y debería subir`);
+  }
+  for (const una of musicas) {
+    if (una.ganancia_db !== -6) {
+      throw new Error(`la música va a ${una.ganancia_db} dB y se pidió no tocarla (−6)`);
+    }
+  }
+
+  // Y todas las voces del mismo bloque suben lo mismo: salen del mismo archivo.
+  const distintas = new Set(voces.map((una) => una.ganancia_db));
+  if (distintas.size !== 1) {
+    throw new Error(`las voces suben distinto entre ellas: ${[...distintas].join(', ')}`);
+  }
+});
+
+comprobar('Y se dice en el resumen, con los decibelios', () => {
+  const modelo = construirModelo(serie, {
+    id: 'teaser', titulo: 'Teaser', datos: serie.piezas.teaser
+  });
+  const { corta } = ambitosDe(modelo);
+  const estado = { audio: { voz: {}, musica: {} }, tomas: {}, montajes: [], cola: [] };
+  estado.audio.voz['teaser/madre'] = {
+    ruta: 'audio/voz/teaser/madre.wav', dur_s: 12.6, aprobada: true,
+    nivel: { rms_dbfs: -26, pico_dbfs: -12 },
+    lineas: [
+      { inicio: 0.2, fin: 5.8 }, { inicio: 6.5, fin: 9.4 }, { inicio: 10.1, fin: 12.6 }
+    ]
+  };
+  const salida = { audio: [], subtitulos: [], faltas: [], notas: [] };
+  // componerVoz no se exporta; se llega por revisar(), que ya se probó arriba.
+  const entero = revisar(modelo, corta, estado);
+  const dicho = entero.notas.join(' ');
+  if (!/sube|suben/.test(dicho) || !/dB/.test(dicho)) {
+    throw new Error(`el resumen no dice cuánto sube la voz: ${JSON.stringify(entero.notas)}`);
+  }
+  void salida;
 });
 
 

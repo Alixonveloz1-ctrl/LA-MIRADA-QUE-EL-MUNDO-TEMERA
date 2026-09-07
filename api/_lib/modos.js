@@ -100,7 +100,8 @@ import {
   musica as generarMusica,
   voz as generarVoz,
   listarVoces,
-  alinear as alinearAudio
+  alinear as alinearAudio,
+  nivelDeVoz
 } from './audio.js';
 import { traducirAJapones, desglosarEscena, fichaDePieza } from './texto.js';
 import { salud as comprobarSalud } from './salud.js';
@@ -1319,7 +1320,14 @@ async function modoAlinear(cuerpo) {
     );
   }
 
-  return { lineas: await alinearAudio(archivo.datos, lineas) };
+  // El nivel se mide del mismo archivo y en la misma llamada: ya está cargado.
+  // Con él, el montaje sube cada bloque a un volumen conocido en vez de dejarlo
+  // como lo entregue el TTS, que es lo que hacía que la voz quedara debajo de la
+  // música. Si no se puede medir va `null` y el montaje no toca la ganancia.
+  return {
+    lineas: await alinearAudio(archivo.datos, lineas),
+    nivel: nivelDeVoz(archivo.datos)
+  };
 }
 
 // ---------------------------------------------------------------------------

@@ -1797,6 +1797,71 @@ dentro del árbol que sale. Se comprobó en las dos direcciones —se volvió a 
 el fallo a propósito y se puso roja— porque una prueba que no se ha visto fallar
 no se sabe si sirve.
 
+### La voz por encima de la música
+
+*«Me gustaría que la voz tuviera más volumen, que se sobreponga más por encima de
+la música. El volumen de la música está muy bien.»*
+
+La mezcla parecía correcta sobre el papel:
+
+| | Ganancia |
+| --- | --- |
+| Voz | **0 dB** — tal como la entrega el TTS |
+| Música | −6 dB |
+| Música **debajo de una línea** | −6 −9 = **−15 dB** |
+
+Quince decibelios de separación es de sobra. Y aun así la voz quedaba debajo.
+
+**Porque esos quince decibelios son relativos a cada origen**, y los dos orígenes
+no entregan al mismo nivel: Gemini TTS devuelve archivos flojos y Lyria los
+devuelve fuertes. Equilibrar dos cosas por su ganancia relativa, cuando salen de
+fábrica a niveles distintos, no equilibra nada.
+
+Y debajo había un segundo problema más callado: **cada bloque sonaba como le
+tocara**. Dos bloques de la misma persona pueden salir del TTS con varios
+decibelios de diferencia, así que una escena suena más alta que la siguiente sin
+que nadie lo haya pedido.
+
+#### No una ganancia fija: un nivel medido
+
+Subir la voz «unos decibelios» a ojo arregla un bloque y estropea el siguiente.
+Lo que se hace es **subir cada bloque a un volumen conocido**, medido de su propio
+archivo.
+
+El nivel se mide al alinear, que es cuando la función ya tiene el WAV delante: no
+cuesta ni una llamada más, y **no hay que regenerar ninguna voz**. Salen dos
+números:
+
+- **`rms_dbfs`** — lo que se percibe como volumen, medido **solo donde se habla**.
+  Se mide por ventanas de 50 ms y se tiran las que están más de 30 dB por debajo
+  de la más alta: eso deja el habla y descarta los silencios entre frases, que si
+  contaran dirían que se habla más bajo de lo que se habla.
+- **`pico_dbfs`** — la muestra más alta. Dice cuánto se puede subir antes de
+  recortar.
+
+Con eso, el montaje calcula la subida: lo que pide el objetivo (−16 dBFS de
+habla), **limitado por lo que deja el pico** (techo −1,5 dBFS). Manda el más
+pequeño de los dos, con tope de +12 dB para arriba —más subiría el ruido de fondo
+con la voz— y −6 dB para abajo.
+
+Un bloque flojo sube mucho, uno fuerte sube poco, y los dos acaban sonando igual.
+
+Tres cosas que **no** hace:
+
+- **No toca la música.** Sigue en −6 dB, que es donde estaba bien.
+- **No inventa.** Sin medida —un bloque medido antes de que esto existiera— la
+  ganancia es 0 y la voz va como venía. Se dice en el resumen, con el nombre del
+  bloque y qué hacer.
+- **No se lo calla.** Cada bloque que sube sale en el resumen del montaje con sus
+  decibelios, antes de pulsar nada: cambiar el volumen de una voz sin avisar es lo
+  mismo que moverla de segundo sin avisar.
+
+Y nada de esto toca el montador: `ganancia_db` es un campo del manifiesto que ya
+entendía. **No hay que redesplegar nada** — sube con Vercel como el resto.
+
+> **Hay que volver a medir los tiempos** de cada bloque, una vez. El volumen se
+> mide en esa misma llamada. La voz **no** hay que regenerarla.
+
 ### Cada montaje se puede borrar, uno por uno
 
 Un montaje que sale se queda apuntado para siempre, y como una pieza se remonta

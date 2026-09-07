@@ -1259,3 +1259,42 @@ moviéndose y durante ese plano habla A y no B, el montaje **no puede** arreglar
 haría falta cambiar el plano o mover el diálogo. `herramientas/invariantes.mjs` lo
 da por fallo, para que salte antes de generar el clip. Si además suena la voz de B
 ahí, no cuenta: eso es diálogo solapado y lo juzga quien lo oiga.
+
+### 13.11 `alinear` mide además a qué volumen suena la grabación
+
+Enmienda a §12 y a §5. La respuesta de `alinear` lleva un campo más:
+
+```js
+{ modo:"alinear", ruta:"…", lineas:[{ja}] }
+→ { ok:true, lineas:[…], nivel: { pico_dbfs, rms_dbfs } | null }
+```
+
+**Por qué.** En el montaje la voz iba con `ganancia_db: 0` —tal como la entrega el
+TTS— y la música a −6 dB con otros −9 dB de agache debajo de cada línea. Quince
+decibelios de separación sobre el papel, y la voz quedaba debajo de la música.
+Esos quince decibelios son **relativos a cada origen**, y Gemini TTS entrega flojo
+mientras Lyria entrega fuerte.
+
+`rms_dbfs` se mide **solo donde se habla**: por ventanas de 50 ms, descartando las
+que caen más de 30 dB por debajo de la más alta. Un promedio del archivo entero
+contaría los silencios y daría un número más bajo del que se oye. `pico_dbfs` es
+la muestra más alta, y es lo que dice cuánto se puede subir sin recortar.
+
+Va `null` cuando no se puede medir de verdad —otra profundidad de bits, un
+archivo vacío, un archivo en silencio— en vez de inventar un número: una ganancia
+calculada sobre un número inventado es peor que no tocar la ganancia.
+
+**En el estado** (§5), `audio.voz[clave].nivel` guarda los dos números, y **los dos
+caminos que miden lo guardan igual**: la pantalla de Audio y la cola.
+
+**Qué hace el montaje con ello.** `ganancia_db` de cada pista de voz deja de ser 0
+y pasa a ser lo que haga falta para subir ese bloque a −16 dBFS de habla, limitado
+por un techo de pico de −1,5 dBFS, con tope de +12 dB y suelo de −6 dB. Todas las
+líneas de un bloque llevan la MISMA ganancia: salen del mismo archivo, y subirlas
+por separado las descuadraría entre ellas. La música no se toca.
+
+Sin `nivel`, la ganancia es 0 y se dice en el resumen del montaje. Cada bloque que
+sube también se dice, con sus decibelios.
+
+Esto **no cambia el manifiesto**: `ganancia_db` ya existía en §7 y el montador ya
+lo aplicaba. No hay que redesplegarlo.

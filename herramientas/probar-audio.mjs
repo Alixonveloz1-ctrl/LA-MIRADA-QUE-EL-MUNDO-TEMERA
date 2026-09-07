@@ -156,7 +156,7 @@ const MUESTRAS_POR_TRAMA = 1152;
 const HZ = 44100;
 
 const deAudio = await traerDeAudio();
-const { aPista, sinAudio, esBloqueoDeContenido, repartoMedido, repartoEstimado } = deAudio;
+const { aPista, sinAudio, esBloqueoDeContenido, repartoMedido, repartoEstimado, nivelDeVoz } = deAudio;
 
 let bien = 0;
 let mal = 0;
@@ -419,6 +419,90 @@ comprobar('Lo estimado sigue marcado y sigue sin pedazos: no se ha medido nada',
     if (tramo.estimado !== true) throw new Error('un tramo estimado sin su marca');
     if (tramo.trozos !== undefined) throw new Error('un tramo estimado con pedazos inventados');
   }
+});
+
+
+
+// ---------------------------------------------------------------------------
+// A qué volumen suena una grabación de voz
+// ---------------------------------------------------------------------------
+//
+// POR QUÉ EXISTE. En el montaje la voz iba con ganancia CERO —tal como la
+// entrega el TTS— y la música a −6 dB con otros −9 dB de agache debajo. Sobre el
+// papel son quince decibelios de separación y suena de sobra. En el vídeo
+// montado la voz quedaba tapada por la música.
+//
+// Porque esos quince decibelios son relativos A CADA ORIGEN, y los dos orígenes
+// no entregan al mismo nivel: el TTS devuelve archivos flojos y Lyria fuertes.
+//
+// Con el nivel medido, cada bloque se sube a un volumen conocido en vez de
+// adivinar una ganancia fija que arreglaría un bloque y estropearía el
+// siguiente. Esto prueba la medida; la ganancia que sale de ella se prueba en
+// probar-subtitulos.mjs.
+
+/** Un WAV de 16 bits con habla simulada a un nivel conocido y silencio delante. */
+function wavHablado(rmsDb, { silencio = 0.6, dur = 3, hz = 24000 } = {}) {
+  const total = Math.round(hz * (dur + silencio));
+  const pcm = Buffer.alloc(total * 2);
+  const amp = 10 ** (rmsDb / 20) * Math.SQRT2;   // en un seno, rms = amplitud/√2
+  const desde = Math.round(hz * silencio);
+  for (let i = desde; i < total; i += 1) {
+    const t = (i - desde) / hz;
+    const v = Math.sin(2 * Math.PI * 180 * t) * amp;
+    pcm.writeInt16LE(Math.max(-32768, Math.min(32767, Math.round(v * 32768))), i * 2);
+  }
+  const cab = Buffer.alloc(44);
+  cab.write('RIFF', 0); cab.writeUInt32LE(36 + pcm.length, 4); cab.write('WAVE', 8);
+  cab.write('fmt ', 12); cab.writeUInt32LE(16, 16); cab.writeUInt16LE(1, 20);
+  cab.writeUInt16LE(1, 22); cab.writeUInt32LE(hz, 24); cab.writeUInt32LE(hz * 2, 28);
+  cab.writeUInt16LE(2, 32); cab.writeUInt16LE(16, 34);
+  cab.write('data', 36); cab.writeUInt32LE(pcm.length, 40);
+  return Buffer.concat([cab, pcm]);
+}
+
+comprobar('El nivel medido es el del HABLA, no el del archivo con sus silencios', () => {
+  // Medio archivo es silencio. Si se promediara entero, el número saldría muy
+  // por debajo de lo que se oye, y el montaje subiría la voz de más.
+  const nivel = nivelDeVoz(wavHablado(-20, { silencio: 3, dur: 3 }));
+  if (!nivel) throw new Error('no ha podido medir un WAV normal');
+  if (Math.abs(nivel.rms_dbfs - -20) > 1.5) {
+    throw new Error(`dice ${nivel.rms_dbfs} dBFS y se habla a −20`);
+  }
+});
+
+comprobar('El silencio de delante no cambia la medida', () => {
+  const corto = nivelDeVoz(wavHablado(-18, { silencio: 0.2 }));
+  const largo = nivelDeVoz(wavHablado(-18, { silencio: 4 }));
+  if (Math.abs(corto.rms_dbfs - largo.rms_dbfs) > 0.5) {
+    throw new Error(`con 0,2 s de silencio da ${corto.rms_dbfs} y con 4 s da ${largo.rms_dbfs}`);
+  }
+});
+
+comprobar('Un archivo más flojo mide más flojo, y en la proporción correcta', () => {
+  const alto = nivelDeVoz(wavHablado(-12));
+  const bajo = nivelDeVoz(wavHablado(-24));
+  const diferencia = alto.rms_dbfs - bajo.rms_dbfs;
+  if (Math.abs(diferencia - 12) > 1) {
+    throw new Error(`entre −12 y −24 dBFS mide ${diferencia.toFixed(1)} dB de diferencia`);
+  }
+});
+
+comprobar('El pico nunca queda por debajo del nivel de habla', () => {
+  for (const db of [-30, -20, -10, -4]) {
+    const nivel = nivelDeVoz(wavHablado(db));
+    if (nivel.pico_dbfs < nivel.rms_dbfs) {
+      throw new Error(`a ${db} dBFS el pico (${nivel.pico_dbfs}) sale por debajo del rms`);
+    }
+    if (nivel.pico_dbfs > 0) throw new Error(`a ${db} dBFS el pico sale por encima de 0 dBFS`);
+  }
+});
+
+comprobar('Lo que no se puede medir devuelve null, y no un número inventado', () => {
+  if (nivelDeVoz(Buffer.alloc(0)) !== null) throw new Error('mide cero bytes');
+  if (nivelDeVoz(Buffer.from('no soy un wav')) !== null) throw new Error('mide algo que no es WAV');
+  // Un WAV entero en silencio: no hay nivel que medir, y normalizarlo lo
+  // convertiría en ruido a todo volumen.
+  if (nivelDeVoz(wavHablado(-200)) !== null) throw new Error('mide un archivo en silencio');
 });
 
 

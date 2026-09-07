@@ -2019,6 +2019,12 @@ export const EJECUTORES = {
 
     anotar((estado) => {
       const entrada = entradaDeAudio(estado, 'voz', clave);
+      // EL NIVEL AL QUE SUENA ESTE BLOQUE. Con él, el montaje lo sube a un
+      // volumen conocido en vez de dejarlo como lo entregue el TTS. Si la
+      // función no ha podido medirlo viene `null` y no se guarda nada: una
+      // ganancia calculada sobre un número inventado es peor que ninguna.
+      const nivel = nivelMedido(medido.nivel);
+      if (nivel) entrada.nivel = nivel;
       entrada.lineas = medidas.map((linea) => ({
         inicio: Number(linea.inicio) || 0,
         fin: Number(linea.fin) || 0,
@@ -2245,6 +2251,27 @@ async function cambioDeClipTerminado(idPieza, idToma, ruta) {
       anotarGasto(estado, 'video_s', nivel, Number(laToma.dur_gen) || 0);
     }
   };
+}
+
+/**
+ * El nivel medido de una grabación, saneado.
+ *
+ * Los dos números son decibelios respecto al máximo, así que son NEGATIVOS o
+ * cero, y nunca absurdamente bajos: por debajo de −90 dBFS no hay señal, hay
+ * silencio, y normalizar un silencio lo convertiría en ruido a todo volumen.
+ *
+ * @param {object} crudo
+ * @returns {{pico_dbfs:number, rms_dbfs:number}|null}
+ */
+function nivelMedido(crudo) {
+  if (!crudo || typeof crudo !== 'object') return null;
+  const pico = Number(crudo.pico_dbfs);
+  const rms = Number(crudo.rms_dbfs);
+  if (!Number.isFinite(pico) || !Number.isFinite(rms)) return null;
+  if (pico > 0 || rms > 0) return null;
+  if (pico < -90 || rms < -90) return null;
+  if (rms > pico) return null;
+  return { pico_dbfs: pico, rms_dbfs: rms };
 }
 
 /**

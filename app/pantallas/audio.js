@@ -1868,6 +1868,23 @@ function textoDelTramo(tramo, ruta) {
 }
 
 /**
+ * El nivel medido de una grabación, saneado. Mismo criterio que en app/cola.js.
+ *
+ * @param {object} crudo
+ * @returns {{pico_dbfs:number, rms_dbfs:number}|null}
+ */
+function nivelMedido(crudo) {
+  if (!crudo || typeof crudo !== 'object') return null;
+  const pico = Number(crudo.pico_dbfs);
+  const rms = Number(crudo.rms_dbfs);
+  if (!Number.isFinite(pico) || !Number.isFinite(rms)) return null;
+  if (pico > 0 || rms > 0) return null;
+  if (pico < -90 || rms < -90) return null;
+  if (rms > pico) return null;
+  return { pico_dbfs: pico, rms_dbfs: rms };
+}
+
+/**
  * Los pedazos medidos de una línea, saneados.
  *
  * Un pedazo al revés, sin números o que se solapa con el anterior movería un
@@ -2012,6 +2029,10 @@ async function alinearBloque(ctx, bloque) {
 
     await cambiar((borrador) => {
       const entrada = entradaDeVoz(borrador, clave);
+      // A qué volumen suena este bloque. Los dos caminos que miden guardan lo
+      // mismo: que uno perdiera un campo ya costó una tarde con «estimado».
+      const nivel = nivelMedido(medido.nivel);
+      if (nivel) entrada.nivel = nivel;
       entrada.lineas = tramos.map((tramo) => ({
         inicio: Number(tramo && tramo.inicio) || 0,
         fin: Number(tramo && tramo.fin) || 0,
