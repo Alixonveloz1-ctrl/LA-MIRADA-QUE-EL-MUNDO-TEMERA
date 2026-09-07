@@ -879,14 +879,25 @@ bloque('Datos · la regla de la boca');
   //   estaba en el 70. La boca entera en silencio y la voz sonando después,
   //   encima del plano siguiente.
   //
-  // El montaje ya lo cuadra solo —`bocasQueHablan()` en app/pantallas/montaje.js
-  // adelanta la voz al segundo del plano—, así que un desajuste que el montaje
-  // pueda arreglar es un AVISO y no un fallo: dice cuánto se va a mover para que
-  // no sorprenda, y quien quiera puede cuadrarlo en el dato.
+  // LA REGLA ES «SI SE VEN LABIOS MOVIÉNDOSE, TIENE QUE OÍRSE VOZ», y ni una
+  // palabra más. No dice dónde empieza la frase ni cuál es: que los labios no
+  // cuadren con las palabras se sabe y se acepta.
   //
-  // Lo que sí es fallo es una boca que se mueve y NO TIENE NADA QUE DECIR cerca:
-  // eso el montaje no puede inventarlo, y en pantalla queda alguien hablando en
+  // Por eso un plano que YA tiene voz encima cuando entra no se cuenta, ni como
+  // fallo ni como aviso. Ese es el caso normal en un episodio con diálogo
+  // seguido —la voz viene de antes en off, entra el plano de labios, la voz
+  // continúa— y no hay nada que arreglar ahí. Contarlo llenaría esta pantalla de
+  // avisos inútiles doce episodios seguidos.
+  //
+  // De lo que queda, el montaje cuadra solo lo que se puede cuadrar
+  // —`bocasQueHablan()` en app/pantallas/montaje.js trae la frase más cercana—,
+  // así que eso es un AVISO y no un fallo: dice cuánto se va a mover para que no
+  // sorprenda, y quien quiera puede cuadrarlo en el dato.
+  //
+  // Fallo es una boca que se mueve y NO TIENE NADA QUE DECIR cerca: eso el
+  // montaje no puede inventarlo, y en pantalla queda alguien hablando en
   // silencio hasta que corte el plano.
+  const ARRANQUE_MUDO_S = 0.4;
   const sueltas = [];
   const seMueven = [];
 
@@ -896,13 +907,26 @@ bloque('Datos · la regla de la boca');
 
     // El mismo emparejado que hace el montaje: por cercanía, con la duración del
     // propio plano como tope, y cada línea para un solo plano.
+    // Los planos de boca que arrancan MUDOS. Los que ya tienen voz encima cuando
+    // entran no salen de aquí: no hay nada que decir de ellos.
+    const mudos = tomas.filter((toma) => {
+      if (!toma.boca_visible) return false;
+      if (!pideQueLaBocaSeMueva(toma.video)) return false;
+      const empieza = Number(toma.inicio);
+      if (!Number.isFinite(empieza)) return false;
+      return !lineas.some(
+        (linea) =>
+          linea.quien === toma.boca_visible &&
+          Number(linea.t) <= empieza + ARRANQUE_MUDO_S &&
+          Number(linea.hasta) > empieza + CASI
+      );
+    });
+
     const posibles = [];
-    for (const toma of tomas) {
-      if (!toma.boca_visible) continue;
-      if (!pideQueLaBocaSeMueva(toma.video)) continue;
+    for (const toma of mudos) {
       const empieza = Number(toma.inicio);
       const acaba = empieza + Number(toma.dur);
-      if (!Number.isFinite(empieza) || !Number.isFinite(acaba)) continue;
+      if (!Number.isFinite(acaba)) continue;
 
       for (const linea of lineas) {
         if (linea.quien !== toma.boca_visible) continue;
@@ -924,9 +948,7 @@ bloque('Datos · la regla de la boca');
       emparejadas.set(toma.id, { linea, empieza });
     }
 
-    for (const toma of tomas) {
-      if (!toma.boca_visible) continue;
-      if (!pideQueLaBocaSeMueva(toma.video)) continue;
+    for (const toma of mudos) {
       const donde = nombreDeToma(idPieza, toma);
       const pareja = emparejadas.get(toma.id);
 

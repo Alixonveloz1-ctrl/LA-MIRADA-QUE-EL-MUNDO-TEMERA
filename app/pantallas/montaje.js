@@ -1201,6 +1201,10 @@ function componerVoz(modelo, ambito, estado, salida) {
   const sinMedir = [];
   const estimados = [];
   const movidas = [];
+  // Dónde acaba sonando cada línea de verdad, para poder mirar al final si algún
+  // plano de labios se queda mudo. Se apunta después de colocarla, no antes: lo
+  // que importa es dónde suena, no dónde estaba escrita.
+  const colocadas = [];
 
   // Qué línea le toca a cada plano que enseña una boca. Si en este ámbito no se
   // ve ninguna boca, esto viene vacío y todo va por el segundo escrito, que es
@@ -1215,7 +1219,7 @@ function componerVoz(modelo, ambito, estado, salida) {
     if (!suyas.length) continue;
 
     // HASTA DÓNDE LLEGA LA LÍNEA ANTERIOR DE ESTE MISMO BLOQUE. Un bloque es una
-    // persona (o dos), así que adelantar una línea por encima del final de la
+    // persona (o dos), así que mover una línea por encima del final de la
     // anterior sería ponerla a hablarse encima a sí misma. Eso no se hace ni
     // para cuadrar una boca.
     let finAnterior = 0;
@@ -1229,7 +1233,12 @@ function componerVoz(modelo, ambito, estado, salida) {
     }
     if (!guardado.aprobada) sinAprobar.push(bloque.id);
 
-    for (const { linea, i } of suyas) {
+    for (let cual = 0; cual < suyas.length; cual += 1) {
+      const { linea, i } = suyas[cual];
+      // Y HASTA DÓNDE SE PUEDE LLEGAR POR DELANTE. Mover una línea también puede
+      // ser retrasarla —un plano de boca puede caer después de lo escrito—, y
+      // entonces el que se pisa es el de después.
+      const siguiente = suyas[cual + 1] ? suyas[cual + 1].linea : null;
       const tramo = guardado.tramos[i] || null;
 
       if (!tramo || !(tramo.fin > tramo.inicio)) {
@@ -1250,11 +1259,17 @@ function componerVoz(modelo, ambito, estado, salida) {
 
       if (conBoca) {
         const conLosLabios = redondear(conBoca.en - ambito.desde);
-        // Se adelanta solo si de verdad cabe: dentro del tramo, sin pisar la
-        // línea anterior de esta misma persona y sin salirse por el final. Si no
-        // cabe, se queda donde estaba y no se dice nada raro: se dice que no se
-        // ha podido.
-        if (conLosLabios >= 0 && conLosLabios >= finAnterior && conLosLabios + largo <= duracion + MARGEN_S) {
+        // Se mueve solo si de verdad cabe: dentro del tramo, sin pisar la línea
+        // anterior ni la siguiente de esta misma persona, y sin salirse por el
+        // final. Si no cabe, se queda donde estaba y no se dice nada raro: se
+        // dice que no se ha podido.
+        const tope = siguiente ? redondear(siguiente.t - ambito.desde) : Infinity;
+        if (
+          conLosLabios >= 0 &&
+          conLosLabios >= finAnterior &&
+          conLosLabios + largo <= tope + MARGEN_S &&
+          conLosLabios + largo <= duracion + MARGEN_S
+        ) {
           if (conLosLabios !== escrito) {
             movidas.push({
               texto: recortar(linea.es || linea.quien, 34),
@@ -1300,6 +1315,7 @@ function componerVoz(modelo, ambito, estado, salida) {
       });
 
       finAnterior = redondear(fin);
+      colocadas.push({ quien: linea.quien, en, fin: redondear(fin) });
 
       if (!ambito.conSubtitulos) continue;
 
@@ -1333,6 +1349,33 @@ function componerVoz(modelo, ambito, estado, salida) {
           texto: pedazo.texto
         });
       }
+    }
+  }
+
+  // ¿HA QUEDADO ALGUNA BOCA MOVIÉNDOSE EN SILENCIO? Esto se mira AL FINAL y con
+  // las voces ya colocadas, porque hasta aquí no se sabe dónde suena cada una.
+  //
+  // Lo de arriba arregla el caso que se puede arreglar: un plano que arranca
+  // mudo y tiene una frase cerca que traer. Lo que queda —un plano de labios más
+  // largo que lo que se dice debajo, o un hueco en medio— no se arregla moviendo
+  // nada: hace falta acortar el plano o escribir más diálogo. Así que no se
+  // toca y se dice, que es lo único honrado que se puede hacer con ello.
+  if (!ambito.previas && colocadas.length) {
+    const mudas = [];
+    for (const toma of Array.isArray(ambito.tomas) ? ambito.tomas : []) {
+      if (!toma.bocaVisible || !toma.bocaSeMueve || toma.inicio === null) continue;
+      const callado = mudezDebajoDe(toma, colocadas, ambito.desde);
+      if (callado >= MUDEZ_QUE_SE_VE_S) {
+        mudas.push(`${toma.id} (${segundos(callado)} de ${toma.bocaVisible})`);
+      }
+    }
+    if (mudas.length) {
+      notas.push(
+        `${plural(mudas.length, 'plano enseña', 'planos enseñan')} una boca moviéndose con ` +
+          `silencio debajo: ${enumerar(mudas, 6)}. Se ven los labios y no se oye nada. Esto no se ` +
+          'arregla moviendo la voz —ya está donde tiene que estar—: o el plano dura más de lo que ' +
+          'se dice encima y hay que acortarlo en datos/serie.json, o falta diálogo ahí.'
+      );
     }
   }
 
@@ -1433,12 +1476,35 @@ function componerVoz(modelo, ambito, estado, salida) {
 // «voz sin labios». Lo que faltaba es la otra mitad: LABIOS SIN VOZ.
 //
 // Y CUADRARLO A MANO NO VALE. Son doce episodios; nadie va a ir línea por línea
-// ajustando segundos desde un teléfono. Así que se hace solo, y el reparto de
-// mando queda así:
+// ajustando segundos desde un teléfono. Así que se hace solo.
 //
-//   · Línea CON plano de boca  → manda la imagen. La voz entra con los labios.
-//   · Línea SIN plano de boca  → manda el guion. Es voz en off y su «t» se
-//                                respeta tal cual está escrito.
+// PERO NO MOVIENDO SIEMPRE, Y ESTO ES LO IMPORTANTE. La primera versión de esto
+// decía «línea con plano de boca → la voz entra con el plano», sin más. Está
+// mal, y en un episodio se rompe:
+//
+//     «la voz puede estar en off, y de repente entra una escena de movimiento
+//      de labios, y luego continuar la voz en off»
+//
+// Ahí no hay nada que arreglar. La voz ya está sonando cuando entra el plano de
+// labios, y moverla para «cuadrarla» solo conseguiría abrir un hueco donde no lo
+// había y descolocar todo lo de detrás. En el teaser esa versión acertaba de
+// casualidad, porque el teaser son cuatro frases sueltas; en un episodio, con el
+// diálogo seguido, habría estropeado más de lo que arreglaba.
+//
+// LA REGLA DE VERDAD ES MÁS FLOJA Y MÁS SEGURA:
+//
+//     Si se ven unos labios moviéndose, TIENE QUE OÍRSE VOZ.
+//
+// Nada más. No dice dónde empieza la frase ni qué frase es —que los labios no
+// van a cuadrar con las palabras se sabe y se acepta—: dice que no puede haber
+// silencio debajo de una boca en marcha. Así que:
+//
+//   · El plano YA tiene voz encima  → no se toca NADA. Es el caso normal.
+//   · El plano empieza en silencio  → se adelanta la frase más cercana de esa
+//                                     persona para que lo cubra.
+//   · Ninguna frase puede cubrirlo  → no se inventa: se dice.
+//
+// Una línea sin ningún plano de boca es voz en off y su «t» se respeta tal cual.
 //
 // Lo que NO se hace es callárselo: cada línea movida sale dicha en el resumen
 // del montaje, con el segundo de antes y el de después.
@@ -1464,10 +1530,26 @@ function componerVoz(modelo, ambito, estado, salida) {
 function bocasQueHablan(modelo, ambito) {
   const emparejadas = new Map();
 
-  // SOLO LAS BOCAS QUE SE MUEVEN. Una boca en cuadro y quieta no reclama nada:
-  // llevarle la voz sería ponerla a hablar con los labios parados.
-  const conBoca = ambito.tomas.filter(
-    (una) => una.bocaVisible && una.bocaSeMueve && una.inicio !== null
+  // SOLO LAS BOCAS QUE SE MUEVEN Y ADEMÁS ARRANCAN EN SILENCIO.
+  //
+  // Las dos condiciones quitan casi todo, y eso es exactamente lo que se busca:
+  //
+  //   · Una boca en cuadro y QUIETA no reclama nada. Llevarle la voz sería
+  //     ponerla a hablar con los labios parados, que es lo que prohíbe la otra
+  //     mitad de la regla (contrato §6.6).
+  //   · Un plano de boca que YA tiene voz encima cuando entra tampoco reclama
+  //     nada, y este es el caso normal en un episodio con diálogo seguido. Ahí
+  //     no hay nada roto: mover la frase solo abriría un hueco donde no lo había.
+  //
+  // Lo que queda son los planos que empiezan con labios moviéndose y silencio
+  // debajo. Solo esos.
+  const tomas = Array.isArray(ambito.tomas) ? ambito.tomas : [];
+  const conBoca = tomas.filter(
+    (una) =>
+      una.bocaVisible &&
+      una.bocaSeMueve &&
+      una.inicio !== null &&
+      !yaSuenaAlEntrar(modelo, una)
   );
   if (!conBoca.length) return emparejadas;
 
@@ -1505,6 +1587,72 @@ function bocasQueHablan(modelo, ambito) {
   }
 
   return emparejadas;
+}
+
+/**
+ * Cuánto silencio se aguanta al principio de un plano de boca antes de que se
+ * note. Menos de esto no lo ve nadie; más, se ve a alguien moviendo los labios
+ * sin que salga sonido, que es de lo que va todo esto.
+ */
+const ARRANQUE_MUDO_S = 0.4;
+
+/**
+ * Cuánto silencio se aguanta DENTRO de un plano de boca sin decirlo. Se usa solo
+ * para avisar al final, no para mover nada: un hueco en medio o al final no se
+ * arregla adelantando una frase —haría falta acortar el plano o escribir más
+ * diálogo—, así que se cuenta y se dice.
+ */
+const MUDEZ_QUE_SE_VE_S = 1;
+
+/**
+ * Si cuando entra este plano ya está sonando la voz de quien mueve la boca.
+ *
+ * Se mira con los segundos ESCRITOS en el guion, que son la intención de quien lo
+ * escribió. Basta con que una frase suya haya empezado antes del plano (o justo
+ * al entrar) y siga sonando cuando el plano aparece.
+ *
+ * @param {object} modelo
+ * @param {object} toma
+ * @returns {boolean}
+ */
+function yaSuenaAlEntrar(modelo, toma) {
+  const entra = Number(toma.inicio);
+  for (const linea of modelo.lineas) {
+    if (linea.quien !== toma.bocaVisible) continue;
+    if (linea.t <= entra + ARRANQUE_MUDO_S && linea.hasta > entra + 0.001) return true;
+  }
+  return false;
+}
+
+/**
+ * El silencio más largo que queda debajo de un plano de boca, con las voces ya
+ * colocadas donde de verdad van a sonar.
+ *
+ * Esto NO decide nada: solo cuenta, para poder avisar. Un plano de labios que se
+ * queda mudo por el medio o por el final no se arregla moviendo una frase, y
+ * fingir que sí lo haría sería peor que decirlo.
+ *
+ * @param {object} toma
+ * @param {{quien:string, en:number, fin:number}[]} colocadas
+ * @param {number} desplazamiento cuánto se le resta a los segundos de la pieza
+ * @returns {number} segundos
+ */
+function mudezDebajoDe(toma, colocadas, desplazamiento) {
+  const entra = redondear(Number(toma.inicio) - desplazamiento);
+  const sale = redondear(entra + largoDeLaToma(toma));
+
+  const suyas = colocadas
+    .filter((una) => una.quien === toma.bocaVisible && una.fin > entra && una.en < sale)
+    .map((una) => ({ en: Math.max(una.en, entra), fin: Math.min(una.fin, sale) }))
+    .sort((a, b) => a.en - b.en);
+
+  let mayor = 0;
+  let hasta = entra;
+  for (const una of suyas) {
+    if (una.en > hasta) mayor = Math.max(mayor, una.en - hasta);
+    hasta = Math.max(hasta, una.fin);
+  }
+  return redondear(Math.max(mayor, sale - hasta));
 }
 
 /**

@@ -347,5 +347,115 @@ comprobar('El orden en que estén escritos los planos no cambia el resultado', (
 });
 
 
+
+// ---------------------------------------------------------------------------
+// EL CASO DE LOS EPISODIOS, que es distinto del teaser
+// ---------------------------------------------------------------------------
+//
+// El teaser son cuatro frases sueltas con mucho silencio entre ellas. Un episodio
+// es diálogo SEGUIDO, y ahí la primera versión de la regla de la boca se rompía.
+// Lo dijo quien lo iba a usar, antes de que pasara:
+//
+//     «la voz puede estar en off, y de repente entra una escena de movimiento
+//      de labios, y luego continuar la voz en off»
+//
+// Ahí NO HAY NADA QUE ARREGLAR: la voz ya está sonando cuando entra el plano de
+// labios. Moverla para «cuadrarla» abriría un hueco donde no lo había y
+// descolocaría todo lo de detrás.
+//
+// Por eso la regla no es «mueve la voz al plano» sino «si se ven labios
+// moviéndose, tiene que oírse voz». Un plano que ya tiene voz encima no se toca.
+// Estas pruebas son las que separan una cosa de la otra.
+
+console.log('\nEN UN EPISODIO, CON EL DIÁLOGO SEGUIDO\n');
+
+/** Un plano de boca cualquiera, con los campos que mira el montaje. */
+function planoDeBoca(id, inicio, dur, quien) {
+  return {
+    id, inicio, dur, desde: 0, hasta: dur,
+    bocaVisible: quien, bocaSeMueve: true
+  };
+}
+
+comprobar('Voz en off, entra un plano de labios, sigue la voz: NO se toca nada', () => {
+  // La narración de la madre va del 10 al 30 seguida. En el 18 entra un plano de
+  // sus labios. Ya se la está oyendo: el plano no reclama nada.
+  const modelo = {
+    id: 'ep1',
+    lineas: [
+      { quien: 'madre', t: 10, hasta: 17, es: 'primera parte de la narración' },
+      { quien: 'madre', t: 17, hasta: 24, es: 'sigue mientras se le ven los labios' },
+      { quien: 'madre', t: 24, hasta: 30, es: 'y vuelve a off' }
+    ],
+    tomas: []
+  };
+  const ambito = { desde: 0, hasta: 40, tomas: [planoDeBoca('E7', 18, 4, 'madre')] };
+
+  const salida = bocasQueHablan(modelo, ambito);
+  if (salida.size !== 0) {
+    throw new Error(`mueve ${salida.size} línea(s) y la voz ya estaba sonando encima del plano`);
+  }
+});
+
+comprobar('Si el plano de labios arranca en silencio, ahí sí se trae la voz', () => {
+  // Mismo episodio, pero el plano entra en el 18 y la frase no empieza hasta el
+  // 21: tres segundos de labios mudos.
+  const linea = { quien: 'madre', t: 21, hasta: 26, es: 'la frase que llega tarde' };
+  const modelo = { id: 'ep1', lineas: [linea], tomas: [] };
+  const ambito = { desde: 0, hasta: 40, tomas: [planoDeBoca('E7', 18, 4, 'madre')] };
+
+  const movida = bocasQueHablan(modelo, ambito).get(claveDeLinea(linea));
+  if (!movida) throw new Error('no la trae, y el plano arranca con tres segundos de silencio');
+  if (movida.en !== 18) throw new Error(`la lleva a ${movida.en} y el plano entra en 18`);
+});
+
+comprobar('Basta con que la voz esté sonando: no hace falta que empiece ahí', () => {
+  // La frase empieza en el 12, mucho antes del plano, y sigue sonando cuando el
+  // plano entra en el 18. Eso ya vale: se oye voz debajo de los labios.
+  const modelo = {
+    id: 'ep1',
+    lineas: [{ quien: 'madre', t: 12, hasta: 25, es: 'una frase larga' }],
+    tomas: []
+  };
+  const ambito = { desde: 0, hasta: 40, tomas: [planoDeBoca('E7', 18, 4, 'madre')] };
+  if (bocasQueHablan(modelo, ambito).size !== 0) throw new Error('mueve una frase que ya sonaba');
+});
+
+comprobar('La voz de OTRO personaje no cuenta como cubrir esa boca', () => {
+  // Está hablando Saharis mientras se ven los labios de la madre. Eso no cubre
+  // nada: la que mueve la boca es ella.
+  const suya = { quien: 'madre', t: 25, hasta: 28, es: 'lo que dice ella' };
+  const modelo = {
+    id: 'ep1',
+    lineas: [{ quien: 'saharis', t: 16, hasta: 24, es: 'lo que dice él' }, suya],
+    tomas: []
+  };
+  const ambito = { desde: 0, hasta: 40, tomas: [planoDeBoca('E7', 22, 4, 'madre')] };
+
+  const movida = bocasQueHablan(modelo, ambito).get(claveDeLinea(suya));
+  if (!movida) throw new Error('da por cubierta la boca de la madre con la voz de Saharis');
+});
+
+comprobar('En una escena, los segundos son los de la escena y no los del episodio', () => {
+  // Un ámbito de escena empieza en el segundo 120 del episodio. Todo lo que sale
+  // del emparejado va en segundos de la PIEZA; quien resta «ambito.desde» es
+  // componerVoz. Lo que se comprueba aquí es que no se reste dos veces.
+  const linea = { quien: 'madre', t: 128, hasta: 131, es: 'dentro de la escena' };
+  const modelo = { id: 'ep1', lineas: [linea], tomas: [] };
+  const ambito = { desde: 120, hasta: 150, tomas: [planoDeBoca('E7', 125, 3, 'madre')] };
+
+  const movida = bocasQueHablan(modelo, ambito).get(claveDeLinea(linea));
+  if (!movida) throw new Error('no empareja dentro de una escena');
+  if (movida.en !== 125) throw new Error(`devuelve ${movida.en}; se esperaba 125, en segundos de la pieza`);
+});
+
+comprobar('Un ámbito que solo concatena capas no revienta ni empareja nada', () => {
+  const modelo = { id: 'ep1', lineas: [{ quien: 'madre', t: 5, hasta: 8, es: 'x' }], tomas: [] };
+  if (bocasQueHablan(modelo, { desde: 0, hasta: 40, previas: [] }).size !== 0) {
+    throw new Error('empareja algo en un ámbito sin planos');
+  }
+});
+
+
 console.log(`\n${bien + mal} comprobaciones, ${bien} bien${mal ? `, ${mal} MAL` : ''}\n`);
 process.exit(mal === 0 ? 0 : 1);

@@ -1531,15 +1531,38 @@ El dato para arreglarlo estaba escrito desde el principio —cada plano dice en
 `boca_visible` de quién es la boca que sale— y **el montaje no lo miraba**:
 colocaba cada línea en su segundo escrito y ya.
 
-Ahora sí lo mira, y el reparto de mando queda así:
-
-| La línea | Manda | Por qué |
-| --- | --- | --- |
-| tiene un plano con su boca **moviéndose** | la imagen | los labios ya se están moviendo |
-| no lo tiene (voz en off) | el guion, su `t` | no hay nada que cuadrar |
-
 Cuadrarlo a mano no era una opción: son doce episodios y nadie va a ir línea por
-línea ajustando segundos desde un teléfono.
+línea ajustando segundos desde un teléfono. Así que se hace solo.
+
+#### Pero la regla NO es «mueve la voz al plano»
+
+La primera versión sí lo era, y estaba mal. Lo dijo quien lo iba a usar, antes de
+que llegara a pasar:
+
+> la voz puede estar en off, y de repente entra una escena de movimiento de
+> labios, y luego continuar la voz en off
+
+Ahí **no hay nada que arreglar**: la voz ya está sonando cuando entra el plano de
+labios. Moverla para «cuadrarla» solo abriría un hueco donde no lo había y
+descolocaría todo lo de detrás. En el teaser aquella versión acertaba de
+casualidad —son cuatro frases sueltas con silencio entre ellas—; en un episodio,
+con el diálogo seguido, habría estropeado más de lo que arreglaba.
+
+La regla de verdad es más floja y más segura:
+
+> **Si se ven unos labios moviéndose, tiene que oírse voz.**
+
+Nada más. No dice dónde empieza la frase ni cuál es —que los labios no van a
+cuadrar con las palabras se sabe y se acepta—: dice que **no puede haber silencio
+debajo de una boca en marcha**.
+
+| Cómo llega el plano de labios | Qué se hace |
+| --- | --- |
+| ya tiene voz encima cuando entra | **nada**. Es el caso normal en un episodio |
+| arranca en silencio | se trae la frase más cercana de esa persona |
+| ninguna frase puede cubrirlo | no se inventa: se dice |
+
+Una línea sin ningún plano de boca es voz en off, y su `t` se respeta tal cual.
 
 #### `boca_visible` no significa «está hablando»
 
@@ -1560,17 +1583,30 @@ la comprobación que se escribió para esto, antes de subir nada.
 
 Tres cosas que **no** hace, y las tres a propósito:
 
-- **No adelanta si no cabe**: ni antes del tramo, ni pisando el final de la línea
-  anterior de esa misma persona —sería ponerse a hablar encima de sí mismo—, ni
+- **No mueve si no cabe**: ni antes del tramo, ni pisando la línea anterior ni la
+  siguiente de esa misma persona —sería ponerse a hablar encima de sí mismo—, ni
   saliéndose por el final. Cuando no cabe, lo dice y no toca nada.
 - **No toca `datos/serie.json`.** El segundo escrito se queda escrito.
 - **No se lo calla.** Cada línea movida sale en el resumen del montaje, con el
   segundo de antes y el de después, antes de pulsar nada.
 
-Y `npm run comprobar` vigila las dos mitades. Una boca que se mueve con su línea
-desplazada es un **aviso** —el montaje lo cuadra y dice cuánto—; una boca que se
-mueve y **no tiene nada que decir cerca** es un **fallo**: eso el montaje no puede
-inventarlo, y en pantalla queda alguien hablando en silencio hasta que corte.
+Y lo que **no se puede** arreglar moviendo —un plano de labios más largo que lo
+que se dice debajo, o un hueco en medio— sale dicho igual, después de colocarlo
+todo: eso necesita acortar el plano o escribir más diálogo, y fingir que se
+arregla solo sería peor que decirlo.
+
+`npm run comprobar` vigila las dos mitades sobre los datos escritos. Una boca que
+arranca muda con una frase cerca es un **aviso** —el montaje lo cuadra y dice
+cuánto—; una boca que se mueve y **no tiene nada que decir cerca** es un **fallo**:
+eso el montaje no puede inventarlo. Un plano que ya tiene voz encima no aparece ni
+como una cosa ni como la otra: no hay nada que decir de él.
+
+#### Dónde se aplica
+
+En **todas las piezas y en todas las capas**: el teaser, cada escena de cada
+episodio y cada episodio entero. Es la misma función —`componerVoz()`— la que
+compone la voz de cualquier cosa que se monte, así que los doce episodios entran
+por aquí desde el primer plano que se desglose. No hay nada que activar.
 
 ### Un subtítulo tiene que decir lo que se está oyendo mientras se oye
 
@@ -1617,6 +1653,25 @@ siempre.
 > antes—, pero ni las pausas ni los cortes por silencio existen hasta que se
 > vuelve a pulsar «Medir los tiempos» en Audio. La voz **no** hay que volver a
 > generarla: se mide sobre la que ya está.
+
+#### Por qué el opening y el ending no tienen ese botón
+
+Porque ahí no hay nadie hablando: hay una **canción**. Y son dos caminos
+distintos a propósito, no un olvido.
+
+| | Lo que hay | Cómo se marcan los tiempos |
+| --- | --- | --- |
+| Teaser y los 12 episodios | diálogo (`audio.voz`) | **botón «Medir los tiempos»**: Speech-to-Text mide sobre el WAV |
+| Opening y ending | canción (`audio.musica`) | **con el dedo**, dándole al play y marcando cada verso |
+
+Lyria devuelve la canción y **no devuelve dónde entra cada verso** — no hay nada
+que medir, así que un botón de medir ahí sería un botón que no puede funcionar.
+Se marcan oyéndola, que además es lo correcto: un verso entra donde entra la
+música, no donde acaba la palabra anterior.
+
+Así que sí: **todo lo de los subtítulos aplica igual a los doce episodios**, por el
+mismo camino que el teaser, porque los episodios llevan diálogo. El opening y el
+ending son la excepción, y lo son porque son canciones.
 
 ### El censor rompía un nombre, y el error decía otra cosa
 

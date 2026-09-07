@@ -1171,8 +1171,12 @@ Eso impide **voz sin labios**: que se oiga hablar a alguien mientras se le ve la
 boca parada. Le faltaba el reverso, y el reverso se ve igual de mal:
 
 > **13.10** Si un plano muestra a alguien hablando —`boca_visible` es ese
-> personaje **y** su `video` pide el movimiento—, la voz de ese personaje entra
-> **con el plano**, no en el segundo escrito.
+> personaje **y** su `video` pide el movimiento—, **tiene que oírse su voz
+> mientras dura ese plano**.
+>
+> La regla no dice qué frase ni dónde empieza: dice que no puede haber silencio
+> debajo de una boca en marcha. Que los labios no cuadren con las palabras se
+> sabe y se acepta.
 
 Se vio en el teaser montado. El plano `B2` es un primerísimo plano de los labios
 de la madre y su `video` pide que la boca se mueva **todo** el plano. `B2` va del
@@ -1194,23 +1198,33 @@ boca» la pondría sobre unos labios parados — **rompiendo §6.6 para arreglar
 13.10**. Quien decide si una boca habla es el `video`, porque es lo único que Veo
 anima.
 
-**Quién manda sobre el segundo de entrada:**
+**Formularla como «la voz entra con el plano» es un error**, y se cometió. En un
+episodio el diálogo va seguido: la voz viene de antes en off, entra el plano de
+labios, y la voz continúa. Ahí no hay nada que arreglar, y mover la frase para
+«cuadrarla» abre un hueco donde no lo había y descoloca todo lo de detrás. En el
+teaser esa formulación acierta por casualidad, porque son cuatro frases sueltas.
 
-| La línea | Manda | Por qué |
-| --- | --- | --- |
-| tiene un plano con su boca **moviéndose** | la imagen | los labios ya se están moviendo |
-| no lo tiene (voz en off) | el guion, su `t` | no hay nada que cuadrar |
+**Qué se hace con cada plano de boca en marcha:**
 
-Lo hace `bocasQueHablan()` en `app/pantallas/montaje.js`: empareja cada plano de
-boca con la línea de ese personaje que tenga más cerca, con la **duración del
-propio plano** como tope de distancia, y resolviendo primero lo más cercano para
-que no dependa del orden en que estén escritos los planos. Cada plano se lleva una
-línea y cada línea va a un plano.
+| Cómo llega | Qué se hace |
+| --- | --- |
+| ya tiene voz encima al entrar | **nada**. Caso normal en un episodio |
+| arranca en silencio (> 0,4 s) | se trae la frase más cercana de ese personaje |
+| ninguna frase puede cubrirlo | no se inventa: se dice |
+
+Una línea sin ningún plano de boca es voz en off y su `t` se respeta tal cual.
+
+Lo hace `bocasQueHablan()` en `app/pantallas/montaje.js`: descarta los planos que
+ya tienen voz encima, y de los que quedan empareja cada uno con la línea de ese
+personaje que tenga más cerca, con la **duración del propio plano** como tope de
+distancia, resolviendo primero lo más cercano para que no dependa del orden en que
+estén escritos los planos. Cada plano se lleva una línea y cada línea va a un
+plano.
 
 **Tres cosas que no hace, y las tres a propósito:**
 
-- **No adelanta si no cabe**: ni antes del ámbito, ni por encima del final de la
-  línea anterior del mismo bloque —sería ponerse a hablar encima de sí mismo—, ni
+- **No mueve si no cabe**: ni antes del ámbito, ni pisando la línea anterior ni la
+  siguiente del mismo bloque —sería ponerse a hablar encima de sí mismo—, ni
   saliéndose por el final. Cuando no cabe, lo dice y deja la línea donde estaba.
 - **No toca `datos/serie.json`.** El `t` escrito se queda escrito.
 - **No se lo calla.** Cada línea movida sale en el resumen del montaje, con el
@@ -1221,3 +1235,13 @@ una boca que se mueve y tiene su línea desplazada es un **aviso** —el montaje
 cuadra solo y dice cuánto—; una boca que se mueve y **no tiene nada que decir
 cerca** es un **fallo**, porque eso el montaje no puede inventarlo y en pantalla
 queda alguien hablando en silencio hasta que corte el plano.
+
+Y lo que **no se puede** arreglar moviendo se cuenta al final, con las voces ya
+colocadas: un plano de labios más largo que lo que se dice debajo, o un hueco de
+más de un segundo en medio. Eso necesita acortar el plano o escribir más diálogo,
+así que se dice y no se toca nada.
+
+**Dónde se aplica:** en toda pieza y toda capa con planos —el teaser, cada escena
+de cada episodio y cada episodio entero—, porque es `componerVoz()` quien compone
+la voz de todo lo que se monta. Las capas que solo concatenan lo ya montado no
+vuelven a mezclar voz, así que tampoco pasan por aquí.
