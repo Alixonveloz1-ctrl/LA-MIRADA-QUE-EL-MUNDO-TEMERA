@@ -1512,6 +1512,66 @@ Ahora el reparto proporcional es solo el **esqueleto**, y después cada corte se
 vecinos. El esqueleto evita confundir una pausa dramática con un cambio de línea;
 el silencio evita cortar donde nadie calla.
 
+### Si se le ven los labios moviéndose, la voz entra con ellos
+
+*«Estamos viendo los labios como que está hablando, pero no se escucha la voz, se
+escucha al rato.»*
+
+Y era literal. El plano `B2` del teaser es un primerísimo plano de los labios de
+la madre, y su prompt le pide a Veo que la boca se mueva **todo** el plano. `B2`
+va del segundo **21 al 25**. Su línea estaba escrita en el **24**:
+
+```
+21 ──────────────────────────────── 25   B2, labios moviéndose
+                        24 ─────────────────── 26,5   la voz
+   └─ tres segundos hablando en silencio ─┘        └─ y el corte se la lleva ─┘
+```
+
+El dato para arreglarlo estaba escrito desde el principio —cada plano dice en
+`boca_visible` de quién es la boca que sale— y **el montaje no lo miraba**:
+colocaba cada línea en su segundo escrito y ya.
+
+Ahora sí lo mira, y el reparto de mando queda así:
+
+| La línea | Manda | Por qué |
+| --- | --- | --- |
+| tiene un plano con su boca **moviéndose** | la imagen | los labios ya se están moviendo |
+| no lo tiene (voz en off) | el guion, su `t` | no hay nada que cuadrar |
+
+Cuadrarlo a mano no era una opción: son doce episodios y nadie va a ir línea por
+línea ajustando segundos desde un teléfono.
+
+#### `boca_visible` no significa «está hablando»
+
+Esta distinción estuvo a punto de costar un fallo peor que el que se arreglaba.
+`boca_visible` dice que esa boca está **en cuadro**. Si habla o está callada lo
+dice el prompt de vídeo, que es lo único que Veo anima. En el mismo teaser:
+
+| Plano | Su `video` | ¿Habla? |
+| --- | --- | --- |
+| `B2` | *her lips move continuously as she speaks* | **sí** |
+| `D5` | *He turns his head to camera. **Nothing else moves.*** | **no** |
+
+`D5` es un retrato de Saharis mirando a cámara sin decir nada, y su frase está
+escrita después, sobre el plano siguiente. La primera versión de esto se la
+llevaba a `D5` «para cuadrar la boca» — es decir, **le ponía la voz encima de unos
+labios parados**, que es justo lo que prohíbe la otra mitad de la regla. Lo cazó
+la comprobación que se escribió para esto, antes de subir nada.
+
+Tres cosas que **no** hace, y las tres a propósito:
+
+- **No adelanta si no cabe**: ni antes del tramo, ni pisando el final de la línea
+  anterior de esa misma persona —sería ponerse a hablar encima de sí mismo—, ni
+  saliéndose por el final. Cuando no cabe, lo dice y no toca nada.
+- **No toca `datos/serie.json`.** El segundo escrito se queda escrito.
+- **No se lo calla.** Cada línea movida sale en el resumen del montaje, con el
+  segundo de antes y el de después, antes de pulsar nada.
+
+Y `npm run comprobar` vigila las dos mitades. Una boca que se mueve con su línea
+desplazada es un **aviso** —el montaje lo cuadra y dice cuánto—; una boca que se
+mueve y **no tiene nada que decir cerca** es un **fallo**: eso el montaje no puede
+inventarlo, y en pantalla queda alguien hablando en silencio hasta que corte.
+
 ### Un subtítulo tiene que decir lo que se está oyendo mientras se oye
 
 Este no estaba desplazado: estaba **entero**. La madre dice, despacio:
@@ -1662,6 +1722,11 @@ debería salir.
 Comprueba también lo que hace cuando el reparto no cabe: más pausas que palabras,
 una sola palabra, texto vacío. Ninguno de esos casos puede dejar un subtítulo sin
 texto ni un tiempo sin duración, porque **un subtítulo se quema en la imagen**.
+
+Y prueba la regla de la boca **contra el teaser de verdad**: que la línea de la
+madre se adelanta a `B2`, que la de Saharis **no** se adelanta a `D5` —ahí tiene
+la boca en cuadro pero quieta—, y que el resultado no depende del orden en que
+estén escritos los planos.
 
 ---
 

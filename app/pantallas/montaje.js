@@ -557,7 +557,35 @@ function construirModelo(serie, pieza) {
         // Se arrastra hasta aquí porque es lo que decide DE DÓNDE sale el clip
         // de este plano. Perderlo en la normalización dejaría el plano sin
         // origen y el episodio se montaría con un hueco.
-        de_archivo: soloTexto(una.de_archivo) || null
+        de_archivo: soloTexto(una.de_archivo) || null,
+        // QUIÉN TIENE LA BOCA EN CUADRO EN ESTE PLANO, y esto también se caía
+        // aquí.
+        //
+        // El dato estaba escrito en la pieza desde el principio y el montaje no
+        // lo miraba: colocaba cada línea en el segundo escrito y ya. En el
+        // teaser eso se ve —se ve de verdad, no es una sutileza— en el plano de
+        // los labios de la madre, que dura cuatro segundos moviéndose y tiene la
+        // voz entrando al tercero. Tres segundos de alguien hablando sin que se
+        // oiga nada.
+        bocaVisible: soloTexto(una.boca_visible) || null,
+        // Y SI ESA BOCA SE MUEVE O ESTÁ QUIETA, que NO es lo mismo y por poco
+        // cuesta un fallo peor que el que se estaba arreglando.
+        //
+        // «boca_visible» dice que la boca de alguien está EN CUADRO. No dice que
+        // esté hablando. En el teaser hay dos planos con boca y solo uno habla:
+        //
+        //   B2  «her lips move continuously as she speaks»      → habla
+        //   D5  «He turns his head to camera. Nothing else moves.» → callado
+        //
+        // D5 es un retrato de Saharis mirando a cámara sin decir nada, y su
+        // frase está escrita después, encima del plano siguiente. Adelantarla a
+        // D5 «para cuadrar la boca» habría puesto la voz sobre unos labios
+        // parados, que es EXACTAMENTE lo que prohíbe la regla de la boca del
+        // contrato (§6.6). Se habría arreglado un fallo estrenando otro peor.
+        //
+        // Quien dice si se mueve es el prompt de vídeo, porque es lo que Veo
+        // anima. Mismo criterio y mismas palabras que herramientas/invariantes.mjs.
+        bocaSeMueve: pideMoverLaBoca(una.video)
       };
     })
     .sort((a, b) => (a.inicio ?? 0) - (b.inicio ?? 0));
@@ -1172,6 +1200,12 @@ function componerVoz(modelo, ambito, estado, salida) {
   const sinAprobar = [];
   const sinMedir = [];
   const estimados = [];
+  const movidas = [];
+
+  // Qué línea le toca a cada plano que enseña una boca. Si en este ámbito no se
+  // ve ninguna boca, esto viene vacío y todo va por el segundo escrito, que es
+  // lo que pasa en el ochenta por ciento de los planos.
+  const bocas = bocasQueHablan(modelo, ambito);
 
   for (const bloque of modelo.bloques) {
     const suyas = bloque.lineas
@@ -1179,6 +1213,12 @@ function componerVoz(modelo, ambito, estado, salida) {
       .filter(({ linea }) => dentroDelAmbito(linea.t, ambito));
 
     if (!suyas.length) continue;
+
+    // HASTA DÓNDE LLEGA LA LÍNEA ANTERIOR DE ESTE MISMO BLOQUE. Un bloque es una
+    // persona (o dos), así que adelantar una línea por encima del final de la
+    // anterior sería ponerla a hablarse encima a sí misma. Eso no se hace ni
+    // para cuadrar una boca.
+    let finAnterior = 0;
 
     const clave = `${modelo.id}/${bloque.id}`;
     const guardado = vozGuardada(estado, clave);
@@ -1199,9 +1239,43 @@ function componerVoz(modelo, ambito, estado, salida) {
       if (tramo.estimado === true && !estimados.includes(bloque.id)) estimados.push(bloque.id);
 
       const largo = tramo.fin - tramo.inicio;
-      const en = redondear(linea.t - ambito.desde);
-      const fin = en + largo;
       const duracion = ambito.hasta - ambito.desde;
+
+      // DÓNDE ENTRA LA VOZ. Por defecto, el segundo escrito en el guion. Y si
+      // hay un plano enseñando esta boca, el segundo en que entra ese plano:
+      // manda lo que se ve.
+      const escrito = redondear(linea.t - ambito.desde);
+      const conBoca = bocas.get(claveDeLinea(linea)) || null;
+      let en = escrito;
+
+      if (conBoca) {
+        const conLosLabios = redondear(conBoca.en - ambito.desde);
+        // Se adelanta solo si de verdad cabe: dentro del tramo, sin pisar la
+        // línea anterior de esta misma persona y sin salirse por el final. Si no
+        // cabe, se queda donde estaba y no se dice nada raro: se dice que no se
+        // ha podido.
+        if (conLosLabios >= 0 && conLosLabios >= finAnterior && conLosLabios + largo <= duracion + MARGEN_S) {
+          if (conLosLabios !== escrito) {
+            movidas.push({
+              texto: recortar(linea.es || linea.quien, 34),
+              quien: linea.quien,
+              toma: conBoca.toma,
+              de: escrito,
+              a: conLosLabios
+            });
+          }
+          en = conLosLabios;
+        } else if (conLosLabios !== escrito) {
+          notas.push(
+            `La línea «${recortar(linea.es || linea.quien, 34)}» tenía que entrar con los labios de ` +
+              `${linea.quien} en el plano ${conBoca.toma}, en ${segundos(conLosLabios)}, y no cabe ` +
+              `ahí: se queda en ${segundos(escrito)}. Se van a ver los labios moviéndose antes de ` +
+              'que se oiga nada. Se arregla moviendo el plano o la línea en datos/serie.json.'
+          );
+        }
+      }
+
+      const fin = en + largo;
 
       if (fin > duracion + MARGEN_S) {
         faltas.push({
@@ -1224,6 +1298,8 @@ function componerVoz(modelo, ambito, estado, salida) {
         ganancia_db: 0,
         agacha: false
       });
+
+      finAnterior = redondear(fin);
 
       if (!ambito.conSubtitulos) continue;
 
@@ -1258,6 +1334,23 @@ function componerVoz(modelo, ambito, estado, salida) {
         });
       }
     }
+  }
+
+  if (movidas.length) {
+    // SE DICE SIEMPRE, Y CON LOS DOS SEGUNDOS. Mover una voz sin avisar sería
+    // cambiar el montaje a espaldas de quien escribió el guion, y aquí el guion
+    // es de una persona. Que salga escrito permite decir «no, ahí no» y arreglar
+    // el plano; que no saliera solo permitiría notarlo viendo el vídeo.
+    notas.push(
+      `${plural(movidas.length, 'línea entra', 'líneas entran')} con los labios y no con su ` +
+        'segundo escrito, porque hay un plano enseñando esa boca: ' +
+        `${movidas
+          .map((una) => `«${una.texto}» de ${segundos(una.de)} a ${segundos(una.a)} (plano ${una.toma})`)
+          .join('; ')}. ` +
+        'Un plano de boca mueve los labios de principio a fin, así que la voz tiene que empezar ' +
+        'con él: si no, se ve a alguien hablando en silencio. Los segundos escritos en ' +
+        'datos/serie.json no se tocan.'
+    );
   }
 
   if (sinGrabar.length) {
@@ -1318,6 +1411,134 @@ function componerVoz(modelo, ambito, estado, salida) {
     if (ambito.conSubtitulos) faltas.push(donde);
     else notas.push(donde.texto);
   }
+}
+
+// ---------------------------------------------------------------------------
+// La boca manda: si se ven los labios, la voz entra con ellos
+// ---------------------------------------------------------------------------
+//
+// EL FALLO QUE ESTO ARREGLA SE VE A SIMPLE VISTA. En el teaser, el plano B2 es un
+// primerísimo plano de los labios de la madre, y su «video» le pide a Veo que la
+// boca se mueva TODO el plano. B2 va del segundo 21 al 25. Su línea estaba
+// escrita en el 24.
+//
+// Resultado: tres segundos de una mujer moviendo los labios en silencio, la voz
+// entrando cuando al plano le queda un segundo, y el corte llevándose la frase a
+// medias. Con Saharis era peor todavía: su plano de boca (D5) va del 65 al 69 y
+// su línea estaba en el 70 — la boca se mueve entera en silencio y la voz suena
+// DESPUÉS, encima del plano siguiente, que es una mano abriéndose.
+//
+// El contrato ya tenía media regla escrita (§6.6): si se oye a alguien mientras
+// se le ve la boca, esa boca tiene que estar pidiendo el movimiento. Eso impide
+// «voz sin labios». Lo que faltaba es la otra mitad: LABIOS SIN VOZ.
+//
+// Y CUADRARLO A MANO NO VALE. Son doce episodios; nadie va a ir línea por línea
+// ajustando segundos desde un teléfono. Así que se hace solo, y el reparto de
+// mando queda así:
+//
+//   · Línea CON plano de boca  → manda la imagen. La voz entra con los labios.
+//   · Línea SIN plano de boca  → manda el guion. Es voz en off y su «t» se
+//                                respeta tal cual está escrito.
+//
+// Lo que NO se hace es callárselo: cada línea movida sale dicha en el resumen
+// del montaje, con el segundo de antes y el de después.
+
+/**
+ * Empareja cada plano que enseña una boca con la línea que esa boca está
+ * diciendo, y dice en qué segundo tiene que entrar esa línea.
+ *
+ * EL EMPAREJADO ES POR CERCANÍA Y CON TOPE. Un plano de boca reclama la línea de
+ * ese mismo personaje que tenga más cerca, y solo si no está más lejos que lo que
+ * dura el propio plano. El tope importa: sin él, un personaje con una sola frase
+ * en todo el episodio se la llevaría a un plano de boca que estuviera a un minuto
+ * de distancia, que es justo lo contrario de lo que se busca.
+ *
+ * Se resuelve primero lo más cercano, para que el resultado no dependa del orden
+ * en que estén escritos los planos: dos bocas que se pelean por la misma línea se
+ * la lleva la que la tenga más cerca, y la otra se queda sin ella.
+ *
+ * @param {object} modelo
+ * @param {object} ambito
+ * @returns {Map<string, {toma:string, en:number, escrito:number}>}
+ */
+function bocasQueHablan(modelo, ambito) {
+  const emparejadas = new Map();
+
+  // SOLO LAS BOCAS QUE SE MUEVEN. Una boca en cuadro y quieta no reclama nada:
+  // llevarle la voz sería ponerla a hablar con los labios parados.
+  const conBoca = ambito.tomas.filter(
+    (una) => una.bocaVisible && una.bocaSeMueve && una.inicio !== null
+  );
+  if (!conBoca.length) return emparejadas;
+
+  // Todas las parejas posibles con su distancia, y después se van cogiendo de
+  // menor a mayor. Son unos pocos planos y unas pocas líneas: no hace falta nada
+  // más listo que esto, y así se puede leer.
+  const posibles = [];
+
+  for (const toma of conBoca) {
+    const entra = toma.inicio;
+    const sale = entra + largoDeLaToma(toma);
+    const tope = sale - entra;
+
+    for (const linea of modelo.lineas) {
+      if (linea.quien !== toma.bocaVisible) continue;
+      // La distancia entre dos ventanas: cero si se solapan, y si no, el hueco
+      // que queda entre ellas por el lado que sea.
+      const lejos = Math.max(0, entra - linea.hasta, linea.t - sale);
+      if (lejos > tope) continue;
+      posibles.push({ lejos, toma, linea });
+    }
+  }
+
+  posibles.sort((a, b) => a.lejos - b.lejos || a.toma.inicio - b.toma.inicio);
+
+  const tomasCogidas = new Set();
+  const lineasCogidas = new Set();
+
+  for (const { toma, linea } of posibles) {
+    const clave = claveDeLinea(linea);
+    if (tomasCogidas.has(toma.id) || lineasCogidas.has(clave)) continue;
+    tomasCogidas.add(toma.id);
+    lineasCogidas.add(clave);
+    emparejadas.set(clave, { toma: toma.id, en: toma.inicio, escrito: linea.t });
+  }
+
+  return emparejadas;
+}
+
+/**
+ * Si el prompt de vídeo de un plano pide que la boca se mueva.
+ *
+ * QUIEN DECIDE ESTO ES EL PROMPT, no el campo «boca_visible». «boca_visible»
+ * dice de quién es la boca que está EN CUADRO; si esa boca habla o está callada
+ * lo dice lo que se le pide a Veo, que es lo único que se va a animar.
+ *
+ * Las palabras van en inglés porque los prompts de imagen y vídeo se escriben en
+ * inglés: es el único sitio del estudio donde no se escribe en español, y es a
+ * propósito. Son las mismas tres que mira `herramientas/invariantes.mjs` para la
+ * regla de la boca, y tienen que seguir siendo las mismas: si aquí se aceptara
+ * una boca que allí no cuenta, el montaje colocaría una voz que la comprobación
+ * da por prohibida.
+ *
+ * @param {string} video
+ * @returns {boolean}
+ */
+function pideMoverLaBoca(video) {
+  const texto = String(video || '').toLowerCase();
+  return texto.includes('mouth') || texto.includes('speaking') || texto.includes('lips');
+}
+
+/**
+ * Cómo se nombra una línea para buscarla.
+ *
+ * Los bloques de voz llevan LOS MISMOS objetos que `lineasDeVoz()`, así que
+ * bastaría con comparar por identidad. Se hace por quién y cuándo igualmente,
+ * porque el día que alguien copie las líneas en vez de repartirlas —y eso pasa—
+ * la identidad dejaría de valer sin que nada avisara.
+ */
+function claveDeLinea(linea) {
+  return `${linea.quien}@${linea.t}`;
 }
 
 // ---------------------------------------------------------------------------

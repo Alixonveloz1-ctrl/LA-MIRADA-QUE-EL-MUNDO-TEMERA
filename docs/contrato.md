@@ -1159,3 +1159,65 @@ es una sola intervención y se corta por `inicio`/`fin` de la línea entera.
 Una medida hecha antes de esta enmienda no trae `trozos`, y entonces el subtítulo
 sale de una pieza, como antes. No se rompe nada; hay que volver a medir para que
 existan.
+
+### 13.10 La regla de la boca tenía solo una mitad
+
+Enmienda a §6.6. La regla escrita dice:
+
+> ninguna línea de voz puede solaparse con un plano cuya `boca_visible` sea el
+> personaje que habla, salvo que ese plano lo muestre hablando.
+
+Eso impide **voz sin labios**: que se oiga hablar a alguien mientras se le ve la
+boca parada. Le faltaba el reverso, y el reverso se ve igual de mal:
+
+> **13.10** Si un plano muestra a alguien hablando —`boca_visible` es ese
+> personaje **y** su `video` pide el movimiento—, la voz de ese personaje entra
+> **con el plano**, no en el segundo escrito.
+
+Se vio en el teaser montado. El plano `B2` es un primerísimo plano de los labios
+de la madre y su `video` pide que la boca se mueva **todo** el plano. `B2` va del
+21 al 25. Su línea estaba escrita en el 24: **tres segundos de una mujer moviendo
+los labios en silencio**, la voz entrando cuando al plano le quedaba uno, y el
+corte llevándose la frase a medias.
+
+**`boca_visible` no significa «está hablando».** Significa que esa boca está EN
+CUADRO. En el mismo teaser hay dos planos con boca y solo uno habla:
+
+| Plano | `video` | ¿Habla? |
+| --- | --- | --- |
+| `B2` | *her lips move continuously as she speaks* | sí |
+| `D5` | *He turns his head to camera. **Nothing else moves.*** | no |
+
+`D5` es un retrato de Saharis mirando a cámara sin decir nada, y su frase está
+escrita después, sobre el plano siguiente. Llevarle la voz a `D5` «para cuadrar la
+boca» la pondría sobre unos labios parados — **rompiendo §6.6 para arreglar
+13.10**. Quien decide si una boca habla es el `video`, porque es lo único que Veo
+anima.
+
+**Quién manda sobre el segundo de entrada:**
+
+| La línea | Manda | Por qué |
+| --- | --- | --- |
+| tiene un plano con su boca **moviéndose** | la imagen | los labios ya se están moviendo |
+| no lo tiene (voz en off) | el guion, su `t` | no hay nada que cuadrar |
+
+Lo hace `bocasQueHablan()` en `app/pantallas/montaje.js`: empareja cada plano de
+boca con la línea de ese personaje que tenga más cerca, con la **duración del
+propio plano** como tope de distancia, y resolviendo primero lo más cercano para
+que no dependa del orden en que estén escritos los planos. Cada plano se lleva una
+línea y cada línea va a un plano.
+
+**Tres cosas que no hace, y las tres a propósito:**
+
+- **No adelanta si no cabe**: ni antes del ámbito, ni por encima del final de la
+  línea anterior del mismo bloque —sería ponerse a hablar encima de sí mismo—, ni
+  saliéndose por el final. Cuando no cabe, lo dice y deja la línea donde estaba.
+- **No toca `datos/serie.json`.** El `t` escrito se queda escrito.
+- **No se lo calla.** Cada línea movida sale en el resumen del montaje, con el
+  segundo de antes y el de después.
+
+`herramientas/invariantes.mjs` comprueba las dos mitades. La segunda distingue:
+una boca que se mueve y tiene su línea desplazada es un **aviso** —el montaje lo
+cuadra solo y dice cuánto—; una boca que se mueve y **no tiene nada que decir
+cerca** es un **fallo**, porque eso el montaje no puede inventarlo y en pantalla
+queda alguien hablando en silencio hasta que corte el plano.

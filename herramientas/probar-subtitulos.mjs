@@ -41,16 +41,43 @@ async function traerDelMontaje() {
   );
   const carpeta = mkdtempSync(join(tmpdir(), 'mirada-subtitulos-'));
   const archivo = join(carpeta, 'montaje-suelto.mjs');
+  // Lo que viene de la pantalla de Audio se presta aquí en pequeño: agrupar las
+  // líneas por personaje es todo lo que hace falta para probar esto, y traer el
+  // módulo entero arrastraría medio estudio.
+  const PRESTADO = `
+const h = () => ({}), aviso = () => ({}), boton = () => ({}), tarjeta = () => ({});
+function lineasDeVoz(pieza) {
+  return ((pieza.audio || {}).voz || [])
+    .map((l) => ({ quien: String(l.quien), ja: String(l.ja), es: String(l.es),
+                   t: Number(l.t), hasta: Number(l.hasta), escena: null, intencion: null }))
+    .sort((a, b) => a.t - b.t);
+}
+function bloquesDeVoz(pieza) {
+  const porQuien = new Map();
+  for (const l of lineasDeVoz(pieza)) {
+    if (!porQuien.has(l.quien)) porQuien.set(l.quien, []);
+    porQuien.get(l.quien).push(l);
+  }
+  return [...porQuien.entries()].map(([q, ls]) => ({ id: q, personajes: [q], lineas: ls, escena: null }));
+}
+`;
   writeFileSync(
     archivo,
-    'const h = () => ({}), aviso = () => ({}), boton = () => ({}), tarjeta = () => ({});\n' +
+    PRESTADO +
       codigo.replace(/^export (?=(async )?function |const |class )/gm, '') +
-      '\nexport { partirElSubtitulo, juntarLosMasCortos, respiraDespuesDe };\n'
+      '\nexport { partirElSubtitulo, juntarLosMasCortos, respiraDespuesDe,\n' +
+      '  bocasQueHablan, claveDeLinea, pideMoverLaBoca, construirModelo };\n'
   );
   return import(pathToFileURL(archivo).href);
 }
 
-const { partirElSubtitulo, juntarLosMasCortos, respiraDespuesDe } = await traerDelMontaje();
+const {
+  partirElSubtitulo, juntarLosMasCortos, respiraDespuesDe,
+  bocasQueHablan, claveDeLinea, pideMoverLaBoca, construirModelo
+} = await traerDelMontaje();
+
+/** La serie de verdad, para probar contra los datos que se van a montar. */
+const serie = JSON.parse(readFileSync(`${RAIZ}datos/serie.json`, 'utf8'));
 
 let bien = 0;
 let mal = 0;
@@ -181,6 +208,144 @@ comprobar('Se sabe cuándo el español ya respira, con cierres o sin ellos', () 
     if (respiraDespuesDe(palabra)) throw new Error(`«${palabra}» no debería respirar`);
   }
 });
+
+
+// ---------------------------------------------------------------------------
+// La boca manda: si se ven los labios moviéndose, la voz entra con ellos
+// ---------------------------------------------------------------------------
+//
+// POR QUÉ EXISTE ESTA PARTE. «Estamos viendo los labios como que está hablando,
+// pero no se escucha la voz, se escucha al rato.» Eso es el teaser montado, y es
+// literalmente lo que decían los datos: el plano B2 es un primerísimo plano de
+// los labios de la madre moviéndose, va del segundo 21 al 25, y su línea estaba
+// escrita en el 24.
+//
+// Y HAY UNA TRAMPA JUSTO AL LADO, que estuvo a punto de costar un fallo peor que
+// el que se estaba arreglando. «boca_visible» dice de quién es la boca que está
+// EN CUADRO. NO dice que esté hablando. En el mismo teaser:
+//
+//     B2  «her lips move continuously as she speaks»          → habla
+//     D5  «He turns his head to camera. Nothing else moves.»  → callado
+//
+// D5 es un retrato de Saharis mirando a cámara sin decir nada. Llevarle su frase
+// «para cuadrar la boca» habría puesto la voz sobre unos labios parados, que es
+// exactamente lo que prohíbe la regla de la boca del contrato (§6.6).
+//
+// Las dos cosas se prueban aquí y CON LOS DATOS DE VERDAD, no con un ejemplo de
+// juguete: si alguien reescribe el teaser y esto deja de cumplirse, se pone rojo.
+
+/** El ámbito de una pieza entera, que es como se monta el teaser. */
+function ambitoDe(modelo) {
+  return {
+    id: modelo.id,
+    capa: 'pieza',
+    desde: 0,
+    hasta: modelo.duracion,
+    tomas: modelo.tomas,
+    conSubtitulos: true,
+    previas: null
+  };
+}
+
+console.log('\nLA BOCA MANDA\n');
+
+const elTeaser = construirModelo(serie, {
+  id: 'teaser',
+  titulo: 'Teaser',
+  datos: serie.piezas.teaser
+});
+const bocasDelTeaser = bocasQueHablan(elTeaser, ambitoDe(elTeaser));
+
+comprobar('La línea de la madre se adelanta al plano donde se le mueven los labios', () => {
+  const suya = elTeaser.lineas.find((una) => una.quien === 'madre' && una.t === 24);
+  if (!suya) throw new Error('el teaser ya no tiene esa línea; hay que revisar esta prueba');
+
+  const movida = bocasDelTeaser.get(claveDeLinea(suya));
+  if (!movida) throw new Error('no se adelanta, y B2 le mueve los labios durante cuatro segundos');
+  if (movida.toma !== 'B2') throw new Error(`se empareja con ${movida.toma} y no con B2`);
+  if (movida.en !== 21) throw new Error(`entra en ${movida.en} s y B2 empieza en 21`);
+});
+
+comprobar('La de Saharis NO se adelanta: ahí tiene la boca en cuadro pero quieta', () => {
+  const suya = elTeaser.lineas.find((una) => una.quien === 'saharis');
+  if (!suya) throw new Error('el teaser ya no tiene línea de Saharis');
+
+  if (bocasDelTeaser.get(claveDeLinea(suya))) {
+    throw new Error('se lleva la voz a D5, donde «nothing else moves»: eso rompe la regla §6.6');
+  }
+});
+
+comprobar('Las líneas en off se quedan exactamente donde están escritas', () => {
+  const enOff = elTeaser.lineas.filter((una) => una.quien === 'madre' && una.t !== 24);
+  if (enOff.length < 2) throw new Error('esperaba al menos dos líneas en off de la madre');
+  for (const una of enOff) {
+    if (bocasDelTeaser.get(claveDeLinea(una))) {
+      throw new Error(`la línea en ${una.t} s se mueve y no tiene ningún plano de boca`);
+    }
+  }
+});
+
+comprobar('Se distingue una boca que habla de una que solo está en cuadro', () => {
+  if (!pideMoverLaBoca('her lips move continuously as she speaks')) {
+    throw new Error('no reconoce unos labios moviéndose');
+  }
+  if (!pideMoverLaBoca('The mouth keeps moving.')) throw new Error('no reconoce una boca en marcha');
+  if (pideMoverLaBoca('He turns his head to camera and holds the look. Nothing else moves.')) {
+    throw new Error('da por hablando un retrato callado');
+  }
+  if (pideMoverLaBoca('')) throw new Error('da por hablando un plano sin prompt');
+});
+
+comprobar('Un plano de boca no reclama una línea que está lejísimos', () => {
+  const modelo = {
+    id: 'x',
+    lineas: [{ quien: 'madre', t: 300, hasta: 302, es: 'muy lejos' }],
+    tomas: []
+  };
+  const ambito = {
+    desde: 0,
+    hasta: 400,
+    tomas: [{
+      id: 'Z1', inicio: 10, dur: 4, desde: 0, hasta: 4,
+      bocaVisible: 'madre', bocaSeMueve: true
+    }]
+  };
+  if (bocasQueHablan(modelo, ambito).size) {
+    throw new Error('se lleva a los 10 s una línea escrita en el 300');
+  }
+});
+
+comprobar('Dos bocas peleando por la misma línea: se la lleva la más cercana', () => {
+  const linea = { quien: 'madre', t: 20, hasta: 22, es: 'una' };
+  const modelo = { id: 'x', lineas: [linea], tomas: [] };
+  const ambito = {
+    desde: 0,
+    hasta: 60,
+    tomas: [
+      { id: 'LEJOS', inicio: 16, dur: 3, desde: 0, hasta: 3, bocaVisible: 'madre', bocaSeMueve: true },
+      { id: 'CERCA', inicio: 19, dur: 3, desde: 0, hasta: 3, bocaVisible: 'madre', bocaSeMueve: true }
+    ]
+  };
+  const salida = bocasQueHablan(modelo, ambito);
+  if (salida.size !== 1) throw new Error(`empareja ${salida.size} veces la misma línea`);
+  const cual = salida.get(claveDeLinea(linea));
+  if (cual.toma !== 'CERCA') throw new Error(`se la lleva ${cual.toma}`);
+});
+
+comprobar('El orden en que estén escritos los planos no cambia el resultado', () => {
+  const linea = { quien: 'madre', t: 20, hasta: 22, es: 'una' };
+  const modelo = { id: 'x', lineas: [linea], tomas: [] };
+  const dos = [
+    { id: 'LEJOS', inicio: 16, dur: 3, desde: 0, hasta: 3, bocaVisible: 'madre', bocaSeMueve: true },
+    { id: 'CERCA', inicio: 19, dur: 3, desde: 0, hasta: 3, bocaVisible: 'madre', bocaSeMueve: true }
+  ];
+  const alDerecho = bocasQueHablan(modelo, { desde: 0, hasta: 60, tomas: dos });
+  const alReves = bocasQueHablan(modelo, { desde: 0, hasta: 60, tomas: [...dos].reverse() });
+  if (alDerecho.get(claveDeLinea(linea)).toma !== alReves.get(claveDeLinea(linea)).toma) {
+    throw new Error('el resultado depende del orden de los planos');
+  }
+});
+
 
 console.log(`\n${bien + mal} comprobaciones, ${bien} bien${mal ? `, ${mal} MAL` : ''}\n`);
 process.exit(mal === 0 ? 0 : 1);

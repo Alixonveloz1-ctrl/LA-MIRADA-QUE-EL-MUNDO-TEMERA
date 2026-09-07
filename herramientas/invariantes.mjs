@@ -863,6 +863,98 @@ bloque('Datos · la regla de la boca');
     }
   }
   comprobar('Ninguna línea de voz cae sobre una boca quieta', quejas, notas);
+
+  // ── Y LA MITAD QUE FALTABA: UNA BOCA QUIETA NO, PERO UNA BOCA SOLA TAMPOCO ──
+  //
+  // La regla de arriba impide «voz sin labios»: que se oiga hablar a alguien
+  // mientras se le ve la boca parada. Le faltaba el reverso, que es el que se vio
+  // en el teaser montado y se ve A SIMPLE VISTA:
+  //
+  //   El plano B2 es un primerísimo plano de los labios de la madre y su prompt
+  //   le pide a Veo que la boca se mueva TODO el plano. B2 va del 21 al 25. Su
+  //   línea estaba escrita en el 24. Tres segundos de una mujer moviendo los
+  //   labios en silencio.
+  //
+  //   Con Saharis era peor: su plano de boca (D5) va del 65 al 69 y su línea
+  //   estaba en el 70. La boca entera en silencio y la voz sonando después,
+  //   encima del plano siguiente.
+  //
+  // El montaje ya lo cuadra solo —`bocasQueHablan()` en app/pantallas/montaje.js
+  // adelanta la voz al segundo del plano—, así que un desajuste que el montaje
+  // pueda arreglar es un AVISO y no un fallo: dice cuánto se va a mover para que
+  // no sorprenda, y quien quiera puede cuadrarlo en el dato.
+  //
+  // Lo que sí es fallo es una boca que se mueve y NO TIENE NADA QUE DECIR cerca:
+  // eso el montaje no puede inventarlo, y en pantalla queda alguien hablando en
+  // silencio hasta que corte el plano.
+  const sueltas = [];
+  const seMueven = [];
+
+  for (const [idPieza, pieza] of Object.entries(piezas)) {
+    const lineas = Array.isArray(pieza && pieza.audio && pieza.audio.voz) ? pieza.audio.voz : [];
+    const tomas = Array.isArray(pieza && pieza.tomas) ? pieza.tomas : [];
+
+    // El mismo emparejado que hace el montaje: por cercanía, con la duración del
+    // propio plano como tope, y cada línea para un solo plano.
+    const posibles = [];
+    for (const toma of tomas) {
+      if (!toma.boca_visible) continue;
+      if (!pideQueLaBocaSeMueva(toma.video)) continue;
+      const empieza = Number(toma.inicio);
+      const acaba = empieza + Number(toma.dur);
+      if (!Number.isFinite(empieza) || !Number.isFinite(acaba)) continue;
+
+      for (const linea of lineas) {
+        if (linea.quien !== toma.boca_visible) continue;
+        const lejos = Math.max(0, empieza - Number(linea.hasta), Number(linea.t) - acaba);
+        if (lejos > acaba - empieza) continue;
+        posibles.push({ lejos, toma, linea, empieza });
+      }
+    }
+    posibles.sort((a, b) => a.lejos - b.lejos || a.empieza - b.empieza);
+
+    const tomasCogidas = new Set();
+    const lineasCogidas = new Set();
+    const emparejadas = new Map();
+    for (const { toma, linea, empieza } of posibles) {
+      const clave = `${linea.quien}@${linea.t}`;
+      if (tomasCogidas.has(toma.id) || lineasCogidas.has(clave)) continue;
+      tomasCogidas.add(toma.id);
+      lineasCogidas.add(clave);
+      emparejadas.set(toma.id, { linea, empieza });
+    }
+
+    for (const toma of tomas) {
+      if (!toma.boca_visible) continue;
+      if (!pideQueLaBocaSeMueva(toma.video)) continue;
+      const donde = nombreDeToma(idPieza, toma);
+      const pareja = emparejadas.get(toma.id);
+
+      if (!pareja) {
+        sueltas.push(
+          `${donde} mueve la boca de «${toma.boca_visible}» durante sus ` +
+            `${redondear(Number(toma.dur))} s y ese personaje no dice nada cerca. En pantalla se ` +
+            've a alguien hablando en silencio hasta que corta el plano. O el plano no lleva boca ' +
+            'visible, o falta la línea que está diciendo.'
+        );
+        continue;
+      }
+
+      const escrito = redondear(Number(pareja.linea.t));
+      const conLosLabios = redondear(pareja.empieza);
+      if (Math.abs(escrito - conLosLabios) <= CASI) continue;
+
+      seMueven.push(
+        `«${pareja.linea.es}» está escrita en ${escrito} s y ${donde} enseña esa boca desde ` +
+          `${conLosLabios} s. El montaje la adelanta a ${conLosLabios} s para que la voz entre con ` +
+          `los labios; si no lo hiciera, se verían ${redondear(Math.abs(escrito - conLosLabios))} s ` +
+          'de boca en silencio. Cuadrar la «t» en datos/serie.json deja de hacer falta, pero se ' +
+          'puede.'
+      );
+    }
+  }
+
+  comprobar('Ninguna boca se mueve sin tener nada que decir', sueltas, seMueven);
 }
 
 // ===========================================================================
