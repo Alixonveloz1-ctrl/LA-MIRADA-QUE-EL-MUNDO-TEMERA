@@ -1437,6 +1437,27 @@ todo lo demás que no se puede deshacer. Se miden con un botón en Audio.
 Sin subtítulos sigue siendo una nota: ahí lo estimado solo mueve un poco dónde se
 corta cada línea, y eso se oye y se juzga.
 
+#### Y medir tenía que contestar
+
+Dos fallos del mismo sitio, y los dos invisibles.
+
+**La pantalla de Audio solo hablaba cuando algo iba mal** —sin medir, o repartido
+a ojo—. Si la medida salía perfecta no aparecía **ni una palabra**: se pulsaba
+«Medir los tiempos», terminaba, y no había forma de saber si había medido, si
+había fallado o si no había hecho nada. Un botón que no contesta se pulsa otra
+vez, y otra. Ahora lo dice también cuando sale bien, y un bloque con tramos a ojo
+se ve **desde fuera**, en su punto de estado.
+
+**Y la cola tiraba la marca.** Cuando el reconocimiento de voz vuelve con menos
+palabras que líneas, la función reparte la duración en proporción al japonés y lo
+**marca**: `estimado`. La medición hecha desde la pantalla guardaba esa marca; la
+que hace la cola sola, después de grabar una voz, guardaba el número y **perdía la
+marca**.
+
+Así que un bloque medido por la cola quedaba indistinguible de uno bien medido —y
+con él se queman subtítulos a ojo sin que nadie pueda saberlo mirando. Es
+exactamente lo que se vio en el teaser. Ahora las dos rutas guardan lo mismo.
+
 ### El censor rompía un nombre, y el error decía otra cosa
 
 Este es el fallo que más caro salió, y era invisible.

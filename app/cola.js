@@ -2021,7 +2021,19 @@ export const EJECUTORES = {
       const entrada = entradaDeAudio(estado, 'voz', clave);
       entrada.lineas = medidas.map((linea) => ({
         inicio: Number(linea.inicio) || 0,
-        fin: Number(linea.fin) || 0
+        fin: Number(linea.fin) || 0,
+        // SE GUARDA SI ESE TRAMO SE MIDIÓ O SE REPARTIÓ A OJO, y antes se tiraba.
+        //
+        // Cuando el reconocimiento de voz vuelve con menos palabras que líneas,
+        // la función reparte la duración en proporción al japonés y lo marca:
+        // «estimado». Esta ruta guardaba el número y perdía la marca, así que un
+        // bloque medido por la cola quedaba indistinguible de uno bien medido.
+        //
+        // Y con eso los subtítulos se queman con tiempos a ojo sin que nadie
+        // pueda saberlo mirando. Pasó: el primer subtítulo se quedaba pegado
+        // después de que la voz terminara y a partir de ahí el texto dejaba de
+        // corresponder con lo que se oye.
+        estimado: Boolean(linea && linea.estimado)
       }));
     });
   },

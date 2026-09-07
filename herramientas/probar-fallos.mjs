@@ -463,5 +463,33 @@ di(/const deVercel = claveDelMontador\(\);\n  if \(deVercel\) return deVercel;/.
 di(!/operacion: soloTexto\(crudos\.operacion\)/.test(codigoDeLaCola),
   'Veo sigue sin mandar su operación: la misma regla en los dos sitios');
 
+// ── MEDIR TIENE QUE CONTESTAR, Y NO PERDER LA MARCA ───────────────────────
+//
+// Dos fallos del mismo sitio, y los dos invisibles.
+//
+// El primero: la pantalla de Audio solo hablaba cuando algo iba MAL —sin medir,
+// o repartido a ojo—. Si la medida salía perfecta no aparecía ni una palabra,
+// así que se pulsaba «Medir los tiempos», terminaba, y no había forma de saber
+// si había medido, si había fallado o si no había hecho nada. Un botón que no
+// contesta se pulsa otra vez, y otra.
+//
+// El segundo, peor: cuando el reconocimiento de voz vuelve con menos palabras
+// que líneas, la función reparte a ojo y lo MARCA. La cola guardaba el número y
+// tiraba la marca, así que un bloque medido por la cola quedaba indistinguible
+// de uno bien medido — y con él se queman subtítulos a ojo sin que nadie pueda
+// saberlo mirando.
+console.log('\n  MEDIR CONTESTA, Y NO PIERDE LA MARCA\n');
+
+const codigoDeAudio = readFileSync(`${RAIZ}app/pantallas/audio.js`, 'utf8');
+di(/tono: 'bien'/.test(codigoDeAudio),
+  'La pantalla de Audio dice también cuando la medida sale BIEN');
+di(/texto: 'Tiempos a ojo'/.test(codigoDeAudio),
+  'Y un bloque con tramos a ojo se ve desde fuera, sin abrir la tarjeta');
+
+const laCola = readFileSync(`${RAIZ}app/cola.js`, 'utf8');
+const elAlineador = /async alinear\(args\) \{[\s\S]*?\n  \},/.exec(laCola);
+di(Boolean(elAlineador) && /estimado: Boolean\(linea && linea\.estimado\)/.test(elAlineador[0]),
+  'Y la cola GUARDA si un tramo se midió o se repartió a ojo, en vez de tirarlo');
+
 console.log(mal === 0 ? '\nTodo bien.\n' : `\n${mal} MAL.\n`);
 process.exit(mal ? 1 : 0);

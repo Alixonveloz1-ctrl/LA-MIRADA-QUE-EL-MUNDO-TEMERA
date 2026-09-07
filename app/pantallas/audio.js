@@ -1612,6 +1612,25 @@ function tarjetaDeBloque(ctx, bloque) {
     );
   }
 
+  // Y CUANDO SALE BIEN, TAMBIÉN SE DICE.
+  //
+  // Esta pantalla solo hablaba cuando algo iba mal: sin medir, o repartido a
+  // ojo. Si la medida salía perfecta no aparecía ni una palabra, así que se
+  // pulsaba «Medir los tiempos», terminaba, y no había forma de saber si había
+  // medido, si había fallado o si no había hecho nada.
+  //
+  // Un botón que no contesta se pulsa otra vez. Y otra.
+  if (medida.hayTiempos && medida.completos && !medida.algunoEstimado && !medida.sinMarca) {
+    pie.appendChild(
+      aviso(
+        `Medido: ${plural(medida.tramos.length, 'línea', 'líneas')} con su entrada y su salida ` +
+          'reales dentro de la grabación, ninguna repartida a ojo. Con esto los subtítulos se ' +
+          'queman donde de verdad se habla.',
+        { tono: 'bien' }
+      )
+    );
+  }
+
   if (medida.sinMarca && medida.hayTiempos) {
     pie.appendChild(
       h(
@@ -1671,6 +1690,10 @@ function estadoDeBloque(guardado, medida, grabando) {
   if (!guardado.ruta) return { tipo: 'pendiente', texto: 'Sin grabar' };
   if (guardado.aprobada) return { tipo: 'aprobado', texto: 'Aprobado' };
   if (!medida.hayTiempos) return { tipo: 'por-aprobar', texto: 'Sin medir' };
+  // Un bloque con tramos a ojo se ve DESDE FUERA, sin abrir la tarjeta: con
+  // subtítulos, esos tiempos paran el montaje, y conviene saber cuál es antes de
+  // llegar allí.
+  if (medida.algunoEstimado) return { tipo: 'por-aprobar', texto: 'Tiempos a ojo' };
   return { tipo: 'por-aprobar', texto: 'Por aprobar' };
 }
 
