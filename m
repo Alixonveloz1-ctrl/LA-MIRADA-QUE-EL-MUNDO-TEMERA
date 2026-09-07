@@ -96,7 +96,22 @@ echo "Trayendo lo último del repositorio…"
 # Que el «git pull» falle no es motivo para no desplegar: puede no haber red para
 # GitHub y sí para Google, o puede haber cambios locales. Se dice y se sigue con
 # lo que haya, que es mejor que no desplegar nada.
-git -C "$AQUI" pull --ff-only || {
+# SE LE DICE DE DÓNDE Y QUÉ RAMA, SIEMPRE. «git pull» a secas se fía de lo que
+# siga la rama, y en un clon hecho por el enlace de Cloud Shell la rama «main»
+# queda siguiendo al PROPIO DISCO: Cloud Shell clona, dice «Branch main already
+# exists locally» y la deja apuntando a «.».
+#
+# Entonces «git pull» contesta «From .» y «Already up to date» —con toda la
+# razón, se lo trae a sí misma— y no baja nada NUNCA. En un clon recién hecho da
+# igual, porque acaba de bajarlo todo; el problema es el segundo día, cuando se
+# ejecuta esto para traer un arreglo y se despliega otra vez lo mismo de antes.
+#
+# Eso costó horas. Se buscó el fallo en Google, en los permisos, en las APIs, en
+# el instalador y en el montador, y estaba en el punto de «From .».
+#
+# Nombrando el remoto y la rama, de dónde viene no depende de cómo quedara
+# configurada la carpeta.
+git -C "$AQUI" pull --ff-only origin main || {
   echo
   echo "  ! No se ha podido traer lo último."
   echo "  ! Se despliega lo que hay en esta carpeta."

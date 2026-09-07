@@ -1247,9 +1247,37 @@ carpeta no podía recibir nada. Se buscó el fallo en Google, en los permisos, e
 las APIs, en el instalador y en el propio montador. Estaba en dos caracteres de
 la salida de `git`: ese punto de `From .`.
 
-Ahora `m` y `c` **miran de dónde traen antes de traer**, y si no es GitHub se
-paran, lo dicen con todas las letras e imprimen la línea que lo arregla. Un
-despliegue silencioso de código viejo es peor que no desplegar.
+Ahora `m` y `c` **miran de dónde traen antes de traer**, y si el `origin` no es
+GitHub se paran, lo dicen con todas las letras e imprimen la línea que lo
+arregla. Un despliegue silencioso de código viejo es peor que no desplegar.
+
+#### Y lo hace el propio Cloud Shell
+
+Esa comprobación no bastaba, y se vio en un clon **recién hecho desde GitHub por
+el enlace oficial**: el `origin` era GitHub y `git pull` seguía diciendo `From .`.
+
+El motivo está en la propia salida del enlace:
+
+```
+Cloning into '…/LA-MIRADA-QUE-EL-MUNDO-TEMERA'...
+Branch main already exists locally. Switching to that branch.
+```
+
+Cloud Shell clona y deja la rama `main` **siguiendo al propio disco**, no a
+`origin`. El `origin` está bien; lo que está mal es lo que sigue la rama. Y `git
+pull` a secas se fía de eso.
+
+En un clon recién hecho da igual, porque acaba de bajarlo todo. El problema es el
+**segundo día**: se ejecuta `./m` para traer un arreglo y se despliega otra vez lo
+mismo de antes, sin un solo mensaje que lo diga.
+
+Se arregla nombrando el remoto y la rama:
+
+```
+git pull --ff-only origin main
+```
+
+Así de dónde viene no depende de cómo quedara configurada la carpeta.
 
 ### Antes de reinstalar: mirar. Y se mira desde el teléfono
 
