@@ -724,9 +724,11 @@ function pintarMontaje(hueco, datos) {
     return;
   }
 
+  const veredicto = veredictoDelMontaje(montaje);
+
   hueco.appendChild(tarjeta({
     titulo: 'ffmpeg en Cloud Run',
-    estado: montaje.configurado ? 'listo' : { tipo: 'pendiente', texto: 'Sin instalar' },
+    estado: veredicto.estado,
     pie: h('div', null,
       h('dl', { estilo: estiloDeLista() },
         dato('Job', montaje.job, {
@@ -739,16 +741,130 @@ function pintarMontaje(hueco, datos) {
           nota: 'Variable MONTAJE_REGION; si no está, la misma que GCP_LOCATION.',
           falta: 'Sin poner.',
         })),
-      montaje.error
-        ? h('p', { estilo: { margin: '12px 0 0' } }, montaje.error)
-        : h('p', { clase: 'suave', estilo: { margin: '12px 0 0' } },
-            'Hay montador configurado. Se comprueba de verdad al lanzar el primer montaje: ' +
-            'preguntarle ahora daría un 403 en una cuenta perfectamente bien puesta, porque el ' +
-            'permiso para lanzarlo no incluye el de leer su ficha.'),
+      h('p', { estilo: { margin: '12px 0 0' } }, veredicto.texto),
+      montaje.error && veredicto.enseñarError
+        ? h('p', { clase: 'tenue', estilo: { margin: '8px 0 0' } }, montaje.error)
+        : null,
       montaje.configurado
         ? null
         : h('p', { clase: 'tenue', estilo: { margin: '8px 0 0' } }, REDESPLIEGUE)),
   }));
+}
+
+/**
+ * Qué decir del montador según lo que haya contestado Cloud Run.
+ *
+ * ESTA TARJETA ESTABA MINTIENDO. Se pintaba en verde con solo existir la
+ * variable, sin preguntarle a nadie, y el montaje fallaba con un 403. La
+ * pantalla que existe para decir qué está roto enseñaba en verde exactamente lo
+ * roto, y desde un teléfono no había otra forma de enterarse.
+ *
+ * Ahora se le pregunta, y cada «no» se cuenta por separado porque se arreglan en
+ * sitios distintos. El más importante es «api-apagada»: se lee como «no tienes
+ * permiso» y no lo tiene nada que ver con los permisos, y se distingue mirando
+ * los modelos de arriba en esta misma pantalla — si están en verde, la cuenta
+ * vale y lo que falta es un interruptor del proyecto.
+ *
+ * @param {object} montaje
+ * @returns {{estado:object|string, texto:string, enseñarError:boolean}}
+ */
+function veredictoDelMontaje(montaje) {
+  if (!montaje.configurado) {
+    return {
+      estado: { tipo: 'pendiente', texto: 'Sin instalar' },
+      texto: montaje.error || 'Todavía no hay montador configurado.',
+      enseñarError: false,
+    };
+  }
+
+  switch (montaje.porque) {
+    case 'bien':
+      return {
+        estado: 'listo',
+        texto:
+          'El montador contesta. Están las tres cosas: la API de Cloud Run encendida en este ' +
+          'proyecto, los papeles de la cuenta, y el job desplegado con ese nombre en esa región.',
+        enseñarError: false,
+      };
+
+    case 'api-apagada':
+      return {
+        estado: { tipo: 'fallido', texto: 'API apagada' },
+        texto:
+          'LA API DE CLOUD RUN NO ESTÁ ENCENDIDA EN EL PROYECTO DE ESTA CUENTA. Google contesta ' +
+          'algo que se lee como «no tienes permiso», y no lo es: la cuenta está bien. Míralo ahí ' +
+          'arriba — si los modelos salen en verde, esta misma cuenta está llamando a Google sin ' +
+          'problema. Lo que falta es un interruptor del proyecto, y se enciende con el ' +
+          'instalador, que las enciende todas leyendo despliegue/apis.txt.',
+        enseñarError: true,
+      };
+
+    case 'sin-facturacion':
+      return {
+        estado: { tipo: 'fallido', texto: 'Sin facturación' },
+        texto:
+          'Este proyecto tiene la facturación desactivada, así que Google no deja usar Cloud Run. ' +
+          'No son los permisos ni las APIs: se reactiva en la facturación del proyecto, en la ' +
+          'consola de Google Cloud.',
+        enseñarError: true,
+      };
+
+    case 'no-esta':
+      return {
+        estado: { tipo: 'fallido', texto: 'No está ahí' },
+        texto:
+          `La API responde y los papeles están, pero en este proyecto no hay ningún montador que ` +
+          `se llame «${montaje.job || 'sin nombre'}» en la región «${montaje.region || 'sin región'}». ` +
+          'O está en otra región, o está en otro proyecto, o no se llegó a desplegar. Lo arregla ' +
+          'volver a desplegar el montador.',
+        enseñarError: true,
+      };
+
+    case 'solo-lanzar':
+      return {
+        estado: { tipo: 'listo', texto: 'Lanza, no lee' },
+        texto:
+          'ESTO NO ES UN FALLO y el montaje funciona igual. Esta cuenta puede LANZAR el montador ' +
+          'pero no leer su ficha, así que desde aquí no se puede confirmar que esté desplegado. ' +
+          'Es lo que pasa cuando tiene «Cloud Run Invoker» en vez de «Cloud Run Developer»: ' +
+          'lanzar es lo que hace falta, y lo tiene.',
+        enseñarError: false,
+      };
+
+    case 'sin-direccion':
+      return {
+        estado: { tipo: 'listo', texto: 'Por MONTAJE_URL' },
+        texto:
+          'El montador está puesto por MONTAJE_URL y no por nombre y región, así que desde aquí ' +
+          'no se le puede preguntar sin inventarse una dirección. Se comprueba al lanzar el ' +
+          'primer montaje.',
+        enseñarError: false,
+      };
+
+    case 'prohibido':
+      return {
+        estado: { tipo: 'fallido', texto: 'Google dice que no' },
+        texto:
+          'Google no deja preguntar por el montador y no dice cuál de las dos cosas es. Debajo ' +
+          'está lo que ha contestado, palabra por palabra: si ahí pone «reason», eso lo dice.',
+        enseñarError: true,
+      };
+
+    case 'no-contesta':
+      return {
+        estado: { tipo: 'fallido', texto: 'No contesta' },
+        texto:
+          'No se ha podido preguntar por el montador. Debajo está lo que ha pasado, tal cual.',
+        enseñarError: true,
+      };
+
+    default:
+      return {
+        estado: 'listo',
+        texto: 'Hay montador configurado.',
+        enseñarError: Boolean(montaje.error),
+      };
+  }
 }
 
 // ---------------------------------------------------------------------------

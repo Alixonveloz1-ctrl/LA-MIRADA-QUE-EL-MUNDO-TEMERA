@@ -292,5 +292,70 @@ const raro = frase('UNA_RAZON_QUE_NO_CONOCEMOS');
 di(/Revisa|Son dos cosas distintas/.test(raro) && /palabra por palabra/.test(raro),
   'Y una razón desconocida no se inventa: manda a leer lo que contestó Google');
 
+// ── LA TARJETA DEL MONTADOR DEJA DE MENTIR ────────────────────────────────
+//
+// Se pintaba EN VERDE con solo existir la variable MONTAJE_JOB, sin preguntarle
+// a nadie. Y el montaje fallaba con un 403 de Cloud Run. O sea: la pantalla que
+// existe para decir qué está roto enseñaba en verde exactamente lo roto, y desde
+// un teléfono no había ninguna otra forma de enterarse.
+//
+// Aquí se comprueba que cada «no» de Cloud Run se cuenta por separado, porque se
+// arreglan en sitios distintos, y que los dos que NO son fallos —la cuenta que
+// lanza pero no lee, y el montador puesto por URL— no salen en rojo.
+console.log('\n  LA TARJETA DEL MONTADOR DICE LO QUE HAY\n');
+
+const codigoDeSalud = readFileSync(`${RAIZ}app/pantallas/salud.js`, 'utf8')
+  .replace(/^import[\s\S]*?from\s+'[^']*';$/gm, '')
+  .replace(/^export default \{[\s\S]*?\n\};$/m, '')
+  .replace(/^export (?=(async )?function |const |class )/gm, '');
+const archivoDeSalud = join(mkdtempSync(join(tmpdir(), 'mirada-salud-')), 'x.mjs');
+writeFileSync(
+  archivoDeSalud,
+  `const h = () => null, tarjeta = () => null, seccion = () => null, pantalla = () => null;\n` +
+    `const aviso = () => null, boton = () => null, espera = () => null, vaciar = () => {};\n` +
+    `const bytes = () => '', fecha = () => '', plural = () => '', segundos = () => '';\n` +
+    `const llamar = async () => ({}), ErrorDeCara = class extends Error {};\n` +
+    `const actual = () => ({}), alCambiar = () => {}, cambiar = async () => {};\n` +
+    `${codigoDeSalud}\nexport { veredictoDelMontaje };\n`
+);
+const salud = await import(pathToFileURL(archivoDeSalud).href);
+
+const veredicto = (porque, extra = {}) =>
+  salud.veredictoDelMontaje({
+    configurado: true,
+    job: 'montador-mirada',
+    region: 'us-central1',
+    porque,
+    error: 'lo que dijo Google',
+    ...extra
+  });
+
+const familia = (v) => (typeof v.estado === 'string' ? v.estado : v.estado.tipo);
+
+di(familia(veredicto('bien')) === 'listo', 'Si el montador contesta, verde');
+
+const apagada = veredicto('api-apagada');
+di(familia(apagada) === 'fallido', 'Si la API está apagada, ROJO — antes salía verde');
+di(/NO ESTÁ ENCENDIDA/.test(apagada.texto) && /no lo es/.test(apagada.texto),
+  'Y dice que se lee como un permiso y NO lo es');
+di(/los modelos salen en verde/.test(apagada.texto),
+  'Y enseña cómo distinguirlo sin salir de esta pantalla');
+
+di(familia(veredicto('no-esta')) === 'fallido' && /otra región|otro proyecto/.test(veredicto('no-esta').texto),
+  'Si el job no está ahí, rojo, y dice dónde puede estar');
+di(familia(veredicto('sin-facturacion')) === 'fallido',
+  'Si falta la facturación, rojo, y manda a la facturación');
+
+// Los dos que NO son fallos. Pintar esto en rojo sería el error de siempre al
+// revés: asustar con algo que funciona.
+const soloLanzar = veredicto('solo-lanzar');
+di(familia(soloLanzar) === 'listo' && /NO ES UN FALLO/.test(soloLanzar.texto),
+  'Una cuenta que lanza pero no lee NO sale en rojo: el montaje funciona igual');
+di(familia(veredicto('sin-direccion')) === 'listo',
+  'Ni el montador puesto por MONTAJE_URL, que no se puede preguntar sin inventar');
+
+di(familia(salud.veredictoDelMontaje({ configurado: false, error: 'falta' })) === 'pendiente',
+  'Y sin montador configurado sigue diciendo que falta instalarlo');
+
 console.log(mal === 0 ? '\nTodo bien.\n' : `\n${mal} MAL.\n`);
 process.exit(mal ? 1 : 0);

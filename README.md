@@ -1206,19 +1206,51 @@ Cada paso se puede lanzar por separado con `npm run datos`, `npm run invariantes
 `npm run pesar`. Y
 `npm run archivo` reescribe los 56 planos de ambiente desde su tabla.
 
-### Antes de reinstalar: mirar
-
-```
-./c
-```
+### Antes de reinstalar: mirar. Y se mira desde el teléfono
 
 **«Vuelve a instalar» es la peor respuesta que se le puede dar a alguien que ya ha
 instalado.** No dice qué pasa, tarda diez minutos, y si el problema no era ese
 —que casi nunca lo es— deja las cosas donde estaban pero con menos paciencia.
 
-Cuando Google dice que no, hay dos preguntas que contestar: **en qué proyecto
-estamos** y **qué hay encendido ahí dentro**. Ninguna de las dos se contesta
-instalando otra vez. Se contestan mirando.
+Y la segunda peor es «ábrete Cloud Shell». Aquí solo hay un teléfono. Mandar a la
+terminal a alguien que tiene un teléfono, para hacer una pregunta **que la propia
+aplicación puede hacerle a Google**, es no responderle.
+
+#### Salud le pregunta a Cloud Run
+
+La tarjeta del montador se pintaba **en verde con solo existir la variable
+`MONTAJE_JOB`**, sin preguntarle a nadie. Y el montaje fallaba con un 403 de
+Cloud Run. La pantalla que existe para decir qué está roto enseñaba en verde
+exactamente lo roto.
+
+Había un motivo escrito para no preguntar: si a la cuenta solo se le hubiera dado
+*Cloud Run Invoker*, podría lanzar el trabajo pero no leer su ficha, y Salud
+pintaría en rojo algo que funciona. Ese motivo ya no valía —`despliegue/permisos.txt`
+le da `roles/run.developer`, que sí deja leerla—, y mientras tanto pasaba lo
+contrario, que es mucho peor.
+
+Ahora se le pregunta, y cada «no» se cuenta por separado porque se arreglan en
+sitios distintos:
+
+| Lo que contesta | Qué significa | Color |
+|---|---|---|
+| Contesta | La API encendida, los papeles y el job desplegado | Verde |
+| 403 `CONSUMER_INVALID` / `SERVICE_DISABLED` | **La API de Cloud Run no está encendida en el proyecto de esta cuenta** | Rojo |
+| 403 `BILLING_DISABLED` | La facturación del proyecto | Rojo |
+| 404 | La API va y los papeles están, pero ahí no hay ningún job con ese nombre | Rojo |
+| 403 `IAM_PERMISSION_DENIED` | Puede lanzar pero no leer. **No es un fallo**: el montaje funciona | Verde |
+| Puesto por `MONTAJE_URL` | No se le puede preguntar sin inventar la dirección | Verde |
+
+El importante es el segundo. Se lee como «no tienes permiso» y no tiene nada que
+ver con los permisos — y se distingue **sin salir de esa pantalla**: si los
+modelos de arriba están en verde, esta misma cuenta está llamando a Google sin
+problema, y lo que falta es un interruptor del proyecto.
+
+#### Y si hace falta la terminal, `./c`
+
+```
+./c
+```
 
 `./c` —o `bash instalar.sh comprobar`— enseña, sin tocar nada:
 

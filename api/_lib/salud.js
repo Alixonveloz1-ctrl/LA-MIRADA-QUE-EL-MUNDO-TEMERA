@@ -49,7 +49,7 @@ import { serie } from './datos.js';
 import { ErrorDeCara } from './errores.js';
 import { token, AMBITOS } from './auth.js';
 import { escribir, leer, firmar } from './gcs.js';
-import { llamar, urlModelo, conGrafias, comoGrafia } from './vertex.js';
+import { llamar, urlModelo, urlServicio, conGrafias, comoGrafia } from './vertex.js';
 import { listarVoces } from './audio.js';
 
 // Los dos objetos que Salud deja en el bucket. Son ruidosos a propósito: quien
@@ -110,6 +110,9 @@ export async function salud() {
     comprobarAlmacen(),
     ...modelos.map((modelo) => comprobarModelo(modelo, proyecto)),
     comprobarVoces(),
+    // El montador va en la MISMA tanda que todo lo demás: es una llamada a
+    // Google como las otras y no tiene por qué esperar a que terminen.
+    comprobarMontaje(ent),
   ]);
 
   const credenciales = recoger(resultados[0], () => ({
@@ -128,6 +131,16 @@ export async function salud() {
 
   const deLasVoces = recoger(resultados[2 + modelos.length], (fallo) => ({
     voces: [],
+    error: textoDeFallo(fallo),
+  }));
+
+  const deMontaje = recoger(resultados[3 + modelos.length], (fallo) => ({
+    configurado: Boolean(ent.montajeJob),
+    job: ent.montajeJob,
+    region: ent.montajeRegion,
+    variable: 'MONTAJE_JOB',
+    responde: false,
+    porque: 'no-contesta',
     error: textoDeFallo(fallo),
   }));
 
@@ -174,7 +187,7 @@ export async function salud() {
     // FALTA EN EL CONTRATO: §2 tampoco recoge el montador, y sin él no se puede
     // montar nada aunque todos los modelos estén en verde. Se dice aquí porque
     // Salud es la pantalla donde se mira si falta algo por instalar.
-    montaje: comprobarMontaje(ent),
+    montaje: deMontaje,
 
     modelos: deLosModelos,
     voces: deLasVoces.voces,
@@ -512,29 +525,56 @@ async function comprobarVoces() {
 // ---------------------------------------------------------------------------
 
 /**
- * Si hay montador configurado o no.
+ * El montador: si está configurado Y SI CLOUD RUN CONTESTA.
  *
- * NO SE LE PREGUNTA A CLOUD RUN, a propósito. La service account de Vercel
- * necesita Cloud Run Invoker para lanzar el trabajo, y ese papel deja lanzarlo
- * pero NO deja leer su ficha: preguntar por él daría un 403 en una cuenta
- * perfectamente bien configurada, y Salud estaría enseñando en rojo algo que
- * funciona. Así que aquí solo se mira si la variable está puesta, que es lo que
- * de verdad falta cuando falta.
+ * ANTES AQUÍ NO SE LE PREGUNTABA A CLOUD RUN, y estaba escrito el motivo: si a
+ * la cuenta solo se le hubiera dado «Cloud Run Invoker», podría lanzar el
+ * trabajo pero no leer su ficha, y Salud pintaría en rojo algo que funciona.
+ *
+ * Ese motivo ya no vale, y lo dice el propio repositorio: despliegue/permisos.txt
+ * le da «roles/run.developer», que sí deja leerla. Y mientras tanto pasaba lo
+ * contrario, que es mucho peor: Salud decía que el montador estaba bien SOLO
+ * PORQUE LA VARIABLE EXISTÍA. Verde. Y el montaje fallaba con un 403 de Cloud
+ * Run. La pantalla que existe para decir qué está roto enseñaba en verde
+ * exactamente lo roto.
+ *
+ * Y era justo la pregunta que no se podía contestar de otra forma: quien usa
+ * esto tiene un teléfono y nada más, y responderle «ábrete Cloud Shell» a una
+ * pregunta que la aplicación puede hacer sola es no responderle.
+ *
+ * Así que se pregunta. Y las respuestas se separan, porque significan cosas
+ * distintas y se arreglan en sitios distintos:
+ *
+ *   · Contesta          → está todo: la API encendida, los papeles y el job.
+ *   · 403 de proyecto   → la API de Cloud Run no está encendida EN EL PROYECTO
+ *                         DE ESTA CUENTA. Es el caso confuso: se lee como «no
+ *                         tienes permiso» y no lo es. Y se distingue solo, aquí
+ *                         mismo: si los modelos de arriba están en verde, la
+ *                         cuenta vale y lo que falta es el interruptor.
+ *   · 403 de papeles    → la cuenta puede lanzar pero no leer. NO es un fallo:
+ *                         el montaje funciona igual. Se dice y se deja en ámbar.
+ *   · 404               → la API va y los papeles están, pero ahí no hay ningún
+ *                         job con ese nombre. O está en otra región, o en otro
+ *                         proyecto, o no se llegó a desplegar.
  *
  * FALTA EN EL CONTRATO: MONTAJE_URL y MONTAJE_KEY llegan con la enmienda §13.4 y
  * no están en lo que devuelve `entorno()` (§12), así que MONTAJE_URL se mira
  * aquí en el entorno, igual que hace api/_lib/montaje.js. Conviene añadirlas a
  * `entorno()`.
  */
-function comprobarMontaje(ent) {
+async function comprobarMontaje(ent) {
   const porUrl = Boolean((process.env.MONTAJE_URL || '').trim());
   const configurado = Boolean(ent.montajeJob) || porUrl;
 
-  return {
+  const ficha = {
     configurado,
     job: ent.montajeJob,
     region: ent.montajeRegion,
     variable: 'MONTAJE_JOB',
+    // `null` = no se ha llegado a preguntar. Distinto de `false`, que es «se ha
+    // preguntado y ha dicho que no».
+    responde: null,
+    porque: null,
     error: configurado
       ? null
       : 'Todavía no hay montador, así que se puede generar todo pero no montar nada. Falta la ' +
@@ -544,6 +584,59 @@ function comprobarMontaje(ent) {
         'le da los permisos sobre el bucket y termina imprimiendo en un recuadro las variables con ' +
         'su nombre y su valor exactos. Tarda entre cinco y ocho minutos. Está en docs/despliegue.md.',
   };
+
+  if (!configurado) return ficha;
+
+  const job = String(ent.montajeJob || '').trim();
+  const region = String(ent.montajeRegion || ent.region || '').trim().toLowerCase();
+  if (!job || !/^[a-z][a-z0-9-]*$/.test(job) || !/^[a-z]+-[a-z]+[0-9]$/.test(region)) {
+    // Con MONTAJE_URL puesta el nombre y la región pueden no estar, y componer
+    // una dirección a medias sería preguntar por un sitio inventado.
+    ficha.porque = 'sin-direccion';
+    return ficha;
+  }
+
+  const proyecto = String(ent.sa.project_id).trim();
+  const direccion = urlServicio(
+    `${region}-run.googleapis.com`,
+    `v2/projects/${encodeURIComponent(proyecto)}/locations/${region}/jobs/${job}`,
+  );
+
+  try {
+    await llamar(direccion, null, {
+      metodo: 'GET',
+      limiteMs: LIMITE_MS,
+      contexto: { que: 'comprobar el montador', servicio: 'run' },
+    });
+    ficha.responde = true;
+    ficha.porque = 'bien';
+    return ficha;
+  } catch (fallo) {
+    ficha.responde = false;
+    ficha.porque = razonDelMontaje(fallo);
+    ficha.error = textoDeFallo(fallo);
+    return ficha;
+  }
+}
+
+/**
+ * Qué clase de «no» ha dicho Cloud Run. Se saca del código y del `reason` que
+ * manda Google, no de leer el texto: el texto cambia y el código no.
+ */
+function razonDelMontaje(fallo) {
+  const http = Number(fallo && fallo.http) || 0;
+  const detalle = String((fallo && fallo.detalle) || '');
+  const razon = /"reason"\s*:\s*"([A-Z_]+)"/.exec(detalle);
+  const cual = razon ? razon[1] : '';
+
+  if (http === 404) return 'no-esta';
+  if (http === 403) {
+    if (cual === 'IAM_PERMISSION_DENIED') return 'solo-lanzar';
+    if (cual === 'CONSUMER_INVALID' || cual === 'SERVICE_DISABLED') return 'api-apagada';
+    if (cual === 'BILLING_DISABLED') return 'sin-facturacion';
+    return 'prohibido';
+  }
+  return 'no-contesta';
 }
 
 // ---------------------------------------------------------------------------
