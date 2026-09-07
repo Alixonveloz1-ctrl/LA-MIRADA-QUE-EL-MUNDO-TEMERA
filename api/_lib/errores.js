@@ -133,11 +133,7 @@ function mensajeDeCodigo(codigo, ctx, textoCrudo) {
         'desviada, porque el token va firmado con fecha.';
 
     case 403:
-      return `${donde}Google dice que esta service account no tiene permiso para hacerlo (403)${cual}. ` +
-        'Son dos cosas distintas que se ven igual: los papeles de la cuenta (Vertex AI User, y ' +
-        'Storage Object Admin sobre el bucket) y las APIs habilitadas en el proyecto ' +
-        '(aiplatform.googleapis.com, storage.googleapis.com, texttospeech.googleapis.com, ' +
-        'speech.googleapis.com y run.googleapis.com). Revisa las dos.';
+      return mensaje403(donde, ctx, textoCrudo, cual);
 
     case 404:
       return mensaje404(donde, ctx, textoCrudo, cual);
@@ -200,6 +196,69 @@ function mensajeDeCodigo(codigo, ctx, textoCrudo) {
       return `${donde}Google no ha llegado a contestar${cual}: se cortó la conexión o se agotó ` +
         'el tiempo antes de recibir nada. Se puede volver a intentar.';
   }
+}
+
+/**
+ * El 403, que son DOS AVERÍAS DISTINTAS QUE SE VEN IGUAL y se arreglan en sitios
+ * distintos:
+ *
+ *   · Los PAPELES de la cuenta: a la service account le falta un rol.
+ *   · Las APIs del PROYECTO: esa API no está encendida, o la facturación no está.
+ *
+ * Y no hace falta adivinar cuál: Google lo dice. Dentro de su respuesta viene un
+ * campo `reason`, y ahí pone `IAM_PERMISSION_DENIED` cuando es lo primero y
+ * `SERVICE_DISABLED`, `CONSUMER_INVALID` o `BILLING_DISABLED` cuando es lo
+ * segundo. Antes se leía ese dato y se tiraba, y el mensaje mandaba a revisar
+ * las dos cosas: la mitad de las veces, a revisar la que estaba bien.
+ *
+ * `CONSUMER_INVALID` merece frase propia porque es el más confuso de todos: se
+ * lee como «no tienes permiso» y significa «este proyecto no puede usar esta
+ * API», que casi siempre es que nunca se encendió. Se distingue en un segundo
+ * mirando si OTRA API del mismo proyecto sí responde: si las imágenes se generan
+ * y el montaje no, la cuenta está bien y lo que falta es el interruptor.
+ */
+function mensaje403(donde, ctx, textoCrudo, cual) {
+  const crudo = String(textoCrudo || '');
+  const servicio = ctx.servicio ? String(ctx.servicio) : '';
+  const api = servicio ? `${servicio}.googleapis.com` : 'la API que hace falta';
+
+  const razon = /"reason"\s*:\s*"([A-Z_]+)"/.exec(crudo);
+  const cual403 = razon ? razon[1] : '';
+
+  if (cual403 === 'CONSUMER_INVALID') {
+    return `${donde}Google dice que ESTE PROYECTO no puede usar «${api}» (403, CONSUMER_INVALID)${cual}. ` +
+      'Esto NO son los papeles de la cuenta, aunque lo parezca: es que esa API no está encendida ' +
+      'en el proyecto, o la facturación no lo está. Se nota en que otras cosas del mismo ' +
+      'proyecto sí funcionan —si las imágenes se generan y el montaje no, la cuenta está bien—. ' +
+      'Se arregla encendiéndola: es lo que hace el instalador, que las enciende todas de una vez ' +
+      'leyendo despliegue/apis.txt.';
+  }
+
+  if (cual403 === 'SERVICE_DISABLED') {
+    return `${donde}«${api}» está apagada en este proyecto (403, SERVICE_DISABLED)${cual}. ` +
+      'No es la cuenta: es un interruptor del proyecto. El instalador las enciende todas de una ' +
+      'vez leyendo despliegue/apis.txt.';
+  }
+
+  if (cual403 === 'BILLING_DISABLED') {
+    return `${donde}Este proyecto tiene la facturación desactivada, así que Google no deja usar ` +
+      `«${api}» (403)${cual}. No es la cuenta ni los permisos: se vuelve a activar en la ` +
+      'facturación del proyecto, en la consola de Google Cloud.';
+  }
+
+  if (cual403 === 'IAM_PERMISSION_DENIED') {
+    return `${donde}A esta service account le falta un papel para hacer esto (403)${cual}. ` +
+      'Esto SÍ son los permisos de la cuenta y no las APIs. Los que necesita están escritos en ' +
+      'despliegue/permisos.txt —Vertex AI User, Storage Object Admin sobre el bucket, Cloud Run ' +
+      'Developer y Service Account User—, y el instalador se los da.';
+  }
+
+  return `${donde}Google dice que esto no se puede hacer (403)${cual}. ` +
+    'Son dos cosas distintas que se ven igual: los papeles de la cuenta (Vertex AI User, y ' +
+    'Storage Object Admin sobre el bucket) y las APIs habilitadas en el proyecto ' +
+    '(aiplatform.googleapis.com, storage.googleapis.com, texttospeech.googleapis.com, ' +
+    'speech.googleapis.com y run.googleapis.com). Debajo está lo que ha contestado Google, ' +
+    'palabra por palabra: si ahí pone «reason», eso dice cuál de las dos es.';
 }
 
 function mensaje404(donde, ctx, textoCrudo, cual) {

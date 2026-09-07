@@ -1205,6 +1205,40 @@ Cada paso se puede lanzar por separado con `npm run datos`, `npm run invariantes
 `npm run pesar`. Y
 `npm run archivo` reescribe los 56 planos de ambiente desde su tabla.
 
+### Un 403 son dos averías distintas que se ven igual
+
+Un 403 de Google puede ser una de estas dos, y se arreglan en sitios distintos:
+
+- **Los papeles de la cuenta**: a la service account le falta un rol.
+- **Las APIs del proyecto**: esa API no está encendida, o la facturación no lo
+  está.
+
+El mensaje mandaba a revisar **las dos**. La mitad de las veces, eso es mandar a
+revisar la que estaba bien: una tarde en la consola de Google mirando permisos
+perfectos.
+
+Y no hace falta adivinar, porque **Google lo dice**. Dentro de su respuesta viene
+un campo `reason`, y ahí pone:
+
+| `reason` | Qué es de verdad | Dónde se arregla |
+|---|---|---|
+| `IAM_PERMISSION_DENIED` | A la cuenta le falta un rol | `despliegue/permisos.txt` |
+| `SERVICE_DISABLED` | La API está apagada | `despliegue/apis.txt` |
+| `CONSUMER_INVALID` | Este proyecto no puede usar esa API | `despliegue/apis.txt`, o la facturación |
+| `BILLING_DISABLED` | La facturación está desactivada | La consola de Google Cloud |
+
+Ese dato se leía y se tiraba. Ahora decide la frase.
+
+`CONSUMER_INVALID` merece frase propia porque es el más confuso: se lee como «no
+tienes permiso» y significa «este proyecto no puede usar esta API», que casi
+siempre es que **nunca se encendió**. Se distingue en un segundo mirando si otra
+API del mismo proyecto responde: **si las imágenes se generan y el montaje no, la
+cuenta está bien y lo que falta es el interruptor.**
+
+Y si Google contesta un `reason` que no conocemos, no se inventa un diagnóstico:
+se dice lo que hay y se manda a leer, palabra por palabra, lo que ha contestado.
+`npm run fallos` lo comprueba con las cinco respuestas.
+
 ### Lo que manda Google no es siempre lo mismo
 
 `npm run audio` existe porque una suposición sobre el formato del audio ya rompió

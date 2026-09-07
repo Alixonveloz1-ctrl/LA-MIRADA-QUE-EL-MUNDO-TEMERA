@@ -223,5 +223,74 @@ main.contarFalloSuelto(new RangeError('otra cosa distinta'));
 di(enPantalla().length === 2, 'Dos fallos distintos siguen siendo dos tarjetas',
   `${enPantalla().length}`);
 
+// ── EL 403, QUE SON DOS AVERÍAS DISTINTAS QUE SE VEN IGUAL ─────────────────
+//
+// Un 403 puede ser que a la cuenta le falte un papel, o que la API esté apagada
+// en el proyecto. Se arreglan en sitios distintos y el mensaje mandaba a revisar
+// las dos, así que la mitad de las veces mandaba a revisar la que estaba bien.
+//
+// Y no hace falta adivinar: Google lo dice, en un campo «reason» dentro de su
+// respuesta. Aquí se comprueba que ese dato se lee y decide la frase, porque es
+// lo que separa arreglarlo en un minuto de pasar una tarde en la consola de
+// Google mirando permisos que están perfectos.
+console.log('\n  UN 403 DICE CUÁL DE LAS DOS AVERÍAS ES\n');
+
+const codigoDeErrores = readFileSync(`${RAIZ}api/_lib/errores.js`, 'utf8').replace(
+  /^import[\s\S]*?from\s+'[^']*';$/gm,
+  ''
+);
+const archivoDeErrores = join(mkdtempSync(join(tmpdir(), 'mirada-err-')), 'x.mjs');
+writeFileSync(
+  archivoDeErrores,
+  `${codigoDeErrores.replace(/^export (?=(async )?function |const |class )/gm, '')}\nexport { deGoogle };\n`
+);
+const err = await import(pathToFileURL(archivoDeErrores).href);
+
+const respuestaDeGoogle = (razon) =>
+  JSON.stringify({
+    error: {
+      code: 403,
+      message: 'Permission denied on resource project X.',
+      details: [
+        {
+          '@type': 'type.googleapis.com/google.rpc.ErrorInfo',
+          reason: razon,
+          domain: 'googleapis.com',
+          metadata: { service: 'run.googleapis.com' }
+        }
+      ]
+    }
+  });
+
+const frase = (razon) =>
+  err.deGoogle(403, respuestaDeGoogle(razon), {
+    que: 'preguntar cómo va el montaje',
+    servicio: 'run'
+  }).mensaje;
+
+const deApi = frase('CONSUMER_INVALID');
+di(/ESTE PROYECTO no puede usar/.test(deApi) && /NO son los papeles/.test(deApi),
+  'CONSUMER_INVALID dice que es la API del proyecto, y que NO son los permisos');
+di(/run\.googleapis\.com/.test(deApi),
+  'Y nombra la API concreta que hay que encender', 'run.googleapis.com');
+di(!/Revisa las dos/.test(deApi), 'Y ya no manda a revisar las dos cosas a ciegas');
+
+di(/está apagada en este proyecto/.test(frase('SERVICE_DISABLED')),
+  'SERVICE_DISABLED dice que es un interruptor del proyecto');
+di(/facturación desactivada/.test(frase('BILLING_DISABLED')),
+  'BILLING_DISABLED manda a la facturación y a ningún otro sitio');
+
+const dePapeles = frase('IAM_PERMISSION_DENIED');
+di(/le falta un papel/.test(dePapeles) && /SÍ son los permisos/.test(dePapeles),
+  'IAM_PERMISSION_DENIED sí manda a los permisos de la cuenta');
+di(/permisos\.txt/.test(dePapeles),
+  'Y al archivo donde están escritos, que es de donde los lee el instalador');
+
+// Y si Google contesta algo que no conocemos, no se inventa un diagnóstico: se
+// dice lo que hay y se manda a leer lo que ha contestado, que viaja debajo.
+const raro = frase('UNA_RAZON_QUE_NO_CONOCEMOS');
+di(/Revisa|Son dos cosas distintas/.test(raro) && /palabra por palabra/.test(raro),
+  'Y una razón desconocida no se inventa: manda a leer lo que contestó Google');
+
 console.log(mal === 0 ? '\nTodo bien.\n' : `\n${mal} MAL.\n`);
 process.exit(mal ? 1 : 0);
