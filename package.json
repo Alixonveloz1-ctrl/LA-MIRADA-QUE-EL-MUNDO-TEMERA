@@ -8,6 +8,7 @@
     "node": "22.x"
   },
   "scripts": {
+    "dev": "node herramientas/servidor.mjs",
     "datos": "node herramientas/parche-datos.mjs",
     "invariantes": "node herramientas/invariantes.mjs",
     "pesar": "node herramientas/pesar.mjs",

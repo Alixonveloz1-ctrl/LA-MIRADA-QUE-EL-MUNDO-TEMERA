@@ -42,6 +42,15 @@ import { ErrorDeCara, EVENTO_CLAVE_NECESARIA, guardarClave, olvidarClave } from 
 import { actual, alCambiar, cargar } from './estado.js';
 import { aviso, boton, espera, EVENTO_FALLO_SUELTO, h, pantalla, seccion, vaciar } from './ui.js';
 
+// La vista previa permite comprobar el ancho real de iPhone desde un navegador
+// grande. No cambia datos ni rutas y solo se activa con ?preview=mobile.
+const parametrosDeVista = new URLSearchParams(window.location.search);
+const esVistaPrevia = parametrosDeVista.get('preview') === 'mobile';
+if (esVistaPrevia) {
+  document.body.classList.add('vista-previa-movil');
+}
+if (parametrosDeVista.get('qa') === '1') document.body.classList.add('vista-qa');
+
 // ---------------------------------------------------------------------------
 // Las nueve pantallas
 // ---------------------------------------------------------------------------
@@ -55,15 +64,26 @@ import { aviso, boton, espera, EVENTO_FALLO_SUELTO, h, pantalla, seccion, vaciar
  * para poder entrar en ella y leer por qué no ha cargado.
  */
 const PESTANAS = [
-  { id: 'salud',    titulo: 'Salud',    icono: '\u{1FA7A}', archivo: './pantallas/salud.js' },
-  { id: 'voces',    titulo: 'Voces',    icono: '\u{1F399}', archivo: './pantallas/voces.js' },
-  { id: 'banco',    titulo: 'Banco',    icono: '\u{1F5C2}', archivo: './pantallas/banco.js' },
-  { id: 'desglose', titulo: 'Desglose', icono: '\u{1F4D0}', archivo: './pantallas/desglose.js' },
-  { id: 'tomas',    titulo: 'Tomas',    icono: '\u{1F3AC}', archivo: './pantallas/tomas.js' },
-  { id: 'audio',    titulo: 'Audio',    icono: '\u{1F3A7}', archivo: './pantallas/audio.js' },
-  { id: 'cola',     titulo: 'Cola',     icono: '\u{23F3}',  archivo: './pantallas/cola.js' },
-  { id: 'montaje',  titulo: 'Montaje',  icono: '\u{1F39E}', archivo: './pantallas/montaje.js' },
-  { id: 'difusion', titulo: 'Difusión', icono: '\u{1F4E3}', archivo: './pantallas/difusion.js' },
+  { id: 'inicio',    titulo: 'Inicio',    icono: 'home', archivo: './pantallas/inicio.js' },
+  { id: 'salud',     titulo: 'Salud',     icono: 'settings_heart', archivo: './pantallas/salud.js' },
+  { id: 'voces',     titulo: 'Voces',     icono: 'mic', archivo: './pantallas/voces.js' },
+  { id: 'banco',     titulo: 'Banco',     icono: 'database', archivo: './pantallas/banco.js' },
+  { id: 'desglose',  titulo: 'Desglose',  icono: 'demography', archivo: './pantallas/desglose.js' },
+  { id: 'tomas',     titulo: 'Tomas',     icono: 'movie', archivo: './pantallas/tomas.js' },
+  { id: 'audio',     titulo: 'Audio',     icono: 'graphic_eq', archivo: './pantallas/audio.js' },
+  { id: 'cola',      titulo: 'Cola',      icono: 'format_list_bulleted', archivo: './pantallas/cola.js' },
+  { id: 'montaje',   titulo: 'Montaje',   icono: 'video_library', archivo: './pantallas/montaje.js' },
+  { id: 'difusion',  titulo: 'Difusión',  icono: 'send', archivo: './pantallas/difusion.js' },
+];
+
+/** La navegación persistente se reduce a cinco áreas. Las pantallas que
+ * comparten una tarea se eligen después desde su navegación interior. */
+const NAVEGACION = [
+  { id: 'inicio', titulo: 'Inicio', icono: 'home', destino: 'inicio', pantallas: ['inicio'] },
+  { id: 'preparar', titulo: 'Preparar', icono: 'article', destino: 'voces', pantallas: ['voces', 'banco', 'desglose'] },
+  { id: 'crear', titulo: 'Crear', icono: 'movie', destino: 'tomas', pantallas: ['tomas', 'audio'] },
+  { id: 'cola', titulo: 'Cola', icono: 'format_list_bulleted', destino: 'cola', pantallas: ['cola'] },
+  { id: 'finalizar', titulo: 'Finalizar', icono: 'check_circle', destino: 'montaje', pantallas: ['montaje', 'difusion'] },
 ];
 
 /** Los pasos del arranque, tal como se leen en pantalla. */
@@ -176,11 +196,13 @@ async function arrancarElEstudio() {
   const hayEstado = await pasoDelEstado(bitacora);
 
   // 2. Las operaciones de Veo a medias, antes de lanzar nada nuevo.
-  if (hayEstado) await pasoDeLasOperaciones(bitacora);
+  if (hayEstado && !esVistaPrevia) await pasoDeLasOperaciones(bitacora);
+  else if (hayEstado) bitacora.saltar('operaciones', 'La vista previa no consulta operaciones externas.');
   else bitacora.saltar('operaciones', 'No se ha traído el estado, así que no se sabe qué vídeos había en marcha.');
 
   // 3. La cola.
-  if (hayEstado) await pasoDeLaCola(bitacora);
+  if (hayEstado && !esVistaPrevia) await pasoDeLaCola(bitacora);
+  else if (hayEstado) bitacora.saltar('cola', 'La vista previa conserva la cola demostrativa sin ejecutarla.');
   else bitacora.saltar('cola', 'La cola vive dentro del estado: sin estado no hay nada que reanudar.');
 
   // 4. Las pestañas y la pantalla.
@@ -566,17 +588,18 @@ function pedirDecision(zona, error, { reintentar, seguir = null, nota = '' } = {
 function pintarLasPestanas() {
   vaciar(barra);
 
-  for (const ficha of PESTANAS) {
-    const datos = cargadas.get(ficha.id) || { titulo: ficha.titulo, icono: ficha.icono, fallo: null };
+  for (const ficha of NAVEGACION) {
+    const pantallasDelArea = ficha.pantallas.map((id) => cargadas.get(id)).filter(Boolean);
+    const fallo = pantallasDelArea.some((datos) => datos.fallo);
 
     const enlace = h('a', {
       clase: 'pestana',
-      href: `#${ficha.id}`,
+      href: `#${ficha.destino}`,
       'data-pantalla': ficha.id,
-      'aria-label': datos.titulo,
+      'aria-label': ficha.titulo,
     },
-      h('span', { clase: 'pestana-icono', 'aria-hidden': 'true' }, datos.icono),
-      h('span', { clase: 'pestana-texto' }, datos.titulo)
+      h('span', { clase: ['pestana-icono', 'material-symbols-rounded'], 'aria-hidden': 'true' }, ficha.icono),
+      h('span', { clase: 'pestana-texto' }, ficha.titulo)
     );
 
     barra.appendChild(enlace);
@@ -584,8 +607,8 @@ function pintarLasPestanas() {
     // Una pantalla que no ha cargado sigue teniendo su pestaña: es la única
     // manera de entrar y leer por qué no ha cargado. Y lleva su aspa puesta,
     // para que se vea desde fuera que ahí dentro hay algo que contar.
-    if (datos.fallo) {
-      ponerPunto(ficha.id, puntoDePestana('!', 'fallo'), `${datos.titulo}: esta pantalla no ha cargado`);
+    if (fallo) {
+      ponerPunto(ficha.id, puntoDePestana('!', 'fallo'), `${ficha.titulo}: una pantalla no ha cargado`);
     }
   }
 
@@ -663,9 +686,10 @@ function puntoDePestana(texto, tono) {
 /** Marca cuál es la pestaña puesta, por clase y por `aria-current`. */
 function marcarLaPestanaPuesta() {
   if (!barra) return;
+  const area = NAVEGACION.find((una) => una.pantallas.includes(puesta));
   for (const enlace of barra.querySelectorAll('.pestana')) {
     const suyo = enlace.getAttribute('data-pantalla');
-    const esta = suyo === puesta;
+    const esta = Boolean(area && suyo === area.id);
     enlace.classList.toggle('activa', esta);
     if (esta) enlace.setAttribute('aria-current', 'page');
     else enlace.removeAttribute('aria-current');
@@ -833,7 +857,7 @@ function alCambiarElHash() {
  * @returns {string}
  */
 function laDeSiempre() {
-  return hayTrabajoHecho() ? 'tomas' : 'salud';
+  return 'inicio';
 }
 
 /**
@@ -896,6 +920,7 @@ async function montarPantalla(id) {
 
   desmontarLaDeAhora();
   puesta = id;
+  document.body.dataset.pantalla = id;
   marcarLaPestanaPuesta();
   document.title = `${ficha.titulo} · LA MIRADA QUE EL MUNDO TEMERÁ`;
 

@@ -282,9 +282,81 @@ function agregarHijos(nodo, hijos) {
  * teléfono la altura es lo que falta y el título se puede ir con el desplazamiento.
  */
 export function pantalla(titulo, ...secciones) {
+  const nombre = titulo === 'Reparto de voces' ? 'Voces' : titulo;
+  const subtitulo = nombre === 'Salud' ? 'Sistema y modelos' : '';
+  const cabecera = nombre
+    ? h('header', { clase: 'pantalla-cabecera' },
+        h('div', { clase: 'pantalla-identidad' },
+          h('h1', { clase: 'pantalla-titulo' }, nombre),
+          subtitulo ? h('p', { clase: 'pantalla-subtitulo' }, subtitulo) : null,
+        ),
+        nombre === 'Inicio'
+          ? h('a', {
+              clase: 'pantalla-ajustes',
+              href: '#salud',
+              'aria-label': 'Abrir Salud y ajustes del sistema',
+            }, h('span', { clase: 'material-symbols-rounded', 'aria-hidden': 'true' }, 'settings'))
+          : null,
+      )
+    : null;
+
   return h('div', { clase: 'pantalla' },
-    titulo ? h('h1', { clase: 'pantalla-titulo' }, titulo) : null,
+    cabecera,
+    navegacionInterior(nombre),
     secciones,
+  );
+}
+
+/** Navegación secundaria de cada área. Mantiene accesibles las nueve pantallas
+ * sin volver a llenar la barra inferior. */
+function navegacionInterior(titulo) {
+  const grupos = {
+    Voces: [
+      ['voces', 'mic', 'Voces'],
+      ['banco', 'database', 'Banco'],
+      ['desglose', 'demography', 'Desglose'],
+    ],
+    Banco: [
+      ['voces', 'mic', 'Voces'],
+      ['banco', 'database', 'Banco'],
+      ['desglose', 'demography', 'Desglose'],
+    ],
+    Desglose: [
+      ['voces', 'mic', 'Voces'],
+      ['banco', 'database', 'Banco'],
+      ['desglose', 'demography', 'Desglose'],
+    ],
+    Tomas: [
+      ['tomas', 'movie', 'Tomas'],
+      ['audio', 'graphic_eq', 'Audio'],
+    ],
+    Audio: [
+      ['tomas', 'movie', 'Tomas'],
+      ['audio', 'graphic_eq', 'Audio'],
+    ],
+    Montaje: [
+      ['montaje', 'video_library', 'Montaje'],
+      ['difusion', 'send', 'Difusión'],
+    ],
+    Difusión: [
+      ['montaje', 'video_library', 'Montaje'],
+      ['difusion', 'send', 'Difusión'],
+    ],
+  };
+
+  const opciones = grupos[titulo];
+  if (!opciones) return null;
+  const activo = opciones.find(([id]) => window.location.hash.replace(/^#\/?/, '') === id)?.[0];
+
+  return h('nav', { clase: 'subpestanas', 'aria-label': `Secciones de ${titulo}` },
+    opciones.map(([id, icono, texto]) => h('a', {
+      clase: ['subpestana', id === activo && 'activa'],
+      href: `#${id}`,
+      'aria-current': id === activo ? 'page' : null,
+    },
+      h('span', { clase: 'material-symbols-rounded', 'aria-hidden': 'true' }, icono),
+      h('span', null, texto),
+    )),
   );
 }
 

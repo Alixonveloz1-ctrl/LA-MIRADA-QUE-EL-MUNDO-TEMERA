@@ -144,23 +144,35 @@ export default {
       tono: 'principal',
     });
 
+    const detalles = h('details', { clase: 'salud-detalles' },
+      h('summary', { clase: 'salud-detalles-resumen' },
+        h('span', { clase: 'material-symbols-rounded', 'aria-hidden': 'true' }, 'description'),
+        h('span', null, 'Ver detalles técnicos'),
+        h('span', { clase: 'material-symbols-rounded salud-detalles-flecha', 'aria-hidden': 'true' }, 'expand_more'),
+      ),
+      h('div', { clase: 'salud-detalles-cuerpo' },
+        seccion('Variables', huecos.variables),
+        seccion('CORS del bucket', huecos.cors),
+        seccion('Modelos disponibles', huecos.modelos),
+        seccion('Voces disponibles', huecos.voces),
+        seccion('Peso y tiempo de las respuestas', huecos.pesos),
+      ),
+    );
+
     const cuerpo = pantalla(
       'Salud',
-      h('p', { clase: 'suave' },
-        'Qué modelos tiene permitidos esta cuenta, si el bucket contesta y cuánto pesa cada ' +
-        'respuesta. A cada modelo se le manda la petición más barata que demuestra acceso, así que ' +
-        'no gasta ninguna generación ni cuesta dinero — pero SÍ gasta cuota por minuto, que es la ' +
-        'misma que hace falta para generar. Por eso hay que pedirlo, y no se hace solo.'),
-      seccion('Las variables', huecos.variables),
-      seccion('La cuenta', huecos.cuenta),
-      seccion('El bucket', huecos.bucket),
-      seccion('CORS del bucket', huecos.cors),
-      seccion('Los modelos', huecos.modelos),
-      seccion('Las voces', huecos.voces),
-      seccion('El montador', huecos.montaje),
-      seccion('Con qué se genera', huecos.generadores),
-      seccion('Lo que ha pesado y lo que ha tardado cada respuesta', huecos.pesos),
-      seccion(null, reloj, h('div', { clase: 'tarjeta-acciones' }, botonDeComprobar)),
+      h('p', { clase: 'salud-intro' },
+        'Comprueba la conexión de la cuenta, el almacenamiento y los modelos sin salir de esta pantalla.'),
+      seccion('Estado del sistema', huecos.cuenta, huecos.bucket, huecos.montaje),
+      h('div', { clase: 'salud-comprobar' },
+        h('div', null,
+          h('strong', null, 'Comprobación manual'),
+          reloj,
+        ),
+        botonDeComprobar,
+      ),
+      seccion('Modelos activos', huecos.generadores),
+      detalles,
     );
 
     raiz.appendChild(cuerpo);

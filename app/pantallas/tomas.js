@@ -947,11 +947,18 @@ function construir(modelo, repintar, repintarLuego) {
   // es de los que esperan a que termine el clip que se esté mirando.
   pedirEnlacesQueFalten(rutas, repintarLuego);
 
+  const cabecera = seccionCabecera(ctx);
+  const progreso = seccionProgreso(ctx);
+  const planos = seccionPlanos(ctx, visibles, enPantalla);
+  cabecera.classList.add('tomas-cabecera');
+  if (progreso) progreso.classList.add('tomas-progreso');
+  planos.classList.add('tomas-planos');
+
   return pantalla(
     'Tomas',
-    seccionCabecera(ctx),
-    seccionProgreso(ctx),
-    seccionPlanos(ctx, visibles, enPantalla)
+    cabecera,
+    progreso,
+    planos
   );
 }
 
@@ -1025,20 +1032,8 @@ function seccionCabecera(ctx) {
   const total = pieza.tomas.length;
   const cuenta = progresoDe(pieza.tomas, ctx);
 
-  partes.push(
-    barra(cuenta.keyframes, total, { etiqueta: 'Keyframes aprobados' }),
-    barra(cuenta.elegidos, total, { etiqueta: 'Planos terminados (clip elegido)' })
-  );
-
-  if (pieza.duracionS > 0) {
-    partes.push(
-      h(
-        'p',
-        { clase: 'tarjeta-texto suave' },
-        `${plural(total, 'plano', 'planos')} para ${segundos(pieza.duracionS)} de pieza.`
-      )
-    );
-  }
+  partes.push(resumenVisualDePieza(pieza, cuenta, total));
+  const inicioHerramientas = partes.length;
 
   if (pidiendoEnlaces) partes.push(espera('Pidiendo los enlaces para ver los planos…'));
 
@@ -1100,7 +1095,44 @@ function seccionCabecera(ctx) {
     );
   }
 
+  const herramientas = partes.splice(inicioHerramientas);
+  partes.push(
+    h('details', { clase: 'tomas-herramientas' },
+      h('summary', null,
+        h('span', { clase: 'material-symbols-rounded', 'aria-hidden': 'true' }, 'tune'),
+        h('span', null, 'Herramientas y filtros'),
+        h('span', { clase: 'material-symbols-rounded tomas-herramientas-flecha', 'aria-hidden': 'true' }, 'expand_more'),
+      ),
+      h('div', { clase: 'tomas-herramientas-cuerpo' }, herramientas),
+    )
+  );
+
   return seccion(null, ...partes);
+}
+
+function resumenVisualDePieza(pieza, cuenta, total) {
+  const porcentaje = total ? Math.round((cuenta.elegidos / total) * 100) : 0;
+  return h('article', { clase: 'tomas-resumen tarjeta' },
+    h('div', {
+      clase: ['inicio-porcentaje', porcentaje === 100 && 'completo'],
+      role: 'progressbar',
+      'aria-label': 'Planos terminados',
+      'aria-valuemin': '0',
+      'aria-valuemax': '100',
+      'aria-valuenow': String(porcentaje),
+    }, h('strong', null, `${porcentaje} %`)),
+    h('div', { clase: 'tomas-resumen-dato' },
+      h('strong', null, `${cuenta.elegidos} de ${total} planos`),
+      h('small', null, cuenta.elegidos === total ? 'completo' : 'terminados'),
+    ),
+    h('div', { clase: 'tomas-resumen-dato tomas-resumen-tiempo' },
+      h('span', { clase: 'material-symbols-rounded', 'aria-hidden': 'true' }, 'schedule'),
+      h('span', null,
+        h('strong', null, pieza.duracionS > 0 ? segundos(pieza.duracionS) : '—'),
+        h('small', null, 'de pieza'),
+      ),
+    ),
+  );
 }
 
 /**
@@ -1193,6 +1225,31 @@ function seccionProgreso(ctx) {
   const { bloques, actos } = pieza.grupos;
 
   if (bloques.length < 2) return null;
+
+  if (!actos.length && bloques.length <= BLOQUES_SIN_PLEGAR) {
+    const opciones = [{ id: 'todo', titulo: 'Todos', tomas: pieza.tomas }, ...bloques];
+    return seccion('Bloques',
+      h('div', { clase: 'tomas-bloques', role: 'group', 'aria-label': 'Filtrar por bloque' },
+        opciones.map((bloque) => {
+          const cuenta = progresoDe(bloque.tomas, ctx);
+          return h('button', {
+            type: 'button',
+            clase: ['tomas-bloque', bloquePuesto === bloque.id && 'activo'],
+            'aria-pressed': bloquePuesto === bloque.id ? 'true' : 'false',
+            alClic: () => {
+              bloquePuesto = bloque.id;
+              paginas = 1;
+              ctx.repintar();
+              irALaLista();
+            },
+          },
+          h('span', { clase: 'material-symbols-rounded', 'aria-hidden': 'true' }, cuenta.elegidos === cuenta.total ? 'check' : 'pending'),
+          h('strong', null, bloque.titulo),
+          h('small', null, `${cuenta.elegidos} de ${cuenta.total}`));
+        }),
+      ),
+    );
+  }
 
   const partes = [
     h(

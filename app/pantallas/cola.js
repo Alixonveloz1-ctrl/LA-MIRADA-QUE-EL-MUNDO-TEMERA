@@ -58,7 +58,6 @@ import {
 } from '../cola.js';
 import {
   aviso,
-  barra,
   boton,
   confirmar,
   espera,
@@ -372,7 +371,16 @@ function construir(repintar) {
  * @returns {HTMLElement}
  */
 function seccionMando(ctx) {
-  const cuenta = resumen();
+  const previo = ctx.estado && ctx.estado.preview_resumen;
+  const cuenta = previo
+    ? {
+        pendientes: Number(previo.pendientes) || 0,
+        enCurso: Number(previo.enCurso) || 0,
+        hechas: Number(previo.hechas) || 0,
+        fallidas: Number(previo.fallidas) || 0,
+        detenidas: 0,
+      }
+    : resumen();
   const total =
     cuenta.pendientes + cuenta.enCurso + cuenta.hechas + cuenta.fallidas + cuenta.detenidas;
   // Detenida quiere decir dos cosas a la vez, y las dos cuentan: que hay
@@ -419,12 +427,7 @@ function seccionMando(ctx) {
     );
   }
 
-  partes.push(barra(cuenta.hechas, total, { etiqueta: 'Trabajos terminados' }));
-  partes.push(h('p', { clase: 'suave' }, frasesDelResumen(cuenta, parada)));
-
-  if (cuenta.enCurso && !parada) {
-    partes.push(espera(`Generando ${plural(cuenta.enCurso, 'cosa', 'cosas')} a la vez…`));
-  }
+  partes.push(panelResumenCola(cuenta, total, parada));
 
   // Los dos botones pueden hacer falta a la vez: con trabajos detenidos de antes
   // y trabajos nuevos esperando turno, ni «reanudar» ni «detener» sobra.
@@ -486,6 +489,40 @@ function seccionMando(ctx) {
   return seccion(null, partes);
 }
 
+function panelResumenCola(cuenta, total, parada) {
+  const porcentajeHecho = total ? Math.round((cuenta.hechas / total) * 100) : 100;
+  return h('article', { clase: 'cola-resumen tarjeta' },
+    h('div', { clase: 'cola-resumen-principal' },
+      h('div', {
+        clase: 'cola-resumen-anillo',
+        role: 'progressbar',
+        'aria-label': 'Trabajos terminados',
+        'aria-valuemin': '0',
+        'aria-valuemax': '100',
+        'aria-valuenow': String(porcentajeHecho),
+      }, h('strong', null, `${porcentajeHecho} %`)),
+      h('div', null,
+        h('strong', null, `${cuenta.hechas} de ${total}`),
+        h('span', null, 'completados'),
+      ),
+    ),
+    h('div', { clase: 'cola-resumen-estados' },
+      metricaCola(cuenta.enCurso, 'en curso', 'curso'),
+      metricaCola(cuenta.pendientes, 'en espera', 'espera'),
+      metricaCola(cuenta.fallidas, 'fallidos', 'fallo'),
+      metricaCola(cuenta.hechas, 'listos', 'listo'),
+    ),
+    h('p', { clase: 'cola-resumen-frase' }, frasesDelResumen(cuenta, parada)),
+  );
+}
+
+function metricaCola(valor, textoMetrica, tono) {
+  return h('span', { clase: `cola-resumen-metrica cola-resumen-${tono}` },
+    h('strong', null, String(valor)),
+    h('small', null, textoMetrica),
+  );
+}
+
 /** El resumen de la cola, dicho con palabras. */
 function frasesDelResumen(cuenta, parada) {
   const trozos = [];
@@ -528,22 +565,21 @@ function frasesDelResumen(cuenta, parada) {
  */
 function bloqueDeConcurrencia(ctx) {
   return h(
-    'div',
-    null,
-    h(
-      'p',
-      { clase: 'suave', estilo: { margin: '0 0 var(--espacio-2)' } },
-      'Una generación cada vez.'
+    'details',
+    { clase: 'cola-regla' },
+    h('summary', null,
+      h('span', { clase: 'material-symbols-rounded', 'aria-hidden': 'true' }, 'info'),
+      h('span', null, 'Una generación cada vez'),
+      h('span', { clase: 'material-symbols-rounded cola-regla-flecha', 'aria-hidden': 'true' }, 'expand_more'),
     ),
-    h(
-      'p',
-      { clase: 'tenue', estilo: { 'font-size': '13px', margin: '0' } },
+    h('div', { clase: 'cola-regla-cuerpo' },
+      h('p', { clase: 'tenue', estilo: { 'font-size': '13px', margin: '0' } },
       'Termina una, empieza la siguiente. Aunque pidas diez voces de golpe, se genera la primera ' +
         'y las otras nueve esperan su turno en esta cola, en orden. No hay un número que subir: ' +
         'con las cuotas de esta cuenta, pedir varias a la vez no va más rápido, tumba la tanda ' +
         'entera, y lo que llega no es «has gastado tu cuota» sino errores que parecen falta de ' +
         'acceso al modelo, que es donde nunca está el fallo. Vale para todo: imágenes, clips, ' +
-        'voces, música y montajes.'
+        'voces, música y montajes.')
     )
   );
 }
@@ -776,7 +812,34 @@ function seccionGasto(ctx) {
   partes.push(bloqueDeEuros(euros));
   partes.push(...bloquesPorPieza(ctx));
 
-  return seccion('Gasto', partes);
+  const dinero = euros.toLocaleString('es-ES', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  return seccion('Resumen',
+    h('div', { clase: 'cola-gasto-grid' },
+      tarjetaDeGasto('database', `${dinero} €`, 'Coste estimado'),
+      tarjetaDeGasto('image', String(totalImagenes), 'Imágenes'),
+      tarjetaDeGasto('play_circle', enSegundos(totalVideo), 'Vídeo'),
+      tarjetaDeGasto('music_note', enSegundos(musica), 'Música'),
+      tarjetaDeGasto('graphic_eq', enSegundos(voz), 'Voz'),
+    ),
+    h('details', { clase: 'cola-regla' },
+      h('summary', null,
+        h('span', { clase: 'material-symbols-rounded', 'aria-hidden': 'true' }, 'receipt_long'),
+        h('span', null, 'Ver desglose del gasto'),
+        h('span', { clase: 'material-symbols-rounded cola-regla-flecha', 'aria-hidden': 'true' }, 'expand_more'),
+      ),
+      h('div', { clase: 'cola-regla-cuerpo' }, partes),
+    ),
+  );
+}
+
+function tarjetaDeGasto(icono, valor, etiqueta) {
+  return h('article', { clase: 'cola-gasto-tarjeta' },
+    h('span', { clase: 'material-symbols-rounded', 'aria-hidden': 'true' }, icono),
+    h('span', null,
+      h('strong', null, valor),
+      h('small', null, etiqueta),
+    ),
+  );
 }
 
 /** Una línea por nivel, más el total. */
