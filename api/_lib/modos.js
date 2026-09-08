@@ -160,6 +160,12 @@ function soloTexto(valor) {
   return typeof valor === 'string' ? valor.trim() : valor == null ? '' : String(valor).trim();
 }
 
+function piezaDelEstado(estado, idPieza) {
+  if (!esObjeto(estado) || !esObjeto(estado.piezas)) return null;
+  const encontrada = estado.piezas[idPieza];
+  return esObjeto(encontrada) ? encontrada : null;
+}
+
 /**
  * Un campo de texto obligatorio. Un número también vale: los ids de escena del
  * guion son cadenas («3») pero llegan como número más veces de las que parece.
@@ -780,6 +786,7 @@ async function modoImagen(cuerpo) {
   // El id del modelo no se escribe aquí: sale de datos/serie.json y lo sustituye
   // IMAGE_MODEL. Hace falta antes de nada para poder mirar los cupos.
   const modelo = nivelImagen(nivel);
+  const leido = await leerElEstado();
 
   let compuesto;
   let carpeta;
@@ -805,8 +812,9 @@ async function modoImagen(cuerpo) {
     paraQue = `generar «${id}» en ${formaDelPoster}`;
   } else {
     idPiezaDelKeyframe = exigirTexto(cuerpo, 'pieza', 'de qué pieza es la toma del keyframe');
-    tomaDeLaPieza(idPiezaDelKeyframe, id);
-    compuesto = promptKeyframe(idPiezaDelKeyframe, id);
+    const piezaEnEstado = piezaDelEstado(leido.estado, idPiezaDelKeyframe);
+    tomaDeLaPieza(idPiezaDelKeyframe, id, piezaEnEstado);
+    compuesto = promptKeyframe(idPiezaDelKeyframe, id, piezaEnEstado);
     carpeta = carpetaDeKeyframe(idPiezaDelKeyframe, id);
     paraQue = `generar el keyframe de la toma ${id} de la pieza «${idPiezaDelKeyframe}»`;
   }
@@ -814,8 +822,6 @@ async function modoImagen(cuerpo) {
   // Los cupos, ANTES de leer un solo byte del bucket: pasarse no da un error
   // claro del otro lado, da una llamada fallida ya cobrada.
   comprobarCupos(compuesto.referencias, modelo.id);
-
-  const leido = await leerElEstado();
 
   // Cada referencia tiene que estar APROBADA. Este es el cerrojo de servidor del
   // invariante «ninguna placa que no sea ancla se genera sin el ancla de su
@@ -916,16 +922,17 @@ async function modoImagen(cuerpo) {
 async function modoVeoLanzar(cuerpo) {
   const idPieza = exigirTexto(cuerpo, 'pieza', 'de qué pieza es la toma');
   const idToma = exigirTexto(cuerpo, 'toma', 'qué toma se genera');
-  const laToma = tomaDeLaPieza(idPieza, idToma);
   const clave = `${idPieza}/${idToma}`;
 
   const leido = await leerElEstado();
+  const piezaEnEstado = piezaDelEstado(leido.estado, idPieza);
+  const laToma = tomaDeLaPieza(idPieza, idToma, piezaEnEstado);
 
   // EL SEGUNDO CERROJO. Un keyframe malo cuesta céntimos y un clip malo cuesta
   // un euro: aquí se vuelve a comprobar lo que la interfaz ya impide.
   exigirAprobada(leido.estado, 'keyframe', clave, `generar el vídeo de ${idToma}`);
 
-  const encargo = promptVideo(idPieza, idToma);
+  const encargo = promptVideo(idPieza, idToma, piezaEnEstado);
 
   // CON QUÉ NIVEL DE VEO. Lo normal es el que lleva escrito el plano, que es una
   // decisión artística tomada plano a plano. Pero quien paga puede mandar otro
@@ -1048,12 +1055,13 @@ async function modoVeoLanzar(cuerpo) {
 async function modoVeoConsultar(cuerpo) {
   const idPieza = exigirTexto(cuerpo, 'pieza', 'de qué pieza es la toma');
   const idToma = exigirTexto(cuerpo, 'toma', 'qué toma se estaba generando');
-  const laToma = tomaDeLaPieza(idPieza, idToma);
   const clave = `${idPieza}/${idToma}`;
 
   // El nombre de la operación se lee del estado, NO de lo que mande el
   // navegador: lleva el project id dentro y por eso nunca ha viajado hasta allí.
   const antesDeConsultar = await leerElEstado();
+  const piezaEnEstado = piezaDelEstado(antesDeConsultar.estado, idPieza);
+  const laToma = tomaDeLaPieza(idPieza, idToma, piezaEnEstado);
   const enEstado = entradaDeToma(antesDeConsultar.estado, clave);
   let operacion = soloTexto(enEstado.operacion_en_curso);
   let prefijoApuntado = soloTexto(enEstado.operacion_prefijo);
@@ -1222,12 +1230,25 @@ async function modoVoz(cuerpo) {
   const idPieza = exigirTexto(cuerpo, 'pieza', 'de qué pieza es el bloque de voz');
   const idBloque = exigirTexto(cuerpo, 'bloque', 'qué bloque de voz se genera');
 
-  // `guionDeVoz()` ya se planta con su frase en español si el bloque no existe,
-  // así que a partir de aquí el bloque está.
-  const guion = guionDeVoz(idPieza, idBloque);
-  const elBloque = bloquesDeVoz(idPieza).find((b) => b.id === idBloque);
-
   const leido = await leerElEstado();
+  const piezaEnEstado = piezaDelEstado(leido.estado, idPieza);
+  const encontrado = bloquesDeVoz(idPieza, piezaEnEstado).find((b) => b.id === idBloque);
+
+  if (!encontrado) {
+    guionDeVoz(idPieza, idBloque, piezaEnEstado);
+  }
+
+  const elBloque = {
+    ...encontrado,
+    lineas: encontrado.lineas.map((linea) => ({ ...linea }))
+  };
+
+  for (const linea of elBloque.lineas) {
+    if (soloTexto(linea.ja)) continue;
+    linea.ja = await traducirAJapones(linea.es, linea.intencion || '');
+  }
+
+  const guion = guionDeVoz(idPieza, idBloque, piezaEnEstado, elBloque);
 
   // Las voces salen del estado, que es donde queda la elección que se hizo
   // escuchando. Si a alguien le falta, `audio.js` lo dice con su nombre.
@@ -1261,6 +1282,27 @@ async function modoVoz(cuerpo) {
         };
       }
       const entrada = estado.audio.voz[clave];
+
+      if (piezaEnEstado && esObjeto(estado.piezas) && esObjeto(estado.piezas[idPieza])) {
+        const piezaGuardada = estado.piezas[idPieza];
+        const audioPieza = esObjeto(piezaGuardada.audio) ? piezaGuardada.audio : null;
+        const lineasGuardadas = audioPieza && Array.isArray(audioPieza.voz) ? audioPieza.voz : [];
+        const usadas = new Set();
+        for (const traducida of elBloque.lineas) {
+          const indice = lineasGuardadas.findIndex((cruda, i) =>
+            !usadas.has(i) &&
+            esObjeto(cruda) &&
+            soloTexto(cruda.quien) === soloTexto(traducida.quien) &&
+            soloTexto(cruda.es) === soloTexto(traducida.es) &&
+            Number(cruda.t) === Number(traducida.t)
+          );
+          if (indice >= 0) {
+            lineasGuardadas[indice].ja = traducida.ja;
+            usadas.add(indice);
+          }
+        }
+      }
+
       entrada.ruta = ruta;
       entrada.dur_s = generada.durS;
       entrada.aprobada = false;

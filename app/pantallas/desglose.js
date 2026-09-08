@@ -313,6 +313,14 @@ function construirModelo(datos) {
           escenario: texto(una.escenario),
           luz: texto(una.luz),
           personajes: Array.isArray(una.personajes) ? una.personajes.map(texto).filter(Boolean) : [],
+          dialogo: (Array.isArray(una.dialogo) ? una.dialogo : [])
+            .map((linea) => ({
+              quien: texto(linea && linea.quien),
+              es: texto(linea && (linea.texto ?? linea.es)),
+              ja: texto(linea && linea.ja),
+              intencion: texto(linea && linea.intencion) || null
+            }))
+            .filter((linea) => linea.quien && linea.es),
           lineas: Array.isArray(una.dialogo) ? una.dialogo.length : 0,
           accion: texto(una.accion)
         }));
@@ -1226,6 +1234,41 @@ function selloDelEpisodio(episodio, estado) {
  * @param {string} sello
  * @returns {Promise<void>}
  */
+function vozDelEpisodio(episodio, tomas) {
+  const salida = [];
+
+  for (const escena of episodio.escenas) {
+    const lineas = Array.isArray(escena.dialogo) ? escena.dialogo : [];
+    if (!lineas.length) continue;
+
+    const suyas = tomas.filter((toma) => String(toma.escena) === String(escena.escena));
+    if (!suyas.length) continue;
+
+    const desde = Math.min(...suyas.map((toma) => Number(toma.inicio) || 0));
+    const fin = Math.max(
+      ...suyas.map((toma) => (Number(toma.inicio) || 0) + (Number(toma.dur) || 0))
+    );
+    const duracion = Math.max(0, fin - desde);
+    const paso = lineas.length ? duracion / lineas.length : 0;
+
+    lineas.forEach((linea, indice) => {
+      const t = desde + paso * indice;
+      const hasta = indice === lineas.length - 1 ? fin : desde + paso * (indice + 1);
+      salida.push({
+        quien: linea.quien,
+        es: linea.es,
+        ja: linea.ja || '',
+        intencion: linea.intencion,
+        escena: String(escena.escena),
+        t: Number(t.toFixed(3)),
+        hasta: Number(hasta.toFixed(3))
+      });
+    });
+  }
+
+  return salida;
+}
+
 async function armarLaPieza(episodio, modelo, sello) {
   const estado = leerEstado();
 
@@ -1314,6 +1357,7 @@ async function armarLaPieza(episodio, modelo, sello) {
             .map((una) => una.id)
         }
       : null,
+    audio: { voz: vozDelEpisodio(episodio, tomas) },
     tomas
   };
 

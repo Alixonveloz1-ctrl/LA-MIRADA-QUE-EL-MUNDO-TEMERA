@@ -527,8 +527,8 @@ export function promptEscenario(id) {
  * @param {string} idToma
  * @returns {{texto:string, negativo:string, referencias:{placa?:string, escenario?:string, instruccion:string, cupo:string}[]}}
  */
-export function promptKeyframe(idPieza, idToma) {
-  const laToma = toma(idPieza, idToma);
+export function promptKeyframe(idPieza, idToma, piezaAlternativa = null) {
+  const laToma = toma(idPieza, idToma, piezaAlternativa);
 
   if (typeof laToma.imagen !== 'string' || !laToma.imagen.trim()) {
     throw new ErrorDeCara(
@@ -594,8 +594,8 @@ export function promptKeyframe(idPieza, idToma) {
  * @param {string} idToma
  * @returns {{texto:string, negativo:string}}
  */
-export function promptVideo(idPieza, idToma) {
-  const laToma = toma(idPieza, idToma);
+export function promptVideo(idPieza, idToma, piezaAlternativa = null) {
+  const laToma = toma(idPieza, idToma, piezaAlternativa);
 
   if (typeof laToma.video !== 'string' || !laToma.video.trim()) {
     throw new ErrorDeCara(
@@ -827,9 +827,12 @@ function direccionDeActuacion(idPersonaje, intencionDeLaLinea) {
  * @param {string} idBloque el id que devuelve `bloquesDeVoz()`: «madre», «esc-3».
  * @returns {{partes:{quien:string, texto_ja:string, direccion:string}[], instruccion:string}}
  */
-export function guionDeVoz(idPieza, idBloque) {
-  const bloques = bloquesDeVoz(idPieza);
-  const elBloque = bloques.find((b) => b.id === String(idBloque));
+export function guionDeVoz(idPieza, idBloque, piezaAlternativa = null, bloqueAlternativo = null) {
+  const bloques = bloquesDeVoz(idPieza, piezaAlternativa);
+  const elBloque =
+    bloqueAlternativo && bloqueAlternativo.id === String(idBloque)
+      ? bloqueAlternativo
+      : bloques.find((b) => b.id === String(idBloque));
   if (!elBloque) {
     const hay = bloques.map((b) => b.id);
     throw new ErrorDeCara(

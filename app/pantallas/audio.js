@@ -486,8 +486,10 @@ function estaEnMarcha(trabajo) {
 // ---------------------------------------------------------------------------
 
 /** Todas las piezas escritas en datos/serie.json, con su id y su título. */
-function piezasDeLaSerie(serie) {
-  const piezas = esObjeto(serie.piezas) ? serie.piezas : {};
+function piezasDeLaSerie(serie, estado = {}) {
+  const estaticas = esObjeto(serie.piezas) ? serie.piezas : {};
+  const dinamicas = esObjeto(estado) && esObjeto(estado.piezas) ? estado.piezas : {};
+  const piezas = { ...estaticas, ...dinamicas };
   return Object.keys(piezas)
     .filter((id) => esObjeto(piezas[id]))
     // El archivo no tiene ni música ni diálogo: es una biblioteca de planos de
@@ -503,7 +505,7 @@ function piezasDeLaSerie(serie) {
 
 /** La pieza que se está produciendo: la del estado, o la primera de la serie. */
 function piezaActiva(serie, estado) {
-  const todas = piezasDeLaSerie(serie);
+  const todas = piezasDeLaSerie(serie, estado);
   const dicha = soloTexto(estado.pieza_activa);
   return todas.find((una) => una.id === dicha) || todas[0] || null;
 }
@@ -817,7 +819,7 @@ function construir(serie, repintar, repintarLuego) {
     );
   }
 
-  const todas = piezasDeLaSerie(serie);
+  const todas = piezasDeLaSerie(serie, estado);
   const musica = musicaDeLaPieza(serie, pieza.id, todas.length);
   const banco = bancoDeLaTemporada(serie);
   const bloques = bloquesDeVoz(pieza.datos);
