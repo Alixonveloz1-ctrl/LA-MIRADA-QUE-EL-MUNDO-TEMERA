@@ -20,13 +20,9 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 22
-          cache: npm
 
       - name: Aplicar parche
         run: python3 herramientas/aplicar-piezas-estado.py
-
-      - name: Instalar dependencias
-        run: npm ci
 
       - name: Probar flujo dinamico
         run: npm run piezas-estado
