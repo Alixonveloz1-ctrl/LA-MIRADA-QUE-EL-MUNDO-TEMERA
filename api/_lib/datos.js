@@ -99,7 +99,11 @@ const REGION_SI_NO_HAY_ENTORNO = 'us-central1';
  * @param {string} id
  * @returns {object} la pieza tal cual está en serie.json.
  */
-export function pieza(id) {
+export function pieza(id, alternativa = null) {
+  if (alternativa && typeof alternativa === 'object' && !Array.isArray(alternativa)) {
+    const idAlternativo = alternativa.id == null ? '' : String(alternativa.id);
+    if (!idAlternativo || idAlternativo === String(id)) return alternativa;
+  }
   const piezas = serie.piezas || {};
   const encontrada = piezas[id];
   if (!encontrada) {
@@ -119,8 +123,8 @@ export function pieza(id) {
  * @param {string} idToma
  * @returns {object}
  */
-export function toma(idPieza, idToma) {
-  const laPieza = pieza(idPieza);
+export function toma(idPieza, idToma, piezaAlternativa = null) {
+  const laPieza = pieza(idPieza, piezaAlternativa);
   const tomas = laPieza.tomas || [];
   const encontrada = tomas.find((t) => t.id === idToma);
   if (!encontrada) {
@@ -406,8 +410,8 @@ function segundos(valor) {
  * @param {string} idPieza
  * @returns {object[]} las entradas crudas, ordenadas y comprobadas.
  */
-function lineasCrudas(idPieza) {
-  const laPieza = pieza(idPieza);
+function lineasCrudas(idPieza, piezaAlternativa = null) {
+  const laPieza = pieza(idPieza, piezaAlternativa);
   const lineas = (laPieza.audio && laPieza.audio.voz) || [];
   for (const linea of lineas) {
     if (!Number.isFinite(segundos(linea.t)) || !Number.isFinite(segundos(linea.hasta))) {
@@ -429,8 +433,8 @@ function lineasCrudas(idPieza) {
  * @param {string} idPieza
  * @returns {{quien:string, ja:string, es:string, t:number, hasta:number}[]}
  */
-export function lineasDeVoz(idPieza) {
-  return lineasCrudas(idPieza).map((l) => ({
+export function lineasDeVoz(idPieza, piezaAlternativa = null) {
+  return lineasCrudas(idPieza, piezaAlternativa).map((l) => ({
     quien: l.quien,
     ja: l.ja,
     es: l.es,
@@ -492,10 +496,10 @@ function escenaDeLinea(linea, tomas) {
  * @param {string} idPieza
  * @returns {{id:string, personajes:string[], lineas:object[]}[]}
  */
-export function bloquesDeVoz(idPieza) {
-  const laPieza = pieza(idPieza);
+export function bloquesDeVoz(idPieza, piezaAlternativa = null) {
+  const laPieza = pieza(idPieza, piezaAlternativa);
   const tomas = laPieza.tomas || [];
-  const lineas = lineasCrudas(idPieza);
+  const lineas = lineasCrudas(idPieza, piezaAlternativa);
   if (!lineas.length) return [];
 
   // La línea que sale de aquí lleva `intencion` porque la instrucción de

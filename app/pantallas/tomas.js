@@ -229,9 +229,11 @@ export default {
 
       marco.appendChild(espera('Trayendo los planos de la pieza…'));
 
+      let datos;
       let modelo;
       try {
-        modelo = construirModelo(await laSerie());
+        datos = await laSerie();
+        modelo = construirModelo(datos, leerEstado());
       } catch (fallo) {
         const error = comoErrorDeCara(fallo);
         vaciar(marco);
@@ -269,6 +271,7 @@ export default {
        * pantalla congelada para siempre, esperando una pausa que no llega.
        */
       const repintar = () => {
+        modelo = construirModelo(datos, leerEstado());
         sonando.clear();
         repintadoPendiente = false;
         pararElReloj();
@@ -414,8 +417,10 @@ async function bajarLaSerie() {
  * @param {object} datos `datos/serie.json` entero
  * @returns {object}
  */
-function construirModelo(datos) {
-  const mapa = esObjeto(datos) && esObjeto(datos.piezas) ? datos.piezas : {};
+function construirModelo(datos, estado = {}) {
+  const estaticas = esObjeto(datos) && esObjeto(datos.piezas) ? datos.piezas : {};
+  const dinamicas = esObjeto(estado) && esObjeto(estado.piezas) ? estado.piezas : {};
+  const mapa = { ...estaticas, ...dinamicas };
   const ids = Object.keys(mapa);
 
   if (!ids.length) {
