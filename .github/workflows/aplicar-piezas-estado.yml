@@ -1,4 +1,4 @@
-name: Comprobar Actions
+name: Aplicar piezas dinamicas
 
 on:
   push:
@@ -9,7 +9,42 @@ permissions:
   contents: write
 
 jobs:
-  comprobar:
+  aplicar:
     runs-on: ubuntu-latest
     steps:
-      - run: echo "actions-ok"
+      - uses: actions/checkout@v4
+        with:
+          ref: fix/desglose-tomas-estado
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Aplicar parche
+        run: python3 herramientas/aplicar-piezas-estado.py
+
+      - name: Instalar dependencias
+        run: npm ci
+
+      - name: Probar flujo dinamico
+        run: npm run piezas-estado
+
+      - name: Ejecutar comprobaciones existentes
+        run: npm run comprobar
+
+      - name: Verificar alcance y guardar
+        shell: bash
+        run: |
+          git restore --worktree datos/serie.json 2>/dev/null || true
+          if git diff --name-only HEAD | grep -E 'api/_lib/vertex.js|api/_lib/gcs.js|app/cola.js|api/_lib/montaje.js|montador/'; then
+            echo 'El parche toco un archivo prohibido.' >&2
+            exit 1
+          fi
+          rm -f .github/workflows/aplicar-piezas-estado.yml herramientas/aplicar-piezas-estado.py
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -A
+          git commit -m 'fix: usar piezas desglosadas desde estado en todo el flujo'
+          git push origin HEAD:fix/desglose-tomas-estado
