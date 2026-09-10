@@ -43,6 +43,7 @@ import {
   anclaDePersonaje,
   bloquesDeVoz
 } from './datos.js';
+import { necesitaDireccion, revisarDireccion } from '../../app/continuidad.js';
 
 // ---------------------------------------------------------------------------
 // Piezas sueltas de serie.json, cada una con su queja si falta
@@ -270,8 +271,28 @@ const INSTRUCCION_ESCENARIO_POR_DEFECTO =
   'in it is drawn at the size, position and perspective this shot describes. ' +
   // Y esto, que es lo que evita que un figurante inventado se herede en cadena:
   'If any people or figures appear in this reference, IGNORE THEM COMPLETELY - they ' +
-  'are not part of the place. The only people in this shot are the ones this shot ' +
-  'names, and nobody else.';
+  'are not part of the place. Use the shot direction to preserve the established cast and ' +
+  'background population of this sequence. People outside a close-up remain off screen; ' +
+  'visible occupied seats must not become empty. Reference framing is not the shot camera.';
+
+function direccionDelPlano(idPieza, laToma) {
+  if (necesitaDireccion({ id:idPieza }, laToma)) {
+    throw new ErrorDeCara('Esta toma necesita actualizar su continuidad. En Tomas, pulsa «Corregir continuidad» antes de generar imágenes o vídeos.', { http:409, reintentable:false });
+  }
+  if (!laToma.continuidad) return '';
+  const problemas = revisarDireccion(laToma, laToma.continuidad);
+  if (problemas.length) throw new ErrorDeCara(problemas.join(' '), { http:400, reintentable:false });
+  const c=laToma.continuidad, d=laToma.direccion;
+  return unir('SHOT CONTINUITY — these instructions govern the scene:', c.reglas,
+    `Lighting: ${c.luz}. ${c.interior === true ? 'Interior space.' : c.interior === false ? 'Exterior space.' : ''}`,
+    c.precipitacion === 'nieve' ? 'Preserve the scripted outdoor snow.' : 'No added precipitation. Surface dampness is not rainfall.',
+    c.goteo ? 'Only the localized drip written in the action, never indoor rain.' : 'Do not invent ceiling drips or weather effects.',
+    `Visible cast: ${d.visibles.join(', ') || 'none'}. Off screen: ${d.fuera_de_campo.join(', ') || 'none'}.`,
+    `Blocking and occupied background: ${d.posiciones}`, `Eyelines: ${d.miradas}`, `Camera: ${d.camara}`,
+    `Starting state: ${d.estado_inicial}`, `Permitted changes: ${d.estado_final}`,
+    'Characters act within the story, with eyelines toward their partner or object of attention. No audience address. Preserve human proportions against furniture and shared perspective.',
+    'Use reference identity with the age, wardrobe and physical state written for this scene. Do not copy reference portrait pose or camera gaze.');
+}
 
 /**
  * La instrucción que acompaña a la placa de escenario, de serie.json si está
@@ -351,8 +372,8 @@ function instruccionDeToma(idPersonaje) {
  * @param {object} referencia
  */
 function ponerReferencia(lista, referencia) {
-  const clave = referencia.placa || referencia.escenario;
-  const ya = lista.find((r) => (r.placa || r.escenario) === clave);
+  const clave = referencia.placa || referencia.escenario || referencia.continuidad;
+  const ya = lista.find((r) => (r.placa || r.escenario || r.continuidad) === clave);
   if (ya) {
     ya.instruccion = referencia.instruccion;
     ya.cupo = referencia.cupo;
@@ -527,7 +548,7 @@ export function promptEscenario(id) {
  * @param {string} idToma
  * @returns {{texto:string, negativo:string, referencias:{placa?:string, escenario?:string, instruccion:string, cupo:string}[]}}
  */
-export function promptKeyframe(idPieza, idToma, piezaAlternativa = null) {
+export function promptKeyframe(idPieza, idToma, piezaAlternativa = null, referenciaSecuencia = null) {
   const laToma = toma(idPieza, idToma, piezaAlternativa);
 
   if (typeof laToma.imagen !== 'string' || !laToma.imagen.trim()) {
@@ -540,7 +561,8 @@ export function promptKeyframe(idPieza, idToma, piezaAlternativa = null) {
 
   const cuerpo = unir(
     laToma.imagen,
-    luzDe(laToma.luz, `La toma «${idToma}» de la pieza «${idPieza}»`)
+    laToma.continuidad?.luz || luzDe(laToma.luz, `La toma «${idToma}» de la pieza «${idPieza}»`),
+    direccionDelPlano(idPieza, laToma)
   );
 
   const referencias = [];
@@ -568,9 +590,21 @@ export function promptKeyframe(idPieza, idToma, piezaAlternativa = null) {
     const laPlaca = placa(idRef);
     ponerReferencia(referencias, {
       placa: laPlaca.id,
-      instruccion: instruccionDeToma(laPlaca.personaje),
+      instruccion: instruccionDeToma(laPlaca.personaje) + (laToma.continuidad ?
+        ' For this narrative shot, the written age, wardrobe and physical state take precedence over the reference. Preserve underlying identity, not the reference costume or portrait pose.' : ''),
       cupo: 'personaje'
     });
+  }
+
+  if (referenciaSecuencia) ponerReferencia(referencias, {
+    continuidad: referenciaSecuencia.ruta,
+    instruccion:'SEQUENCE REFERENCE: an approved earlier frame from this same sequence. Preserve identities, established background population, furniture relationships and prop designs where they remain visible. Follow the NEW shot camera, framing, scripted movements, time and prop changes. Do not copy the old composition or override this shot\'s lighting. People outside a close-up remain off screen, not erased from the location.',
+    cupo:'objeto'
+  });
+
+  if (laToma.continuidad?.subespacio) {
+    const ref=referencias.find(r=>r.escenario);
+    if (ref) ref.instruccion += ` This shot takes place in: ${laToma.continuidad.subespacio}. The master supplies the location identity, materials and architectural language; frame the specified subspace, never copy an exterior aerial view into an interior or populate it with people from another segment.`;
   }
 
   return { texto: sellar(cuerpo), negativo: negativoDeEstilo(), referencias };
@@ -605,9 +639,13 @@ export function promptVideo(idPieza, idToma, piezaAlternativa = null) {
     );
   }
 
+  direccionDelPlano(idPieza,laToma); // Validar sin reenviar la historia a Veo.
+  const c=laToma.continuidad;
   const cuerpo = unir(
     laToma.video,
-    luzDe(laToma.luz, `La toma «${idToma}» de la pieza «${idPieza}»`)
+    c ? 'Single continuous shot from the supplied first frame. Preserve its people, scale, props, layout, eyelines and lighting. Only the described motion changes. Keep the existing camera angle unless the motion above explicitly moves it. No cuts, no scene transitions, no portrait gaze.' : luzDe(laToma.luz, `La toma «${idToma}»`),
+    c ? (c.precipitacion==='nieve' ? 'Preserve the snow visible in the first frame.' : 'Keep the air clear of added rain, snow or fog.') : '',
+    c?.goteo ? 'Only a localized drip, never rain throughout the room.' : ''
   );
 
   return { texto: sellar(cuerpo), negativo: negativoDeEstilo() };

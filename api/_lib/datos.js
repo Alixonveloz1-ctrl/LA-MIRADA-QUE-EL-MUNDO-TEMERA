@@ -24,6 +24,7 @@ import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { ErrorDeCara } from './errores.js';
 import { entorno } from './entorno.js';
+import { prepararGuiones } from '../../datos/continuidad.js';
 
 const requerir = createRequire(import.meta.url);
 
@@ -65,11 +66,11 @@ export const serie = cargarDatos('datos/serie.json', [
  * episodios). Para recorrerlo están `episodios()`, `escenasDeEpisodio()` y
  * `escenaDeGuion()`, que es lo que usa todo el mundo.
  */
-export const guiones = cargarDatos('datos/guiones.json', [
+export const guiones = prepararGuiones(cargarDatos('datos/guiones.json', [
   () => requerir('../../datos/guiones.json'),
   () => JSON.parse(readFileSync(new URL('../../datos/guiones.json', import.meta.url), 'utf8')),
   () => JSON.parse(readFileSync(resolve(process.cwd(), 'datos/guiones.json'), 'utf8'))
-]);
+]));
 
 // Los tres niveles de calidad, escritos una vez. No se recorren las claves de
 // `modelos.imagen` porque ahí dentro también viven `por_defecto`, `protocolo` y

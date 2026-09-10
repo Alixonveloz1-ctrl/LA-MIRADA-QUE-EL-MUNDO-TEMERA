@@ -760,6 +760,18 @@ serie.voces.regla_de_voz = {
            'tiene 16 voces masculinas. No hay más voces: son treinta y son fijas.',
 };
 
+// La paleta no decide el tiempo atmosférico ni apaga faroles escritos en el guion.
+serie.luces.BARRIO = 'restrained blue-grey palette, lighting determined by the scene and its practical light sources';
+serie.luces.NOBLE = 'warm restrained gold palette, oil lamps and practical light sources; window light only when the scene is daytime';
+serie.estilo.bloque = serie.estilo.bloque
+  .replace('desaturated cool palette of wet stone, muted moss green and blue-grey.',
+    'restrained palette, muted moss green and blue-grey with scene-specific warm tones.')
+  .replace('Single hard light source, heavy contrast, faces half in shadow, volumetric haze.',
+    'Consistent motivated lighting and shadows, contrast appropriate to the scene.');
+const barrioSinLluvia = serie.escenarios.placas.find(e => e.id === 'barrio-humo');
+if (barrioSinLluvia) barrioSinLluvia.descripcion = barrioSinLluvia.descripcion.replace('rain on broken cobbles', 'broken cobbles');
+anota('Separar la paleta artística del clima y de las fuentes de luz de cada escena.');
+
 serie.meta.version_datos = (serie.meta.version_datos || 0) + 1;
 serie.meta.parche = {
   de: 'datos/serie.base.json',

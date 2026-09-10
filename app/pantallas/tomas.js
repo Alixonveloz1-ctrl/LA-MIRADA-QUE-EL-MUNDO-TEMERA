@@ -54,6 +54,7 @@ import { llamar, ErrorDeCara } from '../api.js';
 import { actual, alCambiar, cambiar } from '../estado.js';
 import { encolar, encolarVarios } from '../cola.js';
 import { claveDelMaterial, esDeArchivo, porQueNoSeGenera } from '../planos.js';
+import { necesitaDireccion, materialVigente, invalidarMontajes } from '../continuidad.js';
 import {
   aviso,
   barra,
@@ -563,8 +564,9 @@ function leerToma(estado, clave) {
   const entrada = esObjeto(mapa[clave]) ? mapa[clave] : {};
   return {
     keyframe: rutaSiVale(entrada.keyframe_aprobado),
+    revisionPendiente: Boolean(entrada.revision_pendiente),
     intentosKeyframe: soloRutas(entrada.intentos_keyframe),
-    clip: rutaSiVale(entrada.clip_elegido),
+    clip: materialVigente(entrada, 'clip') ? rutaSiVale(entrada.clip_elegido) : null,
     intentosClip: soloRutas(entrada.intentos_clip),
     // `true` cuando hay vídeo en vuelo. El nombre de la operación no viaja hasta
     // el navegador: lleva el project id dentro y vive en el bucket.
@@ -671,7 +673,7 @@ function estadoDeToma(guardado, enLaCola) {
   if (enVuelo) return 'video-en-curso';
   if (guardado.clip) return 'listo';
   if (guardado.intentosClip.length) return 'sin-elegir';
-  if (guardado.keyframe) return 'listo-para-video';
+  if (guardado.keyframe && !guardado.revisionPendiente) return 'listo-para-video';
   if (guardado.intentosKeyframe.length) return 'keyframe-por-aprobar';
   return 'sin-keyframe';
 }
@@ -711,6 +713,7 @@ function progresoDe(tomas, ctx) {
  * @returns {string|null}
  */
 function porQueNoSePuedeKeyframe(laToma, ctx) {
+  if (necesitaDireccion(ctx.pieza, laToma)) return 'Actualiza esta escena con «Corregir continuidad», arriba, antes de generar.';
   // Un plano que apunta al archivo no genera nada suyo: su keyframe y su clip ya
   // existen, hechos una vez para toda la temporada. Ofrecer aquí un botón de
   // generar sería ofrecer pagar dos veces lo mismo.
@@ -765,6 +768,8 @@ function porQueNoSePuedeKeyframe(laToma, ctx) {
  * @returns {string|null}
  */
 function porQueNoHayBotonDeVideo(laToma, guardado, ctx) {
+  if (necesitaDireccion(ctx.pieza, laToma)) return 'Primero corrige la continuidad de esta escena.';
+  if (guardado.revisionPendiente) return 'La dirección cambió. Revisa y vuelve a aprobar la imagen antes de generar vídeo.';
   // Igual que con el keyframe: el clip de un plano de archivo ya está pagado.
   if (esDeArchivo(laToma)) return porQueNoSeGenera(laToma);
 
@@ -783,7 +788,7 @@ function porQueNoHayBotonDeVideo(laToma, guardado, ctx) {
     // diría que falta un keyframe que existe y está aprobado desde hace meses.
     const laSiguiente = ctx.pieza.tomas.find((una) => una.id === siguiente) || { id: siguiente };
     const suyo = leerToma(ctx.estado, claveDelMaterial(ctx.pieza.id, laSiguiente));
-    if (!suyo.keyframe) {
+    if (!suyo.keyframe || suyo.revisionPendiente) {
       return (
         `Esta toma encadena con ${siguiente}, y para encadenar hace falta el keyframe de ` +
         `${siguiente} aprobado: es la imagen a la que Veo tiene que llegar interpolando. Genera y ` +
@@ -1033,6 +1038,18 @@ function seccionCabecera(ctx) {
   const cuenta = progresoDe(pieza.tomas, ctx);
 
   partes.push(resumenVisualDePieza(pieza, cuenta, total));
+  const porRevisar = pieza.tomas.filter(t => ctx.estado.tomas?.[`${pieza.id}/${t.id}`]?.revision_pendiente).length;
+  if (porRevisar) partes.push(aviso(`${porRevisar} imágenes tienen una dirección actualizada. Revísalas: puedes aprobar de nuevo las que sirven o generar otra versión.`));
+  const pendientes = [...new Set(pieza.tomas.filter(t => necesitaDireccion(pieza,t)).map(t => String(t.escena)))];
+  if (pendientes.length) {
+    const enMarcha = (ctx.estado.cola || []).some(t => t.tipo === 'corregir-continuidad' &&
+      t.args?.pieza === pieza.id && ['pendiente','en_curso'].includes(t.estado));
+    partes.push(aviso(`${pendientes.length} escenas necesitan actualizar su continuidad. Se conservarán imágenes, vídeos y audio; después podrás revisar qué material aprovechar.`),
+      boton(enMarcha ? 'Corrigiendo continuidad…' : 'Corregir continuidad', async () => {
+        if (!(await confirmar(`Se revisará la dirección de ${pendientes.length} escenas con el modelo de texto. No se generarán imágenes ni vídeos. Se conservarán la duración de cada escena, el audio y una copia de la versión anterior. Las escenas con varios lugares o recuerdos podrán dividirse en tomas separadas. ¿Continuar?`))) return;
+        await hacer(() => encolarVarios(pendientes.map(escena => ({ tipo:'corregir-continuidad', args:{pieza:pieza.id,escena} }))), repintar);
+      }, { tono:'principal', ...(enMarcha ? {desactivado:'La corrección ya está en la cola.'} : {}) }));
+  }
   const inicioHerramientas = partes.length;
 
   if (pidiendoEnlaces) partes.push(espera('Pidiendo los enlaces para ver los planos…'));
@@ -1043,10 +1060,10 @@ function seccionCabecera(ctx) {
     h(
       'p',
       { clase: 'tarjeta-texto tenue' },
-      'Los dos botones encolan: no lanzan nada de golpe. La cola los saca de UNO EN UNO ' +
+      'Los botones encolan: no lanzan nada de golpe. La cola los saca de UNO EN UNO ' +
         'porque saturar las cuotas de Vertex devuelve ' +
-        'errores que parecen falta de acceso al modelo. Solo encolan lo que no tiene nada todavía; ' +
-        'para pedir otra versión de algo que ya se puede mirar está el botón de su tarjeta.'
+        'errores que parecen falta de acceso al modelo. Las tandas de faltantes solo piden material nuevo. ' +
+        'La tanda de revisión crea otra versión de las imágenes cuya dirección cambió; las anteriores se conservan.'
     )
   );
 
@@ -1151,10 +1168,21 @@ function accionesDeTanda(ctx) {
   const keyframesQueEsperan = [];
   const clipsQueFaltan = [];
   const clipsQueEsperan = [];
+  const keyframesPorRevisar = [];
+  const clipsPorRevisar = [];
 
   for (const una of pieza.tomas) {
     const clave = claveDelMaterial(pieza.id, una);
     const guardado = leerToma(ctx.estado, clave);
+    const entrada = ctx.estado.tomas?.[clave];
+    if (entrada?.clip_revision_pendiente && !guardado.operacion && !porQueHayTrabajoDeClip(una,ctx) &&
+      !porQueHayRevisionDeClip(una,guardado,ctx,entrada)) {
+      clipsPorRevisar.push({tipo:'clip',args:{pieza:pieza.id,id:una.id}});
+    }
+    if (guardado.revisionPendiente && !porQueNoSePuedeKeyframe(una,ctx) &&
+      !Object.values(entrada?.origenes_keyframe || {}).some(o => o.revision === una.revision_direccion)) {
+      keyframesPorRevisar.push({tipo:'keyframe',args:{pieza:pieza.id,id:una.id}});
+    }
 
     if (!guardado.keyframe && !guardado.intentosKeyframe.length) {
       if (porQueNoSePuedeKeyframe(una, ctx)) keyframesQueEsperan.push(una.id);
@@ -1170,6 +1198,18 @@ function accionesDeTanda(ctx) {
   }
 
   const acciones = [];
+
+  if (clipsPorRevisar.length) acciones.push(boton(
+    `Regenerar ${clipsPorRevisar.length} vídeos con imágenes revisadas`,
+    ()=>encolarLosClips(clipsPorRevisar,ctx),{tono:'peligro'}
+  ));
+
+  if (keyframesPorRevisar.length) acciones.push(boton(
+    `Regenerar ${keyframesPorRevisar.length} keyframes por revisar`, async () => {
+      if (!(await confirmar(`Se generarán ${keyframesPorRevisar.length} imágenes nuevas con la dirección corregida. Esto usa el modelo de imagen y tiene coste. Se conservarán las versiones anteriores; las nuevas tendrás que aprobarlas antes de generar vídeos. Conviene comprobar primero una toma de cada secuencia. ¿Encolar las imágenes?`))) return;
+      hacer(() => encolarVarios(keyframesPorRevisar),repintar);
+    }, {tono:'principal'}
+  ));
 
   acciones.push(
     keyframesQueFaltan.length
@@ -1205,6 +1245,16 @@ function accionesDeTanda(ctx) {
   acciones.push(boton('Volver a pedir los enlaces', () => olvidarEnlaces(repintar)));
 
   return [h('div', { clase: 'tarjeta-acciones' }, acciones)];
+}
+
+function porQueHayTrabajoDeClip(toma,ctx) {
+  return (ctx.estado.cola || []).some(t=>t.tipo==='clip' && t.args?.pieza===ctx.pieza.id &&
+    t.args?.id===toma.id && ['pendiente','en_curso'].includes(t.estado));
+}
+
+function porQueHayRevisionDeClip(toma,guardado,ctx,entrada) {
+  return porQueNoHayBotonDeVideo(toma,guardado,ctx) ||
+    Object.values(entrada.origenes_clip || {}).some(o=>o.keyframe===guardado.keyframe && o.revision===(toma.revision_direccion || null));
 }
 
 // ---------------------------------------------------------------------------
@@ -1543,6 +1593,7 @@ function tarjetaDeToma(laToma, ctx) {
       (trabajoKeyframe && trabajoKeyframe.estado === 'fallido') ||
       (trabajoClip && trabajoClip.estado === 'fallido')
         ? { tipo: 'fallido', texto: 'Ha fallado' }
+        : guardado.revisionPendiente ? { tipo:'pendiente', texto:'Revisión pendiente' }
         : PUNTOS[como] || { tipo: como },
     acciones: accionesDeLaToma(laToma, clave, guardado, ctx, {
       bloqueoKeyframe,
@@ -1678,7 +1729,7 @@ function marcoDeKeyframe(clave, guardado, idToma) {
   const esElAprobado = ruta === guardado.keyframe;
   const img = h('img', {
     src: url,
-    alt: `Keyframe del plano ${idToma}. ${esElAprobado ? 'Aprobado' : 'Intento sin aprobar'}.`,
+    alt: `Keyframe del plano ${idToma}. ${esElAprobado ? (guardado.revisionPendiente ? 'Revisión pendiente' : 'Aprobado') : 'Intento sin aprobar'}.`,
     loading: 'lazy',
     decoding: 'async'
   });
@@ -1773,7 +1824,7 @@ function tiraDeKeyframes(clave, guardado, idToma, ctx) {
           'aria-pressed': esta ? 'true' : 'false',
           'aria-label':
             `Intento ${indice + 1} de keyframe del plano ${idToma}` +
-            `${esElAprobado ? ', el aprobado' : ''}. Verlo en grande.`,
+            `${esElAprobado ? (guardado.revisionPendiente ? ', revisión pendiente' : ', el aprobado') : ''}. Verlo en grande.`,
           estilo: {
             flex: '0 0 auto',
             width: '96px',
@@ -1810,7 +1861,7 @@ function tiraDeKeyframes(clave, guardado, idToma, ctx) {
             clase: esElAprobado ? 'suave' : 'tenue',
             estilo: { display: 'block', 'font-size': '11px', 'padding-top': '2px' }
           },
-          esElAprobado ? `${indice + 1} · aprobado` : String(indice + 1)
+          esElAprobado ? `${indice + 1} · ${guardado.revisionPendiente ? 'revisar' : 'aprobado'}` : String(indice + 1)
         )
       );
     })
@@ -2020,7 +2071,7 @@ function accionesDeLaToma(laToma, clave, guardado, ctx, { bloqueoKeyframe, sinBo
   const puesta = rutaQueSeMira(guardado, clave);
 
   if (puesta) {
-    if (puesta === guardado.keyframe) {
+    if (puesta === guardado.keyframe && !guardado.revisionPendiente) {
       acciones.push(
         boton('Aprobar keyframe', null, {
           desactivado:
@@ -2074,25 +2125,29 @@ function accionesDeLaToma(laToma, clave, guardado, ctx, { bloqueoKeyframe, sinBo
  * antes: esos clips salieron de una imagen que ya no es la aprobada, y eso hay
  * que saberlo antes de tocar nada.
  *
- * No se toca `clip_elegido`: el clip que ya se eligió mirándolo sigue siendo el
- * que se eligió. Lo que cambia es de qué imagen partirán los siguientes.
+ * Se conserva el archivo de `clip_elegido`, pero queda pendiente de revisión
+ * si cambia la imagen. Un clip con origen conocido distinto no es vigente.
  */
 async function aprobarKeyframe(clave, ruta, idToma, guardado, ctx) {
   const cuantos = guardado.intentosClip.length;
 
-  if (guardado.keyframe && cuantos) {
+  if (guardado.keyframe && guardado.keyframe !== ruta && cuantos) {
     const pregunta =
       `Vas a cambiar el keyframe aprobado de ${idToma}, y ya hay ` +
       `${plural(cuantos, 'vídeo generado', 'vídeos generados')} a partir del anterior. Esos clips ` +
-      'no se borran ni se descartan solos: siguen ahí y se pueden seguir eligiendo, pero salieron ' +
-      'de otra imagen. Los vídeos que pidas a partir de ahora partirán de este keyframe. ¿Lo hago?';
+      'se conservan para revisión. Los que estén vinculados a otra imagen no podrán usarse en ' +
+      'el nuevo montaje. Los vídeos que pidas a partir de ahora partirán de este keyframe. ¿Lo hago?';
     if (!(await confirmar(pregunta))) return;
   }
 
   try {
     await cambiar((borrador) => {
       const entrada = entradaMutable(borrador, clave);
+      if (entrada.keyframe_aprobado !== ruta && entrada.intentos_clip?.length) entrada.clip_revision_pendiente = true;
+      if (entrada.keyframe_aprobado !== ruta || entrada.revision_pendiente) invalidarMontajes(borrador,ctx.pieza.id);
       entrada.keyframe_aprobado = ruta;
+      entrada.revision_pendiente = false;
+      entrada.revision_aprobada = borrador.piezas?.[ctx.pieza.id]?.tomas?.find(t=>t.id===idToma)?.revision_direccion || null;
       // El intento aprobado tiene que seguir en la lista: si vino de una tanda
       // vieja y ya no estaba, se vuelve a apuntar para no perderlo de vista.
       if (!Array.isArray(entrada.intentos_keyframe)) entrada.intentos_keyframe = [];
@@ -2115,7 +2170,13 @@ async function elegirClip(clave, ruta, ctx) {
   try {
     await cambiar((borrador) => {
       const entrada = entradaMutable(borrador, clave);
+      const origen = entrada.origenes_clip?.[ruta];
+      if (entrada.revision_pendiente || (origen && origen.keyframe !== entrada.keyframe_aprobado)) {
+        throw new ErrorDeCara('Este vídeo procede de otra imagen o de una continuidad pendiente. Revisa el keyframe y genera un vídeo compatible.', {reintentable:false,http:409});
+      }
       entrada.clip_elegido = ruta;
+      entrada.clip_revision_pendiente = false;
+      invalidarMontajes(borrador,ctx.pieza.id);
       if (!Array.isArray(entrada.intentos_clip)) entrada.intentos_clip = [];
       if (!entrada.intentos_clip.includes(ruta)) entrada.intentos_clip.push(ruta);
     });

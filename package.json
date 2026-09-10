@@ -12,7 +12,7 @@
     "datos": "node herramientas/parche-datos.mjs",
     "invariantes": "node herramientas/invariantes.mjs",
     "pesar": "node herramientas/pesar.mjs",
-    "comprobar": "npm run datos && npm run invariantes && npm run piezas-estado && npm run cola && npm run audio && npm run subtitulos && npm run pantalla-audio && npm run ajustes && npm run freno && npm run anotar && npm run banco && npm run veo && npm run pantalla && npm run fallos && npm run zip && npm run difusion && npm run reel && npm run pesar",
+    "comprobar": "npm run datos && npm run invariantes && npm run piezas-estado && npm run continuidad && npm run cola && npm run audio && npm run subtitulos && npm run pantalla-audio && npm run ajustes && npm run freno && npm run anotar && npm run banco && npm run veo && npm run pantalla && npm run fallos && npm run zip && npm run difusion && npm run reel && npm run pesar",
     "cola": "node herramientas/probar-cola.mjs && node herramientas/probar-cola.mjs 24 && node herramientas/probar-cola.mjs cuota",
     "audio": "node herramientas/probar-audio.mjs",
     "subtitulos": "node herramientas/probar-subtitulos.mjs",
@@ -28,6 +28,7 @@
     "zip": "node herramientas/probar-zip.mjs",
     "difusion": "node herramientas/probar-difusion.mjs",
     "reel": "node herramientas/probar-reel.mjs",
-    "piezas-estado": "node herramientas/probar-piezas-estado.mjs"
+    "piezas-estado": "node herramientas/probar-piezas-estado.mjs",
+    "continuidad": "node herramientas/probar-continuidad.mjs"
   }
 }

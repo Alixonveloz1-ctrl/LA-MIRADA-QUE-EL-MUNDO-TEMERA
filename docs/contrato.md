@@ -1298,3 +1298,95 @@ sube también se dice, con sus decibelios.
 
 Esto **no cambia el manifiesto**: `ganancia_db` ya existía en §7 y el montador ya
 lo aplicaba. No hay que redesplegarlo.
+
+### 13.12 Continuidad de episodios y revisión del material existente
+
+Las escenas con alternancia o montaje se describen en `datos/segmentos.js`.
+Cada plano lleva `segmento` y se valida contra el lugar, luz, tiempo y reparto
+de ese segmento. Deben aparecer todos en orden; no se encadenan segmentos
+distintos mediante interpolación. La unión se hace por corte en el montaje.
+La reparación de estas escenas sin diálogo puede redistribuir sus planos,
+conservando duración total, audio y comienzo de la escena. Los originales se
+respaldan; no se reasocian sus aprobaciones automáticamente a nuevos contenidos.
+El prompt de Veo se limita al movimiento del plano y conservación del primer
+fotograma. El canon y la descripción narrativa completa dirigen el keyframe;
+no se solicita volver a representarlos dentro de cada clip.
+
+La aclaración del autor prevalece sobre las inferencias del análisis: Saharis
+tiene dieciséis años en el presente; las demás edades corresponden al pasado.
+La muerte de la madre se muestra en el capítulo 1 y sus apariciones posteriores
+son recuerdos, nunca una restitución en el presente. Saharis recuerda fragmentos
+de la nana y nunca la escuchó completa. No se cambia el orden de las escenas ni
+se inventa una cronología para explicar los saltos. `continuidad.reglas` transporta
+estas instrucciones al desglose y al prompt de imagen. El vídeo conserva ese
+primer fotograma y su movimiento validado. Las anotaciones antiguas
+de edad no prevalecen sobre esta aclaración. El texto fuente y el audio se conservan.
+La revisión narrativa completa se documenta en `docs/contexto-narrativo-revisado.md`.
+
+Enmienda a §2, §5, §6, §7, §8 y §12. Las correcciones contrastadas del reparto y
+del lugar viven en `datos/continuidad.js`, compartido por navegador y servidor.
+El texto original de acción y diálogo se conserva. El contexto del desglose
+incluye la escena anterior y siguiente, resumen del episodio, población, momento,
+interior/exterior, precipitación y fuentes de luz. El esquema de color no ordena
+lluvia ni anula faroles escritos en la escena.
+
+Cada plano nuevo de un episodio lleva `direccion` con `visibles`,
+`fuera_de_campo`, `posiciones`, `miradas`, `camara`, `estado_inicial` y
+`estado_final`. Los dos primeros son listas de ids; los demás son texto de
+dirección en inglés. `continuidad` guarda `version`, `secuencia`, `interior`,
+`precipitacion`, `goteo`, `luz`, `reglas`, `personajes` y `momento`. Un primer
+plano puede dejar personas fuera de cuadro; no puede borrar su presencia física.
+La validación comprueba ese reparto y rechaza instrucciones explícitas de mirada
+al espectador y lluvia interior. No sustituye la revisión visual humana.
+
+El archivo sigue disponible. No se ofrece un plano general vacío cuando hay
+personas en la escena, ni un plano de lluvia o nieve incompatible con su contexto.
+Los detalles compatibles siguen pudiendo reutilizarse. Las placas de escenario
+siguen adjuntándose como referencias del lugar. Además, un keyframe puede
+adjuntar la imagen aprobada anterior más próxima del mismo escenario y secuencia,
+si su revisión coincide. Es opcional, respeta los cupos y no obliga a crear otra
+galería. La nueva cámara, acción, hora y luz prevalecen sobre ese fotograma.
+
+```js
+{ modo:"corregir-continuidad", pieza:"ep01", escena:"4" }
+→ { ok:true, corregida:true, escena:"4", respaldo:"continuidad/…/anterior.json" }
+export async function corregirPlanosDeEscena(episodio, escena, existentes)
+```
+
+`desglosarEscena(episodio, escena)` conserva su firma. La corrección usa el modelo
+de texto, una escena por trabajo. Salvo la redistribución de escenas mixtas
+descrita al inicio de este apartado, mantiene ids, orden, duraciones, recortes,
+nivel de vídeo, bocas, encadenados, audio e inicios de las tomas. Guarda primero
+un respaldo y una propuesta en rutas nuevas. Dentro de la transacción compara
+las tomas con las leídas al empezar; si cambiaron, falla con 409 sin sustituirlas.
+La cola admite `corregir-continuidad`. La pantalla Tomas confirma su coste de
+texto antes de encolarlo. No genera imágenes ni vídeos automáticamente.
+La tanda «Regenerar keyframes por revisar» es una acción separada y confirmada:
+encola solo imágenes pendientes que aún no tienen un intento de su nueva revisión.
+La tanda de vídeos por revisar exige primero una imagen vigente y excluye vídeos
+ya en cola o intentos que correspondan a esa imagen y revisión.
+
+El estado de una toma admite `revision_pendiente`, `clip_revision_pendiente`,
+`revision_aprobada`, `origenes_keyframe`, `origenes_clip` y `operacion_origen`.
+Cada toma corregida lleva `revision_direccion`; la pieza registra los respaldos
+en `correcciones_continuidad`. Un cambio de dirección conserva archivos e intentos
+y marca el material para revisar. Se puede aprobar de nuevo una imagen que sirve.
+Un clip cuyo origen conocido sea otro keyframe no se puede seleccionar como
+vigente. Los clips antiguos sin procedencia registrada exigen revisión manual
+cuando cambia su toma; no se inventa su procedencia.
+
+`veo-lanzar` recibe además `imagen_ruta` y, si encadena, `lastFrame_ruta`; ambas
+deben coincidir con las aprobadas y vigentes. Se registra el prompt, revisión,
+rutas de origen y SHA-256 del JPEG recibido; el hash registra esos bytes, no
+certifica su equivalencia visual con el PNG. Cada encargo de imagen conserva su
+prompt, referencias y revisión en un JSON junto al intento.
+
+Los nuevos desgloses usan rutas versionadas. La reparación no cambia el sello
+temporal del desglose, para no reconstruir audio y tiempos. El manifiesto de
+montaje añade `video[].clave` para verificar que el clip seleccionado sigue siendo
+el mismo antes de lanzar y al recoger el resultado. `montajes[].revision_pendiente`
+excluye capas anteriores de nuevos montajes sin borrar su descarga ni reutilizar
+su número de versión. El montador ignora este campo adicional de procedencia.
+
+`npm run continuidad` verifica estos casos sin red ni generaciones de pago y
+forma parte de `npm run comprobar`.

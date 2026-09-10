@@ -64,6 +64,8 @@
 import { llamar, ErrorDeCara } from '../api.js';
 import { actual, alCambiar, cambiar } from '../estado.js';
 import { encolarVarios } from '../cola.js';
+import { prepararGuiones } from '../../datos/continuidad.js';
+import { marcarCambio, invalidarMontajes } from '../continuidad.js';
 import {
   aviso,
   barra,
@@ -298,7 +300,7 @@ async function bajarJson(direccion, nombre, paraQue) {
  * @returns {{episodios:object[], escenas:number, acabado:object|null, piezasDeLaSerie:string[]}}
  */
 function construirModelo(datos) {
-  const crudos = datos.guiones && Array.isArray(datos.guiones.guiones) ? datos.guiones.guiones : [];
+  const crudos = datos.guiones && Array.isArray(datos.guiones.guiones) ? prepararGuiones(datos.guiones).guiones : [];
 
   const episodios = crudos
     .filter((uno) => uno && (uno.episodio !== undefined && uno.episodio !== null))
@@ -1319,6 +1321,10 @@ async function armarLaPieza(episodio, modelo, sello) {
         boca_visible: texto(plano.boca_visible) || null,
         imagen: texto(plano.imagen),
         video: texto(plano.video),
+        direccion: plano.direccion || null,
+        segmento: plano.segmento || null,
+        continuidad: plano.continuidad || null,
+        revision_direccion: plano.revision_direccion || null,
         // El puntero al archivo, si el desglose ha decidido reutilizar un plano
         // de ambiente en vez de encargar uno nuevo. Es el campo que decide si
         // este plano se paga o no se paga.
@@ -1363,6 +1369,13 @@ async function armarLaPieza(episodio, modelo, sello) {
 
   await cambiar((vivo) => {
     if (!vivo.piezas || typeof vivo.piezas !== 'object') vivo.piezas = {};
+    const anterior = vivo.piezas[episodio.idPieza];
+    if (anterior) {
+      invalidarMontajes(vivo,episodio.idPieza);
+      if (!vivo.historial_piezas) vivo.historial_piezas = {};
+      // Un respaldo de la versión anterior por ensamblado, sin duplicar imágenes.
+      vivo.historial_piezas[episodio.idPieza] = anterior;
+    }
     vivo.piezas[episodio.idPieza] = pieza;
 
     // Y las entradas de cada toma, con la forma exacta del contrato §5, para que
@@ -1375,7 +1388,10 @@ async function armarLaPieza(episodio, modelo, sello) {
       // en Tomas como si le faltara todo, y alguien acabaría generándolo.
       if (una.de_archivo) continue;
       const clave = `${episodio.idPieza}/${una.id}`;
-      if (vivo.tomas[clave] && typeof vivo.tomas[clave] === 'object') continue;
+      if (vivo.tomas[clave] && typeof vivo.tomas[clave] === 'object') {
+        marcarCambio(vivo.tomas[clave], anterior?.tomas?.find(t => t.id === una.id), una);
+        continue;
+      }
       vivo.tomas[clave] = {
         keyframe_aprobado: null,
         intentos_keyframe: [],

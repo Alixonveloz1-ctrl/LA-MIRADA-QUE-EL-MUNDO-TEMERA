@@ -59,6 +59,9 @@
 // la cadena y devuelve los ids reprobados, o hace falta un modo `aprobar`.
 
 import { Buffer } from 'node:buffer';
+import { createHash, randomUUID } from 'node:crypto';
+import { materialVigente, necesitaDireccion, referenciaDeSecuencia } from '../../app/continuidad.js';
+import { aplicarCorreccion } from './continuidad.js';
 
 import { ErrorDeCara } from './errores.js';
 import {
@@ -103,7 +106,7 @@ import {
   alinear as alinearAudio,
   nivelDeVoz
 } from './audio.js';
-import { traducirAJapones, desglosarEscena, fichaDePieza } from './texto.js';
+import { traducirAJapones, desglosarEscena, corregirPlanosDeEscena, fichaDePieza } from './texto.js';
 import { salud as comprobarSalud } from './salud.js';
 import { lanzar as lanzarMontaje, estado as estadoDeMontaje } from './montaje.js';
 
@@ -793,6 +796,7 @@ async function modoImagen(cuerpo) {
   let paraQue;
   let idPiezaDelKeyframe = null;
   let formaDelPoster = null;
+  let tomaInicial = null;
 
   if (tipo === 'placa') {
     placaDelBanco(id); // que exista de verdad, y si no que lo diga con palabras
@@ -813,8 +817,9 @@ async function modoImagen(cuerpo) {
   } else {
     idPiezaDelKeyframe = exigirTexto(cuerpo, 'pieza', 'de qué pieza es la toma del keyframe');
     const piezaEnEstado = piezaDelEstado(leido.estado, idPiezaDelKeyframe);
-    tomaDeLaPieza(idPiezaDelKeyframe, id, piezaEnEstado);
-    compuesto = promptKeyframe(idPiezaDelKeyframe, id, piezaEnEstado);
+    tomaInicial = tomaDeLaPieza(idPiezaDelKeyframe, id, piezaEnEstado);
+    compuesto = promptKeyframe(idPiezaDelKeyframe, id, piezaEnEstado,
+      referenciaDeSecuencia(piezaEnEstado,tomaInicial,leido.estado));
     carpeta = carpetaDeKeyframe(idPiezaDelKeyframe, id);
     paraQue = `generar el keyframe de la toma ${id} de la pieza «${idPiezaDelKeyframe}»`;
   }
@@ -828,7 +833,7 @@ async function modoImagen(cuerpo) {
   // personaje aprobada»: si falta, se dice cuál falta y cómo se arregla.
   const pendientes = compuesto.referencias.map((referencia) => {
     const esEscenario = Boolean(referencia.escenario);
-    const rutaAprobada = exigirAprobada(
+    const rutaAprobada = referencia.continuidad || exigirAprobada(
       leido.estado,
       esEscenario ? 'escenario' : 'banco',
       esEscenario ? referencia.escenario : referencia.placa,
@@ -842,7 +847,7 @@ async function modoImagen(cuerpo) {
       const archivo = await leerBytes(rutaAprobada);
       if (!archivo) {
         throw new ErrorDeCara(
-          `Para ${paraQue} hace falta «${referencia.escenario || referencia.placa}», que figura ` +
+          `Para ${paraQue} hace falta «${referencia.escenario || referencia.placa || referencia.continuidad}», que figura ` +
             `como aprobada en «${rutaAprobada}», y ese archivo ya no está en el bucket. O se ha ` +
             'borrado, o se aprobó una ruta que nunca llegó a guardarse. Genérala otra vez y ' +
             'apruébala mirándola.',
@@ -860,6 +865,12 @@ async function modoImagen(cuerpo) {
   // El número de intento sale de listar la carpeta, no de un contador: entre dos
   // llamadas la función se ha apagado y ha vuelto a arrancar.
   const intento = await siguienteIntento(carpeta);
+
+  if (tipo === 'keyframe') await escribirEnElBucket(`${carpeta}${intento}.encargo.json`, JSON.stringify({
+    texto:compuesto.texto, negativo:compuesto.negativo,
+    referencias:pendientes.map(p=>({ ...p.referencia,ruta:p.rutaAprobada })),
+    modelo:modelo.id, revision:tomaInicial.revision_direccion || null
+  }), {tipo:'application/json'});
 
   const generada = await generarImagen({
     texto: compuesto.texto,
@@ -880,6 +891,8 @@ async function modoImagen(cuerpo) {
       if (tipo === 'keyframe') {
         const entrada = entradaDeToma(estado, `${idPiezaDelKeyframe}/${id}`);
         apuntarIntento(entrada, 'intentos_keyframe', ruta);
+        if (!entrada.origenes_keyframe) entrada.origenes_keyframe = {};
+        entrada.origenes_keyframe[ruta] = { revision: tomaInicial.revision_direccion || null };
         return;
       }
       if (tipo === 'poster') {
@@ -930,7 +943,15 @@ async function modoVeoLanzar(cuerpo) {
 
   // EL SEGUNDO CERROJO. Un keyframe malo cuesta céntimos y un clip malo cuesta
   // un euro: aquí se vuelve a comprobar lo que la interfaz ya impide.
-  exigirAprobada(leido.estado, 'keyframe', clave, `generar el vídeo de ${idToma}`);
+  const rutaInicial = exigirAprobada(leido.estado, 'keyframe', clave, `generar el vídeo de ${idToma}`);
+  const entradaInicial = entradaDeToma(leido.estado, clave);
+  if (!materialVigente(entradaInicial, 'keyframe')) {
+    throw new ErrorDeCara('Revisa y aprueba el keyframe con la continuidad corregida antes de generar vídeo.', { http:409, reintentable:false });
+  }
+  if (cuerpo.imagen_ruta !== rutaInicial) {
+    throw new ErrorDeCara('El keyframe aprobado cambió mientras se preparaba el vídeo. Vuelve a pedirlo desde la imagen actual.', { http:409, reintentable:false });
+  }
+  if (entradaInicial.operacion_en_curso) throw new ErrorDeCara('Ya hay un vídeo de esta toma en curso.', { http:409, reintentable:false });
 
   const encargo = promptVideo(idPieza, idToma, piezaEnEstado);
 
@@ -947,6 +968,17 @@ async function modoVeoLanzar(cuerpo) {
   // que no le toca.
   const encadena = laToma.encadena_con !== null && laToma.encadena_con !== undefined;
   const lastFrame = encadena ? cuerpo.lastFrame_b64 ?? null : null;
+  if (encadena) {
+    const siguiente = tomaDeLaPieza(idPieza,laToma.encadena_con,piezaEnEstado);
+    const claveSiguiente = siguiente?.de_archivo ? `archivo/${siguiente.de_archivo}` : `${idPieza}/${laToma.encadena_con}`;
+    const fin = exigirAprobada(leido.estado, 'keyframe', claveSiguiente, 'encadenar el vídeo');
+    if (!lastFrame || cuerpo.lastFrame_ruta !== fin || !materialVigente(entradaDeToma(leido.estado, claveSiguiente), 'keyframe')) {
+      throw new ErrorDeCara('El fotograma de enlace no coincide con el aprobado. Revisa la toma siguiente.', { http:409, reintentable:false });
+    }
+  }
+  const origen = { keyframe:rutaInicial, enlace:encadena ? cuerpo.lastFrame_ruta : null,
+    revision:laToma.revision_direccion || null,
+    imagen_sha256:createHash('sha256').update(Buffer.from(cuerpo.imagen_b64 || '', 'base64')).digest('hex') };
 
   const intento = await siguienteIntento(carpetaDeClips(idPieza, idToma), { comoCarpeta: true });
   const prefijo = `${carpetaDeClips(idPieza, idToma)}${intento}/`;
@@ -986,6 +1018,14 @@ async function modoVeoLanzar(cuerpo) {
     // Que no se pueda dejar el apunte no es motivo para tirar el clip lanzado:
     // queda el estado, que es el camino normal.
   }
+  try {
+    await escribirEnElBucket(`${prefijo}origen.json`, JSON.stringify({
+      ...origen, texto:encargo.texto, negativo:encargo.negativo
+    }), {tipo:'application/json'});
+  } catch {
+    // La procedencia también se apunta en el estado; un fallo aquí no debe
+    // impedir guardar el nombre necesario para recuperar la operación pagada.
+  }
 
   // SEGUNDO APUNTE, y ANTES de contestar. Si el navegador se cierra en este
   // instante, la operación sigue apuntada y se recoge al volver a abrir.
@@ -1003,6 +1043,7 @@ async function modoVeoLanzar(cuerpo) {
       // operación a OTRO modelo de Veo y Google contestaría que no existe: un
       // clip pagado y perdido por un ajuste que se tocó a destiempo.
       entrada.operacion_nivel = nivelUsado;
+      entrada.operacion_origen = origen;
     }, leido);
   } catch (fallo) {
     // El nombre de la operación NO se pone en este mensaje: lleva el project id
@@ -1151,6 +1192,13 @@ async function modoVeoConsultar(cuerpo) {
   }
 
   const ruta = videos[0].ruta;
+  let origenRecuperado = enEstado.operacion_origen || null;
+  if (!origenRecuperado && prefijo) {
+    const archivoOrigen = await leerBytes(`${prefijo}origen.json`);
+    if (archivoOrigen) {
+      try { const { texto, negativo, ...datosOrigen } = JSON.parse(archivoOrigen.datos.toString('utf8')); origenRecuperado=datosOrigen; } catch { /* Operación antigua sin ficha. */ }
+    }
+  }
 
   await cambiarElEstado((estado) => {
     const entrada = entradaDeToma(estado, clave);
@@ -1158,6 +1206,11 @@ async function modoVeoConsultar(cuerpo) {
     entrada.operacion_prefijo = null;
     entrada.operacion_nivel = null;
     apuntarIntento(entrada, 'intentos_clip', ruta);
+    if (origenRecuperado) {
+      if (!entrada.origenes_clip) entrada.origenes_clip = {};
+      entrada.origenes_clip[ruta] = origenRecuperado;
+      entrada.operacion_origen = null;
+    }
   }, leido);
 
   return { hecho: true, ruta, url: await urlDe(ruta) };
@@ -1386,6 +1439,34 @@ async function modoDesglosarEscena(cuerpo) {
   const episodio = exigirTexto(cuerpo, 'episodio', 'de qué episodio es la escena');
   const escena = exigirTexto(cuerpo, 'escena', 'qué escena se desglosa');
   return desglosarEscena(episodio, escena);
+}
+
+// Repara una escena existente, conservando IDs, tiempos y audio. El respaldo y
+// el nuevo desglose quedan en rutas inmutables antes de mover los punteros.
+async function modoCorregirContinuidad(cuerpo) {
+  const idPieza=exigirTexto(cuerpo,'pieza','qué episodio se corrige');
+  const escena=exigirTexto(cuerpo,'escena','qué escena se corrige');
+  const leido=await leerElEstado();
+  const original=piezaDelEstado(leido.estado,idPieza);
+  const episodio=Number(original?.episodio || idPieza.replace(/^ep/,''));
+  const antes=original?.tomas?.filter(t=>String(t.escena)===escena);
+  if (!antes?.length || !/^ep(?:0[1-9]|1[0-2])$/.test(idPieza)) {
+    throw new ErrorDeCara('No hay tomas de este episodio y escena para corregir.', { http:400,reintentable:false });
+  }
+  if (!antes.some(t=>necesitaDireccion({id:idPieza},t))) return { corregida:true, ya_actualizada:true };
+  const revision=`${Date.now()}-${randomUUID()}`;
+  const carpeta=`continuidad/${idPieza}/${escena}/${revision}`;
+  const respaldo=`${carpeta}/anterior.json`;
+  await escribirEnElBucket(respaldo,JSON.stringify({ pieza:original,
+    tomas:leido.estado.tomas, desglose:leido.estado.desglose }),{tipo:'application/json'});
+  const propuesta=await corregirPlanosDeEscena(episodio,escena,antes);
+  const planos=propuesta.planos.map(p=>({ ...p, escena, revision_direccion:revision }));
+  const ruta=`${carpeta}/desglose.json`;
+  await escribirEnElBucket(ruta,JSON.stringify({ episodio,escena,planos,revision,respaldo }),{tipo:'application/json'});
+  await cambiarElEstado(estado=>{
+    aplicarCorreccion(estado,idPieza,escena,antes,planos,{revision,respaldo,ruta});
+  });
+  return { corregida:true,escena,respaldo };
 }
 
 // ---------------------------------------------------------------------------
@@ -1813,6 +1894,15 @@ async function modoMontar(cuerpo) {
     );
   }
 
+  const vigente = await leerElEstado();
+  for (const clip of manifiesto.video || []) {
+    const usado = clip.clave ? vigente.estado.tomas?.[clip.clave] : Object.values(vigente.estado.tomas || {}).find(t => t.clip_elegido === clip.origen);
+    if (clip.clave && (!usado || usado.clip_elegido !== clip.origen)) throw new ErrorDeCara('La selección de vídeo cambió después de preparar el montaje. Vuelve a montarlo con la selección actual.',{http:409,reintentable:false});
+    if (usado && !materialVigente(usado,'clip')) throw new ErrorDeCara('El montaje contiene un vídeo pendiente de revisar tras corregir su continuidad. Revisa la selección en Tomas.', {http:409,reintentable:false});
+  }
+  for (const ruta of manifiesto.capas_previas || []) {
+    if ((vigente.estado.montajes || []).some(m => m.ruta === ruta && m.revision_pendiente)) throw new ErrorDeCara('Una escena ya montada quedó pendiente tras una corrección. Vuelve a montar esa escena antes de unirla al episodio.', {http:409,reintentable:false});
+  }
   const lanzado = await lanzarMontaje(manifiesto);
   return { ejecucion: lanzado.ejecucion, manifiesto_ruta: lanzado.manifiestoRuta };
 }
@@ -1875,6 +1965,7 @@ export const MODOS = {
   voz: modoVoz,
   alinear: modoAlinear,
   'desglosar-escena': modoDesglosarEscena,
+  'corregir-continuidad': modoCorregirContinuidad,
   ficha: modoFicha,
   'estado-leer': modoEstadoLeer,
   'estado-escribir': modoEstadoEscribir,

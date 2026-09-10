@@ -45,6 +45,7 @@ async function traerDelMontaje() {
   // líneas por personaje es todo lo que hace falta para probar esto, y traer el
   // módulo entero arrastraría medio estudio.
   const PRESTADO = `
+import { materialVigente } from '${pathToFileURL(`${RAIZ}app/continuidad.js`).href}';
 const h = () => ({}), aviso = () => ({}), boton = () => ({}), tarjeta = () => ({});
 // Los de app/formato.js. Aquí solo hacen falta para que las notas y las faltas se
 // puedan escribir; lo que se compara son números, no su redacción.
@@ -83,7 +84,7 @@ function bloquesDeVoz(pieza) {
       '  bocasQueHablan, claveDeLinea, pideMoverLaBoca, construirModelo,\n' +
       '  pisaAOtroPersonaje, vozEquivocadaDebajoDe, mudezDebajoDe,\n' +
       '  componerMusica, componerLetra, ambitosDe, revisar, textoDeLaFalta,\n' +
-      '  gananciaDeLaVoz };\n'
+      '  gananciaDeLaVoz, montajesDe, siguienteVersion, componerPrevias };\n'
   );
   return import(pathToFileURL(archivo).href);
 }
@@ -93,7 +94,7 @@ const {
   bocasQueHablan, claveDeLinea, pideMoverLaBoca, construirModelo,
   pisaAOtroPersonaje, vozEquivocadaDebajoDe, mudezDebajoDe,
   componerMusica, componerLetra, ambitosDe, revisar, textoDeLaFalta,
-  gananciaDeLaVoz
+  gananciaDeLaVoz, montajesDe, siguienteVersion, componerPrevias
 } = await traerDelMontaje();
 
 /** La serie de verdad, para probar contra los datos que se van a montar. */
@@ -990,6 +991,17 @@ comprobar('Y se dice en el resumen, con los decibelios', () => {
   void salida;
 });
 
+
+comprobar('Una capa pendiente se conserva pero no se reutiliza ni se pisa su versión', () => {
+  const estado={montajes:[{capa:'escena',id:'ep01/esc-4',ruta:'montaje/ep01-esc-4-3.mp4',cuando:'2026-09-10',revision_pendiente:true}]};
+  const ambito={capa:'escena',id:'ep01/esc-4',base:'ep01-esc-4'};
+  if (montajesDe(estado,ambito.capa,ambito.id).length) throw new Error('Se ofrece una capa pendiente.');
+  if (montajesDe(estado,ambito.capa,ambito.id,true).length!==1) throw new Error('Se perdió el historial.');
+  if (siguienteVersion(estado,ambito)!==4) throw new Error('Se reutiliza el nombre de una versión anterior.');
+  const faltas=[];
+  const previas=componerPrevias({previas:[{...ambito,titulo:'Escena 4'}]},estado,faltas);
+  if (previas.length || !faltas.length) throw new Error('El episodio reutiliza una escena pendiente.');
+});
 
 console.log(`\n${bien + mal} comprobaciones, ${bien} bien${mal ? `, ${mal} MAL` : ''}\n`);
 process.exit(mal === 0 ? 0 : 1);

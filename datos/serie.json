@@ -56,7 +56,8 @@
         "OJO — siguen con la frase cortada porque no dicen ninguna entera: invitada",
         "género puesto a los 11 del reparto que no tienen ficha de personaje",
         "11 personajes de 2 líneas o menos pueden compartir voz",
-        "sin género a propósito: voz —así lo dice el guion—"
+        "sin género a propósito: voz —así lo dice el guion—",
+        "Separar la paleta artística del clima y de las fuentes de luz de cada escena."
       ]
     }
   },
@@ -161,14 +162,14 @@
     }
   },
   "estilo": {
-    "bloque": "high-budget cinematic 2D anime film, seinen register, reference-tier adult anime drama. Fine variable-weight linework, restrained 2-3 tone cel shading with soft skin gradients, desaturated cool palette of wet stone, muted moss green and blue-grey. Single hard light source, heavy contrast, faces half in shadow, volumetric haze. Filmic grain, gentle halation on highlights, soft vignette. Detailed lived-in environment, grounded proportions, understated expressions.",
+    "bloque": "high-budget cinematic 2D anime film, seinen register, reference-tier adult anime drama. Fine variable-weight linework, restrained 2-3 tone cel shading with soft skin gradients, restrained palette, muted moss green and blue-grey with scene-specific warm tones. Consistent motivated lighting and shadows, contrast appropriate to the scene. Filmic grain, gentle halation on highlights, soft vignette. Detailed lived-in environment, grounded proportions, understated expressions.",
     "negativo": "bright saturated shonen palette, glowing specular eyes, western cartoon, webtoon-flat shading, chibi, thick uniform outlines, 3D render, CGI, Disney/Pixar look, semi-realistic painted faces, lens flare, neon, text, watermark, signature",
     "regla": "El bloque se concatena LITERAL al final de todo prompt de imagen y de video, sin excepción. Una toma generada sin él se descarta."
   },
   "luces": {
     "CRIPTA": "lit only by orange torchlight from below, deep crushed blacks, drifting smoke, damp stone",
-    "BARRIO": "cold blue-grey daylight or moonlight, rain haze, no warm source, wet surfaces",
-    "NOBLE": "warm diffuse gold from oil lamps and tall windows, dust suspended in the air, polished wood",
+    "BARRIO": "restrained blue-grey palette, lighting determined by the scene and its practical light sources",
+    "NOBLE": "warm restrained gold palette, oil lamps and practical light sources; window light only when the scene is daytime",
     "NEUTRA": "neutral dark background, even directional light, no environment"
   },
   "instrucciones_referencia": {
@@ -4749,7 +4750,7 @@
       {
         "id": "barrio-humo",
         "luz": "BARRIO",
-        "descripcion": "The low district: mud alleys, leaning shacks, open drains, doorways without doors, rain on broken cobbles",
+        "descripcion": "The low district: mud alleys, leaning shacks, open drains, doorways without doors, broken cobbles",
         "encuadre": "Wide establishing shot of the whole space",
         "escenas": 18
       },

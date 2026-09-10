@@ -56,6 +56,8 @@ import { ErrorDeCara, llamar, ponerRitmoMinimo, ritmoActual } from './api.js';
 import { actual, cambiar, cargar, anotarGasto } from './estado.js';
 import { reducirParaVeo, pesoDeB64 } from './imagen.js';
 import { bytes as enBytes } from './formato.js';
+import { materialVigente, necesitaDireccion } from './continuidad.js';
+import { claveDelMaterial } from './planos.js';
 
 // ---------------------------------------------------------------------------
 // Números que gobiernan la cola
@@ -686,6 +688,13 @@ const NORMALIZADORES = {
     const episodio = exigirArg(crudos, ['episodio'], 'de qué episodio es la escena');
     const escena = exigirArg(crudos, ['escena'], 'qué escena se desglosa');
     const args = { episodio, escena };
+    return { args, identidad: args };
+  },
+
+  'corregir-continuidad'(crudos) {
+    const pieza = exigirArg(crudos, ['pieza'], 'qué episodio se corrige');
+    const escena = exigirArg(crudos, ['escena'], 'qué escena se corrige');
+    const args = { pieza, escena };
     return { args, identidad: args };
   },
 
@@ -1793,6 +1802,9 @@ export const EJECUTORES = {
     }
 
     const laToma = await tomaDeLaSerie(idPieza, idToma);
+    if (necesitaDireccion({id:idPieza}, laToma) || !materialVigente(entrada,'keyframe')) {
+      throw new ErrorDeCara('Corrige la continuidad y revisa el keyframe antes de generar vídeo.', { http:409,reintentable:false });
+    }
     const siguiente = soloTexto(laToma.encadena_con);
 
     // El fotograma de enlace. Solo si esta toma encadena de verdad: mandarlo
@@ -1800,9 +1812,10 @@ export const EJECUTORES = {
     // corresponde y el corte saldría hacia otro sitio.
     let keyframeSiguiente = '';
     if (siguiente) {
-      const otra = tomaDelEstado(actual(), `${idPieza}/${siguiente}`);
+      const tomaSiguiente = await tomaDeLaSerie(idPieza, siguiente);
+      const otra = tomaDelEstado(actual(), claveDelMaterial(idPieza, tomaSiguiente));
       keyframeSiguiente = soloTexto(otra.keyframe_aprobado);
-      if (!keyframeSiguiente) {
+      if (!keyframeSiguiente || !materialVigente(otra,'keyframe')) {
         throw new ErrorDeCara(
           `La toma ${idToma} encadena con ${siguiente}, y para encadenar hace falta el keyframe de ` +
             `${siguiente} aprobado: es la imagen a la que Veo tiene que llegar. Genera y aprueba ` +
@@ -1843,7 +1856,9 @@ export const EJECUTORES = {
       pieza: idPieza,
       toma: idToma,
       imagen_b64: reducida.b64,
+      imagen_ruta: keyframe,
       lastFrame_b64: enlace ? enlace.b64 : null,
+      lastFrame_ruta: keyframeSiguiente || null,
       ...(nivelDeVeo ? { nivel: nivelDeVeo } : {})
     });
 
@@ -2080,7 +2095,7 @@ export const EJECUTORES = {
     // en `desglose/{episodio}/{escena}.json` dentro del bucket y se apunta en
     // `estado.desglose` qué escenas están hechas. Que se revise dónde debe
     // quedar el paso de ahí a serie.json.
-    const ruta = `desglose/${args.episodio}/${args.escena}.json`;
+    const ruta = `desglose/${args.episodio}/${args.escena}/${Date.now()}.json`;
     const cuando = ahoraIso();
     await llamar('guardar-texto', {
       ruta,
@@ -2095,6 +2110,11 @@ export const EJECUTORES = {
       if (!estado.desglose || typeof estado.desglose !== 'object') estado.desglose = {};
       estado.desglose[`${args.episodio}/${args.escena}`] = { ruta, planos: planos.length, cuando };
     });
+  },
+
+  async 'corregir-continuidad'(args) {
+    await llamar('corregir-continuidad', args);
+    await cargar();
   },
 
   /**
@@ -2167,7 +2187,10 @@ export const EJECUTORES = {
         if (!ruta) continue;
         const yaEsta = estado.montajes.some((uno) => uno && uno.ruta === ruta);
         if (yaEsta) continue;
-        estado.montajes.push({ ruta, capa: args.capa, id: args.id, cuando });
+        const revisionPendiente = (args.manifiesto.video || []).some(v => v.clave &&
+          (estado.tomas?.[v.clave]?.clip_elegido !== v.origen || !materialVigente(estado.tomas?.[v.clave],'clip'))) ||
+          (args.manifiesto.capas_previas || []).some(r => estado.montajes.some(m => m.ruta===r && m.revision_pendiente));
+        estado.montajes.push({ ruta, capa: args.capa, id: args.id, cuando, revision_pendiente:revisionPendiente });
       }
     });
   }

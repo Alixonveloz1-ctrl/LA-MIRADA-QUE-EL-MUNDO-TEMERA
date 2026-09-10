@@ -40,7 +40,10 @@
 // nada más el día que se decida. Conviene arreglar esa discrepancia en §6.
 
 import { ErrorDeCara } from './errores.js';
-import { serie, escenaDeGuion, personajesDeEscena, nivelImagen, pieza } from './datos.js';
+import { serie, escenaDeGuion, escenasDeEpisodio, personajesDeEscena, nivelImagen, pieza } from './datos.js';
+import { marcoDeEscena, reglasNarrativas } from '../../datos/continuidad.js';
+import { segmentosDeEscena } from '../../datos/segmentos.js';
+import { normalizarDireccion, revisarDireccion, conservaMontaje } from '../../app/continuidad.js';
 import { comprobarCupos } from './prompt.js';
 import { entorno } from './entorno.js';
 import { llamar, urlModelo, conGrafias, comoGrafia } from './vertex.js';
@@ -521,8 +524,22 @@ function soloLaFrase(devuelto) {
  * @returns {Promise<{planos:object[]}>} los planos ya validados.
  */
 export async function desglosarEscena(episodio, escena) {
+  return producirDesglose(episodio, escena, null);
+}
+
+export async function corregirPlanosDeEscena(episodio, escena, existentes) {
+  return producirDesglose(episodio, escena, existentes);
+}
+
+async function producirDesglose(episodio, escena, existentes) {
   const contexto = contextoDeLaEscena(episodio, escena);
-  const encargo = promptDeDesglose(contexto);
+  const redistribuir=contexto.segmentos.length>0 && contexto.dialogo.length===0;
+  const encargo = promptDeDesglose(contexto) + (existentes && redistribuir ? '\nREPAIR MIXED SCENE:\n'+
+    `Preserve exactly ${existentes.reduce((s,p)=>s+Number(p.dur),0)} seconds total. Cover ALL segments in their written order, with separate continuous shots and hard cuts. You may redistribute shot count and durations inside that total; never change the episode audio. Keep mouth visibility null and chaining null. IDs remain scene-1, scene-2, etc.\n`+JSON.stringify(existentes) : existentes ? '\nREPAIR EXISTING SHOTS:\n' +
+    'Keep EXACTLY the same IDs, order, durations, crop, video level, mouth visibility and chaining. ' +
+    'Rewrite image/video, references and direction to repair the continuity. Never add or remove a shot. ' +
+    'An archive shot may become a new shot if the occupied scene requires it. Do not change dialogue or timing.\n' +
+    JSON.stringify(existentes) : '');
 
   let devuelto = null;
   let quejas = [];
@@ -532,7 +549,12 @@ export async function desglosarEscena(episodio, escena) {
     devuelto = await generar(prompt, { json: true });
 
     const revision = revisar(devuelto, contexto);
-    if (!revision.quejas.length) return { planos: revision.planos };
+    if (existentes) {
+      if (!(redistribuir ? conservaDuracionDeEscena(existentes,revision.planos) : conservaMontaje(existentes,revision.planos))) {
+        revision.quejas.push({ regla:'reparacion-conserva-montaje', queja:'La reparación cambió IDs, orden, tiempos, bocas o encadenados. Conserva exactamente los planos originales.' });
+      }
+    }
+    if (!revision.quejas.length) return {planos:revision.planos};
     quejas = revision.quejas;
   }
 
@@ -588,6 +610,9 @@ function contextoDeLaEscena(episodio, escena) {
   }
 
   const personajes = personajesDeEscena(laEscena);
+  const continuidad = marcoDeEscena(episodio, escenasDeEpisodio(episodio), laEscena);
+  const segmentos=segmentosDeEscena(episodio,idEscena);
+  const reparto=[...new Set([...personajes,...segmentos.flatMap(s=>s.personajes)])];
 
   return {
     episodio: Number(laEscena.episodio ?? episodio) || episodio,
@@ -597,13 +622,32 @@ function contextoDeLaEscena(episodio, escena) {
     flashback: laEscena.flashback === true,
     accion: String(laEscena.accion || '').trim(),
     dialogo: Array.isArray(laEscena.dialogo) ? laEscena.dialogo : [],
-    personajes,
+    personajes:reparto,
     escenario: elEscenario,
     luz: clave,
     descripcionDeLuz: descripcionDeLuz.trim(),
-    placas: placasDeLaEscena(personajes),
-    archivo: archivoDeLaEscena(idEscenario, clave)
+    placas: placasDeLaEscena(reparto),
+    archivo: segmentos.length ? [] : archivoDeLaEscena(idEscenario, clave, continuidad),
+    continuidad,segmentos
   };
+}
+
+export function conservaDuracionDeEscena(antes,despues) {
+  const suma=ps=>ps.reduce((s,p)=>s+Number(p.dur),0);
+  return despues.length>0 && despues.every(p=>Number(p.dur)>0 && !p.boca_visible && !p.encadena_con) &&
+    Math.abs(suma(antes)-suma(despues))<0.001;
+}
+
+function contextoDelPlano(ctx,plano) {
+  const s=ctx.segmentos.find(s=>s.id===plano.segmento);
+  if (!s) return ctx;
+  const lugar=serie.escenarios.placas.find(e=>e.id===s.escenario);
+  const luz=s.interior ? (s.flashback ? 'Dim interior cell light, no precipitation.' : 'Interior practical lighting; preserve the light established in the first frame.') : 'Exterior daylight as scripted, no added precipitation.';
+  return {...ctx,personajes:s.personajes,escenario:lugar,luz:s.luz,
+    continuidad:{...ctx.continuidad,personajes:s.personajes,interior:s.interior,
+      momento:s.momento,precipitacion:'ninguna',goteo:false,luz,subespacio:s.lugar,
+      secuencia:`ep${ctx.episodio}/${ctx.escena}/${s.id.replace(/-[12]$/,'')}`,
+      reglas:reglasNarrativas(ctx.episodio,{...s,escena:ctx.escena+'-segmento'})+'\n'+s.accion}};
 }
 
 /**
@@ -623,11 +667,22 @@ function contextoDeLaEscena(episodio, escena) {
  * @param {string} luz
  * @returns {object[]} los planos de archivo tal cual están en serie.json
  */
-function archivoDeLaEscena(idEscenario, luz) {
+function archivoDeLaEscena(idEscenario, luz, continuidad) {
   const piezas = serie.piezas || {};
   const laPieza = Object.values(piezas).find((una) => una && una.archivo === true);
   const tomas = (laPieza && Array.isArray(laPieza.tomas) && laPieza.tomas) || [];
-  return tomas.filter((una) => una && una.escenario === idEscenario && una.luz === luz);
+  return tomas.filter((una) => {
+    if (!una || una.escenario !== idEscenario || una.luz !== luz) return false;
+    const texto = `${una.imagen || ''} ${una.video || ''}`;
+    // Un general vacío no puede sustituir el sitio ocupado. Un detalle sí
+    // puede dejar al reparto fuera de cuadro, sin borrar a nadie de la escena.
+    if (continuidad.personajes.length && /wide.*establishing/i.test(una.imagen) &&
+      /completely empty|no people anywhere/i.test(una.imagen)) return false;
+    if (continuidad.precipitacion !== 'lluvia' && /\brain(?:fall|ing)?\b/i.test(texto)) return false;
+    if (continuidad.precipitacion !== 'nieve' && /\bsnow\b/i.test(texto)) return false;
+    if (/NOCHE|MADRUGADA/.test(continuidad.momento || '') && /\bdaylight|\bsunlight/i.test(texto)) return false;
+    return true;
+  });
 }
 
 /**
@@ -690,7 +745,7 @@ const REGLAS_DEL_DESGLOSE = [
 
   'Un plano con boca visible dura entre 2 y 4 segundos. Nunca más.',
 
-  'Todo plano lleva el escenario canónico de la escena y su luz, los dos tal y como se dan más ' +
+  'Todo plano lleva el escenario canónico de su segmento, cuando se ofrecen segmentos; en otro caso, el de la escena y su luz, los dos tal y como se dan más ' +
   'arriba. Toda «ref» sale de la lista de placas de más arriba y de ningún otro sitio.',
 
   'Los planos van en el orden en que se ven, sin huecos y sin solapes: la escena se lee seguida ' +
@@ -713,6 +768,11 @@ function promptDeDesglose(ctx) {
     'escena. Contestas con el JSON que se te pide y nada más.',
 
     bloque('LA ESCENA', laEscenaEnPalabras(ctx)),
+    bloque('CONTINUIDAD NARRATIVA Y ESPACIAL', JSON.stringify(ctx.continuidad)),
+    bloque('SEGMENTOS EN ORDEN DE MONTAJE',ctx.segmentos.length ? JSON.stringify(ctx.segmentos)+
+      '\nEach shot belongs to exactly one segmento id. Cover every segment in order. Use that segment\'s cast, location, light and time instead of the scene-level defaults. No split screens, montages or transitions inside a generated clip; the editor cuts between shots. Do not put the mother and the northern girl in the same shot.' : 'Una sola continuidad espacial: segmento va null.'),
+    bloque('MOVIMIENTO PARA VEO','The keyframe establishes the visible cast, scale, props and composition. Each video describes one short physical beat in a single continuous shot, with at most one simple camera movement. Do not repeat the plot, rebuild the setting, add atmosphere or request multiple camera angles inside a clip. Divide complex actions across shots without removing story beats. Prefer locked camera for conversations and reactions; use only necessary movement. No internal cuts or dissolves. Keep the final state reachable within the shot duration.'),
+    bloque('COBERTURA', 'Describe only what is visible. For graphic violence, birth or child trauma, use genuinely non-graphic coverage, reactions, sound and off-screen action. No visible injury or nudity. Preserve the narrative meaning; do not merely rename harmful details. Respect the author-confirmed narrative context. Do not treat memories, time cuts or incomplete recollection as plot errors to rewrite.'),
     bloque('LAS PLACAS DEL BANCO QUE PUEDES USAR EN «refs»', lasPlacasEnPalabras(ctx)),
     bloque('EL ARCHIVO: PLANOS DE AMBIENTE QUE YA ESTÁN HECHOS', elArchivoEnPalabras(ctx)),
     bloque('CÓMO SE MONTA UNA ESCENA HABLADA EN ESTE ANIMÉ', laGramaticaDelDialogo()),
@@ -730,7 +790,7 @@ function laEscenaEnPalabras(ctx) {
     `Lugar: ${ctx.lugar || 'sin escribir'}. Momento: ${ctx.momento || 'sin escribir'}. ` +
     `${ctx.flashback ? 'Es un FLASHBACK.' : 'No es un flashback: es presente.'}`,
     '',
-    `Escenario canónico, obligatorio en todos los planos: «${ctx.escenario.id}».`,
+    ctx.segmentos.length ? 'Escenario y luz: usar los del segmento de cada plano; los datos generales siguientes son solo contexto.' : `Escenario canónico, obligatorio en todos los planos: «${ctx.escenario.id}».`,
     `  Es: ${ctx.escenario.descripcion || 'sin descripción escrita'}`,
     `Luz canónica, obligatoria en todos los planos: «${ctx.luz}».`,
     `  Es: ${ctx.descripcionDeLuz}`,
@@ -791,7 +851,9 @@ function elArchivoEnPalabras(ctx) {
     '',
     filas.join('\n'),
     '',
-    'ÚSALOS siempre que el plano que ibas a proponer sea sitio y nada más: el plano de llegada ' +
+    'ÚSALOS solo cuando coincidan la ocupación, hora, luz, clima y estado de los objetos. ' +
+    'Nunca sustituyas una escena ocupada por una sala vacía. Un detalle puede dejar al reparto fuera de cuadro. ' +
+    'Si el plano que ibas a proponer es sitio y nada más: el plano de llegada ' +
     'con el que se abre la escena, un corte de respiro entre dos frases, un puente entre dos ' +
     'momentos. Para usar uno, el plano que devuelvas lleva «de_archivo» con su id, y entonces ' +
     '«imagen» y «video» van vacíos —la cadena vacía—, «refs» va vacío y «boca_visible» va null: ' +
@@ -907,6 +969,7 @@ function loQueSeEspera(ctx) {
     '  "planos": [',
     '    {',
     `      "id": "${ctx.escena}-1",`,
+    `      "segmento": ${ctx.segmentos.length ? JSON.stringify(ctx.segmentos[0].id) : 'null'},`,
     '      "imagen": "<EN INGLÉS: qué se ve en el fotograma, una o dos frases>",',
     '      "video": "<EN INGLÉS: qué se mueve durante el plano y qué hace la cámara>",',
     '      "dur": 3,',
@@ -918,6 +981,7 @@ function loQueSeEspera(ctx) {
     `      "refs": ${primera},`,
     '      "boca_visible": null,',
     '      "encadena_con": null,',
+    '      "direccion": { "visibles": [], "fuera_de_campo": [], "posiciones": "<blocking and visible background occupancy>", "miradas": "<who looks at whom or what; no audience gaze>", "camara": "<camera position, axis and framing>", "estado_inicial": "<initial character, wardrobe and prop state>", "estado_final": "<only the changes written in the action>" },',
     '      "de_archivo": null',
     '    }',
     '  ]',
@@ -942,8 +1006,7 @@ function loQueSeEspera(ctx) {
     '- «dur_gen»: 4, 6 u 8. Nada más.',
     '- «recorte»: [0, dur].',
     `- «veo»: «${NIVELES_DE_VEO.join('», «')}».`,
-    `- «luz»: siempre «${ctx.luz}».`,
-    `- «escenario»: siempre «${ctx.escenario.id}».`,
+    ctx.segmentos.length ? '- «segmento»: id exacto del segmento. «luz» y «escenario»: los de ese segmento.' : `- «luz»: «${ctx.luz}». «escenario»: «${ctx.escenario.id}». «segmento»: null.`,
     '- «refs»: ids de placas de la lista de arriba, o [] si no se reconoce a nadie en cuadro.',
     `- «boca_visible»: null, o el id del personaje cuya boca se ve en cuadro. Solo puede ser uno ` +
     `de estos: ${ctx.personajes.map((p) => `«${p}»`).join(', ') || 'ninguno, porque no sale nadie'}.`,
@@ -1020,6 +1083,34 @@ function listaDeQuejas(quejas) {
 // ---------------------------------------------------------------------------
 
 const COMPROBACIONES = [
+  {
+    nombre:'segmentos-y-cortes',
+    revisar(planos,ctx) {
+      const quejas=[],orden=[];
+      for (const [i,p] of planos.entries()) {
+        if (ctx.segmentos.length && !ctx.segmentos.some(s=>s.id===p.segmento)) quejas.push(`Plano ${p.id}: falta un segmento válido.`);
+        if (!ctx.segmentos.length && p.segmento) quejas.push(`Plano ${p.id}: esta escena no tiene segmentos.`);
+        if (p.segmento && orden.at(-1)!==p.segmento) orden.push(p.segmento);
+        if (p.encadena_con && p.segmento!==planos[i+1]?.segmento) quejas.push(`Plano ${p.id}: los segmentos se unen por corte, nunca interpolando.`);
+      }
+      if (ctx.segmentos.length && JSON.stringify(orden)!==JSON.stringify(ctx.segmentos.map(s=>s.id))) quejas.push('Deben cubrirse todos los segmentos en su orden, sin mezclarlos ni omitirlos.');
+      return quejas;
+    }
+  },
+  {
+    nombre: 'continuidad-de-la-direccion',
+    revisar(planos, ctx) {
+      return planos.flatMap(p => {
+        const errores = revisarDireccion(p, contextoDelPlano(ctx,p).continuidad);
+        for (const id of p.refs || []) {
+          const placa = ctx.placas.find(r => r.id === id);
+          if (placa && p.direccion && !p.direccion.visibles.some(v => placa.personaje === v || placa.personaje.startsWith(v+'-'))) errores.push(`La referencia ${id} es de alguien que no figura visible.`);
+        }
+        if (p.boca_visible && p.direccion && !p.direccion.visibles.includes(p.boca_visible)) errores.push('La boca visible debe pertenecer a una persona visible.');
+        return errores.map(e => `Plano ${p.id}: ${e}`);
+      });
+    }
+  },
   {
     // UN PLANO DE ARCHIVO ES UN PUNTERO, NO UNA DESCRIPCIÓN.
     //
@@ -1272,10 +1363,10 @@ const COMPROBACIONES = [
     nombre: 'el-escenario-es-el-canonico-de-la-escena',
     revisar(planos, ctx) {
       return planos
-        .filter((plano) => plano.escenario !== ctx.escenario.id)
+        .filter((plano) => plano.escenario !== contextoDelPlano(ctx,plano).escenario.id)
         .map((plano) =>
           `el plano «${plano.id}» dice que ocurre en «${plano.escenario || '(ninguno)'}», y esta ` +
-          `escena ocurre en «${ctx.escenario.id}». La placa del escenario viaja como referencia ` +
+          `toma debe ocurrir en «${contextoDelPlano(ctx,plano).escenario.id}». La placa del escenario viaja como referencia ` +
           'en todos los planos que pasan ahí: si cambia, salen dos sitios distintos.'
         );
     }
@@ -1285,11 +1376,10 @@ const COMPROBACIONES = [
     nombre: 'la-luz-es-la-de-la-escena',
     revisar(planos, ctx) {
       return planos
-        .filter((plano) => plano.luz !== ctx.luz)
+        .filter((plano) => plano.luz !== contextoDelPlano(ctx,plano).luz)
         .map((plano) =>
           `el plano «${plano.id}» pide la luz «${plano.luz || '(ninguna)'}», y esta escena está ` +
-          `iluminada con «${ctx.luz}». La luz se escribe una vez en el guion y no cambia dentro ` +
-          'de la escena.'
+          `iluminada con «${contextoDelPlano(ctx,plano).luz}» según su segmento o escena.`
         );
     }
   },
@@ -1506,7 +1596,17 @@ function revisar(devuelto, ctx) {
     }
   }
 
-  return { planos, quejas };
+  return { planos:planos.map(p=>{
+    const c=contextoDelPlano(ctx,p).continuidad;
+    return {...p,continuidad:{version:c.version,secuencia:c.secuencia,interior:c.interior,
+      precipitacion:c.precipitacion,goteo:c.goteo,luz:c.luz,reglas:c.reglas,
+      personajes:c.personajes,momento:c.momento,subespacio:c.subespacio || null}};
+  }), quejas };
+}
+
+/** Validación sin llamadas al modelo, también para comprobar datos ya guardados. */
+export function revisarPlanosDeEscena(episodio, escena, devuelto) {
+  return revisar(devuelto, contextoDeLaEscena(episodio, escena));
 }
 
 /**
@@ -1521,6 +1621,7 @@ function revisar(devuelto, ctx) {
 function normalizarPlano(crudo) {
   return {
     id: comoCadena(crudo.id),
+    segmento: vacio(crudo.segmento) ? null : comoCadena(crudo.segmento),
     imagen: comoCadena(crudo.imagen),
     video: comoCadena(crudo.video),
     dur: comoNumero(crudo.dur),
@@ -1537,7 +1638,8 @@ function normalizarPlano(crudo) {
       : (crudo.refs === null || crudo.refs === undefined ? [] : crudo.refs),
     boca_visible: vacio(crudo.boca_visible) ? null : comoCadena(crudo.boca_visible),
     encadena_con: vacio(crudo.encadena_con) ? null : comoCadena(crudo.encadena_con),
-    de_archivo: vacio(crudo.de_archivo) ? null : comoCadena(crudo.de_archivo)
+    de_archivo: vacio(crudo.de_archivo) ? null : comoCadena(crudo.de_archivo),
+    direccion: normalizarDireccion(crudo.direccion)
   };
 }
 

@@ -11,6 +11,10 @@ el teaser de 78 segundos y 24 planos, que se puede generar desde el primer día.
 Los doce episodios están en `datos/guiones.json` con sus 289 escenas y pasan
 antes por el desglose, que los convierte en planos.
 
+La revisión de continuidad de episodios y la conservación del material existente
+se explican en [docs/correcciones-continuidad.md](docs/correcciones-continuidad.md).
+Sus pruebas se ejecutan con `npm run continuidad` y forman parte de `npm run comprobar`.
+
 **Lo que NO es.** No es un estudio genérico para hacer animes. Es para este
 animé: los personajes, los escenarios, las luces, el estilo y el reparto de voces
 están escritos en `datos/serie.json` y la herramienta no inventa nada que no esté

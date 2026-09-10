@@ -131,6 +131,7 @@ const TIPOS = {
   voz: 'Voz',
   alinear: 'Medir los tiempos de la voz',
   'desglose-escena': 'Desglose de una escena',
+  'corregir-continuidad': 'Corrección de continuidad',
   ficha: 'Ficha para publicar',
   montaje: 'Montaje'
 };
@@ -1348,6 +1349,8 @@ function queEs(trabajo) {
       return `${texto(args.bloque) || 'sin bloque'} · ${pieza || 'sin pieza'}`;
     case 'desglose-escena':
       return `Episodio ${texto(args.episodio) || '?'}, escena ${texto(args.escena) || '?'}`;
+    case 'corregir-continuidad':
+      return `${pieza}, escena ${texto(args.escena) || '?'}`;
     case 'montaje':
       return `${texto(args.trabajo) || 'sin nombre'} · capa ${texto(args.capa) || 'sin capa'}`;
     default:

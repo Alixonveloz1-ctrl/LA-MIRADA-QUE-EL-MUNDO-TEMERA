@@ -37,6 +37,7 @@ import { ErrorDeCara, llamar } from '../api.js';
 import { actual, alCambiar, cambiar } from '../estado.js';
 import { encolar, encolarVarios } from '../cola.js';
 import { claveDelMaterial } from '../planos.js';
+import { materialVigente } from '../continuidad.js';
 import {
   aviso,
   barra,
@@ -409,7 +410,7 @@ function leerEstado() {
 function clipElegido(estado, clave) {
   const tomas = esObjeto(estado.tomas) ? estado.tomas : {};
   const entrada = esObjeto(tomas[clave]) ? tomas[clave] : {};
-  return rutaSiVale(entrada.clip_elegido);
+  return materialVigente(entrada, 'clip') ? rutaSiVale(entrada.clip_elegido) : null;
 }
 
 /** Lo guardado de una pieza de música. */
@@ -466,12 +467,13 @@ function vozGuardada(estado, clave) {
  * @param {string} id
  * @returns {{ruta:string, capa:string, id:string, cuando:string}[]}
  */
-function montajesDe(estado, capa, id) {
+function montajesDe(estado, capa, id, incluirAnteriores = false) {
   const todos = Array.isArray(estado.montajes) ? estado.montajes : [];
   return todos
     .filter(
       (uno) =>
         esObjeto(uno) &&
+        (incluirAnteriores || !uno.revision_pendiente) &&
         String(uno.capa || '') === capa &&
         String(uno.id || '') === id &&
         esSalidaDeMontaje(uno.ruta)
@@ -480,6 +482,7 @@ function montajesDe(estado, capa, id) {
       ruta: String(uno.ruta),
       capa,
       id,
+      revision_pendiente: Boolean(uno.revision_pendiente),
       cuando: soloTexto(uno.cuando)
     }))
     .sort((a, b) => String(b.cuando).localeCompare(String(a.cuando)));
@@ -1151,6 +1154,7 @@ function componerVideo(modelo, ambito, estado, faltas) {
 
     video.push({
       id: toma.id,
+      clave: claveDelMaterial(modelo.id,toma),
       origen,
       desde,
       hasta,
@@ -3217,7 +3221,7 @@ function prepararManifiesto(manifiesto, estado, ambito) {
  */
 function siguienteVersion(estado, ambito) {
   let mayor = 0;
-  for (const uno of montajesDe(estado, ambito.capa, ambito.id)) {
+  for (const uno of montajesDe(estado, ambito.capa, ambito.id, true)) {
     const nombre = uno.ruta.slice(CARPETA.length + 1).replace(/\.mp4$/i, '');
     if (!nombre.startsWith(`${ambito.base}-`)) continue;
     const numero = Number(nombre.slice(ambito.base.length + 1));
