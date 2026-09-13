@@ -2250,3 +2250,10 @@ body[data-pantalla="difusion"] .pantalla .tarjeta {
     padding-bottom: calc(var(--alto-pestanas) + var(--hueco-seguro) + 48px);
   }
 }
+
+/* La historia acompaña a la imagen; los datos de generación quedan plegados. */
+.toma-relato { display: flex; flex-direction: column; gap: 10px; }
+.toma-relato > strong { color: var(--acento); font-size: 16px; }
+.toma-relato p { margin: 0; line-height: 1.55; }
+.toma-relato summary, .toma-detalles summary { padding: 12px 0; cursor: pointer; color: var(--texto-suave); min-height: 44px; }
+.toma-relato details p { margin-bottom: 12px; }

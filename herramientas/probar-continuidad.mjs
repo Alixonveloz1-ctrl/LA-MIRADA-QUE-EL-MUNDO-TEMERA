@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import { contextoDeToma } from '../app/relato.js';
 import { readFileSync } from 'node:fs';
 import { createHash, randomUUID } from 'node:crypto';
 import { serie, guiones, toma as tomaDeLaPieza, escenaDeGuion, escenasDeEpisodio, personajesDeEscena } from '../api/_lib/datos.js';
@@ -249,7 +250,7 @@ prueba('Un clip de otro keyframe no se considera vigente',()=>{
 const encolados=[];
 const nodo=(tipo,atributos,...hijos)=>({tipo,atributos,hijos:hijos.flat().filter(x=>x!=null),appendChild(h){this.hijos.push(h);}});
 const estadoUi=inicial();
-const stubs={necesitaDireccion,materialVigente,invalidarMontajes,claveDelMaterial,esDeArchivo,porQueNoSeGenera,
+const stubs={contextoDeToma,necesitaDireccion,materialVigente,invalidarMontajes,claveDelMaterial,esDeArchivo,porQueNoSeGenera,
   ErrorDeCara,llamar:globalThis.fetch,actual:()=>estadoUi,cambiar:async fn=>fn(estadoUi),alCambiar:()=>{},
   encolar:()=>{},encolarVarios:lista=>encolados.push(...lista),confirmar:async()=>true,
   h:nodo,seccion:(...h)=>nodo('seccion',{},h),aviso:t=>nodo('aviso',{},t),
@@ -345,4 +346,26 @@ await assert.rejects(()=>modos.montar({manifiesto:{video:[{clave:'ep01/4-1',orig
 await assert.rejects(()=>modos.montar({manifiesto:{video:[{clave:'ep01/4-1',origen:'otra.mp4'}]}}),/selección de vídeo cambió/);
 await assert.rejects(()=>modos.montar({manifiesto:{capas_previas:['montado.mp4']}}),/Una escena ya montada quedó pendiente/);
 prueba('El servidor rechaza montajes de clips cambiados o capas pendientes',()=>assert.equal(escrituras.length,2));
+const relatos = JSON.parse(readFileSync(new URL('../datos/relatos-ep01.json', import.meta.url), 'utf8'));
+const piezaRelato = {id:'ep01', tomas:Object.entries(relatos).map(([id,n])=>({id,escena:id.split('-')[0],...n}))};
+prueba('Las 153 tomas existentes tienen relato vinculado a su contenido',()=>{
+  assert.equal(piezaRelato.tomas.length,153);
+  for(const t of piezaRelato.tomas) assert.ok(contextoDeToma(piezaRelato,t,guiones,relatos).historia.length>20);
+});
+prueba('Un plano cambiado no recibe el relato ni la observación de su versión anterior',()=>{
+  const t={...piezaRelato.tomas.find(t=>t.id==='3-3'),imagen:'Otro plano'};
+  const c=contextoDeToma(piezaRelato,t,guiones,relatos);
+  assert.equal(c.historia,'');assert.equal(c.revision,null);
+});
+prueba('Antes y después respeta los límites de cada escena',()=>{
+  const t=piezaRelato.tomas.find(t=>t.id==='3-1');
+  const c=contextoDeToma(piezaRelato,t,guiones,relatos);
+  assert.equal(c.antes,'');assert.equal(c.despues,relatos['3-2'].texto);
+});
+prueba('El relato propio de un nuevo desglose tiene prioridad sin modificar aprobaciones',()=>{
+  const t={...piezaRelato.tomas[0],historia:'La antorcha ilumina la cripta.',keyframe_aprobado:'guardada.png'};
+  const antes=JSON.stringify(t);
+  assert.equal(contextoDeToma(piezaRelato,t,guiones,relatos).historia,t.historia);
+  assert.equal(JSON.stringify(t),antes);
+});
 console.log(`\n${total} pruebas de continuidad correctas. Sin red ni generación.`);

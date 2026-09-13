@@ -1390,3 +1390,17 @@ su número de versión. El montador ignora este campo adicional de procedencia.
 
 `npm run continuidad` verifica estos casos sin red ni generaciones de pago y
 forma parte de `npm run comprobar`.
+
+### Relato junto a las imágenes
+
+Cada nuevo plano puede incluir `historia`: una o dos frases en español sobre la
+acción de esa toma. Se conserva al incorporar el desglose, sin cambiar duración,
+prompts, aprobaciones ni firmas de continuidad. `app/relato.js` reúne escena,
+momento narrativo y tomas vecinas para la pantalla.
+
+`datos/relatos-ep01.json` aporta los relatos de las 153 tomas existentes. Solo se
+aplican si coinciden exactamente imagen, vídeo y referencia de archivo; una toma
+redesglosada no hereda un relato antiguo por compartir identificador. Las notas de
+revisión visual también exigen la ruta exacta de la imagen revisada. No certifican
+otras versiones ni vídeos. La versión más reciente se muestra cuando hay revisión
+pendiente, sin aprobarla automáticamente ni borrar las anteriores.

@@ -1,0 +1,1012 @@
+{
+  "1-1": {
+    "imagen": "",
+    "video": "",
+    "de_archivo": "arch-cripta-b",
+    "texto": "La historia comienza en la cripta, entre piedra húmeda, goteos y el cántico del culto."
+  },
+  "1-2": {
+    "imagen": "Medium wide shot. A soaked young woman lies exhausted on a dark stone altar. Around her, several hooded figures in black tunics stand completely motionless.",
+    "video": "Camera holds steady. The woman collapses back onto the stone in pure exhaustion. The hooded figures remain entirely frozen like statues.",
+    "de_archivo": null,
+    "texto": "La madre está agotada sobre el altar, rodeada por las figuras encapuchadas del ritual."
+  },
+  "1-3": {
+    "imagen": "Medium low angle. The Celebrant, wearing a blood-spattered black tunic and a leather demonic mask, lifts a newborn baby high with both hands against the orange torchlight.",
+    "video": "The camera holds as he raises the child slowly. Thick smoke drifts lazily across the crushed black background.",
+    "de_archivo": null,
+    "texto": "El Celebrante levanta al recién nacido ante el culto."
+  },
+  "1-4": {
+    "imagen": "Medium shot, three-quarter view. The young mother lies on the wet stone altar, her face pale and soaked in sweat, eyes half-open in absolute exhaustion.",
+    "video": "She weakly extends a trembling hand forward; the mouth keeps moving for as long as the character is speaking.",
+    "de_archivo": null,
+    "texto": "La madre extiende una mano hacia su bebé y suplica que se lo devuelvan."
+  },
+  "1-5": {
+    "imagen": "Medium shot. The Celebrant turns his masked face toward the camera, holding a black, jagged, curved knife. The demonic grin of the leather mask is fixed.",
+    "video": "He steps closer, tilting his masked head with a chillingly gentle motion. The torchlight glints off the wet blade.",
+    "de_archivo": null,
+    "texto": "El Celebrante se vuelve hacia la madre con el cuchillo. Su atención está en ella.",
+    "revision_visual": {
+      "ruta": "keyframes/ep01/1-5/2.png",
+      "nota": "La máscara deja el rostro del Celebrante al descubierto. Revisa que permanezca cubierto como en las otras tomas."
+    }
+  },
+  "1-6": {
+    "imagen": "Close detail of both adult female hands, thin and worn, with chafe marks from restraints ringing both wrists. Wet stone underneath.",
+    "video": "The fingers suddenly curl and claw desperately at the wet stone as a violent, unseen motion occurs off-screen. A slight camera shake.",
+    "de_archivo": null,
+    "texto": "Las manos de la madre reaccionan al ataque; el acto ocurre fuera de la imagen."
+  },
+  "1-7": {
+    "imagen": "Close-up on the newborn baby's face lit by orange torchlight against deep crushed blacks. The tiny eyes are wide open.",
+    "video": "A few dark drops of hot blood suddenly splatter onto the cheek. The baby goes perfectly still, ceasing all movement instantly. The camera remains locked.",
+    "de_archivo": null,
+    "texto": "Unas gotas alcanzan al recién nacido y su llanto se detiene."
+  },
+  "2-1": {
+    "imagen": "Medium wide shot of the underground crypt sanctuary. Blurred, dark hooded figures of acolytes move chaotically in the foreground and background, bathed in flickering orange torchlight from below. Thick smoke drifts through the damp ribbed arches.",
+    "video": "The acolytes sway and writhe in a frenzied celebration. The camera is locked, allowing the chaotic motion of the bodies and drifting smoke to dominate the frame.",
+    "de_archivo": null,
+    "texto": "El culto celebra entre ruido y movimiento después del nacimiento."
+  },
+  "2-2": {
+    "imagen": "Medium shot. The Celebrante, wearing his molded demonic leather mask and dark robes, stands perfectly still in the center, holding a newborn baby up towards the light. Blurry acolytes move in the foreground edges.",
+    "video": "The Celebrante stands absolutely motionless like a statue holding the baby, contrasting with the fast, blurred motion of the acolytes at the edges of the frame. Subtle torchlight flicker.",
+    "de_archivo": null,
+    "texto": "El Celebrante sostiene al bebé y permanece quieto mientras los demás celebran."
+  },
+  "2-3": {
+    "imagen": "Close up of the newborn baby's face in the Celebrante's hands. The baby has glowing red eyes, staring blankly upward. Orange torchlight reflects on pale, damp skin.",
+    "video": "The baby remains completely motionless and quiet, eyes locked open without blinking. Thick smoke drifts slowly across the dark background. Very slow push in.",
+    "de_archivo": null,
+    "texto": "El bebé tiene los ojos rojos abiertos. No llora ni parpadea."
+  },
+  "2-4": {
+    "imagen": "Medium close up of the Celebrante's masked face, lit from below by orange torchlight. The leather mask's demonic grin is cast in deep shadow.",
+    "video": "The Celebrante slowly tilts his head slightly to the side, conveying a sense of unexpected curiosity. The torchlight flickers across the mask's ridges.",
+    "de_archivo": null,
+    "texto": "El Celebrante inclina la cabeza, sorprendido por la quietud del niño."
+  },
+  "2-5": {
+    "imagen": "Medium close up, three-quarter view of the Celebrante's masked head, deep crushed blacks in the background. His leather mask is clearly visible in the torchlight.",
+    "video": "The mouth area of the mask shifts slightly and keeps moving for as long as the character is speaking, murmuring quietly. Acolytes' shadows dance on the wall behind him.",
+    "de_archivo": null,
+    "texto": "El Celebrante habla mientras observa al recién nacido."
+  },
+  "2-6": {
+    "imagen": "Extreme macro close up of the baby's glowing red eye. The reflection in the wet surface of the eye shows the dark silhouette of the Celebrante against flickering orange torchlight.",
+    "video": "The eye remains entirely unblinking and still. The reflection of the torchlight flickers rapidly, and then the frame slowly fades to pure black.",
+    "de_archivo": null,
+    "texto": "La atención queda en el ojo abierto del bebé antes de pasar a negro."
+  },
+  "3-1": {
+    "imagen": "Wide shot of a long dark wood dining table under oil lamps at night. Twenty guests in fine but slightly faded clothing sit talking. The table is set with mismatched glasses and mended tablecloths, bathed in warm practical gold light. Windows are pitch black.",
+    "video": "The guests shift slightly in their seats, engaged in quiet conversation. Dust motes drift gently in the warm light from the lamps. The camera is locked.",
+    "de_archivo": null,
+    "texto": "En el presente, veinte invitados conversan alrededor de la mesa de Elserath. Saharis ya está en la cena."
+  },
+  "3-2": {
+    "imagen": "",
+    "video": "",
+    "de_archivo": "arch-elserath-salon-b",
+    "texto": "Un detalle del salón sitúa la cena en la casa Elserath; la conversación continúa.",
+    "revision_visual": {
+      "ruta": "keyframes/archivo/arch-elserath-salon-b/1.png",
+      "nota": "Este detalle del banco muestra una ventana muy luminosa, como de día. Revisa que encaje con la cena nocturna antes de reutilizarlo."
+    }
+  },
+  "3-3": {
+    "imagen": "Medium shot of young adult Saharis sitting at the far end of the long table, wearing an impeccable dark noble coat. He quietly watches the guests around him, a mismatched wine glass resting nearby on the mended tablecloth.",
+    "video": "Saharis remains mostly still, listening intently to the multiple conversations around him. Dust turns in the air under the oil lamp light. The camera is locked.",
+    "de_archivo": null,
+    "texto": "Saharis escucha sentado en un extremo de la mesa. No está llegando a la habitación.",
+    "revision_visual": {
+      "ruta": "keyframes/ep01/3-3/2.png",
+      "nota": "Las sillas visibles quedan vacías, aunque la cena continúa con los invitados sentados. Hay que mantener a los comensales que entren en este encuadre."
+    }
+  },
+  "3-4": {
+    "imagen": "Medium shot of a well-dressed female guest at the table, looking warmly off-screen right. The warm gold oil lamp light softly illuminates her face against the dark room.",
+    "video": "She turns her head slightly to address Saharis directly off-screen, offering a polite, light smile. The mouth keeps moving for as long as the character is speaking.",
+    "de_archivo": null,
+    "texto": "Una invitada se dirige a Saharis y le pide su opinión desde su asiento."
+  },
+  "3-5": {
+    "imagen": "Medium shot, three-quarter view of Saharis. He looks effortlessly warm and composed in the soft golden light, listening patiently.",
+    "video": "He gives a modest, warm nod to acknowledge her words, looking relaxed. The mouth keeps moving for as long as the character is speaking.",
+    "de_archivo": null,
+    "texto": "Saharis responde con cortesía: la señora ya lo ha dicho mejor que él. Sigue en su sitio."
+  },
+  "3-6": {
+    "imagen": "Medium shot from directly behind Saharis's back and shoulders, looking past his immaculate dark noble coat towards the female guest across the table.",
+    "video": "The female guest laughs gracefully in the background, sitting up a bit taller, emboldened and pleased. The camera is locked.",
+    "de_archivo": null,
+    "texto": "La invitada se ríe, satisfecha por la respuesta de Saharis. Ambos conservan sus asientos."
+  },
+  "3-7": {
+    "imagen": "Close detail of Saharis's clean hands on the mended tablecloth over the dark polished wood table, resting right next to a mismatched wine glass. He wears a silver signet ring.",
+    "video": "His fingers gently brush the base of the untouched glass, but he does not lift it to drink. Dust drifts slowly through the golden lamplight. The camera is locked.",
+    "de_archivo": null,
+    "texto": "Saharis vuelve la atención a su copa, de la que no ha bebido en toda la noche."
+  },
+  "4-1": {
+    "imagen": "Medium shot, three-quarter view. Rothar Elserath leans over the long polished table, three cups in front of him, visibly drunk and aggressive in the warm gold light.",
+    "video": "He forcefully taps the dark wood table with his finger. The mouth keeps moving for as long as the character is speaking. Camera locked.",
+    "de_archivo": null,
+    "texto": "Rothar golpea la mesa y cuestiona de dónde salió Saharis delante de los invitados."
+  },
+  "4-2": {
+    "imagen": "Medium shot, three-quarter view. Lord Iven sits at the head of the long table, silent and motionless in the quiet gold light.",
+    "video": "Lord Iven slowly closes his eyes, showing deep, quiet exhaustion. Camera locked.",
+    "de_archivo": null,
+    "texto": "Iven cierra los ojos desde la cabecera ante la incomodidad de la discusión."
+  },
+  "4-3": {
+    "imagen": "Close detail of both adult male hands holding a silver cup slightly above a dark polished wood table.",
+    "video": "The hands gently and deliberately place the silver cup down onto the polished wood. Camera locked.",
+    "de_archivo": null,
+    "texto": "Saharis deja su copa sobre la mesa antes de responder a Rothar."
+  },
+  "4-4": {
+    "imagen": "Medium shot, three-quarter view. Saharis sits calmly at the long table in the warm oil light, perfectly composed.",
+    "video": "He looks steadily across the room without a drop of irony. The mouth keeps moving for as long as the character is speaking. Camera locked.",
+    "de_archivo": null,
+    "texto": "Saharis admite con calma que Rothar tiene razón en preguntar quién es."
+  },
+  "4-5": {
+    "imagen": "Medium shot from directly behind. The back of Saharis's head and the dark shoulders of his immaculate noble coat.",
+    "video": "His posture remains perfectly calm and reasonable as he addresses the silent room. Camera locked.",
+    "de_archivo": null,
+    "texto": "Saharis sigue respondiendo a Rothar ante la mesa en silencio."
+  },
+  "4-6": {
+    "imagen": "Medium shot. Several noble guests sit along the long polished table in the warm oil light, watching in tense silence.",
+    "video": "The guests exchange uneasy glances, reacting to the heavy pause in the room. Camera locked.",
+    "de_archivo": null,
+    "texto": "Los invitados escuchan la respuesta de Saharis y reaccionan al silencio incómodo."
+  },
+  "4-7": {
+    "imagen": "Medium shot, three-quarter view. Saharis sits at the table, his face illuminated by the warm, restrained gold light.",
+    "video": "He delivers the final praise warmly. The mouth keeps moving for as long as the character is speaking. Camera locked.",
+    "de_archivo": null,
+    "texto": "Saharis elogia a Rothar por ser el único que se ha atrevido a preguntarlo."
+  },
+  "4-8": {
+    "imagen": "Medium shot, three-quarter view. Rothar Elserath sits frozen at the table, his hand suspended in the air and his mouth slightly open.",
+    "video": "He stays completely still, blinking once as the realization of his defeat sets in. Camera locked.",
+    "de_archivo": null,
+    "texto": "Rothar queda desconcertado, con la mano en el aire y la boca abierta. La conversación de la mesa se reanuda.",
+    "revision_visual": {
+      "ruta": "keyframes/ep01/4-8/2.png",
+      "nota": "Rothar cambia mucho de aspecto respecto a su primera intervención. Esta imagen necesita conservar su misma cara y complexión."
+    }
+  },
+  "5-1": {
+    "imagen": "Wide shot. The great hall, occupied by guests at the long polished table in soft background focus. In the foreground, Livia and Saharis stand apart near a tall window in the warm gold light.",
+    "video": "A servant carrying a tray crosses the background. Golden dust drifts gently in the warm window light. Camera locked.",
+    "de_archivo": null,
+    "texto": "Ahora Saharis y Livia conversan apartados, junto a una ventana. Los demás siguen en la cena."
+  },
+  "5-2": {
+    "imagen": "Medium shot, three-quarter view. Livia Elserath, twenty years old, holds a small book against her chest near the tall window in the warm gold light.",
+    "video": "She tilts her head slightly, looking curious. Her mouth keeps moving for as long as the character is speaking. Camera locked.",
+    "de_archivo": null,
+    "texto": "Livia sostiene su libro contra el pecho y pregunta a Saharis si lo ha leído."
+  },
+  "5-3": {
+    "imagen": "Medium shot, three-quarter view. Saharis stands casually in the dusty warm light, his posture calm and completely unassuming.",
+    "video": "He blinks slowly. His mouth keeps moving for as long as the character is speaking. Camera locked.",
+    "de_archivo": null,
+    "texto": "Saharis responde a Livia junto a la ventana; no vuelve a la mesa en esta toma."
+  },
+  "5-4": {
+    "imagen": "Medium shot, three-quarter view. Livia smiles genuinely, holding the book. In the out-of-focus background, a servant carrying a tray enters the frame.",
+    "video": "She lets out a short laugh, and her mouth keeps moving for as long as the character is speaking. The servant walks quietly past behind her. Camera locked.",
+    "de_archivo": null,
+    "texto": "Livia se ríe de verdad durante la conversación. Un criado pasa detrás con una bandeja."
+  },
+  "5-5": {
+    "imagen": "Extreme close up, front facing. Saharis's eyes and upper face, half in warm gold light and half in shadow. The framing strictly excludes his mouth.",
+    "video": "His eyes shift subtly to the side, registering her laugh and the passing servant without changing his unreadable expression. Camera locked.",
+    "de_archivo": null,
+    "texto": "Saharis registra la risa de Livia sin dejar ver lo que piensa.",
+    "revision_visual": {
+      "ruta": "keyframes/ep01/5-5/2.png",
+      "nota": "La mirada parece dirigida al espectador. Debe dirigirse a la persona con la que conversa."
+    }
+  },
+  "5-6": {
+    "imagen": "Close detail of both adult male hands resting calmly. A silver signet ring catches the light, and a thin old pale ritual line is visible across the left palm. No face in frame.",
+    "video": "The fingers relax just a fraction in the warm light. Specks of dust drift gently through the golden beams. Camera completely still.",
+    "de_archivo": null,
+    "texto": "Un detalle de la mano de Saharis acompaña la conversación junto a la ventana."
+  },
+  "6-1": {
+    "imagen": "",
+    "video": "",
+    "de_archivo": "arch-elserath-salon-b",
+    "texto": "La atención vuelve a la conversación de la cena en el salón de Elserath.",
+    "revision_visual": {
+      "ruta": "keyframes/archivo/arch-elserath-salon-b/1.png",
+      "nota": "Este detalle del banco muestra una ventana muy luminosa, como de día. Revisa que encaje con la cena nocturna antes de reutilizarlo."
+    }
+  },
+  "6-2": {
+    "imagen": "Medium shot of the older lord sitting at the long table holding a full cup, speaking with a nostalgic look.",
+    "video": "He gestures slightly with his cup, lost in his own memories. The mouth keeps moving for as long as the character is speaking.",
+    "de_archivo": null,
+    "texto": "Iven cuenta su viaje desde Kadre, con trescientos carros y nieve hasta las rodillas."
+  },
+  "6-3": {
+    "imagen": "Medium shot of Saharis in three-quarter view, his expression composed but showing genuine interest towards the old lord.",
+    "video": "He watches attentively. The mouth keeps moving for as long as the character is speaking. Camera locked.",
+    "de_archivo": null,
+    "texto": "Saharis presta atención a Iven y le pregunta cuántos días duró el viaje."
+  },
+  "6-4": {
+    "imagen": "Medium shot of the older lord looking startled and slightly disconcerted that someone is actually listening.",
+    "video": "He pauses his movement, blinking in surprise. The mouth keeps moving for as long as the character is speaking.",
+    "de_archivo": null,
+    "texto": "Iven se sorprende de que alguien esté escuchándolo y le pida ese detalle.",
+    "revision_visual": {
+      "ruta": "keyframes/ep01/6-4/2.png",
+      "nota": "Iven aparece en otra posición de la mesa respecto a su toma anterior. Hay que conservar su sitio en la cabecera."
+    }
+  },
+  "6-5": {
+    "imagen": "Medium shot from directly behind Saharis: back of his head and dark noble coat only. Iven is far out of focus in the background.",
+    "video": "Saharis's shoulders shift slightly as he breathes calmly. Camera locked. Face not visible.",
+    "de_archivo": null,
+    "texto": "Saharis continúa la pregunta sobre el viaje mientras Iven lo escucha."
+  },
+  "6-6": {
+    "imagen": "Medium shot of the older lord, his posture changing as he regains his dignity.",
+    "video": "He straightens up in his chair, looking more commanding. The mouth keeps moving for as long as the character is speaking.",
+    "de_archivo": null,
+    "texto": "Iven se endereza en su silla al sentirse escuchado y respetado."
+  },
+  "6-7": {
+    "imagen": "Close detail of clean adult male hands resting on the dark polished wood, a silver signet ring catching the light.",
+    "video": "The hands remain perfectly still. Dust turns slowly in the warm gold light above them. Camera locked.",
+    "de_archivo": null,
+    "texto": "Las manos quietas de Saharis acompañan su atención al relato de Iven."
+  },
+  "6-8": {
+    "imagen": "Medium shot of the older lord in three-quarter view, looking entirely invigorated and proud, puffing his chest.",
+    "video": "A proud gleam in his eye, enjoying the moment of respect. The mouth keeps moving for as long as the character is speaking.",
+    "de_archivo": null,
+    "texto": "Iven repite orgulloso que fueron veintiséis días, y con nieve."
+  },
+  "6-9": {
+    "imagen": "Close up portrait of Saharis, front facing, half his face in warm light and half in shadow, his expression respectful.",
+    "video": "He gives a single, slow blink of confirmation. The mouth keeps moving for as long as the character is speaking.",
+    "de_archivo": null,
+    "texto": "Saharis confirma con respeto el detalle de la nieve que Iven acaba de mencionar."
+  },
+  "7-1": {
+    "imagen": "",
+    "video": "",
+    "de_archivo": "arch-elserath-salon-b",
+    "texto": "La cena continúa. La atención va a pasar al anillo de uno de los invitados.",
+    "revision_visual": {
+      "ruta": "keyframes/archivo/arch-elserath-salon-b/1.png",
+      "nota": "Este detalle del banco muestra una ventana muy luminosa, como de día. Revisa que encaje con la cena nocturna antes de reutilizarlo."
+    }
+  },
+  "7-2": {
+    "imagen": "Close shot of a guest's hands over the long polished dark wood table in the warm gold light. The guest, wearing an elegant dark sleeve, pulls a dark glove off their right hand.",
+    "video": "The guest slowly pulls the glove completely off their hand with a smooth, deliberate motion. The camera remains locked on the hands and the table.",
+    "de_archivo": null,
+    "texto": "El invitado se quita un guante para servirse vino."
+  },
+  "7-3": {
+    "imagen": "Extreme close up of a strange metal ring on the guest's bare finger as the hand reaches out and grasps a wine carafe. The ring features a distinct circle containing an eye and four teeth.",
+    "video": "The hand grips the carafe and tilts it slightly to pour wine. The warm diffuse gold light catches the grotesque details of the ring. Slow, steady push-in on the ring.",
+    "de_archivo": null,
+    "texto": "Al tomar la jarra, deja visible el anillo: un círculo, un ojo y cuatro dientes."
+  },
+  "7-4": {
+    "imagen": "Close up portrait of Saharis at the banquet table, front facing, half his face in warm diffuse gold light and half in shadow. He wears a dark noble coat. Dust drifts in the air.",
+    "video": "Saharis's eyes flick slightly downward to track the guest's hand and the ring, but his facial muscles remain completely frozen. No reaction, no blink, entirely unreadable. Camera locked.",
+    "de_archivo": null,
+    "texto": "Saharis ve el anillo y oculta cualquier reacción. Mira hacia la mano del invitado.",
+    "revision_visual": {
+      "ruta": "keyframes/ep01/7-4/2.png",
+      "nota": "Saharis cambia de aspecto respecto a las otras imágenes de la cena. Revisa su cara y su pelo."
+    }
+  },
+  "7-5": {
+    "imagen": "Close detail of Saharis's hands resting flat and relaxed on the dark polished wood of the table. A silver signet ring is visible, and a thin old pale ritual line crosses his left palm.",
+    "video": "The hands remain absolutely motionless. Not a single twitch or tightening of the fingers. Total stillness against the grain of the wood as dust motes float by in the warm light.",
+    "de_archivo": null,
+    "texto": "Las manos de Saharis permanecen inmóviles: tampoco delatan que ha reconocido algo."
+  },
+  "8-1": {
+    "imagen": "",
+    "video": "",
+    "de_archivo": "arch-elserath-salon-b",
+    "texto": "Saharis se ha sentado junto al invitado del anillo para conversar con él.",
+    "revision_visual": {
+      "ruta": "keyframes/archivo/arch-elserath-salon-b/1.png",
+      "nota": "Este detalle del banco muestra una ventana muy luminosa, como de día. Revisa que encaje con la cena nocturna antes de reutilizarlo."
+    }
+  },
+  "8-2": {
+    "imagen": "Close detail of adult male hands holding a silver decanter, pouring red wine into a cup. Dark polished wood in the background.",
+    "video": "The hand slowly tilts the decanter, pouring the wine smoothly. Camera locked.",
+    "de_archivo": null,
+    "texto": "Saharis sirve vino en la copa del invitado, no en la suya."
+  },
+  "8-3": {
+    "imagen": "Medium shot, three-quarter view of Saharis sitting by the long table, holding a silver decanter, warm gold light catching his dark hair.",
+    "video": "Saharis looks lightly at the guest, feigning polite ignorance. The mouth keeps moving for as long as the character is speaking.",
+    "de_archivo": null,
+    "texto": "Saharis pregunta si los Renn trabajan con aceite o con sal, fingiendo ignorancia."
+  },
+  "8-4": {
+    "imagen": "Medium shot of a middle-aged merchant guest, front facing, looking comfortable in the warm lamplight.",
+    "video": "The guest leans back slightly, relaxed and pleased to correct him. The mouth keeps moving for as long as the character is speaking.",
+    "de_archivo": null,
+    "texto": "El invitado le explica que los Renn se dedican a los curtidos."
+  },
+  "8-5": {
+    "imagen": "Medium shot from directly behind Saharis, showing the back of his head and immaculate dark coat, the guest slightly out of focus in the background.",
+    "video": "Saharis remains perfectly still, listening intently while making a casual remark off-screen. Camera locked.",
+    "de_archivo": null,
+    "texto": "Saharis comenta el olor del río para mantener relajado al invitado."
+  },
+  "8-6": {
+    "imagen": "Medium close-up of the guest in three-quarter view, looking increasingly relaxed and open under the warm diffuse gold light.",
+    "video": "The guest gestures casually with one hand, enjoying the chat. The mouth keeps moving for as long as the character is speaking.",
+    "de_archivo": null,
+    "texto": "El invitado se ríe y empieza a hablar de las rutas por las que transportan la mercancía.",
+    "revision_visual": {
+      "ruta": "keyframes/ep01/8-6/2.png",
+      "nota": "El invitado del anillo cambia de cara y edad respecto a la toma 8-4. Debe seguir siendo el mismo hombre."
+    }
+  },
+  "8-7": {
+    "imagen": "Medium shot, three-quarter view of Saharis, face unreadable but projecting casual interest.",
+    "video": "Saharis tilts his head infinitesimally. The mouth keeps moving for as long as the character is speaking.",
+    "de_archivo": null,
+    "texto": "Saharis pregunta qué ruta utilizan durante el invierno."
+  },
+  "8-8": {
+    "imagen": "Close up portrait of the guest, lit by the warm lamplight, leaning forward slightly as if sharing a secret.",
+    "video": "He speaks with hushed, confident pride, giving away the information freely. The mouth keeps moving for as long as the character is speaking.",
+    "de_archivo": null,
+    "texto": "El invitado revela que pasan por el vado de noche, cuando hay menos inspección.",
+    "revision_visual": {
+      "ruta": "keyframes/ep01/8-8/2.png",
+      "nota": "El invitado vuelve a cambiar de aspecto. Debe conservar la identidad de la toma 8-4."
+    }
+  },
+  "8-9": {
+    "imagen": "Close detail of adult male hands holding a silver decanter, pouring more red wine into a cup.",
+    "video": "Wine fills the cup slowly. The hands are steady. Camera locked.",
+    "de_archivo": null,
+    "texto": "Saharis vuelve a llenar la copa del mismo invitado mientras lo escucha."
+  },
+  "8-10": {
+    "imagen": "Close up portrait of Saharis, front facing, half his face in warm gold light and half in shadow. He looks entirely composed and polite.",
+    "video": "He nods once, slowly, pretending not to fully understand. The mouth keeps moving for as long as the character is speaking. Subtle slow push in.",
+    "de_archivo": null,
+    "texto": "Saharis asiente y responde «Fascinante», fingiendo que no ha comprendido del todo la importancia de la información.",
+    "revision_visual": {
+      "ruta": "keyframes/ep01/8-10/2.png",
+      "nota": "La jarra se convierte en botella y la ventana parece de día. La conversación sigue en la misma cena nocturna."
+    }
+  },
+  "9-1": {
+    "imagen": "Close detail of copper plates and bowls stacked on a long scrubbed wooden table, thick steam rising from them in the warm kitchen light.",
+    "video": "Steam billows slowly over the stacked plates and copperware. Camera locked.",
+    "de_archivo": null,
+    "texto": "La escena pasa a la cocina, entre vapor y ruido de platos."
+  },
+  "9-2": {
+    "imagen": "Medium shot, three-quarter view of the fifty-year-old cook holding a large, heavy copper pot in the kitchen, steam clinging to the air.",
+    "video": "The cook carries the pot forward, then stops abruptly and stands perfectly still. Camera locked.",
+    "de_archivo": null,
+    "texto": "El cocinero lleva una olla y se detiene al oír a Saharis."
+  },
+  "9-3": {
+    "imagen": "Medium shot, three-quarter view of the cook holding the pot, his expression alarmed and defensive.",
+    "video": "The cook stares nervously towards the doorway. The mouth keeps moving for as long as the character is speaking.",
+    "de_archivo": null,
+    "texto": "El cocinero pregunta cómo sabe Saharis lo del trabajo de su hija."
+  },
+  "9-4": {
+    "imagen": "Medium shot, three-quarter view of Saharis standing outside the room, leaning casually against the wooden doorframe in his dark coat.",
+    "video": "Saharis stays leaning comfortably against the doorframe without entering. The mouth keeps moving for as long as the character is speaking.",
+    "de_archivo": null,
+    "texto": "Saharis contesta apoyado en el marco de la puerta. No entra en la cocina."
+  },
+  "9-5": {
+    "imagen": "Medium shot, three-quarter view of the cook standing next to the long scrubbed wooden table, still holding the heavy copper pot.",
+    "video": "The cook slowly lowers the heavy copper pot onto the wooden table and lets go of it. Camera locked.",
+    "de_archivo": null,
+    "texto": "El cocinero deja la olla sobre la mesa mientras escucha."
+  },
+  "9-6": {
+    "imagen": "Medium shot from directly behind Saharis's back and dark coat in the foreground doorframe, looking past him at the cook standing silently by the table.",
+    "video": "Saharis's silhouette remains still in the foreground while the cook stands quietly in the background, listening. Camera locked.",
+    "de_archivo": null,
+    "texto": "Desde el umbral, Saharis ofrece ayudar a que la hija del cocinero cobre por adelantado.",
+    "revision_visual": {
+      "ruta": "keyframes/ep01/9-6/2.png",
+      "nota": "Saharis parece haber entrado en la cocina. En esta conversación debe permanecer en el marco de la puerta."
+    }
+  },
+  "9-7": {
+    "imagen": "Medium shot, three-quarter view of the cook, his hands empty by his sides, his expression deeply distrustful.",
+    "video": "The cook frowns with a defensive posture. The mouth keeps moving for as long as the character is speaking.",
+    "de_archivo": null,
+    "texto": "El cocinero desconfía y pregunta qué quiere Saharis a cambio."
+  },
+  "9-8": {
+    "imagen": "Close up portrait of Saharis, half his face bathed in warm gold light and half in shadow, looking calm and unbothered.",
+    "video": "Saharis gives a light, barely perceptible nod. The mouth keeps moving for as long as the character is speaking.",
+    "de_archivo": null,
+    "texto": "Saharis responde con calma que hoy no quiere nada."
+  },
+  "9-9": {
+    "imagen": "Medium shot, three-quarter view of Saharis leaning against the doorframe, his expression completely tranquil.",
+    "video": "Saharis gently pushes off the doorframe to step away from the entrance. The mouth keeps moving for as long as the character is speaking.",
+    "de_archivo": null,
+    "texto": "Saharis se aparta del marco: algún día preguntará quién entra por la puerta de servicio."
+  },
+  "9-10": {
+    "imagen": "",
+    "video": "",
+    "de_archivo": "arch-elserath-cocina-b",
+    "texto": "Un detalle de la cocina acompaña la salida de Saharis."
+  },
+  "9-11": {
+    "imagen": "Medium shot, three-quarter view of the cook standing completely alone by the scrubbed kitchen table.",
+    "video": "The cook stares silently and motionlessly towards the empty doorway, frozen in place. Camera locked.",
+    "de_archivo": null,
+    "texto": "El cocinero queda solo, mirando la puerta por la que Saharis se ha marchado."
+  },
+  "10-1": {
+    "imagen": "Wide shot of the walled garden of a noble house at night. Clipped hedges have gone slightly wild, gravel paths reflect the cold moonlight. No lamps are lit.",
+    "video": "The cold night air rustles the overgrown hedges slightly. Camera is locked.",
+    "de_archivo": null,
+    "texto": "La escena pasa al jardín frío y oscuro de Elserath."
+  },
+  "10-2": {
+    "imagen": "Medium shot of Rothar standing between the wild hedges at night. He wears no coat and looks cold but defiant.",
+    "video": "Rothar shivers slightly in the freezing air. The mouth keeps moving for as long as the character is speaking. Camera is locked.",
+    "de_archivo": null,
+    "texto": "Rothar espera sin abrigo y acusa a Saharis de haberlo utilizado."
+  },
+  "10-3": {
+    "imagen": "Medium close up of Saharis in the garden. He is standing calmly in the cold moonlight, showing absolutely no emotion.",
+    "video": "Saharis remains perfectly unmoving. The mouth keeps moving for as long as the character is speaking. Camera locked.",
+    "de_archivo": null,
+    "texto": "Saharis responde con calma a la acusación de Rothar."
+  },
+  "10-4": {
+    "imagen": "Medium close up of Rothar. He shifts his weight, looking up slightly as if trying to intimidate someone taller.",
+    "video": "Rothar takes a hesitant step forward into the frame. The mouth keeps moving for as long as the character is speaking. Camera locked.",
+    "de_archivo": null,
+    "texto": "Rothar da un paso adelante e intenta intimidar a Saharis. Rothar es el más grande de los dos.",
+    "revision_visual": {
+      "ruta": "keyframes/ep01/10-4/2.png",
+      "nota": "Rothar lleva ahora una chaqueta que no tenía al salir. El guion indica que está sin abrigo."
+    }
+  },
+  "10-5": {
+    "imagen": "Medium close up of Saharis, looking back directly into Rothar's eyes with a completely sincere expression.",
+    "video": "Saharis blinks slowly, entirely unfazed. The mouth keeps moving for as long as the character is speaking. Camera locked.",
+    "de_archivo": null,
+    "texto": "Saharis sostiene la mirada de Rothar y le dice que debería averiguar quién es."
+  },
+  "10-6": {
+    "imagen": "Medium shot of Rothar. He looks slightly taken aback and disoriented by the calm, reasonable tone.",
+    "video": "Rothar remains still, his aggressive posture faltering into confusion as he listens. Camera locked.",
+    "de_archivo": null,
+    "texto": "La tranquilidad de Saharis descoloca a Rothar."
+  },
+  "10-7": {
+    "imagen": "Medium shot of Saharis standing tall in the blue-grey night, reciting facts as if reading an invisible ledger.",
+    "video": "Saharis's posture is relaxed and commanding. The mouth keeps moving for as long as the character is speaking. Camera locked.",
+    "de_archivo": null,
+    "texto": "Saharis enumera las deudas de Rothar y deja claro cuánto sabe de él."
+  },
+  "10-8": {
+    "imagen": "Close up of Rothar. His expression grows increasingly tense and fearful as he listens to the numbers.",
+    "video": "Rothar's eyes widen slightly, a subtle flinch of fear crossing his face. Camera locked.",
+    "de_archivo": null,
+    "texto": "Rothar se tensa al escuchar los detalles de sus deudas."
+  },
+  "10-9": {
+    "imagen": "",
+    "video": "",
+    "de_archivo": "arch-elserath-jardin-b",
+    "texto": "Un detalle del jardín acompaña la pausa de la conversación."
+  },
+  "10-10": {
+    "imagen": "Medium close up of Saharis, bathed in the cold moonlight, wrapping up his point simply.",
+    "video": "Saharis looks straightforward, without malice. The mouth keeps moving for as long as the character is speaking. Camera locked.",
+    "de_archivo": null,
+    "texto": "Saharis anuncia que las deudas estarán pagadas al día siguiente."
+  },
+  "10-11": {
+    "imagen": "Medium close up of Rothar. He clings to a weak, pathetic sense of pride, trying to look firm.",
+    "video": "Rothar stiffens his neck defiantly. The mouth keeps moving for as long as the character is speaking. Camera locked.",
+    "de_archivo": null,
+    "texto": "Rothar rechaza el dinero de Saharis, intentando conservar su orgullo."
+  },
+  "10-12": {
+    "imagen": "Close up of Rothar. The cold and the crushing reality of the words break his weak pride completely.",
+    "video": "Rothar exhales visibly in the freezing air, his jaw trembling in quiet defeat. He averts his gaze. Camera locked.",
+    "de_archivo": null,
+    "texto": "Rothar escucha cómo Saharis, fuera de cuadro, aclara que el dinero pertenece a Iven. La respuesta le quita la seguridad."
+  },
+  "10-13": {
+    "imagen": "Close up of Rothar, looking down, completely ashamed and deeply defeated.",
+    "video": "Rothar keeps his head lowered, barely moving. The mouth keeps moving for as long as the character is speaking. Camera locked.",
+    "de_archivo": null,
+    "texto": "Rothar acaba revelando el nombre de Osk."
+  },
+  "10-14": {
+    "imagen": "Medium shot of Saharis. He acknowledges the truth with a simple, sincere look.",
+    "video": "Saharis nods faintly, a genuine gesture. The mouth keeps moving for as long as the character is speaking. Camera locked.",
+    "de_archivo": null,
+    "texto": "Saharis da las gracias y se marcha del jardín."
+  },
+  "10-15": {
+    "imagen": "Medium shot of Rothar standing alone in the dark, cold garden, his shoulders slumped in exhaustion.",
+    "video": "Rothar stands still for a moment, then slowly brings a hand up to rub his face wearily. Camera locked.",
+    "de_archivo": null,
+    "texto": "Rothar queda solo y se pasa la mano por la cara."
+  },
+  "11-1": {
+    "imagen": "",
+    "video": "",
+    "de_archivo": "arch-calle-b",
+    "texto": "La historia sale de la casa noble y acompaña a Saharis hacia las calles pobres."
+  },
+  "11-2": {
+    "imagen": "Medium shot of Saharis walking alone downhill. He is a sixteen-year-old wearing dark noble clothing. Behind him, the shuttered shopfronts are visibly narrowing and pressing closer together under the blue-grey pre-dawn light, and the street lamps are spaced further apart.",
+    "video": "Saharis walks forward at a steady, deliberate pace. The camera tracks backward smoothly to keep him in a three-quarter view, capturing the claustrophobic feeling of the narrowing street. No precipitation falls.",
+    "de_archivo": null,
+    "texto": "Saharis camina solo cuesta abajo; las casas se estrechan y las farolas se separan."
+  },
+  "11-3": {
+    "imagen": "Close detail of the ground in the cold blue-grey light. The worn damp stone cobbles abruptly give way to broken, uneven rocks and bare earth.",
+    "video": "Adult male feet in dark boots step heavily into the frame, walking steadily over the broken stones. Camera is locked. No water splashes.",
+    "de_archivo": null,
+    "texto": "El suelo bajo sus pasos cambia: el empedrado se rompe."
+  },
+  "11-4": {
+    "imagen": "A scruffy street dog stands half-hidden in the shadows of a narrow gap between two dark houses, its coat catching the dim ambient light of the street.",
+    "video": "The dog stands perfectly still, its head turning slowly to watch an off-screen figure walk past. It does not bark, remaining completely silent. Camera is static.",
+    "de_archivo": null,
+    "texto": "Un perro callejero observa pasar a Saharis sin ladrar."
+  },
+  "11-5": {
+    "imagen": "Medium shot, three-quarter view of Saharis as he continues his walk past the dark houses, his noble coat stark against the poor surroundings. The environment around him is dark and desolate.",
+    "video": "Saharis strides across the frame without looking back or acknowledging the off-screen dog. The camera pans slightly to follow his movement as he heads deeper into the cold gloom.",
+    "de_archivo": null,
+    "texto": "Saharis sigue caminando entre las casas sin detenerse ante el perro."
+  },
+  "12-1": {
+    "imagen": "Wide shot. The low district: mud alleys, leaning shacks, broken cobbles, and a pitch-black doorway without a door. Restrained blue-grey pre-dawn light.",
+    "video": "The camera slowly pans across the broken cobbles and open drains towards the black doorway. The scene is quiet and still.",
+    "de_archivo": null,
+    "texto": "Saharis llega a un portal oscuro y sin puerta en el barrio bajo."
+  },
+  "12-2": {
+    "imagen": "Medium shot from directly behind. Saharis, showing back of the head and shoulders only, wearing an immaculate dark noble coat with the collar turned down flat, walks towards the pitch-black doorway of a leaning shack. His face is not visible.",
+    "video": "Saharis walks away from the camera and disappears into the complete darkness of the doorway. The camera is locked.",
+    "de_archivo": null,
+    "texto": "Saharis entra en el portal todavía vestido de noble.",
+    "revision_visual": {
+      "ruta": "keyframes/ep01/12-2/2.png",
+      "nota": "Ya lleva el bulto de ropa antes de entrar a cambiarse. Ese bulto debe aparecer al salir."
+    }
+  },
+  "12-3": {
+    "imagen": "Medium shot. The empty black doorway framed by leaning shacks and mud walls. Pre-dawn shadows completely hide the interior.",
+    "video": "The camera is locked on the empty doorway. The stillness of the early morning remains unbroken.",
+    "de_archivo": null,
+    "texto": "El portal queda vacío durante los instantes en que Saharis se cambia dentro."
+  },
+  "12-4": {
+    "imagen": "Medium shot, three-quarter view. Saharis steps out of the black doorway. He now wears a rough, scavenged dark coat and his hair is messy. He holds a bundle of fine dark clothing rolled securely under his arm.",
+    "video": "Saharis steps forward out of the deep shadows into the pre-dawn light. He stops and briefly adjusts the bundle under his arm, looking around with a neutral expression.",
+    "de_archivo": null,
+    "texto": "Saharis sale con un abrigo basto y el pelo revuelto. Lleva la ropa buena enrollada bajo el brazo."
+  },
+  "12-5": {
+    "imagen": "Medium wide shot. Saharis stands still near the mud wall, holding his bundled clothes. Three adult men in scavenged clothing walk past him in the foreground, their faces turned away from him.",
+    "video": "The three men walk across the foreground from left to right, trudging over the broken cobbles. Saharis stands completely still against the wall in the background, watching them pass. None of the men look at him.",
+    "de_archivo": null,
+    "texto": "Tres hombres pasan junto a Saharis sin prestarle atención: su cambio de ropa le permite pasar inadvertido."
+  },
+  "13-1": {
+    "imagen": "Wide shot of a small, dry underground stone room lit by a single warm lantern: a pallet, a simple wooden table, and a wall entirely covered in pinned papers and connecting cords.",
+    "video": "The lantern light flickers gently, casting soft shadows across the pallet and table. A slow, subtle push-in towards the paper-covered wall.",
+    "de_archivo": null,
+    "texto": "Se presenta el refugio bajo la ciudad: una sala seca con un farol, una mesa, un jergón y la pared de investigación."
+  },
+  "13-2": {
+    "imagen": "",
+    "video": "",
+    "de_archivo": "arch-tuneles-b",
+    "texto": "Un detalle del espacio subterráneo acompaña la llegada al refugio."
+  },
+  "13-3": {
+    "imagen": "Medium shot, three-quarter view from slightly behind Saharis. He wears a coarse scavenged dark coat and has messy dark hair, sitting down at the wooden table to face the massive wall of pinned papers and connecting cords.",
+    "video": "Saharis slowly settles into the wooden chair at the table, leaning slightly forward as he stares intently at the years of work on the wall. The camera remains completely locked.",
+    "de_archivo": null,
+    "texto": "Saharis se sienta ante la pared cubierta de papeles e hilos: son años de investigación."
+  },
+  "14-1": {
+    "imagen": "Extreme close up of an adult male hand drawing on a rough piece of paper with charcoal. The drawing depicts a dark circle containing an eye and four jagged teeth.",
+    "video": "The charcoal finishes the drawing with deliberate strokes. The warm lantern light casts shifting shadows across the texture of the paper.",
+    "de_archivo": null,
+    "texto": "Saharis dibuja a carboncillo el símbolo que vio en el anillo."
+  },
+  "14-2": {
+    "imagen": "Close up of an empty gap on a dry stone wall, surrounded by pinned papers, maps, and cords.",
+    "video": "An adult male hand enters the frame, presses the newly drawn charcoal paper into the empty gap, pins it firmly into the stone, and quickly withdraws.",
+    "de_archivo": null,
+    "texto": "Saharis coloca el dibujo nuevo en un hueco de la pared de investigación."
+  },
+  "14-3": {
+    "imagen": "Close up of the newly pinned rough paper on the stone wall, featuring the charcoal ring drawing with an eye and four teeth.",
+    "video": "The camera remains locked on the paper. The paper's edges stir very slightly in a subtle draught under the warm lantern light.",
+    "de_archivo": null,
+    "texto": "El dibujo del anillo queda añadido a los demás papeles.",
+    "revision_visual": {
+      "ruta": "keyframes/ep01/14-3/2.png",
+      "nota": "El símbolo dibujado y la colocación de SIETE cambian entre estas imágenes. Hay que conservar un único dibujo y la misma pared."
+    }
+  },
+  "14-4": {
+    "imagen": "Close shot of the pinned charcoal ring paper on the stone wall, framed over the dark shoulder of Saharis.",
+    "video": "The camera continuously pulls back and widens the shot, revealing the paper is lost among three hundred overlapping notes covering the massive stone wall. At the very top of the wall, above all the papers, the word 'SIETE' is written large on the stone in child-like handwriting.",
+    "de_archivo": null,
+    "texto": "Al ver más de la pared, el dibujo aparece entre cientos de notas. Arriba debe leerse «SIETE»."
+  },
+  "15-1": {
+    "imagen": "",
+    "video": "",
+    "de_archivo": "arch-cripta-b",
+    "texto": "Volvemos al pasado: la ceremonia de la cripta ya ha terminado."
+  },
+  "15-2": {
+    "imagen": "Medium shot of the cadaverous young woman sitting on the damp stone floor, holding a newborn baby wrapped in dark cloth. The baby's face is partially visible. Deep crushed blacks and thick smoke in the background.",
+    "video": "She gently rocks the baby back and forth while humming. The orange torchlight flickers across her face. Camera locked.",
+    "de_archivo": null,
+    "texto": "Una acólita sostiene y mece al recién nacido. Esta mujer es la acólita, no la madre."
+  },
+  "15-3": {
+    "imagen": "Medium shot from slightly behind the woman's shoulder. The masked man steps into the orange torchlight and lowers himself beside her to look at the bundle in her arms.",
+    "video": "The masked man crouches down next to the acolyte, peering at the baby. Thick smoke drifts around them. Slight pan to follow his movement.",
+    "de_archivo": null,
+    "texto": "El Celebrante se agacha junto a la acólita para observar al bebé.",
+    "revision_visual": {
+      "ruta": "keyframes/ep01/15-3/2.png",
+      "nota": "La máscara deja ver el rostro del Celebrante. Debe conservar la misma cobertura que en las otras tomas."
+    }
+  },
+  "15-4": {
+    "imagen": "Close-up on the young woman's exhausted but tender face, lit by the warm orange torchlight from below. She gazes downwards.",
+    "video": "Her expression is deeply affectionate but tired. The mouth keeps moving for as long as the character is speaking.",
+    "de_archivo": null,
+    "texto": "La acólita comenta que el bebé está dormido."
+  },
+  "15-5": {
+    "imagen": "Close detail shot of the newborn baby wrapped in dark cloth. The baby's bright red eyes are wide open, staring straight up off-screen unblinkingly. Orange torchlight reflects in the eyes.",
+    "video": "The baby does not sleep; the red eyes remain fixed off-screen. Very slow push in. The flickering torchlight casts moving shadows over the small face.",
+    "de_archivo": null,
+    "texto": "El niño mantiene los ojos rojos abiertos y fijos en el Celebrante: no está dormido."
+  },
+  "15-6": {
+    "imagen": "Close-up of the man's leather demonic mask, looking down. The angle allows a glimpse of his chin and mouth beneath the edge of the mask, illuminated by orange torchlight from below.",
+    "video": "He smiles faintly beneath the mask, observing the child. The mouth keeps moving for as long as the character is speaking.",
+    "de_archivo": null,
+    "texto": "El Celebrante responde y sonríe debajo de la máscara."
+  },
+  "15-7": {
+    "imagen": "Wide shot of the damp stone sanctuary with thick drifting smoke. The masked man is crouched next to the sitting woman.",
+    "video": "The masked man stands up and walks away into the dark background, leaving the woman seated on the floor with the baby. Camera locked.",
+    "de_archivo": null,
+    "texto": "El Celebrante se levanta y se marcha. La acólita se queda con el bebé."
+  },
+  "16-1": {
+    "imagen": "Medium shot, three-quarter view of sixteen-year-old Saharis sitting perfectly still in front of the wall covered in pinned papers. Restrained blue-grey dawn light filters into the dry stone room, mixing with the warm lantern glow.",
+    "video": "The camera is completely locked. Saharis does not move a muscle, sitting like a statue in the quiet room. The lantern flame flickers very slightly.",
+    "de_archivo": null,
+    "texto": "Volvemos al presente. Saharis sigue sentado ante la pared del refugio, sin haberse movido."
+  },
+  "16-2": {
+    "imagen": "Extreme close-up of a dry stone floor in the dim blue-grey light. There is only a single, tiny localized damp spot on the otherwise dry stone.",
+    "video": "A single heavy drop of water falls from above, hitting the damp spot on the dry stone. The camera is locked.",
+    "de_archivo": null,
+    "texto": "Una gota cae del techo sobre un punto del suelo. No está lloviendo dentro del refugio."
+  },
+  "16-3": {
+    "imagen": "",
+    "video": "",
+    "de_archivo": "arch-tuneles-b",
+    "texto": "Un detalle subterráneo acompaña el silencio y el sonido de las gotas."
+  },
+  "16-4": {
+    "imagen": "Medium shot, three-quarter view of sixteen-year-old Saharis in the dim stone room. He sits silently, his expression unreadable, surrounded by the restrained blue-grey light.",
+    "video": "Very slow push in on Saharis. He remains almost completely still, executing only a slow blink as he listens to the steady, rhythmic dripping.",
+    "de_archivo": null,
+    "texto": "Saharis permanece sentado, escuchando el goteo.",
+    "revision_visual": {
+      "ruta": "keyframes/ep01/16-4/2.png",
+      "nota": "Saharis aparece sentado en el jergón. El guion dice que no se ha movido: debe seguir en la silla junto a la mesa."
+    }
+  },
+  "17-1": {
+    "imagen": "Very dim light inside a rough stone cell. A heavy wooden door stands ajar in the background. In the shadows, a gaunt woman sits on the floor holding a small child against her chest. They are barely silhouettes in the darkness.",
+    "video": "The camera remains completely locked on the wide scene. The silhouettes barely move as the woman rocks the child gently side to side.",
+    "de_archivo": null,
+    "texto": "Un recuerdo muestra a Saharis de tres o cuatro años, abrazado por su madre en una celda oscura."
+  },
+  "17-2": {
+    "imagen": "Medium shot from directly behind a gaunt young woman sitting on the rough damp stone floor, holding a small child tightly against her chest. Long matted dark brown hair covers her features entirely. The cell background is nearly pitch black.",
+    "video": "The woman rocks slowly side to side, comforting the unseen child in her arms. Camera slowly pushes in on her back. Very contained movement.",
+    "de_archivo": null,
+    "texto": "La madre lo sostiene contra el pecho y canta muy bajo. No se le ve la cara."
+  },
+  "17-3": {
+    "imagen": "Close detail of the woman's thin and worn hands, showing old chafe marks on her wrists, wrapped protectively around a small child's back. The child's dark clothing is barely visible in the extremely low light, and no faces are in frame.",
+    "video": "The hands gently rub the small child's back, moving in a slow, rhythmic motion in time with an unseen lullaby. Camera locked, minimal motion.",
+    "de_archivo": null,
+    "texto": "Las manos de la madre abrazan al niño mientras él escucha el tono de una canción cuyas palabras no entiende."
+  },
+  "17-4": {
+    "imagen": "",
+    "video": "",
+    "de_archivo": "arch-cripta-celda-b",
+    "texto": "La oscuridad de la celda acompaña el recuerdo de la canción incompleta."
+  },
+  "18-1": {
+    "imagen": "Close detail of adult male hands dropping a folded piece of paper into an open metal lantern on a wooden table. Warm light spills from the lantern interior, contrasting with the restrained blue-grey shadows of the dry room.",
+    "video": "The fingers release the paper into the lantern. A warm glow flares up brightly from inside the enclosure as the paper catches fire, keeping the actual flames shielded from direct view. Static camera.",
+    "de_archivo": null,
+    "texto": "De vuelta en el refugio, Saharis mete una nota en el farol para quemarla."
+  },
+  "18-2": {
+    "imagen": "Medium shot, three-quarter view of Saharis sitting in a coarse coat, looking down slightly. A flickering warm glow from the burning paper dances across his face, contrasting heavily with the dry, cold ambient shadows.",
+    "video": "He watches the fire burn impassively. The warm flickering reflection on his face gradually shrinks and completely dies out, returning him entirely to the cool light of the room. Very slow push in.",
+    "de_archivo": null,
+    "texto": "Saharis observa la nota hasta que termina de arder."
+  },
+  "18-3": {
+    "imagen": "Medium shot of Saharis at the table with the lantern. The dry stone wall behind him is covered in overlapping pinned papers, map corners, lists, and cord, lit by the restrained blue-grey light.",
+    "video": "He rubs his fingertips together, then pushes himself up from the table, standing up entirely and exiting the top of the frame. Camera locked.",
+    "de_archivo": null,
+    "texto": "Saharis se levanta de la mesa del refugio."
+  },
+  "19-1": {
+    "imagen": "Wide establishing shot of a crowded, busy daytime market in a muddy alleyway. Leaning shacks, broken cobbles, and poor people moving about.",
+    "video": "People walk through the frame in the bustling daytime market. Camera pans slowly over the mud alleys and vendor stalls.",
+    "de_archivo": null,
+    "texto": "Es de día. El mercado está lleno de gente, ruido y barro."
+  },
+  "19-2": {
+    "imagen": "Medium shot, three-quarter view. Saharis, sixteen years old, wearing worn-out poor clothing, stands at a busy market stall pointing at rolls of leather, interacting with a female seller. Crowded muddy street in the background.",
+    "video": "Saharis gestures briefly towards the leather, and the seller nods in response. Passersby walk through the foreground, blurring the frame momentarily. Camera is locked.",
+    "de_archivo": null,
+    "texto": "Vestido de pobre, Saharis pregunta a una vendedora por el precio del cuero.",
+    "revision_visual": {
+      "ruta": "keyframes/ep01/19-2/2.png",
+      "nota": "Esta imagen parece una fotografía y rompe el estilo de anime de las demás. Hay que conservar el mismo estilo y el aspecto de Saharis."
+    }
+  },
+  "19-3": {
+    "imagen": "Medium wide shot. Saharis, still in his poor disguise, stands next to a wooden cart, gesturing toward it while facing a young male porter. Other carts and people fill the busy alley.",
+    "video": "Saharis points down the alleyway. The porter shrugs and gestures to a different cart. Busy market movement around them. Camera pans slightly to follow a passerby.",
+    "de_archivo": null,
+    "texto": "Saharis pregunta a un mozo qué carro llega antes."
+  },
+  "19-4": {
+    "imagen": "Close detail on hands. Young male hands, wearing frayed dirty sleeves, press a small coin into the small, dirty hands of a child. Muddy cobbles in the background blur. No faces in frame.",
+    "video": "The older fingers close the child's hand over the coin in a swift, hidden motion. Camera is locked.",
+    "de_archivo": null,
+    "texto": "Saharis entrega una moneda a un niño como parte de su tercera pregunta."
+  },
+  "19-5": {
+    "imagen": "Medium close up. Saharis has stepped aside under the shadow of a leaning shack roof. He looks down at a small scrap of paper in his hands, focused and ignoring the daytime crowd.",
+    "video": "Saharis uses a piece of charcoal to quickly write on the paper. Camera pushes in slowly.",
+    "de_archivo": null,
+    "texto": "Saharis se aparta del gentío para anotar lo que ha averiguado."
+  },
+  "19-6": {
+    "imagen": "Extreme close up. A rough scrap of paper held by slightly dirty fingers. Heavy charcoal strokes clearly spell the word 'RENN'.",
+    "video": "The hand holding the paper shifts slightly, adjusting its grip. The camera is completely locked.",
+    "de_archivo": null,
+    "texto": "En el papel debe leerse «RENN»: las preguntas han señalado ese nombre."
+  },
+  "20-1": {
+    "imagen": "Wide establishing shot of a modest merchant house in the tanners' quarter, viewed from across the street. Cold blue-grey daylight, dry cobblestones, unostentatious facade.",
+    "video": "Slight camera drift. The scene is quiet and dry. The front door remains closed and the street is completely empty.",
+    "de_archivo": null,
+    "texto": "Se presenta la casa que Saharis va a vigilar, en un barrio decente."
+  },
+  "20-2": {
+    "imagen": "Medium shot from across the street. Saharis sits on a dry stone step, an empty bowl placed on the ground directly in front of him. Cold daylight washing over him.",
+    "video": "Camera locked off. Saharis remains completely motionless, staring blankly ahead. A gentle breeze shifts his dark clothing slightly, but he does not react.",
+    "de_archivo": null,
+    "texto": "Saharis espera sentado en un escalón al otro lado de la calle, con un cuenco delante.",
+    "revision_visual": {
+      "ruta": "keyframes/ep01/20-2/4.png",
+      "nota": "Saharis parece estar junto a la entrada que vigila. Debe observarla desde un escalón al otro lado de la calle."
+    }
+  },
+  "20-3": {
+    "imagen": "Close detail of the empty wooden bowl resting on the dry stone step. The cold blue-grey light illuminates the texture of the wood and stone. No face in frame.",
+    "video": "A slow, subtle pan across the stone and the bowl. The background is out of focus and completely still. Dust motes drift in the air.",
+    "de_archivo": null,
+    "texto": "El cuenco vacío forma parte de la apariencia con la que Saharis pasa inadvertido."
+  },
+  "20-4": {
+    "imagen": "Wide shot of the merchant house, same angle as the first shot, but the ambient light has shifted to deeper, colder shadows indicating hours have passed.",
+    "video": "Shadows subtly deepen across the facade of the house, showing the passage of time. The door remains firmly shut, and no one enters or leaves.",
+    "de_archivo": null,
+    "texto": "Pasan las horas y cambia la luz sobre la casa. Nadie entra ni sale."
+  },
+  "20-5": {
+    "imagen": "Medium close-up of Saharis, three-quarter view. The light is noticeably dimmer now. He sits in the exact same position as before, unreadable and perfectly still on the dry step.",
+    "video": "Very slow push in on Saharis. He blinks once slowly, maintaining his silent, unbroken vigil. The dry street slowly goes out of focus behind him.",
+    "de_archivo": null,
+    "texto": "Saharis permanece en el mismo escalón, vigilando sin moverse de sitio."
+  },
+  "21-1": {
+    "imagen": "Wide shot of a modest merchant house in the tanners' quarter at night, lit by practical lamps. A heavy wooden cart loaded with exactly six barrels arrives in the street.",
+    "video": "The heavy wooden cart slowly rolls into frame from the left on the street. The camera is locked.",
+    "de_archivo": null,
+    "texto": "Por la noche llega un carro con seis barriles a la casa vigilada."
+  },
+  "21-2": {
+    "imagen": "Medium shot of the heavy wooden cart, carrying six large barrels, coming to a halt outside the merchant house.",
+    "video": "The cart settles to a stop in the quiet street. The camera is locked.",
+    "de_archivo": null,
+    "texto": "El carro se detiene frente a la misma casa."
+  },
+  "21-3": {
+    "imagen": "Medium shot of a rugged adult man wearing a heavy leather apron stepping down from the cart onto the street.",
+    "video": "The man steps down heavily from the cart. The camera pans down slightly to follow his movement. He stands still, looking forward.",
+    "de_archivo": null,
+    "texto": "Un hombre con delantal de cuero baja del carro."
+  },
+  "21-4": {
+    "imagen": "Medium shot of two servants in plain clothes unloading the heavy wooden barrels from the cart. Their heads are bowed, strictly looking at the ground to avoid the man's face.",
+    "video": "The servants push a barrel off the cart with slow, cautious movements, their eyes firmly fixed downward. Nothing else moves.",
+    "de_archivo": null,
+    "texto": "Los criados descargan los barriles sin mirar al hombre a la cara."
+  },
+  "21-5": {
+    "imagen": "Wide shot looking down the side of the house. The servants are rolling the large barrels along the exterior wall, bypassing the main door completely.",
+    "video": "The servants roll the barrels away into the shadows, wrapping around the corner of the house. Slow, steady push in.",
+    "de_archivo": null,
+    "texto": "Los criados llevan los barriles alrededor de la casa, sin usar la puerta principal."
+  },
+  "21-6": {
+    "imagen": "Medium shot, three-quarter view of Saharis, an adult young man in unassuming dark clothing, sitting quietly on a stone step across the street holding a humble wooden bowl.",
+    "video": "Saharis slowly stands up, his face unreadable in the cold blue-grey light. He leaves the bowl behind as he rises smoothly. Camera tilts up slightly to keep him in frame.",
+    "de_archivo": null,
+    "texto": "Saharis se levanta del escalón y deja el cuenco atrás."
+  },
+  "21-7": {
+    "imagen": "Close detail shot of the wooden bowl left behind on a stone step.",
+    "video": "The bowl rests completely still. The camera is locked.",
+    "de_archivo": null,
+    "texto": "El cuenco queda en el escalón donde Saharis estuvo vigilando."
+  },
+  "22-1": {
+    "imagen": "Wide shot of the low district at night. Leaning shacks line a narrow mud alley with broken cobbles, under a restrained blue-grey palette.",
+    "video": "A heavy empty wooden cart rolls forward and out of frame, revealing the dark, descending path ahead.",
+    "de_archivo": null,
+    "texto": "El carro, ya vacío, se marcha."
+  },
+  "22-2": {
+    "imagen": "Medium wide shot from a low angle. The man wearing a dark leather apron stands at the top of a descending street, facing away from the camera.",
+    "video": "The man in the apron begins to walk down the steep, muddy alleyway, his figure steadily shrinking into the gloom.",
+    "de_archivo": null,
+    "texto": "El hombre del delantal continúa a pie por una calle descendente."
+  },
+  "22-3": {
+    "imagen": "Medium shot, three-quarter view of Saharis standing in the shadow of a leaning shack. His face is calm and alert.",
+    "video": "Saharis steps forward from the darkness, maintaining a deliberate distance as he begins to follow the man down the alley.",
+    "de_archivo": null,
+    "texto": "Saharis sale de la sombra y empieza a seguirlo a distancia."
+  },
+  "22-4": {
+    "imagen": "Wide shot from a high angle. The muddy alley drops sharply, turning a corner among the leaning structures. The air is visibly thick.",
+    "video": "The man in the leather apron walks around the descending corner, plunging into the denser air of the lower district.",
+    "de_archivo": null,
+    "texto": "El hombre gira por otra esquina que baja hacia el barrio inferior."
+  },
+  "22-5": {
+    "imagen": "Medium shot, three-quarter view of Saharis walking down the uneven ground. The atmosphere around him is dense and smoky.",
+    "video": "Saharis continues his smooth descent, matching his pace to the unseen man ahead, glancing steadily at the unlit surroundings.",
+    "de_archivo": null,
+    "texto": "Saharis continúa detrás del mismo hombre, manteniendo la distancia."
+  },
+  "22-6": {
+    "imagen": "Wide shot from a low angle. The narrow passage has doorways without doors and exposed drains, lacking any streetlamps.",
+    "video": "The camera pans slightly as the dense, smoky air rolls through the pitch-black alley, highlighting the absence of light.",
+    "de_archivo": null,
+    "texto": "El camino se vuelve más oscuro: desaparecen las farolas y quedan desagües abiertos."
+  },
+  "22-7": {
+    "imagen": "Wide shot, extremely dim. The man in the apron is a dark silhouette walking further into an abyss of muddy alleys.",
+    "video": "The man continues walking until his figure is almost entirely swallowed by the dense air and complete absence of artificial light.",
+    "de_archivo": null,
+    "texto": "El hombre se adentra aún más en la oscuridad; Saharis sigue su recorrido."
+  },
+  "23-1": {
+    "imagen": "Wide shot of a dead-end alley at night. The cobblestones are worn and damp, lit by spaced street lamps. Set flush into the far stone wall at ground level is a half-sunken, heavy stone door.",
+    "video": "A slow, subtle push-in toward the dead end of the empty alley. Nothing else moves in the quiet, dim street.",
+    "de_archivo": null,
+    "texto": "El recorrido termina en un callejón sin salida, ante una puerta de piedra medio hundida."
+  },
+  "23-2": {
+    "imagen": "Medium wide shot of a man wearing a leather apron, standing before the half-sunken stone door in the dead-end alley. He has his fist raised toward the stone.",
+    "video": "The man knocks deliberately on the stone frame: two firm strikes, a brief pause, and then one final strike.",
+    "de_archivo": null,
+    "texto": "El hombre del delantal llama: dos golpes, una pausa y un golpe más.",
+    "revision_visual": {
+      "ruta": "keyframes/ep01/23-2/2.png",
+      "nota": "Aparece una puerta de madera a pie de calle. La historia pide una puerta de piedra medio hundida al fondo de un callejón sin salida."
+    }
+  },
+  "23-3": {
+    "imagen": "Medium shot. The heavy stone door opens inward, revealing a dark threshold. The man in the leather apron stands ready to enter.",
+    "video": "The man steps quickly through the threshold into the darkness, and the stone door immediately swings shut behind him.",
+    "de_archivo": null,
+    "texto": "La puerta se abre, el hombre entra y la puerta vuelve a cerrarse."
+  },
+  "23-4": {
+    "imagen": "Medium shot, three-quarter view. Saharis stands concealed in the deep shadows of the alley, with damp stone walls behind him.",
+    "video": "Saharis smoothly steps out of the dark shadow, entering the dim blue-grey ambient light of the alleyway.",
+    "de_archivo": null,
+    "texto": "Después de que el hombre haya entrado, Saharis sale de su escondite."
+  },
+  "23-5": {
+    "imagen": "Medium profile shot. Saharis stands near the half-sunken stone door in the alley wall, his attention focused on its stone lintel.",
+    "video": "Saharis steps even closer to the door, leaning down slightly to inspect the worn stone frame.",
+    "de_archivo": null,
+    "texto": "Saharis se acerca al dintel para examinar la piedra."
+  },
+  "23-6": {
+    "imagen": "Extreme close-up of dark, worn stone. Carved deeply into the surface is a specific symbol: a circle containing an eye, with four jagged teeth below it.",
+    "video": "The camera pushes in very slowly on the carving. The stone remains completely still in the dim, localized light.",
+    "de_archivo": null,
+    "texto": "En la piedra está tallado el mismo símbolo del anillo: un círculo, un ojo y cuatro dientes."
+  },
+  "24-1": {
+    "imagen": "Medium shot, three-quarter view of Saharis standing in front of a dark, half-sunken stone door in the street. The environment features worn cobbles and shuttered shopfronts. His expression is unreadable.",
+    "video": "Saharis slowly raises his hand toward the stone door. The camera remains locked. The movement is steady and deliberate.",
+    "de_archivo": null,
+    "texto": "Saharis levanta la mano hacia el símbolo de la puerta cerrada.",
+    "revision_visual": {
+      "ruta": "keyframes/ep01/24-1/2.png",
+      "nota": "La puerta vuelve a cambiar. Debe ser la misma puerta de piedra medio hundida de la escena anterior; Saharis permanece fuera."
+    }
+  },
+  "24-2": {
+    "imagen": "Close detail of an adult male hand resting flat against a stone surface deeply carved with a symbol: a circle, an eye, and four teeth.",
+    "video": "The hand presses firmly onto the carved symbol and then remains perfectly still. Camera is locked with no other movement.",
+    "de_archivo": null,
+    "texto": "Saharis apoya la mano sobre el símbolo y la mantiene allí. Un cántico llega desde el interior; él permanece fuera."
+  },
+  "24-3": {
+    "imagen": "Complete pitch black screen, pure darkness with absolutely no visible elements.",
+    "video": "The frame remains entirely black and static, holding the darkness with zero movement.",
+    "de_archivo": null,
+    "texto": "El capítulo termina en negro mientras queda la presencia del cántico."
+  }
+}

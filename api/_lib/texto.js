@@ -970,6 +970,7 @@ function loQueSeEspera(ctx) {
     '    {',
     `      "id": "${ctx.escena}-1",`,
     `      "segmento": ${ctx.segmentos.length ? JSON.stringify(ctx.segmentos[0].id) : 'null'},`,
+    '      "historia": "<EN ESPAÑOL SENCILLO: qué ocurre en ESTA toma, quién actúa y dónde; una o dos frases fieles al guion, sin datos de generación ni anticipar sucesos>",',
     '      "imagen": "<EN INGLÉS: qué se ve en el fotograma, una o dos frases>",',
     '      "video": "<EN INGLÉS: qué se mueve durante el plano y qué hace la cámara>",',
     '      "dur": 3,',
@@ -1639,6 +1640,7 @@ function normalizarPlano(crudo) {
     boca_visible: vacio(crudo.boca_visible) ? null : comoCadena(crudo.boca_visible),
     encadena_con: vacio(crudo.encadena_con) ? null : comoCadena(crudo.encadena_con),
     de_archivo: vacio(crudo.de_archivo) ? null : comoCadena(crudo.de_archivo),
+    historia: comoCadena(crudo.historia),
     direccion: normalizarDireccion(crudo.direccion)
   };
 }

@@ -1319,6 +1319,7 @@ async function armarLaPieza(episodio, modelo, sello) {
         refs: Array.isArray(plano.refs) ? plano.refs.map(texto).filter(Boolean) : [],
         encadena_con: texto(plano.encadena_con) || null,
         boca_visible: texto(plano.boca_visible) || null,
+        historia: texto(plano.historia),
         imagen: texto(plano.imagen),
         video: texto(plano.video),
         direccion: plano.direccion || null,

@@ -69,6 +69,7 @@ import {
   vaciar
 } from '../ui.js';
 import { plural, segundos } from '../formato.js';
+import { contextoDeToma } from '../relato.js';
 
 // ---------------------------------------------------------------------------
 // Números y palabras fijas de esta pantalla
@@ -396,7 +397,16 @@ async function bajarLaSerie() {
   }
 
   try {
-    return await respuesta.json();
+    const datos = await respuesta.json();
+    const cargar = async nombre => {
+      const r = await fetch(new URL(`../../datos/${nombre}.json`, import.meta.url), {cache:'no-cache'});
+      if (!r.ok) throw new Error(`No se pudo cargar ${nombre}`);
+      return r.json();
+    };
+    const lecturas = await Promise.allSettled([cargar('guiones'), cargar('relatos-ep01')]);
+    datos.relatoGuiones = lecturas[0].status === 'fulfilled' ? lecturas[0].value : {};
+    datos.relatos = lecturas[1].status === 'fulfilled' ? lecturas[1].value : {};
+    return datos;
   } catch (fallo) {
     throw new ErrorDeCara(
       'datos/serie.json se ha bajado pero no se entiende: no es un JSON válido. Es un fallo del ' +
@@ -461,7 +471,7 @@ function construirModelo(datos, estado = {}) {
       .filter(Boolean)
   );
 
-  return { piezas, porId: new Map(piezas.map((una) => [una.id, una])), placas, escenarios };
+  return { piezas, porId: new Map(piezas.map((una) => [una.id, una])), placas, escenarios, guiones:datos.relatoGuiones || {}, relatos:datos.relatos || {} };
 }
 
 /**
@@ -1242,7 +1252,7 @@ function accionesDeTanda(ctx) {
         })
   );
 
-  acciones.push(boton('Volver a pedir los enlaces', () => olvidarEnlaces(repintar)));
+  acciones.push(boton('Recargar imágenes y vídeos', () => olvidarEnlaces(repintar)));
 
   return [h('div', { clase: 'tarjeta-acciones' }, acciones)];
 }
@@ -1549,7 +1559,30 @@ function tarjetaDeToma(laToma, ctx) {
 
   const pie = [];
 
-  pie.push(h('p', { clase: 'tarjeta-texto' }, datosDeLaToma(laToma)));
+  const contexto = contextoDeToma(pieza, laToma, ctx.modelo.guiones, ctx.modelo.relatos);
+  if (contexto) {
+    pie.push(h('div', {clase:'toma-relato'},
+      h('p', {clase:'tarjeta-texto suave'}, [contexto.tiempo, contexto.lugar].filter(Boolean).join(' · ')),
+      h('strong', null, 'Qué ocurre aquí'),
+      h('p', {clase:'tarjeta-texto'}, contexto.historia || contexto.escena || 'No se pudo cargar la historia de esta toma. Recarga la página.'),
+      contexto.historia && contexto.escena ? h('details', null,
+        h('summary', null, 'Leer la escena completa'), h('p', {clase:'tarjeta-texto'}, contexto.escena)) : null,
+      contexto.antes || contexto.despues ? h('details', null, h('summary', null, 'Antes y después de esta toma'),
+        contexto.antes ? h('p', {clase:'tarjeta-texto'}, `Antes: ${contexto.antes}`) : null,
+        contexto.despues ? h('p', {clase:'tarjeta-texto'}, `Después: ${contexto.despues}`) : null) : null
+    ));
+  }
+  const rutaVisible = rutaQueSeMira(guardado, clave);
+  if (rutaVisible) {
+    const numero = guardado.intentosKeyframe.indexOf(rutaVisible) + 1;
+    const aprobada = rutaVisible === guardado.keyframe && !guardado.revisionPendiente;
+    pie.push(h('p', {clase:'tarjeta-texto suave'}, `Imagen${numero ? ` · Versión ${numero}` : ' del banco'} · ${aprobada ? 'Aprobada' : 'Por revisar'}`));
+    if (contexto?.revision?.ruta === rutaVisible) pie.push(aviso(contexto.revision.nota, {tono:'nota'}));
+  }
+  pie.push(h('details', {clase:'toma-detalles'}, h('summary', null, 'Detalles de generación'),
+    h('p', {clase:'tarjeta-texto suave'}, datosDeLaToma(laToma)),
+    h('p', {clase:'tarjeta-texto suave'}, `Veo ${NIVELES_DE_VEO[soloTexto(laToma.veo)] || laToma.veo || ''}`),
+    h('p', {clase:'tarjeta-texto suave'}, comoSeUsaLaToma(laToma))));
 
   // Para qué sirve, si es un plano de archivo. En una biblioteca de 56 planos de
   // ambiente lo que hace falta saber no es cuánto dura: es cuándo se pone.
@@ -1557,13 +1590,13 @@ function tarjetaDeToma(laToma, ctx) {
     pie.push(h('p', { clase: 'tarjeta-texto' }, soloTexto(laToma.uso)));
   }
 
-  pie.push(h('p', { clase: 'tarjeta-texto suave' }, comoSeUsaLaToma(laToma)));
+
 
   if (bloqueoKeyframe) pie.push(h('p', { clase: 'tarjeta-texto' }, bloqueoKeyframe));
 
   // La frase que ocupa el sitio del botón que no existe. Va siempre que no haya
   // botón de vídeo, incluso cuando el motivo es que ya se está generando.
-  if (sinBotonDeVideo) pie.push(h('p', { clase: 'tarjeta-texto' }, sinBotonDeVideo));
+  if (sinBotonDeVideo && sinBotonDeVideo !== bloqueoKeyframe) pie.push(h('p', { clase: 'tarjeta-texto' }, sinBotonDeVideo));
 
   if (guardado.operacion) {
     pie.push(espera(`Veo está generando el vídeo de ${laToma.id}…`));
@@ -1586,7 +1619,7 @@ function tarjetaDeToma(laToma, ctx) {
   if (clips) pie.push(clips);
 
   const nodo = tarjeta({
-    titulo: tituloDeTarjeta(laToma),
+    titulo: contexto ? contexto.titulo : tituloDeTarjeta(laToma),
     media: marcoDeKeyframe(clave, guardado, laToma.id),
     pie,
     estado:
@@ -1615,8 +1648,7 @@ function tituloDeTarjeta(laToma) {
   return h(
     'h3',
     { clase: 'tarjeta-titulo' },
-    h('span', { clase: 'mono' }, laToma.id),
-    insignia(`Veo ${NIVELES_DE_VEO[soloTexto(laToma.veo)] || soloTexto(laToma.veo) || 'sin nivel'}`)
+    h('span', { clase: 'mono' }, `Toma ${laToma.id}`)
   );
 }
 
@@ -1699,9 +1731,10 @@ function rutaQueSeMira(guardado, clave) {
   if (elegida && (elegida === guardado.keyframe || guardado.intentosKeyframe.includes(elegida))) {
     return elegida;
   }
-  return (
-    guardado.keyframe || guardado.intentosKeyframe[guardado.intentosKeyframe.length - 1] || null
-  );
+  if (guardado.revisionPendiente && guardado.intentosKeyframe.length) {
+    return guardado.intentosKeyframe[guardado.intentosKeyframe.length - 1];
+  }
+  return guardado.keyframe || guardado.intentosKeyframe[guardado.intentosKeyframe.length - 1] || null;
 }
 
 /**
