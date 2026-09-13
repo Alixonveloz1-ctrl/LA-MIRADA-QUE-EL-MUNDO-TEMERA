@@ -13,7 +13,8 @@ import { segmentosDeEscena } from '../datos/segmentos.js';
 import { promptKeyframe, promptVideo, comprobarCupos } from '../api/_lib/prompt.js';
 import { revisarPlanosDeEscena, conservaDuracionDeEscena } from '../api/_lib/texto.js';
 import { aplicarCorreccion } from '../api/_lib/continuidad.js';
-import { materialVigente, necesitaDireccion, conservaMontaje, invalidarMontajes, referenciaDeSecuencia, estadoDeReferencia, marcarCambio, pasoDeEscena, referenciasDeReparto, personajesSinReferencia } from '../app/continuidad.js';
+import { escenariosParaPlanificar } from '../api/_lib/planificacion-visual.js';
+import { materialVigente, necesitaDireccion, conservaMontaje, invalidarMontajes, referenciaDeSecuencia, estadoDeReferencia, marcarCambio, pasoDeEscena, referenciasDeReparto, personajesSinReferencia, personajesOmitidosEnGeneral } from '../app/continuidad.js';
 import { claveDelMaterial, esDeArchivo, porQueNoSeGenera } from '../app/planos.js';
 
 // Ninguna prueba de continuidad puede disparar una generación de pago.
@@ -270,7 +271,7 @@ prueba('Un clip de otro keyframe no se considera vigente',()=>{
 const encolados=[];
 const nodo=(tipo,atributos,...hijos)=>({tipo,atributos,hijos:hijos.flat().filter(x=>x!=null),appendChild(h){this.hijos.push(h);}});
 const estadoUi=inicial();
-const stubs={pasoDeEscena,referenciaDeSecuencia,estadoDeReferencia,referenciasDeReparto,personajesSinReferencia,contextoDeToma,contextoDeEscena,necesitaDireccion,materialVigente,invalidarMontajes,claveDelMaterial,esDeArchivo,porQueNoSeGenera,
+const stubs={pasoDeEscena,referenciaDeSecuencia,estadoDeReferencia,referenciasDeReparto,personajesSinReferencia,personajesOmitidosEnGeneral,contextoDeToma,contextoDeEscena,necesitaDireccion,materialVigente,invalidarMontajes,claveDelMaterial,esDeArchivo,porQueNoSeGenera,
   ErrorDeCara,llamar:globalThis.fetch,actual:()=>estadoUi,cambiar:async fn=>fn(estadoUi),alCambiar:()=>{},
   encolar:()=>{},encolarVarios:lista=>encolados.push(...lista),confirmar:async()=>true,
   h:nodo,seccion:(...h)=>nodo('seccion',{},h),aviso:t=>nodo('aviso',{},t),
@@ -336,7 +337,7 @@ prueba('Los intentos todavía no aprobados también se señalan para revisión',
 // los cerrojos del servidor y el orden de escritura, no solo los de la pantalla.
 let servidor=inicial();
 const escrituras=[],eventos=[];
-const prestado={Buffer,createHash,randomUUID,ErrorDeCara,serie,tomaDeLaPieza,exigirAprobada,
+const prestado={Buffer,createHash,randomUUID,ErrorDeCara,serie,tomaDeLaPieza,exigirAprobada,escenariosParaPlanificar,
   materialVigente,necesitaDireccion,referenciaDeSecuencia,pasoDeEscena,aplicarCorreccion,promptVideo,
   leerElEstado:async()=>({estado:structuredClone(servidor),generacion:'1'}),
   escribirElEstado:async estado=>{servidor=structuredClone(estado);eventos.push('estado');return {generacion:'2'};},

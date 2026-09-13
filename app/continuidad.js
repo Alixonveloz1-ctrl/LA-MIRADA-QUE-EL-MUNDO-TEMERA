@@ -134,6 +134,19 @@ export function personajesSinReferencia(toma,placas) {
     !placas.some(r=>placaDePersonaje(r,p) && (toma.refs || []).includes(r.id)));
 }
 
+/** Un general que muestra la reunión completa no puede sustituir a los
+ * personajes físicos del guion por figurantes. No se aplica a planos cerrados
+ * ni deduce presencia a partir de nombres mencionados en el diálogo. */
+export function personajesOmitidosEnGeneral(toma,placas) {
+  if (toma.de_archivo || !toma.continuidad || !toma.direccion) return [];
+  const camara=String(toma.direccion.camara || '');
+  const general=/\b(establishing|whole (?:room|hall|space|gathering)|entire (?:room|hall|space|table|gathering)|full (?:room|hall|gathering)|length of (?:the |a )?(?:long )?table)\b/i.test(camara);
+  if (!general || /\b(close[ -]?up|close detail|macro)\b/i.test(camara)) return [];
+  // El reparto de toda la escena también puede incluir a quien llega después.
+  // Solo exigir a quienes el desglose sitúa físicamente presentes AHORA.
+  return (toma.direccion.presentes || []).filter(p=>placas.some(r=>placaDePersonaje(r,p)) && !toma.direccion.visibles.includes(p));
+}
+
 /** Conserva el aspecto de acompañantes sin ficha propia cuando un primer plano
  * intermedio deja de mostrarlos. Solo usa su última aparición aprobada en esta
  * secuencia, nunca una versión vieja de una aparición pendiente de revisión. */
@@ -155,7 +168,8 @@ export function referenciasDeReparto(pieza,toma,estado,placas) {
 export function normalizarDireccion(d) {
   if (!d || typeof d !== 'object' || Array.isArray(d)) return null;
   const texto=v=>typeof v === 'string' ? v.trim() : '';
-  return { visibles: Array.isArray(d.visibles) ? d.visibles.map(texto) : [],
+  return { ...(Array.isArray(d.presentes) ? {presentes:d.presentes.map(texto)} : {}),
+    visibles: Array.isArray(d.visibles) ? d.visibles.map(texto) : [],
     fuera_de_campo: Array.isArray(d.fuera_de_campo) ? d.fuera_de_campo.map(texto) : [],
     posiciones: texto(d.posiciones), miradas: texto(d.miradas),
     camara: texto(d.camara), estado_inicial: texto(d.estado_inicial),
@@ -170,6 +184,10 @@ export function revisarDireccion(toma, marco) {
     if (!d[campo]?.trim()) errores.push(`Falta dirección.${campo}.`);
   }
   const elenco = new Set(marco.personajes || []);
+  if (Array.isArray(d.presentes)) {
+    for(const p of d.presentes) if(!elenco.has(p)) errores.push(`«${p}» no pertenece al reparto físico de esta escena.`);
+    for(const p of d.visibles) if(!d.presentes.includes(p)) errores.push(`«${p}» está visible pero no figura presente en este momento.`);
+  }
   for (const p of elenco) {
     if (!d.visibles.includes(p) && !d.fuera_de_campo.includes(p)) errores.push(`Falta situar a «${p}» en cuadro o fuera de campo.`);
   }

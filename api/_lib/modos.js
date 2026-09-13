@@ -63,6 +63,7 @@ import { createHash, randomUUID } from 'node:crypto';
 import { materialVigente, necesitaDireccion, referenciaDeSecuencia, referenciasDeReparto, pasoDeEscena, firmaDeToma } from '../../app/continuidad.js';
 import { aplicarCorreccion } from './continuidad.js';
 import { aplicarVersionLocal } from './version-local.js';
+import { escenariosParaPlanificar } from './planificacion-visual.js';
 
 import { ErrorDeCara } from './errores.js';
 import {
@@ -899,6 +900,7 @@ async function modoImagen(cuerpo) {
         entrada.revision_pendiente = true;
         if (!entrada.origenes_keyframe) entrada.origenes_keyframe = {};
         entrada.origenes_keyframe[ruta] = { revision: tomaInicial.revision_direccion || null,
+          referencia_escenario: pendientes.find(p=>p.referencia.escenario)?.rutaAprobada || null,
           referencia_anterior: compuesto.referencias.find(r=>r.uso==='secuencia')?.continuidad || null,
           referencias_banco: pendientes.filter(p=>p.referencia.placa).map(p=>({placa:p.referencia.placa,ruta:p.rutaAprobada})),
           referencias_reparto: pendientes.filter(p=>p.referencia.reparto).map(p=>({personajes:p.referencia.reparto,ruta:p.rutaAprobada})) };
@@ -1447,7 +1449,16 @@ async function modoAlinear(cuerpo) {
 async function modoDesglosarEscena(cuerpo) {
   const episodio = exigirTexto(cuerpo, 'episodio', 'de qué episodio es la escena');
   const escena = exigirTexto(cuerpo, 'escena', 'qué escena se desglosa');
-  return desglosarEscena(episodio, escena);
+  const leido=await leerElEstado();
+  return desglosarEscena(episodio, escena, await leerEscenariosParaPlanificar(leido.estado,episodio,escena));
+}
+
+async function leerEscenariosParaPlanificar(estado,episodio,escena) {
+  return Promise.all(escenariosParaPlanificar(estado,episodio,escena).map(async ref=>{
+    const archivo=await leerBytes(ref.ruta);
+    if (!archivo) throw new ErrorDeCara('No se encontró la imagen aprobada del escenario. No se han preparado ni generado nuevas tomas.',{http:409,reintentable:false});
+    return {...ref,datos:archivo.datos};
+  }));
 }
 
 async function modoAdaptarTomaArchivo(cuerpo) {
@@ -1463,7 +1474,8 @@ async function modoAdaptarTomaArchivo(cuerpo) {
   if (!original.de_archivo && original.archivo_original) return {preparada:true,ya_preparada:true};
   if (!original.de_archivo) throw new ErrorDeCara('Esta toma ya genera sus propias imágenes.',{http:400,reintentable:false});
   const anteriores=pieza.tomas.filter(t=>String(t.escena)===String(original.escena));
-  const propuesta=await adaptarPlanoDeArchivo(Number(idPieza.slice(2)),original.escena,anteriores,id);
+  const visuales=await leerEscenariosParaPlanificar(leido.estado,Number(idPieza.slice(2)),original.escena);
+  const propuesta=await adaptarPlanoDeArchivo(Number(idPieza.slice(2)),original.escena,anteriores,id,visuales);
   const revision=`local-${Date.now()}-${randomUUID()}`;
   const carpeta=`continuidad/${idPieza}/${id}/${revision}`;
   const respaldo=`${carpeta}/anterior.json`, ruta=`${carpeta}/desglose.json`;
@@ -1498,7 +1510,8 @@ async function modoCorregirContinuidad(cuerpo) {
   const respaldo=`${carpeta}/anterior.json`;
   await escribirEnElBucket(respaldo,JSON.stringify({ pieza:original,
     tomas:leido.estado.tomas, desglose:leido.estado.desglose }),{tipo:'application/json'});
-  const propuesta=await corregirPlanosDeEscena(episodio,escena,antes);
+  const visuales=await leerEscenariosParaPlanificar(leido.estado,episodio,escena);
+  const propuesta=await corregirPlanosDeEscena(episodio,escena,antes,visuales);
   const planos=propuesta.planos.map(p=>({ ...p, escena, revision_direccion:revision }));
   const ruta=`${carpeta}/desglose.json`;
   await escribirEnElBucket(ruta,JSON.stringify({ episodio,escena,planos,revision,respaldo }),{tipo:'application/json'});

@@ -29,6 +29,6 @@
     "difusion": "node herramientas/probar-difusion.mjs",
     "reel": "node herramientas/probar-reel.mjs",
     "piezas-estado": "node herramientas/probar-piezas-estado.mjs",
-    "continuidad": "node herramientas/probar-continuidad.mjs && node herramientas/probar-referencias-personajes.mjs && node herramientas/probar-version-local.mjs"
+    "continuidad": "node herramientas/probar-continuidad.mjs && node herramientas/probar-referencias-personajes.mjs && node herramientas/probar-version-local.mjs && node herramientas/probar-planificacion-visual.mjs"
   }
 }
