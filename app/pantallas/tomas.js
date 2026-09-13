@@ -54,7 +54,7 @@ import { llamar, ErrorDeCara } from '../api.js';
 import { actual, alCambiar, cambiar, cargar } from '../estado.js';
 import { encolar, encolarVarios } from '../cola.js';
 import { claveDelMaterial, esDeArchivo, porQueNoSeGenera } from '../planos.js';
-import { necesitaDireccion, materialVigente, invalidarMontajes, pasoDeEscena, estadoDeReferencia, referenciasDeReparto, personajesSinReferencia, personajesOmitidosEnGeneral } from '../continuidad.js';
+import { necesitaDireccion, materialVigente, invalidarMontajes, pasoDeEscena, estadoDeReferencia, estadoDeBaseEscena, referenciasDeReparto, personajesSinReferencia, personajesOmitidosEnGeneral } from '../continuidad.js';
 import {
   aviso,
   barra,
@@ -1617,14 +1617,17 @@ function tarjetaDeToma(laToma, ctx) {
     if (personajes) pie.push(personajes);
   }
   if (/^ep\d+$/.test(pieza.id) && !laToma.de_archivo) {
+    const base=estadoDeBaseEscena(pieza,laToma,ctx.estado);
+    if (base.referencia) pie.push(h('p',{clase:'tarjeta-texto'},`Base de esta imagen: ${base.etiqueta}. Conserva la distribución y los ocupantes.`));
+    else if (base.motivo) pie.push(h('p',{clase:'tarjeta-texto'},base.motivo));
     const referencia=estadoDeReferencia(pieza,laToma,ctx.estado);
     const compatible=referencia.referencia;
     const activa=laToma.referencia_anterior !== false;
     const ocupado=(ctx.estado.cola || []).some(t=>t.tipo==='keyframe' && t.args?.pieza===pieza.id &&
       t.args?.id===laToma.id && ['pendiente','en_curso'].includes(t.estado));
-    pie.push(h('div',{clase:'toma-referencia'},
+    if (!base.referencia || compatible?.ruta !== base.referencia.ruta) pie.push(h('div',{clase:'toma-referencia'},
       h('button',{type:'button',role:'switch','aria-checked':String(activa && Boolean(compatible)),
-        'aria-label':'Usar imagen anterior como referencia',clase:'toma-interruptor',
+        'aria-label':'Usar toma anterior como apoyo',clase:'toma-interruptor',
         disabled:!compatible || ocupado,
         alClic:()=>hacer(()=>cambiar(borrador=>{
           const actual=borrador.piezas?.[pieza.id]?.tomas?.find(t=>t.id===laToma.id);
@@ -1634,7 +1637,7 @@ function tarjetaDeToma(laToma, ctx) {
           if(enCurso) throw new Error('Espera a que termine la imagen antes de cambiar su referencia.');
           actual.referencia_anterior=!activa;
         }),ctx.repintar)
-      },h('span',null,'Usar imagen anterior como referencia'),
+      },h('span',null,'Usar toma anterior como apoyo'),
         h('span',{'aria-hidden':'true',clase:'toma-interruptor-pista'},h('span'))),
       h('p',{clase:'tarjeta-texto suave'}, !compatible ? referencia.motivo :
         activa ? `Usará ${referencia.etiqueta}.` : `Apagado. Puedes usar ${referencia.etiqueta}.`)

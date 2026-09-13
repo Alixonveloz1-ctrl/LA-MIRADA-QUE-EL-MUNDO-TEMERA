@@ -555,7 +555,7 @@ export function promptEscenario(id) {
  * @param {string} idToma
  * @returns {{texto:string, negativo:string, referencias:{placa?:string, escenario?:string, instruccion:string, cupo:string}[]}}
  */
-export function promptKeyframe(idPieza, idToma, piezaAlternativa = null, referenciaSecuencia = null, referenciasReparto = []) {
+export function promptKeyframe(idPieza, idToma, piezaAlternativa = null, referenciaSecuencia = null, referenciasReparto = [], referenciaBase = null) {
   const laToma = toma(idPieza, idToma, piezaAlternativa);
 
   if (typeof laToma.imagen !== 'string' || !laToma.imagen.trim()) {
@@ -568,6 +568,7 @@ export function promptKeyframe(idPieza, idToma, piezaAlternativa = null, referen
 
   const cuerpo = unir(
     laToma.escenario ? 'Reframe the approved LOCATION IMAGE to make this shot in the same physical set. Place the specified cast in it using their CHARACTER BANK images. Change the camera crop, not the room layout or the furniture.' : '',
+    referenciaBase ? 'Use the SCENE BASE as the starting composition: this is the occupied set, not an empty room to repopulate. Preserve each established person in their same seat or position and preserve the connected furniture, table setting and installed lamps. Change the camera crop and only the actions explicitly required in this shot. An occupied seat visible in the new crop must retain its occupant; people outside the crop remain off screen. If a character is marked off screen, crop out their seat too: never show their established seat empty or give it to someone else. Do not clear plates or diners, split tables, relocate lamps or redistribute the guests.' : '',
     laToma.imagen,
     laToma.continuidad?.luz || luzDe(laToma.luz, `La toma «${idToma}» de la pieza «${idPieza}»`),
     direccionDelPlano(idPieza, laToma)
@@ -612,7 +613,13 @@ export function promptKeyframe(idPieza, idToma, piezaAlternativa = null, referen
     });
   }
 
-  if (referenciaSecuencia) ponerReferencia(referencias, {
+  if (referenciaBase) ponerReferencia(referencias, {
+    continuidad:referenciaBase.ruta, uso:'base_escena',
+    instruccion:'SCENE BASE: approved wide frame of this same place and narrative moment. This is the persistent occupied layout: retain the same seats, occupants, neighboring people, tableware, connected furniture and fixtures. Reframe THIS arrangement for the new shot instead of rebuilding it. The empty LOCATION IMAGE supplies architecture, not empty seats. CHARACTER BANK images refine identity and clothing, not seating or portrait backgrounds. Apply only explicit scripted movements or departures. A detail insert does not reset this arrangement.',
+    cupo:'objeto'
+  });
+
+  if (referenciaSecuencia && referenciaSecuencia.ruta !== referenciaBase?.ruta) ponerReferencia(referencias, {
     continuidad: referenciaSecuencia.ruta,
     uso:'secuencia',
     instruccion:'SEQUENCE REFERENCE: an approved earlier frame from this same sequence, for established seating, population, ongoing action and handled props. The LOCATION IMAGE controls architecture, furniture connectivity and installed fixtures; do not inherit spatial errors from this frame. The CHARACTER BANK controls the design of named characters; never replace their face, costume or mask with a conflicting design from this frame. Render only this shot\'s visible cast. Follow the NEW camera, framing, scripted movements and changes. Reframe the same set, without moving its objects, and follow this shot\'s lighting. People outside a close-up remain off screen, not erased from the location.',

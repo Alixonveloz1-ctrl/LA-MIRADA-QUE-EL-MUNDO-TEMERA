@@ -8,7 +8,7 @@ import { imagenUnaVez } from '../api/_lib/solicitudes-imagen.js';
 import { exigirAprobada } from '../api/_lib/estado.js';
 import { revisarPlanosDeEscena } from '../api/_lib/texto.js';
 import { promptKeyframe, comprobarCupos } from '../api/_lib/prompt.js';
-import { referenciaDeSecuencia, referenciasDeReparto, personajesSinReferencia, pasoDeEscena } from '../app/continuidad.js';
+import { referenciaDeSecuencia, referenciasDeReparto, estadoDeBaseEscena, personajesSinReferencia, pasoDeEscena } from '../app/continuidad.js';
 
 // Se ejecuta el recorrido real modos → prompt → lectura de referencias →
 // imagen → cuerpo de Vertex. Solo se sustituyen almacenamiento y transporte.
@@ -34,7 +34,7 @@ const aprobada=ruta=>({keyframe_aprobado:ruta,intentos_keyframe:[ruta],revision_
 const estado={piezas:{ep01:pieza},tomas:{'ep01/1-2':aprobada('culto.png'),'ep01/1-7':aprobada('bebe.png')},
   escenarios:{cripta:{aprobada:'cripta.png'}},banco:{'celebrante-mascara':{aprobada:'mascara.png'},'saharis-bebe-ancla':{aprobada:'ancla-bebe.png'}}};
 const componer=(t=actual,e=estado,p=pieza)=>promptKeyframe(p.id,t.id,{...p,tomas:p.tomas.map(a=>a.id===t.id?t:a)},
-  referenciaDeSecuencia(p,t,e),referenciasDeReparto(p,t,e,placas));
+  referenciaDeSecuencia(p,t,e),referenciasDeReparto(p,t,e,placas),estadoDeBaseEscena(p,t,e).referencia);
 prueba('La toma lleva las fichas del Celebrante y bebé además de la cripta, el bebé anterior y los acólitos',()=>{
   const r=componer().referencias;
   assert.deepEqual(r.map(r=>r.placa||r.escenario||r.continuidad),['cripta','celebrante-mascara','saharis-bebe-ancla','bebe.png','culto.png']);
@@ -117,6 +117,34 @@ prueba('Los acompañantes pueden continuar entre capítulos sin tomar una imagen
   assert.deepEqual(referenciasDeReparto(pa,a,e,placas),[]);
 });
 
+for (const ep of [1,2,12]) {
+  prueba(`Capítulo ${ep}: el general persiste tras un detalle, con el apoyo anterior apagado`,()=>{
+    const esc=ep===1?'3':String(escenasDeEpisodio(ep)[0].escena);
+    const general=toma(ep,esc,'base',[],[]);
+    general.direccion.camara='Wide establishing shot of the whole room.';
+    const detalle={...general,id:'detalle',direccion:{...general.direccion,camara:'Close detail of a lamp.'}};
+    const destino={...general,id:'actual',referencia_anterior:false,direccion:{...general.direccion,camara:'Medium shot.'}};
+    const p={id:`ep${String(ep).padStart(2,'0')}`,tomas:[general,detalle,destino]};
+    const e={tomas:{[`${p.id}/base`]:aprobada('mesa.png'),[`${p.id}/detalle`]:aprobada('lampara.png')}};
+    assert.equal(referenciaDeSecuencia(p,destino,e),null);
+    assert.equal(estadoDeBaseEscena(p,destino,e).referencia.ruta,'mesa.png');
+    const k=componer(destino,e,p);
+    assert.equal(k.referencias.find(r=>r.uso==='base_escena').continuidad,'mesa.png');
+    assert.ok(!k.referencias.some(r=>r.continuidad==='lampara.png'));
+    assert.match(k.texto,/never show their established seat empty/);
+    assert.equal(estadoDeBaseEscena(p,general,e).referencia,null,'No usar imágenes futuras');
+    assert.equal(estadoDeBaseEscena(p,{...destino,escenario:'otro-lugar'},e).referencia,null);
+    assert.equal(estadoDeBaseEscena(p,{...destino,continuidad:{...destino.continuidad,secuencia:'otro-momento'}},e).referencia,null);
+    e.tomas[`${p.id}/base`].revision_pendiente=true;
+    assert.equal(estadoDeBaseEscena(p,destino,e).referencia,null,'No usar generales pendientes');
+    assert.ok(estadoDeBaseEscena(p,destino,e).motivo);
+  });
+}
+prueba('El general no se adjunta dos veces si también es el apoyo anterior',()=>{
+  const p=promptKeyframe(pieza.id,actual.id,pieza,{ruta:'general.png'},[],{ruta:'general.png'});
+  assert.equal(p.referencias.filter(r=>r.continuidad==='general.png').length,1);
+});
+
 function cargar(ruta,stubs,salida) {
   const fuente=readFileSync(new URL(ruta,import.meta.url),'utf8')
     .replace(/^import\s*\{([^}]+)\}\s*from\s*['"][^'"]+['"];\s*$/gm,(_,nombres)=>
@@ -138,7 +166,7 @@ const generarImagen=cargar('../api/_lib/imagen.js',{
 },'generar');
 const modos=cargar('../api/_lib/modos.js',{
   Buffer,ErrorDeCara,serie,tomaDeLaPieza,nivelImagen,promptKeyframe,comprobarCupos,exigirAprobada,imagenUnaVez,
-  referenciaDeSecuencia,referenciasDeReparto,pasoDeEscena,generarImagen,
+  referenciaDeSecuencia,referenciasDeReparto,estadoDeBaseEscena,pasoDeEscena,generarImagen,
   leerElEstado:async()=>({estado:structuredClone(servidor),generacion:'1'}),
   escribirElEstado:async e=>{servidor=structuredClone(e);return {generacion:'2'};},
   leerBytes:async ruta=>{leidos.push(ruta);return {datos:bytesDe(ruta)};},
@@ -163,6 +191,22 @@ prueba('El cuerpo que sale a Vertex contiene los bytes aprobados de las cinco re
   assert.deepEqual(material.origenes_keyframe[respuesta.ruta].referencias_banco.map(r=>r.placa),actual.refs);
   assert.equal(material.origenes_keyframe[respuesta.ruta].referencia_anterior,'bebe.png');
   assert.deepEqual(material.origenes_keyframe[respuesta.ruta].referencias_reparto,[{personajes:['acolitos'],ruta:'culto.png'}]);
+});
+servidor=structuredClone(estado);
+const generalReal={...culto,id:'general',direccion:{...culto.direccion,camara:'Wide establishing shot of the whole room.'}};
+servidor.piezas.ep01.tomas.unshift(generalReal);
+servidor.piezas.ep01.tomas.find(t=>t.id===actual.id).referencia_anterior=false;
+servidor.tomas['ep01/general']=aprobada('general.png');
+envios=[];leidos=[];
+await modos.imagen({tipo:'keyframe',pieza:'ep01',id:'2-1'});
+prueba('Servidor: apagar el apoyo sigue enviando los bytes del general y las fichas del banco',()=>{
+  assert.equal(envios.length,1);
+  const log=JSON.parse(escritos.get('keyframes/ep01/2-1/1.encargo.json'));
+  assert.deepEqual(log.referencias.map(r=>r.ruta),['cripta.png','mascara.png','ancla-bebe.png','general.png']);
+  const partes=envios[0].contents[0].parts;
+  assert.equal(partes[6].inlineData.data,bytesDe('general.png').toString('base64'));
+  assert.match(partes[7].text,/SCENE BASE/);
+  assert.equal(servidor.tomas['ep01/2-1'].origenes_keyframe[respuesta.ruta].referencia_base,'general.png');
 });
 servidor=structuredClone(estado);delete servidor.banco['celebrante-mascara'].aprobada;
 envios=[];leidos=[];
