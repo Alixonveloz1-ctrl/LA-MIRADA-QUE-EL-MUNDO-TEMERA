@@ -120,6 +120,7 @@ const GASTAN_CUOTA = new Set([
   'voz-muestra',
   'alinear',
   'desglosar-escena',
+  'adaptar-toma-archivo',
   'salud',
 ]);
 

@@ -532,6 +532,43 @@ export async function corregirPlanosDeEscena(episodio, escena, existentes) {
   return producirDesglose(episodio, escena, existentes);
 }
 
+/** Adapta UN uso del archivo. El guion y las demás tomas son solo contexto. */
+export async function adaptarPlanoDeArchivo(episodio, escena, existentes, id) {
+  const original=existentes.find(t=>t.id===id);
+  const archivo=serie.piezas.archivo?.tomas?.find(t=>t.id===original?.de_archivo);
+  if (!original?.de_archivo || !archivo) throw new ErrorDeCara('Esta toma no utiliza una imagen del banco disponible.', {http:400,reintentable:false});
+  const contexto=contextoDeLaEscena(episodio,escena);
+  const encargo=promptDeDesglose(contexto)+'\nADAPT ONE ARCHIVE INSERT, NOT THE WHOLE SCENE:\n'+
+    `Return {"planos":[ONE shot with id ${JSON.stringify(id)}]}. Preserve this exact shot's ID, segmento, dur, dur_gen, recorte, veo, boca_visible and encadena_con. `+
+    'Set de_archivo to null. Supply imagen, video, historia and complete direccion for its use HERE. '+
+    'Preserve the subject of the insert (for example, the oil lamp); do not replace it with a different story action. '+
+    'Adapt visible background occupancy, time of day, clothing and props to the scripted scene and its neighboring shots. '+
+    'The archive may show an empty room or another time of day; those are not authoritative. '+
+    'For a close object insert you may crop the gathering area out entirely; never show seats empty when their occupants remain there. '+
+    'All other shots and the dialogue are read-only context. Do not return, rewrite or reorder them.\n'+
+    JSON.stringify({toma:original,material_del_archivo:archivo,tomas_de_la_escena:existentes});
+  let devuelto=null,quejas=[];
+  for (let intento=0;intento<2;intento++) {
+    devuelto=await generar(intento ? conLasReglasRotas(encargo,quejas,devuelto) : encargo,{json:true});
+    const revision=revisarAdaptacionDeArchivo(episodio,escena,original,devuelto);
+    if (!revision.quejas.length) return revision.planos[0];
+    quejas=revision.quejas;
+  }
+  throw new ErrorDeCara('No se pudo preparar una versión coherente de esta toma. El banco y tus imágenes siguen intactos.',
+    {http:502,reintentable:false,detalle:listaDeQuejas(quejas)});
+}
+
+export function revisarAdaptacionDeArchivo(episodio,escena,original,devuelto) {
+  const revision=revisar(devuelto,contextoDeLaEscena(episodio,escena),true);
+  const [nueva]=revision.planos;
+  const queja=texto=>revision.quejas.push({regla:'adaptar-solo-esta-toma',queja:texto});
+  if (!original?.de_archivo || revision.planos.length!==1 || !nueva || !conservaMontaje([original],[nueva]) ||
+      (nueva.segmento ?? null)!==(original.segmento ?? null)) queja('Devuelve solo la toma indicada, con sus tiempos, segmento y diálogo intactos.');
+  if (nueva?.de_archivo) queja('La nueva versión debe generar material propio, con de_archivo null.');
+  if (!nueva?.historia || nueva.historia.length<15) queja('Falta explicar en español sencillo qué debe verse en esta imagen.');
+  return revision;
+}
+
 async function producirDesglose(episodio, escena, existentes) {
   const contexto = contextoDeLaEscena(episodio, escena);
   const redistribuir=contexto.segmentos.length>0 && contexto.dialogo.length===0;
@@ -550,6 +587,9 @@ async function producirDesglose(episodio, escena, existentes) {
     devuelto = await generar(prompt, { json: true });
 
     const revision = revisar(devuelto, contexto);
+    if (revision.planos.some(p=>!p.historia || p.historia.length<15)) {
+      revision.quejas.push({regla:'pie-de-imagen',queja:'Cada toma necesita historia: una o dos frases en español sencillo que expliquen lo que se ve en esa imagen, también en los detalles del archivo.'});
+    }
     if (existentes) {
       if (!(redistribuir ? conservaDuracionDeEscena(existentes,revision.planos) : conservaMontaje(existentes,revision.planos))) {
         revision.quejas.push({ regla:'reparacion-conserva-montaje', queja:'La reparación cambió IDs, orden, tiempos, bocas o encadenados. Conserva exactamente los planos originales.' });
@@ -775,6 +815,8 @@ function promptDeDesglose(ctx) {
     bloque('MOVIMIENTO PARA VEO','The keyframe establishes the visible cast, scale, props and composition. Each video describes one short physical beat in a single continuous shot, with at most one simple camera movement. Do not repeat the plot, rebuild the setting, add atmosphere or request multiple camera angles inside a clip. Divide complex actions across shots without removing story beats. Prefer locked camera for conversations and reactions; use only necessary movement. No internal cuts or dissolves. Keep the final state reachable within the shot duration.'),
     bloque('COBERTURA', 'Describe only what is visible. For graphic violence, birth or child trauma, use genuinely non-graphic coverage, reactions, sound and off-screen action. No visible injury or nudity. Preserve the narrative meaning; do not merely rename harmful details. Respect the author-confirmed narrative context. Do not treat memories, time cuts or incomplete recollection as plot errors to rewrite.'),
     bloque('ENCUADRE AUTOSUFICIENTE', 'The imagen and direccion fields must completely describe this particular frame: the visible character at the correct story age, expression, wardrobe, support, positions, occupied background, props and camera. Use the full narrative context to decide these facts, but do not copy plot summaries or events outside this frame into its visual description. An infant close-up must establish secure support and clothing or wrapping even when the adult remains outside the crop. Preserve the eye color of the approved character design; do not invent luminous eyes or other supernatural visual effects unless the script explicitly requires them.'),
+    bloque('PERSONAS Y ENCUADRE', 'An off-screen person has not left the room. If a table, occupied seats or a crowd are visible behind the subject, include their occupants in direccion.visibles and describe their positions. If they are outside the crop, exclude those seats and that part of the room too. A medium shot must not become a wide view of an empty gathering. For a prop insert, decide explicitly: show the occupied background, or frame only the object with no seats or gathering area visible. Do not write contradictory visible/off-screen instructions.'),
+    bloque('PIE DE CADA IMAGEN', 'Escribe historia en español sencillo, con una o dos frases que permitan juzgar ESTA imagen sin leer otras notas. Di quién aparece, qué está haciendo y dónde está. Cuando haya más personas en la escena, aclara si se ven a su alrededor o si quedan fuera porque solo mostramos su cara, sus manos o un objeto. Describe el estado concreto: sentado en su asiento, entrando por la puerta, caminando hacia ella; no escribas solamente "continúa", "sigue" o "conserva continuidad". No mezcles defectos de una imagen anterior con lo que debe mostrar la nueva. No copies el resumen de la escena ni hables de modelos, generación, dirección o referencias.'),
     bloque('LAS PLACAS DEL BANCO QUE PUEDES USAR EN «refs»', lasPlacasEnPalabras(ctx)),
     bloque('EL ARCHIVO: PLANOS DE AMBIENTE QUE YA ESTÁN HECHOS', elArchivoEnPalabras(ctx)),
     bloque('CÓMO SE MONTA UNA ESCENA HABLADA EN ESTE ANIMÉ', laGramaticaDelDialogo()),
@@ -1017,7 +1059,7 @@ function loQueSeEspera(ctx) {
     '- «de_archivo»: null casi siempre. Si este plano es uno de los del archivo, aquí va su id, ' +
     'y entonces «imagen» y «video» van vacíos, «refs» vacío y «boca_visible» null.',
     '',
-    'Todo lo que no sea «imagen» y «video» son identificadores: van tal cual, sin traducir.'
+    '«historia» va en español sencillo. «imagen», «video» y los textos de «direccion» van en inglés. Los identificadores van tal cual, sin traducir.'
   ].join('\n');
 }
 
@@ -1555,7 +1597,7 @@ const COMPROBACIONES = [
  * @param {object} ctx
  * @returns {{planos:object[], quejas:{regla:string, queja:string}[]}}
  */
-function revisar(devuelto, ctx) {
+function revisar(devuelto, ctx, tomaAislada = false) {
   const lista = Array.isArray(devuelto)
     ? devuelto
     : (devuelto && Array.isArray(devuelto.planos) ? devuelto.planos : null);
@@ -1597,6 +1639,9 @@ function revisar(devuelto, ctx) {
   const planos = lista.map(normalizarPlano);
   const quejas = [];
   for (const comprobacion of COMPROBACIONES) {
+    // Al adaptar un uso del archivo no se reordena ni se vuelve a validar la
+    // lista completa. El ID, segmento y montaje se cotejan con el original.
+    if (tomaAislada && ['los-ids-son-unicos-y-correlativos','segmentos-y-cortes'].includes(comprobacion.nombre)) continue;
     for (const queja of comprobacion.revisar(planos, ctx)) {
       quejas.push({ regla: comprobacion.nombre, queja });
     }

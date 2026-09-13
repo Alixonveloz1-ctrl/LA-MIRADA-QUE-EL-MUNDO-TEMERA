@@ -56,9 +56,5 @@ export function claveDelMaterial(idPieza, laToma) {
  * @returns {string}
  */
 export function porQueNoSeGenera(laToma) {
-  return (
-    `Este plano no se genera aquí: usa «${laToma.de_archivo.trim()}» del archivo, que se genera ` +
-    'una vez para toda la temporada y se reutiliza en los doce episodios. Si hay que rehacerlo, ' +
-    'se rehace en el archivo y cambia en todos los sitios donde sale a la vez.'
-  );
+  return 'Esta toma utiliza material del banco. Puedes crear una versión para esta escena sin cambiar el banco.';
 }

@@ -85,51 +85,67 @@
     "imagen": "Wide shot of a long dark wood dining table under oil lamps at night. Twenty guests in fine but slightly faded clothing sit talking. The table is set with mismatched glasses and mended tablecloths, bathed in warm practical gold light. Windows are pitch black.",
     "video": "The guests shift slightly in their seats, engaged in quiet conversation. Dust motes drift gently in the warm light from the lamps. The camera is locked.",
     "de_archivo": null,
-    "texto": "En el presente, veinte invitados conversan alrededor de la mesa de Elserath. Saharis ya está en la cena."
+    "texto": "La mesa del salón está ocupada por veinte invitados que conversan durante la cena. Los criados están junto a las paredes."
   },
   "3-2": {
     "imagen": "",
     "video": "",
     "de_archivo": "arch-elserath-salon-b",
-    "texto": "Un detalle del salón sitúa la cena en la casa Elserath; la conversación continúa.",
+    "texto": "Vemos de cerca una lámpara de aceite encendida. Los invitados siguen cenando; si se ve parte de la mesa, debe estar ocupada.",
     "revision_visual": {
       "ruta": "keyframes/archivo/arch-elserath-salon-b/1.png",
-      "nota": "Este detalle del banco muestra una ventana muy luminosa, como de día. Revisa que encaje con la cena nocturna antes de reutilizarlo."
+      "nota": "La ventana parece de día, pero esta cena ocurre de noche. Crea una versión para esta escena."
     }
   },
   "3-3": {
     "imagen": "Medium shot of young adult Saharis sitting at the far end of the long table, wearing an impeccable dark noble coat. He quietly watches the guests around him, a mismatched wine glass resting nearby on the mended tablecloth.",
     "video": "Saharis remains mostly still, listening intently to the multiple conversations around him. Dust turns in the air under the oil lamp light. The camera is locked.",
     "de_archivo": null,
-    "texto": "Saharis escucha sentado en un extremo de la mesa. No está llegando a la habitación.",
+    "texto": "Saharis escucha desde su asiento, en un extremo de la mesa. Los invitados siguen sentados a su alrededor; no está solo en el salón.",
     "revision_visual": {
       "ruta": "keyframes/ep01/3-3/2.png",
-      "nota": "Las sillas visibles quedan vacías, aunque la cena continúa con los invitados sentados. Hay que mantener a los comensales que entren en este encuadre."
+      "nota": "Faltan los invitados: esta imagen muestra vacíos los asientos que deberían estar ocupados."
     }
   },
   "3-4": {
     "imagen": "Medium shot of a well-dressed female guest at the table, looking warmly off-screen right. The warm gold oil lamp light softly illuminates her face against the dark room.",
     "video": "She turns her head slightly to address Saharis directly off-screen, offering a polite, light smile. The mouth keeps moving for as long as the character is speaking.",
     "de_archivo": null,
-    "texto": "Una invitada se dirige a Saharis y le pide su opinión desde su asiento."
+    "texto": "La invitada está sentada a la mesa y mira a Saharis para pedirle su opinión. Los demás invitados permanecen en la cena.",
+    "revision_visual": {
+      "ruta": "keyframes/ep01/3-4/4.png",
+      "nota": "La mesa aparece casi vacía. Los asientos que se ven deberían seguir ocupados."
+    }
   },
   "3-5": {
     "imagen": "Medium shot, three-quarter view of Saharis. He looks effortlessly warm and composed in the soft golden light, listening patiently.",
     "video": "He gives a modest, warm nod to acknowledge her words, looking relaxed. The mouth keeps moving for as long as the character is speaking.",
     "de_archivo": null,
-    "texto": "Saharis responde con cortesía: la señora ya lo ha dicho mejor que él. Sigue en su sitio."
+    "texto": "Saharis responde a la invitada desde el mismo asiento, en el extremo de la mesa. Los demás siguen sentados; él no se levanta.",
+    "revision_visual": {
+      "ruta": "keyframes/ep01/3-5/2.png",
+      "nota": "Faltan los invitados en los asientos que se ven alrededor de Saharis."
+    }
   },
   "3-6": {
     "imagen": "Medium shot from directly behind Saharis's back and shoulders, looking past his immaculate dark noble coat towards the female guest across the table.",
     "video": "The female guest laughs gracefully in the background, sitting up a bit taller, emboldened and pleased. The camera is locked.",
     "de_archivo": null,
-    "texto": "La invitada se ríe, satisfecha por la respuesta de Saharis. Ambos conservan sus asientos."
+    "texto": "Vemos el hombro de Saharis y, al otro lado de la mesa, a la misma invitada riéndose. Ambos están sentados y la cena sigue ocupada.",
+    "revision_visual": {
+      "ruta": "keyframes/ep01/3-6/2.png",
+      "nota": "La invitada cambia de aspecto y ropa respecto a la toma 4. También quedan asientos vacíos."
+    }
   },
   "3-7": {
     "imagen": "Close detail of Saharis's clean hands on the mended tablecloth over the dark polished wood table, resting right next to a mismatched wine glass. He wears a silver signet ring.",
     "video": "His fingers gently brush the base of the untouched glass, but he does not lift it to drink. Dust drifts slowly through the golden lamplight. The camera is locked.",
     "de_archivo": null,
-    "texto": "Saharis vuelve la atención a su copa, de la que no ha bebido en toda la noche."
+    "texto": "Vemos solo las manos de Saharis junto a la misma copa de vino, sobre el mantel remendado. No bebe; los invitados quedan fuera porque miramos de cerca sus manos.",
+    "revision_visual": {
+      "ruta": "keyframes/ep01/3-7/1.png",
+      "nota": "La copa y el mantel no coinciden con la cena, y la ventana parece de día."
+    }
   },
   "4-1": {
     "imagen": "Medium shot, three-quarter view. Rothar Elserath leans over the long polished table, three cups in front of him, visibly drunk and aggressive in the warm gold light.",

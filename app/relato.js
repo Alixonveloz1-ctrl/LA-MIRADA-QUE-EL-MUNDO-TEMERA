@@ -72,6 +72,8 @@ export function contextoDeToma(pieza, toma, guiones = {}, notas = {}) {
     escena: escena?.texto || '',
     antes: antes.texto, antesTitulo:antes.titulo,
     despues: despues.texto, despuesTitulo:despues.titulo,
-    revision: nota?.revision_visual || null
+    // Una observación pertenece a una RUTA de imagen, no al texto del encargo.
+    // Cambiar las instrucciones no corrige mágicamente la imagen antigua.
+    revision: (pieza.id === 'ep01' ? notas[toma.id]?.revision_visual : null) || null
   };
 }

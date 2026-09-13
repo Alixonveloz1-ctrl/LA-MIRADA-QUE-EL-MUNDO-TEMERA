@@ -60,8 +60,9 @@
 
 import { Buffer } from 'node:buffer';
 import { createHash, randomUUID } from 'node:crypto';
-import { materialVigente, necesitaDireccion, referenciaDeSecuencia, referenciasDeReparto, pasoDeEscena } from '../../app/continuidad.js';
+import { materialVigente, necesitaDireccion, referenciaDeSecuencia, referenciasDeReparto, pasoDeEscena, firmaDeToma } from '../../app/continuidad.js';
 import { aplicarCorreccion } from './continuidad.js';
+import { aplicarVersionLocal } from './version-local.js';
 
 import { ErrorDeCara } from './errores.js';
 import {
@@ -106,7 +107,7 @@ import {
   alinear as alinearAudio,
   nivelDeVoz
 } from './audio.js';
-import { traducirAJapones, desglosarEscena, corregirPlanosDeEscena, fichaDePieza } from './texto.js';
+import { traducirAJapones, desglosarEscena, corregirPlanosDeEscena, adaptarPlanoDeArchivo, fichaDePieza } from './texto.js';
 import { salud as comprobarSalud } from './salud.js';
 import { lanzar as lanzarMontaje, estado as estadoDeMontaje } from './montaje.js';
 
@@ -1449,6 +1450,36 @@ async function modoDesglosarEscena(cuerpo) {
   return desglosarEscena(episodio, escena);
 }
 
+async function modoAdaptarTomaArchivo(cuerpo) {
+  const idPieza=exigirTexto(cuerpo,'pieza','qué capítulo contiene la toma');
+  const id=exigirTexto(cuerpo,'id','qué toma se adapta');
+  const leido=await leerElEstado();
+  const pieza=leido.estado.piezas?.[idPieza];
+  const original=pieza?.tomas?.find(t=>t.id===id);
+  if (!/^ep(?:0[1-9]|1[0-2])$/.test(idPieza) || !original) {
+    throw new ErrorDeCara('No se encontró esta toma del capítulo.',{http:400,reintentable:false});
+  }
+  // Repetir la petición después de una desconexión no prepara ni cobra otra.
+  if (!original.de_archivo && original.archivo_original) return {preparada:true,ya_preparada:true};
+  if (!original.de_archivo) throw new ErrorDeCara('Esta toma ya genera sus propias imágenes.',{http:400,reintentable:false});
+  const anteriores=pieza.tomas.filter(t=>String(t.escena)===String(original.escena));
+  const propuesta=await adaptarPlanoDeArchivo(Number(idPieza.slice(2)),original.escena,anteriores,id);
+  const revision=`local-${Date.now()}-${randomUUID()}`;
+  const carpeta=`continuidad/${idPieza}/${id}/${revision}`;
+  const respaldo=`${carpeta}/anterior.json`, ruta=`${carpeta}/desglose.json`;
+  const nueva={...propuesta,revision_direccion:revision};
+  await escribirEnElBucket(respaldo,JSON.stringify({toma:original}),{tipo:'application/json'});
+  await escribirEnElBucket(ruta,JSON.stringify({toma:nueva}),{tipo:'application/json'});
+  await cambiarElEstado(estado=>{
+    const actuales=estado.piezas?.[idPieza]?.tomas?.filter(t=>String(t.escena)===String(original.escena));
+    if (JSON.stringify(actuales?.map(firmaDeToma))!==JSON.stringify(anteriores.map(firmaDeToma))) {
+      throw new ErrorDeCara('La escena cambió durante la preparación. Se ha conservado tu trabajo.',{http:409,reintentable:false});
+    }
+    aplicarVersionLocal(estado,idPieza,original,nueva,{revision,respaldo,ruta});
+  });
+  return {preparada:true,pieza:idPieza,id};
+}
+
 // Repara una escena existente, conservando IDs, tiempos y audio. El respaldo y
 // el nuevo desglose quedan en rutas inmutables antes de mover los punteros.
 async function modoCorregirContinuidad(cuerpo) {
@@ -1973,6 +2004,7 @@ export const MODOS = {
   voz: modoVoz,
   alinear: modoAlinear,
   'desglosar-escena': modoDesglosarEscena,
+  'adaptar-toma-archivo': modoAdaptarTomaArchivo,
   'corregir-continuidad': modoCorregirContinuidad,
   ficha: modoFicha,
   'estado-leer': modoEstadoLeer,

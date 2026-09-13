@@ -60,7 +60,9 @@ function anterioresDeSecuencia(pieza,toma,estado) {
     .sort(([a],[b])=>Number(a.slice(2))-Number(b.slice(2)))
     .flatMap(([id,p])=>(p.tomas || []).map(t=>({pieza:{...p,id},toma:t})));
   return [...anteriores,...pieza.tomas.slice(0,indice).map(t=>({pieza,toma:t}))].reverse()
-    .filter(c=>!c.toma.de_archivo && identidadDeSecuencia(c.pieza,c.toma)===identidad);
+    .filter(c=>!c.toma.de_archivo &&
+      !(c.toma.archivo_original && !c.toma.direccion?.visibles?.length) &&
+      identidadDeSecuencia(c.pieza,c.toma)===identidad);
 }
 
 function referenciaDeCandidata(c,pieza,estado) {

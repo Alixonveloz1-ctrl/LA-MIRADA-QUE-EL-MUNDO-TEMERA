@@ -51,7 +51,7 @@
 // delante: veinte clips son veinte euros.
 
 import { llamar, ErrorDeCara } from '../api.js';
-import { actual, alCambiar, cambiar } from '../estado.js';
+import { actual, alCambiar, cambiar, cargar } from '../estado.js';
 import { encolar, encolarVarios } from '../cola.js';
 import { claveDelMaterial, esDeArchivo, porQueNoSeGenera } from '../planos.js';
 import { necesitaDireccion, materialVigente, invalidarMontajes, pasoDeEscena, estadoDeReferencia, referenciasDeReparto, personajesSinReferencia } from '../continuidad.js';
@@ -163,6 +163,7 @@ let quejaDeEnlaces = null;
 
 /** El último fallo de una acción de esta pantalla, para pintarlo arriba. */
 let queja = null;
+const preparandoVersion = new Set();
 
 /** Qué keyframe se está mirando de cada toma: `«pieza/toma» → ruta`. */
 const mirando = new Map();
@@ -1053,7 +1054,7 @@ function seccionCabecera(ctx) {
 
   partes.push(resumenVisualDePieza(pieza, cuenta, total));
   const porRevisar = pieza.tomas.filter(t => ctx.estado.tomas?.[`${pieza.id}/${t.id}`]?.revision_pendiente).length;
-  if (porRevisar) partes.push(aviso(`${porRevisar} imágenes tienen una dirección actualizada. Revísalas: puedes aprobar de nuevo las que sirven o generar otra versión.`));
+  if (porRevisar) partes.push(h('p', {clase:'tarjeta-texto suave'}, `${porRevisar} imágenes pendientes de revisión.`));
   const pendientes = [...new Set(pieza.tomas.filter(t => necesitaDireccion(pieza,t)).map(t => String(t.escena)))];
   if (pendientes.length) {
     const enMarcha = (ctx.estado.cola || []).some(t => t.tipo === 'corregir-continuidad' &&
@@ -1596,16 +1597,19 @@ function tarjetaDeToma(laToma, ctx) {
   if (contexto) {
     pie.push(h('div', {clase:'toma-relato'},
       h('p', {clase:'tarjeta-texto suave'}, [contexto.tiempo, contexto.momento?.toLowerCase(), contexto.lugar].filter(Boolean).join(' · ')),
-      contexto.transicion ? h('p',{clase:'tarjeta-texto toma-transicion'},contexto.transicion) : null,
-      h('strong', null, contexto.historia ? 'Qué debe mostrar esta imagen' : 'Qué pasa en esta escena'),
-      h('p', {clase:'tarjeta-texto'}, contexto.historia || contexto.resumen || 'No se pudo cargar la historia de esta toma. Recarga la página.'),
+      h('strong', null, 'En esta imagen'),
+      h('p', {clase:'tarjeta-texto'}, contexto.historia || 'Falta la descripción de esta toma. El guion completo está debajo.'),
       contexto.escena ? h('details', null,
-        h('summary', null, 'Leer esta parte del guion'), h('p', {clase:'tarjeta-texto'}, contexto.escena)) : null,
-      contexto.antes || contexto.despues ? h('details', null, h('summary', null, 'Antes y después de esta toma'),
+        h('summary', null, 'Ver contexto y guion'),
+        contexto.transicion ? h('p',{clase:'tarjeta-texto'},contexto.transicion) : null,
+        h('p', {clase:'tarjeta-texto'}, contexto.escena),
         contexto.antes ? h('p', {clase:'tarjeta-texto'}, `Antes (${contexto.antesTitulo}): ${contexto.antes}`) : null,
         contexto.despues ? h('p', {clase:'tarjeta-texto'}, `Después (${contexto.despuesTitulo}): ${contexto.despues}`) : null) : null
     ));
   }
+  const rutaVisible = rutaQueSeMira(guardado, clave);
+  if (contexto?.revision?.ruta === rutaVisible) pie.push(h('div',{clase:'toma-error-visual',role:'note'},
+    h('strong',null,'Error en esta versión'), h('p',{clase:'tarjeta-texto'},contexto.revision.nota)));
   if (!laToma.de_archivo) {
     const personajes=referenciasDelBanco(laToma,ctx);
     if (personajes) pie.push(personajes);
@@ -1631,8 +1635,7 @@ function tarjetaDeToma(laToma, ctx) {
       },h('span',null,'Usar imagen anterior como referencia'),
         h('span',{'aria-hidden':'true',clase:'toma-interruptor-pista'},h('span'))),
       h('p',{clase:'tarjeta-texto suave'}, !compatible ? referencia.motivo :
-        activa ? `Referencia para la próxima imagen: ${referencia.etiqueta}. También se usan los personajes y el escenario del banco.` :
-        `Puedes usar ${referencia.etiqueta} encendiendo el interruptor. Apagado, se usan los personajes y el escenario del banco.`)
+        activa ? `Usará ${referencia.etiqueta}.` : `Apagado. Puedes usar ${referencia.etiqueta}.`)
     ));
     const reparto=referenciasDeReparto(pieza,laToma,ctx.estado,ctx.modelo.catalogoPersonajes);
     if (reparto.length) pie.push(h('details',{clase:'toma-referencias-extra'},
@@ -1640,12 +1643,10 @@ function tarjetaDeToma(laToma, ctx) {
       h('p',{clase:'tarjeta-texto suave'},'Se conserva su aspecto usando estas imágenes aprobadas del mismo momento de la historia.'),
       h('div',{clase:'toma-referencias-banco'},reparto.map(r=>miniaturaDeReferencia(r.ruta,r.etiqueta, r.personajes.join(', '))))));
   }
-  const rutaVisible = rutaQueSeMira(guardado, clave);
   if (rutaVisible) {
     const numero = guardado.intentosKeyframe.indexOf(rutaVisible) + 1;
     const aprobada = rutaVisible === guardado.keyframe && !guardado.revisionPendiente;
     pie.push(h('p', {clase:'tarjeta-texto suave'}, `Imagen${numero ? ` · Versión ${numero}` : ' del banco'} · ${aprobada ? 'Aprobada' : 'Por revisar'}`));
-    if (contexto?.revision?.ruta === rutaVisible) pie.push(aviso(contexto.revision.nota, {tono:'nota'}));
   }
   pie.push(h('details', {clase:'toma-detalles'}, h('summary', null, 'Detalles de generación'),
     h('p', {clase:'tarjeta-texto suave'}, datosDeLaToma(laToma)),
@@ -1710,9 +1711,9 @@ function tarjetaDeToma(laToma, ctx) {
 function referenciasDelBanco(toma,ctx) {
   const refs=[...new Set(toma.refs || [])].map(id=>ctx.modelo.catalogoPersonajes.find(p=>p.id===id)).filter(Boolean);
   if (!refs.length) return null;
-  return h('div',{clase:'toma-fichas'},
-    h('strong',null,'Personajes del banco para la próxima imagen'),
-    h('p',{clase:'tarjeta-texto suave'},'Estas referencias fijan el aspecto, la ropa y los accesorios. Se usan aunque apagues la imagen anterior.'),
+  return h('details',{clase:'toma-fichas'},
+    h('summary',null,'Ver personajes de referencia'),
+    h('p',{clase:'tarjeta-texto suave'},'Se usan siempre para conservar su aspecto, ropa y accesorios.'),
     h('div',{clase:'toma-referencias-banco'},refs.map(p=>{
       const ficha=ctx.modelo.personajes[p.personaje];
       const nombre=ficha?.nombre || p.personaje.replaceAll('-',' ').replace(/^./,c=>c.toUpperCase());
@@ -2187,6 +2188,13 @@ function accionesDeLaToma(laToma, clave, guardado, ctx, { bloqueoKeyframe, sinBo
   const acciones = [];
   const puesta = rutaQueSeMira(guardado, clave);
 
+  if (esDeArchivo(laToma)) {
+    const preparando=preparandoVersion.has(`${ctx.pieza.id}/${laToma.id}`);
+    return [boton(preparando ? 'Preparando versión…' : 'Crear versión para esta escena',
+      ()=>prepararVersionLocal(laToma,ctx), {tono:'principal',
+        ...(preparando ? {desactivado:'Se está preparando esta toma.'} : {})})];
+  }
+
   if (puesta) {
     if (puesta === guardado.keyframe && !guardado.revisionPendiente) {
       acciones.push(
@@ -2235,6 +2243,20 @@ function accionesDeLaToma(laToma, clave, guardado, ctx, { bloqueoKeyframe, sinBo
 // ---------------------------------------------------------------------------
 // Las acciones
 // ---------------------------------------------------------------------------
+
+async function prepararVersionLocal(toma,ctx) {
+  const clave=`${ctx.pieza.id}/${toma.id}`;
+  if (preparandoVersion.has(clave)) return;
+  if (!(await confirmar('Se preparará esta toma según lo que ocurre en la escena. El material del banco no cambiará. Después podrás generar la nueva imagen y aprobarla. ¿Preparar la versión?'))) return;
+  preparandoVersion.add(clave);
+  ctx.repintar();
+  await hacer(async()=>{
+    try {
+      await llamar('adaptar-toma-archivo',{pieza:ctx.pieza.id,id:toma.id});
+      await cargar();
+    } finally { preparandoVersion.delete(clave); }
+  },ctx.repintar);
+}
 
 /**
  * Aprueba un keyframe. Si ya había vídeos generados a partir de otro, se avisa

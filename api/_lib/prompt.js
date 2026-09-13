@@ -293,6 +293,7 @@ function direccionDelPlano(idPieza, laToma) {
     c.goteo ? 'Only the localized drip written in the action, never indoor rain.' : 'Do not invent ceiling drips or weather effects.',
     `Visible cast: ${d.visibles.join(', ') || 'none'}. Off screen: ${d.fuera_de_campo.join(', ') || 'none'}.`,
     'FRAME CAST IS EXCLUSIVE: render only the visible cast. People marked off screen must stay outside the frame even if mentioned in the scene context or shown in any reference. Preserving population does not mean adding people to a close-up.',
+    'OFF SCREEN MEANS OUTSIDE THE CROP, NOT ABSENT FROM THE ROOM. Follow the specified camera distance: never turn a medium shot or a close-up into a wide view of an emptied room. If occupied seats or the crowd are outside this frame, crop those seats and that area out as well. Do not show their places empty. If guests are listed as visible, show the guests whose seats fall inside the crop, in their established positions; do not squeeze the entire gathering into a close-up.',
     `Blocking and occupied background: ${d.posiciones}`, `Eyelines: ${d.miradas}`, `Camera: ${d.camara}`,
     `Starting state: ${d.estado_inicial}`, `Permitted changes: ${d.estado_final}`,
     'Characters act within the story, with eyelines toward their partner or object of attention. No audience address. Preserve human proportions against furniture and shared perspective.',

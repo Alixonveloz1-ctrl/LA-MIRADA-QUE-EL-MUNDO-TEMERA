@@ -414,10 +414,10 @@ prueba('Las 153 tomas existentes tienen relato vinculado a su contenido',()=>{
   assert.equal(piezaRelato.tomas.length,153);
   for(const t of piezaRelato.tomas) assert.ok(contextoDeToma(piezaRelato,t,guiones,relatos).historia.length>20);
 });
-prueba('Un plano cambiado no recibe el relato ni la observación de su versión anterior',()=>{
+prueba('Un encargo cambiado no recibe un relato viejo; el defecto sigue vinculado solo a su imagen',()=>{
   const t={...piezaRelato.tomas.find(t=>t.id==='3-3'),imagen:'Otro plano'};
   const c=contextoDeToma(piezaRelato,t,guiones,relatos);
-  assert.equal(c.historia,'');assert.equal(c.revision,null);
+  assert.equal(c.historia,'');assert.deepEqual(c.revision,relatos['3-3'].revision_visual);
 });
 prueba('Antes y después atraviesa la escena sin ocultar el salto de tiempo',()=>{
   const t=piezaRelato.tomas.find(t=>t.id==='3-1');

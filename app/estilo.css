@@ -576,6 +576,14 @@ body > nav a[aria-current="page"]::before {
   border-left-color: var(--borde-fuerte);
 }
 
+.toma-error-visual {
+  border-left: 3px solid var(--fallido);
+  padding: 10px 14px;
+  background: var(--fondo-hundido);
+}
+.toma-error-visual strong { color: var(--fallido); }
+.toma-error-visual p { margin: 6px 0 0; }
+
 .aviso-nota .aviso-marca {
   background: var(--fondo-alto-2);
   color: var(--texto-suave);
