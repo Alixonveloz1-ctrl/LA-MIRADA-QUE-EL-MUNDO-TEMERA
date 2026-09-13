@@ -1,5 +1,6 @@
 // Compartido por navegador y servidor; sin red ni escritura.
 import { VERSION_CONTINUIDAD } from '../datos/continuidad.js';
+import { guiaDeEscena, guiaDePlano } from '../datos/escenas.js';
 
 export function necesitaDireccion(pieza, toma) {
   return Boolean(/^ep(?:0[1-9]|1[0-2])$/.test(pieza?.id || '') &&
@@ -19,45 +20,87 @@ export function conservaMontaje(antes, despues) {
     campos.every(c => JSON.stringify(p[c] ?? null) === JSON.stringify(antes[i]?.[c] ?? null)));
 }
 
+/** Resuelve también planes ya guardados. Es una lectura: no modifica imágenes,
+ * interruptores, revisiones ni aprobaciones. La placa por sí sola no decide. */
+function identidadDeSecuencia(pieza,toma) {
+  const c=toma?.continuidad, ep=Number(/^ep(\d+)$/.exec(pieza?.id || '')?.[1]);
+  const guia=guiaDePlano(ep,toma.escena,toma.segmento);
+  if (!guia) return null;
+  if (guia.escenario!==toma.escenario) return null;
+  // Las divisiones explícitas añadidas a un plan se conservan; solo se adapta
+  // el formato de secuencia generado por esta aplicación.
+  if (c?.secuencia && !/^ep\d+\//.test(c.secuencia)) return `${toma.escenario}/${c.secuencia}/${c.subespacio || ''}`;
+  if (c?.subespacio && c.subespacio!==guia.lugar) return `${guia.secuencia}/${guia.espacio}/${c.subespacio}`;
+  return `${guia.secuencia}/${guia.espacio}/${guia.flashback?'pasado':'presente'}`;
+}
+
+function motivoDeReferenciaPendiente(pieza,toma,estado) {
+  if ((estado.cola || []).some(t=>t.tipo==='keyframe' && t.args?.pieza===pieza.id &&
+    t.args?.id===toma.id && ['pendiente','en_curso'].includes(t.estado))) {
+    return `La imagen ${toma.id} se está generando. Espera y revísala antes de continuar.`;
+  }
+  const e=estado.tomas?.[`${pieza.id}/${toma.id}`];
+  const ultima=e?.intentos_keyframe?.at(-1);
+  if (necesitaDireccion(pieza,toma) || !materialVigente(e,'keyframe') ||
+      (ultima && ultima!==e.keyframe_aprobado) ||
+      (e.revision_aprobada ?? null)!==(toma.revision_direccion ?? null)) {
+    return `Revisa y aprueba la imagen ${toma.id}${pieza.id ? ` del capítulo ${Number(pieza.id.slice(2))}`:''} antes de continuar.`;
+  }
+  return null;
+}
+
 /** La revisión humana es obligatoria entre tomas de una misma escena. */
 export function pasoDeEscena(pieza, toma, estado) {
   if (!/^ep\d+$/.test(pieza?.id || '') || toma.de_archivo) return {anterior:null,bloqueo:null};
   const indice=pieza.tomas.findIndex(t=>t.id===toma.id);
+  const secuencia=identidadDeSecuencia(pieza,toma);
+  if (!secuencia) return {anterior:null,bloqueo:null};
   for (let i=indice-1;i>=0;i--) {
     const anterior=pieza.tomas[i];
     if (String(anterior.escena)!==String(toma.escena) || anterior.escenario!==toma.escenario ||
-        !toma.continuidad?.secuencia || anterior.continuidad?.secuencia!==toma.continuidad.secuencia ||
+        identidadDeSecuencia(pieza,anterior)!==secuencia ||
         anterior.segmento!==toma.segmento) break;
     // Los detalles del banco no sustituyen la última imagen narrativa.
     if (anterior.de_archivo) continue;
-    const e=estado.tomas?.[`${pieza.id}/${anterior.id}`];
-    const enMarcha=(estado.cola || []).some(t=>t.tipo==='keyframe' && t.args?.pieza===pieza.id &&
-      t.args?.id===anterior.id && ['pendiente','en_curso'].includes(t.estado));
-    const aprobada=!necesitaDireccion(pieza,anterior) && materialVigente(e,'keyframe') &&
-      (e.revision_aprobada ?? null)===(anterior.revision_direccion ?? null);
-    return {anterior, bloqueo:enMarcha ? `La imagen ${anterior.id} se está generando. Espera y revísala antes de continuar.` :
-      !aprobada ? `Revisa y aprueba la imagen ${anterior.id} antes de generar esta toma.` : null};
+    return {anterior, bloqueo:motivoDeReferenciaPendiente(pieza,anterior,estado)};
   }
   return {anterior:null,bloqueo:null};
 }
 
-/** Solo una imagen anterior, aprobada para su revisión y de la misma secuencia. */
-export function referenciaDeSecuencia(pieza, toma, estado) {
+/** Disponibilidad y explicación usan exactamente la misma búsqueda del servidor.
+ * Nunca se salta la última toma pendiente para recuperar una versión más vieja. */
+export function estadoDeReferencia(pieza,toma,estado) {
+  if (necesitaDireccion(pieza,toma)) return {referencia:null,motivo:'Primero actualiza la continuidad de esta escena.'};
   const paso=pasoDeEscena(pieza,toma,estado);
-  if (paso.bloqueo || toma.referencia_anterior === false) return null;
-  if (paso.anterior) return {id:paso.anterior.id,ruta:estado.tomas[`${pieza.id}/${paso.anterior.id}`].keyframe_aprobado};
+  if (paso.bloqueo) return {referencia:null,motivo:paso.bloqueo};
   const indice=pieza?.tomas?.findIndex(t=>t.id===toma.id) ?? -1;
-  if (indice<1 || !toma.continuidad?.secuencia) return null;
-  for (const candidata of pieza.tomas.slice(0,indice).reverse()) {
-    if (candidata.de_archivo || candidata.escenario!==toma.escenario ||
-      candidata.continuidad?.version!==VERSION_CONTINUIDAD ||
-      candidata.continuidad?.secuencia!==toma.continuidad.secuencia) continue;
-    const entrada=estado.tomas?.[`${pieza.id}/${candidata.id}`];
-    if (!materialVigente(entrada,'keyframe') ||
-      (entrada.revision_aprobada ?? null)!==(candidata.revision_direccion ?? null)) continue;
-    return { id:candidata.id, ruta:entrada.keyframe_aprobado };
+  const identidad=identidadDeSecuencia(pieza,toma);
+  if (indice<0 || !identidad || toma.de_archivo) return {referencia:null,motivo:'Esta toma no tiene una referencia anterior disponible.'};
+  const ep=Number(pieza.id.slice(2));
+  const anteriores=Object.entries(estado.piezas || {}).filter(([id])=>/^ep\d+$/.test(id) && Number(id.slice(2))<ep)
+    .sort(([a],[b])=>Number(a.slice(2))-Number(b.slice(2)))
+    .flatMap(([id,p])=>(p.tomas || []).map(t=>({pieza:{...p,id},toma:t})));
+  const candidatas=[...anteriores,...pieza.tomas.slice(0,indice).map(t=>({pieza,toma:t}))];
+  for (const c of candidatas.reverse()) {
+    const candidata=c.toma;
+    if (candidata.de_archivo || identidadDeSecuencia(c.pieza,candidata)!==identidad) continue;
+    const motivo=motivoDeReferenciaPendiente(c.pieza,candidata,estado);
+    if (motivo) return {referencia:null,motivo};
+    const referencia={id:candidata.id,ruta:estado.tomas[`${c.pieza.id}/${candidata.id}`].keyframe_aprobado};
+    if (c.pieza.id!==pieza.id) referencia.pieza=c.pieza.id;
+    const orden=c.pieza.tomas.filter(t=>String(t.escena)===String(candidata.escena)).findIndex(t=>t.id===candidata.id)+1;
+    return {referencia,motivo:'',etiqueta:`${c.pieza.id!==pieza.id?`Capítulo ${Number(c.pieza.id.slice(2))} · `:''}Escena ${candidata.escena} · Toma ${orden}`};
   }
-  return null;
+  const guia=guiaDeEscena(ep,toma.escena);
+  return {referencia:null,motivo:guia?.enlace ?
+    `Esta escena continúa una anterior. Todavía falta una imagen aprobada de esa parte de la historia para usarla como referencia.` :
+    'Aquí empieza otro lugar o momento de la historia. La imagen se crea con los personajes y el escenario del banco.'};
+}
+
+/** El interruptor decide si se envía la referencia compatible, nunca el banco. */
+export function referenciaDeSecuencia(pieza,toma,estado) {
+  if (toma.referencia_anterior===false) return null;
+  return estadoDeReferencia(pieza,toma,estado).referencia;
 }
 
 export function normalizarDireccion(d) {

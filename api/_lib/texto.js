@@ -43,6 +43,7 @@ import { ErrorDeCara } from './errores.js';
 import { serie, escenaDeGuion, escenasDeEpisodio, personajesDeEscena, nivelImagen, pieza } from './datos.js';
 import { marcoDeEscena, reglasNarrativas } from '../../datos/continuidad.js';
 import { segmentosDeEscena } from '../../datos/segmentos.js';
+import { guiaDePlano } from '../../datos/escenas.js';
 import { normalizarDireccion, revisarDireccion, conservaMontaje } from '../../app/continuidad.js';
 import { comprobarCupos } from './prompt.js';
 import { entorno } from './entorno.js';
@@ -646,7 +647,7 @@ function contextoDelPlano(ctx,plano) {
   return {...ctx,personajes:s.personajes,escenario:lugar,luz:s.luz,
     continuidad:{...ctx.continuidad,personajes:s.personajes,interior:s.interior,
       momento:s.momento,precipitacion:'ninguna',goteo:false,luz,subespacio:s.lugar,
-      secuencia:`ep${ctx.episodio}/${ctx.escena}/${s.id.replace(/-[12]$/,'')}`,
+      secuencia:guiaDePlano(ctx.episodio,ctx.escena,s.id).secuencia,
       reglas:reglasNarrativas(ctx.episodio,{...s,escena:ctx.escena+'-segmento'})+'\n'+s.accion}};
 }
 

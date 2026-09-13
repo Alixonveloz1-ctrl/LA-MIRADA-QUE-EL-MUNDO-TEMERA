@@ -1,5 +1,8 @@
 import assert from 'node:assert/strict';
-import { contextoDeToma } from '../app/relato.js';
+import { contextoDeToma, contextoDeEscena } from '../app/relato.js';
+import { MAPA_ESCENAS } from '../datos/mapa-escenas.js';
+import { construirMapaDeEscenas } from '../datos/construir-mapa-escenas.js';
+import { guiaDeEscena, guiaDePlano } from '../datos/escenas.js';
 import { readFileSync } from 'node:fs';
 import { createHash, randomUUID } from 'node:crypto';
 import { serie, guiones, toma as tomaDeLaPieza, escenaDeGuion, escenasDeEpisodio, personajesDeEscena } from '../api/_lib/datos.js';
@@ -10,7 +13,7 @@ import { segmentosDeEscena } from '../datos/segmentos.js';
 import { promptKeyframe, promptVideo, comprobarCupos } from '../api/_lib/prompt.js';
 import { revisarPlanosDeEscena, conservaDuracionDeEscena } from '../api/_lib/texto.js';
 import { aplicarCorreccion } from '../api/_lib/continuidad.js';
-import { materialVigente, necesitaDireccion, conservaMontaje, invalidarMontajes, referenciaDeSecuencia, marcarCambio, pasoDeEscena } from '../app/continuidad.js';
+import { materialVigente, necesitaDireccion, conservaMontaje, invalidarMontajes, referenciaDeSecuencia, estadoDeReferencia, marcarCambio, pasoDeEscena } from '../app/continuidad.js';
 import { claveDelMaterial, esDeArchivo, porQueNoSeGenera } from '../app/planos.js';
 
 // Ninguna prueba de continuidad puede disparar una generación de pago.
@@ -136,7 +139,8 @@ prueba('Se adjunta la imagen aprobada anterior compatible junto al banco y escen
   assert.deepEqual(encargo.referencias.map(r=>r.escenario||r.placa||r.continuidad),[c.escenario,'saharis-ancla','4.png']);
   assert.equal(comprobarCupos(encargo.referencias,serie.modelos.imagen.calidad.id).total,3);
   estado.tomas['ep01/4-1'].revision_pendiente=true;
-  assert.equal(referenciaDeSecuencia(pieza,c,estado).ruta,'3.png');
+  assert.equal(referenciaDeSecuencia(pieza,c,estado),null);
+  assert.match(estadoDeReferencia(pieza,c,estado).motivo,/aprueba la imagen 4-1/);
   estado.tomas['ep01/3-1'].revision_aprobada='vieja';
   assert.equal(referenciaDeSecuencia(pieza,c,estado),null);
 });
@@ -250,7 +254,7 @@ prueba('Un clip de otro keyframe no se considera vigente',()=>{
 const encolados=[];
 const nodo=(tipo,atributos,...hijos)=>({tipo,atributos,hijos:hijos.flat().filter(x=>x!=null),appendChild(h){this.hijos.push(h);}});
 const estadoUi=inicial();
-const stubs={pasoDeEscena,referenciaDeSecuencia,contextoDeToma,necesitaDireccion,materialVigente,invalidarMontajes,claveDelMaterial,esDeArchivo,porQueNoSeGenera,
+const stubs={pasoDeEscena,referenciaDeSecuencia,estadoDeReferencia,contextoDeToma,contextoDeEscena,necesitaDireccion,materialVigente,invalidarMontajes,claveDelMaterial,esDeArchivo,porQueNoSeGenera,
   ErrorDeCara,llamar:globalThis.fetch,actual:()=>estadoUi,cambiar:async fn=>fn(estadoUi),alCambiar:()=>{},
   encolar:()=>{},encolarVarios:lista=>encolados.push(...lista),confirmar:async()=>true,
   h:nodo,seccion:(...h)=>nodo('seccion',{},h),aviso:t=>nodo('aviso',{},t),
@@ -398,15 +402,103 @@ prueba('Un plano cambiado no recibe el relato ni la observación de su versión 
   const c=contextoDeToma(piezaRelato,t,guiones,relatos);
   assert.equal(c.historia,'');assert.equal(c.revision,null);
 });
-prueba('Antes y después respeta los límites de cada escena',()=>{
+prueba('Antes y después atraviesa la escena sin ocultar el salto de tiempo',()=>{
   const t=piezaRelato.tomas.find(t=>t.id==='3-1');
   const c=contextoDeToma(piezaRelato,t,guiones,relatos);
-  assert.equal(c.antes,'');assert.equal(c.despues,relatos['3-2'].texto);
+  assert.equal(c.antes,relatos['2-6'].texto);assert.equal(c.despues,relatos['3-2'].texto);
+  assert.match(c.antesTitulo,/Escena 2/);
+  assert.match(c.transicion,/dieciséis años al presente/);
 });
 prueba('El relato propio de un nuevo desglose tiene prioridad sin modificar aprobaciones',()=>{
   const t={...piezaRelato.tomas[0],historia:'La antorcha ilumina la cripta.',keyframe_aprobado:'guardada.png'};
   const antes=JSON.stringify(t);
   assert.equal(contextoDeToma(piezaRelato,t,guiones,relatos).historia,t.historia);
   assert.equal(JSON.stringify(t),antes);
+});
+prueba('El mapa publicado se reproduce desde las 289 escenas de los doce guiones',()=>{
+  assert.deepEqual(MAPA_ESCENAS,construirMapaDeEscenas(guiones));
+  assert.equal(Object.keys(MAPA_ESCENAS).length,289);
+  const vistos=new Set();
+  for (const g of Object.values(MAPA_ESCENAS)) {
+    vistos.add(g.episodio);
+    const c=contextoDeEscena({id:`ep${String(g.episodio).padStart(2,'0')}`},g.escena,guiones);
+    assert.ok(c.resumen.length>8,`${g.episodio}/${g.escena}: falta relato`);
+    assert.ok(c.lugar && c.tiempo && c.momento && c.transicion);
+    assert.equal(marco(g.episodio,g.escena).secuencia,g.secuencia);
+    if (g.enlace) {
+      assert.equal(MAPA_ESCENAS[g.enlace].espacio,g.espacio);
+      assert.equal(MAPA_ESCENAS[g.enlace].flashback,g.flashback);
+    }
+  }
+  assert.equal(vistos.size,12);
+});
+prueba('Los planes antiguos unen escenas 1 y 2 sin tocar la aprobación ni el banco',()=>{
+  const a={...plano(1,'1'),id:'1-7',continuidad:{...marco(1,'1'),subespacio:null,secuencia:'ep1/1'}},
+    b={...plano(1,'2'),continuidad:{...marco(1,'2'),subespacio:null,secuencia:'ep1/2'}};
+  const p={id:'ep01',tomas:[a,b]}, e={tomas:{'ep01/1-7':{keyframe_aprobado:'ultima-cripta.png',intentos_keyframe:['ultima-cripta.png']}},banco:{bebe:{aprobada:'identidad.png'}}};
+  const antes=JSON.stringify({p,e});
+  assert.equal(referenciaDeSecuencia(p,b,e).ruta,'ultima-cripta.png');
+  assert.equal(referenciaDeSecuencia(p,{...b,referencia_anterior:false},e),null);
+  assert.equal(JSON.stringify({p,e}),antes);
+});
+prueba('Hay continuaciones comprobadas en todos los capítulos, con y sin CONTINUO',()=>{
+  const pares=[[1,'1','2'],[2,'23','24'],[3,'23','24'],[4,'7','8'],[5,'21','22'],[6,'22','23'],
+    [7,'10','11'],[8,'6','7'],[9,'22','23'],[10,'18','19'],[11,'17','18'],[12,'20','21']];
+  for (const [ep,desde,hasta] of pares) {
+    const a=plano(ep,desde),b=plano(ep,hasta),id=`ep${String(ep).padStart(2,'0')}`,p={id,tomas:[a,b]};
+    const e={tomas:{[`${id}/${a.id}`]:{keyframe_aprobado:'aprobada.png'}}};
+    assert.equal(referenciaDeSecuencia(p,b,e)?.ruta,'aprobada.png',`${id} ${desde}→${hasta}`);
+  }
+});
+prueba('La misma placa no mezcla habitaciones, pasado y presente ni el velatorio con la muerte',()=>{
+  const pares=[[1,'2','3'],[1,'2','15'],[2,'5','6'],[2,'18','19'],[3,'3','4'],[3,'22','23'],
+    [7,'21','22'],[8,'5','6'],[8,'11','12'],[9,'8','9'],[10,'14','15'],[10,'17','18'],
+    [10,'19','20'],[10,'20','21'],[11,'13','14'],[12,'11','12'],[12,'15','16']];
+  for (const [ep,desde,hasta] of pares) {
+    const a=plano(ep,desde),b=plano(ep,hasta),id=`ep${String(ep).padStart(2,'0')}`,p={id,tomas:[a,b]};
+    assert.equal(referenciaDeSecuencia(p,b,{tomas:{[`${id}/${a.id}`]:{keyframe_aprobado:'otro-lugar.png'}}}),null,`${id} ${desde}→${hasta}`);
+  }
+});
+prueba('Volver de un recuerdo recupera la acción presente de varios capítulos',()=>{
+  for (const [ep,desde,recuerdo,hasta] of [[1,'14','15','16'],[2,'13','14','15'],[3,'18','19','20'],[4,'15','16','17'],[6,'13','17','18'],[12,'17','18','19']]) {
+    const a=plano(ep,desde),f=plano(ep,recuerdo),b=plano(ep,hasta),id=`ep${String(ep).padStart(2,'0')}`,p={id,tomas:[a,f,b]};
+    const e={tomas:{[`${id}/${a.id}`]:{keyframe_aprobado:'presente.png'},[`${id}/${f.id}`]:{keyframe_aprobado:'recuerdo.png'}}};
+    assert.equal(referenciaDeSecuencia(p,b,e).ruta,'presente.png');
+    assert.match(contextoDeEscena(p,hasta,guiones).transicion,/presente/);
+  }
+});
+prueba('Los límites de capítulo solo enlazan cuando el guion confirma la continuación',()=>{
+  for (const [ep1,s1,ep2,s2] of [[1,'24',2,'1'],[3,'24',4,'1'],[8,'24',9,'1']]) {
+    const anterior={id:`ep${String(ep1).padStart(2,'0')}`,tomas:[plano(ep1,s1)]};
+    const actual={id:`ep${String(ep2).padStart(2,'0')}`,tomas:[plano(ep2,s2)]};
+    const e={piezas:{[anterior.id]:anterior,[actual.id]:actual},tomas:{[`${anterior.id}/${s1}-1`]:{keyframe_aprobado:'capitulo-anterior.png'}}};
+    assert.deepEqual(referenciaDeSecuencia(actual,actual.tomas[0],e),{id:`${s1}-1`,ruta:'capitulo-anterior.png',pieza:anterior.id});
+    assert.equal(referenciaDeSecuencia(anterior,anterior.tomas[0],e),null);
+  }
+  assert.notEqual(guiaDeEscena(11,'24').secuencia,guiaDeEscena(12,'1').secuencia);
+  assert.match(contextoDeEscena({id:'ep12'},'1',guiones).transicion,/seis meses/);
+});
+prueba('La cena de Ilmen atraviesa la alternancia; la madre conserva su propia celda',()=>{
+  const cena=plano(10,'16'),final=plano(10,'17');
+  const mixtas=segmentosDeEscena(10,'16b').map((s,i)=>({...plano(10,'16b'),id:`16b-${i+1}`,segmento:s.id,escenario:s.escenario,
+    continuidad:{...marco(10,'16b'),secuencia:`ep10/16b/${s.id.replace(/-[12]$/,'')}`,subespacio:s.lugar}}));
+  const p={id:'ep10',tomas:[cena,...mixtas,final]},e={tomas:{}};
+  for (const t of p.tomas) e.tomas[`ep10/${t.id}`]={keyframe_aprobado:`${t.id}.png`};
+  assert.equal(referenciaDeSecuencia(p,mixtas[0],e),null);
+  assert.equal(referenciaDeSecuencia(p,mixtas[1],e).id,cena.id);
+  assert.equal(referenciaDeSecuencia(p,mixtas[2],e).id,mixtas[0].id);
+  assert.equal(referenciaDeSecuencia(p,mixtas[3],e).id,mixtas[1].id);
+  assert.equal(referenciaDeSecuencia(p,final,e).id,mixtas[3].id);
+  assert.notEqual(guiaDePlano(10,'16b','madre-1').secuencia,guiaDePlano(10,'16b','nina-1').secuencia);
+});
+prueba('Una última imagen nueva o en marcha impide usar la aprobación antigua entre escenas',()=>{
+  const a=plano(2,'23'),b=plano(2,'24'),p={id:'ep02',tomas:[a,b]};
+  const e={tomas:{'ep02/23-1':{keyframe_aprobado:'vieja.png',intentos_keyframe:['vieja.png','nueva.png']}}};
+  assert.equal(referenciaDeSecuencia(p,b,e),null);
+  e.tomas['ep02/23-1'].keyframe_aprobado='nueva.png';
+  e.cola=[{tipo:'keyframe',args:{pieza:p.id,id:a.id},estado:'pendiente'}];
+  assert.equal(referenciaDeSecuencia(p,b,e),null);
+  e.cola=[];
+  assert.equal(referenciaDeSecuencia(p,b,e).ruta,'nueva.png');
 });
 console.log(`\n${total} pruebas de continuidad correctas. Sin red ni generación.`);

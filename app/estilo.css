@@ -2257,6 +2257,9 @@ body[data-pantalla="difusion"] .pantalla .tarjeta {
 .toma-relato p { margin: 0; line-height: 1.55; }
 .toma-relato summary, .toma-detalles summary { padding: 12px 0; cursor: pointer; color: var(--texto-suave); min-height: 44px; }
 .toma-relato details p { margin-bottom: 12px; }
+.escena-contexto { padding:16px 0; }
+.escena-contexto h3 { margin:0; }
+.toma-relato .toma-transicion { padding:12px 14px; border-left:3px solid var(--acento); background:var(--fondo); border-radius:0 10px 10px 0; }
 
 .toma-versiones > summary { padding:12px 0; cursor:pointer; color:var(--texto-suave); min-height:44px; }
 

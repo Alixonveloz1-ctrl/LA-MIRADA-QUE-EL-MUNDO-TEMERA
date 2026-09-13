@@ -1,4 +1,5 @@
 // Correcciones contrastadas con la acción del guion. No modifica el texto fuente.
+import { guiaDeEscena } from './escenas.js';
 export const VERSION_CONTINUIDAD = 3;
 
 // Aclaraciones del autor: prevalecen sobre las inferencias de esta revisión y
@@ -55,7 +56,7 @@ const REPARTOS = {
   '11/22': 'saharis,celebrante', '11/23': 'saharis,celebrante', '12/18': 'saharis,madre'
 };
 const LUGARES = {
-  '2/1': 'calle', '4/13': 'vharn-jardin', '12/7': 'calle',
+  '2/1': 'calle', '4/13': 'vharn-jardin', '7/20':'vharn-jardin', '12/7': 'calle',
   ...Object.fromEntries(['9','10','11','12','13','14','21'].map(e => [`10/${e}`, 'casa-ilmen']))
 };
 const INTERIORES = new Set(['cripta','cripta-celda','tuneles','elserath-salon',
@@ -120,6 +121,7 @@ export function prepararGuiones(datos) {
 
 export function marcoDeEscena(episodio, escenas, escena) {
   const n = Number(episodio), id = String(escena.escena), lugar = escena.lugar || '';
+  const guia=guiaDeEscena(n,id);
   const i = escenas.findIndex(s => String(s.escena) === id);
   const previo = escenas[i-1];
   const continuo = /CONTINUO|MÁS TARDE/.test(escena.momento || '');
@@ -138,11 +140,10 @@ export function marcoDeEscena(episodio, escenas, escena) {
     : `${noche ? 'Night or pre-dawn' : 'Daytime or dawn'} light as written; preserve any local lamps or fires. Do not add weather to create atmosphere.`;
   let secuencia=`ep${n}/${id}`;
   if (continuo && previo && escena.escenario === previo.escenario && escena.flashback === previo.flashback) secuencia=marcoDeEscena(n,escenas,previo).secuencia;
-  if (n===1 && ['3','4','5','6','7','8'].includes(id)) secuencia='ep1/banquete';
-  if (n===1 && ['13','14','16','18'].includes(id)) secuencia='ep1/refugio';
-  if (n===1 && ['20','21'].includes(id)) secuencia='ep1/renn';
+  if (guia) secuencia=guia.secuencia;
   return {
     version: VERSION_CONTINUIDAD, episodio:n, escena:id, secuencia, momento, interior,
+    subespacio:guia?.lugar || null,
     precipitacion: nieve && interior === false ? 'nieve' : 'ninguna', goteo,
     luz, personajes: escena.personajes, resumen: RESUMENES[n-1] || '',
     reglas: [reglasNarrativas(n, escena), n === 1 ? EP1[id] || '' : ''].filter(Boolean).join('\n'),

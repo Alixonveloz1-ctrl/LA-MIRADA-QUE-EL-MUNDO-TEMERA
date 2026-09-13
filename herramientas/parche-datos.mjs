@@ -13,6 +13,8 @@
 import { readFileSync, writeFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
+import { prepararGuiones } from '../datos/continuidad.js';
+import { construirMapaDeEscenas, serializarMapaDeEscenas } from '../datos/construir-mapa-escenas.js';
 
 const raiz = join(dirname(fileURLToPath(import.meta.url)), '..');
 const serie = JSON.parse(readFileSync(join(raiz, 'datos/serie.base.json'), 'utf8'));
@@ -833,5 +835,6 @@ if (quejas.length) {
 }
 
 writeFileSync(join(raiz, 'datos/serie.json'), JSON.stringify(serie, null, 2) + '\n');
+writeFileSync(join(raiz, 'datos/mapa-escenas.js'), serializarMapaDeEscenas(construirMapaDeEscenas(prepararGuiones(guiones))));
 console.log(`datos/serie.json escrito. ${cambios.length} cambios:\n`);
 for (const c of cambios) console.log('  · ' + c);
