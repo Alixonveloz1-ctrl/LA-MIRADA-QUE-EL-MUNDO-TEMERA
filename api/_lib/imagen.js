@@ -441,24 +441,14 @@ function sinImagen(respuesta, modelo, candidatos) {
   // prompt bloqueado con «OTHER» se reintentaba en balde una y otra vez.
   if (prompBloqueado) {
     return new ErrorDeCara(
-      `El modelo «${modelo.id}» no ha devuelto ninguna imagen: Google ha bloqueado el PROMPT antes ` +
-      `de dibujar nada. ${porQue} Reintentarlo da el mismo resultado siempre, así que la cola no lo ` +
-      'reintenta. Hay que cambiar el texto de la placa o de la toma, desde el estudio. Si el motivo ' +
-      'es «OTHER», Google no dice qué palabra le ha molestado: quita de la descripción lo que hable ' +
-      'de heridas, cicatrices, cuerpo desnudo o edad, y prueba otra vez. ' +
-      `El modelo no se sustituye por otro (se cambia a conciencia con la variable ${modelo.variable}).`,
+      'Google bloqueó la solicitud por su filtro de contenido. Hay que revisar cómo se representa la toma antes de volver a generarla. No se reintentará automáticamente.',
       { detalle: comoTexto(respuesta), reintentable: false, http: 502 }
     );
   }
 
   if (esBloqueoDeContenido(motivo)) {
     return new ErrorDeCara(
-      `El modelo «${modelo.id}» no ha devuelto ninguna imagen: la ha bloqueado el filtro de ` +
-      `contenido. ${porQue} Ese filtro se dispara sobre todo con la violencia y con la edad de un ` +
-      'personaje descritas en el prompt, y es especialmente estricto con los menores. Repetir tal ' +
-      'cual da el mismo resultado: hay que cambiar la descripción de la placa o de la toma en ' +
-      `datos/serie.json. El modelo no se sustituye por otro (se cambia a conciencia con la ` +
-      `variable ${modelo.variable}).`,
+      'Google bloqueó esta imagen por su filtro de contenido. Hay que revisar cómo se representa la toma antes de volver a generarla. No se reintentará automáticamente.',
       { detalle: comoTexto(respuesta), reintentable: false, http: 502 }
     );
   }

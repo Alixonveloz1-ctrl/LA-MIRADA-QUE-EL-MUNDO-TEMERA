@@ -1208,16 +1208,7 @@ function accionesDeLosFallidos(ctx) {
 
   const partes = [
     aviso(
-      `${plural(fallidos.length, 'trabajo ha fallado', 'trabajos han fallado')}. La cola insiste ` +
-        'sola cuando el error es de los que pueden cambiar, y cuánto espera depende de qué falló: ' +
-        'si es la CUOTA (429), tres veces esperando medio minuto, uno y minuto y medio, porque ' +
-        'las cuotas de Vertex se reponen por minutos y insistir en segundos es gastar los ' +
-        'intentos contra lo mismo. Para lo demás —un tiempo agotado, una caída del otro lado— ' +
-        'cuatro veces a los 2, 4, 8 y 16 segundos. Y ahí para: lo que falla tres o cuatro veces ' +
-        'seguidas no funciona a la décima, y dejar la máquina dando vueltas media hora acaba en ' +
-        'el mismo sitio con media hora menos. Con el resto no insiste, y no es dejadez: un 4xx ' +
-        'dice que la petición está mal y no va a dejar de estarlo, y un 413 dice que algo no ' +
-        'cabe, que tampoco cambia por repetirlo.',
+      `${plural(fallidos.length, 'trabajo no se pudo completar', 'trabajos no se pudieron completar')}. Abre «Fallidos» para ver qué pasó. No se volverán a ejecutar automáticamente.`,
       { tono: 'error' }
     )
   ];
@@ -1228,8 +1219,8 @@ function accionesDeLosFallidos(ctx) {
     acciones.push(
       boton(
         seInsistio.length === 1
-          ? 'Volver a pedir el que se quedó sin intentos'
-          : `Volver a pedir los ${seInsistio.length} que se quedaron sin intentos`,
+          ? 'Reintentar el trabajo'
+          : `Reintentar ${seInsistio.length} trabajos`,
         () => volverAPedir(seInsistio, ctx),
         { tono: 'principal' }
       )
@@ -1240,17 +1231,11 @@ function accionesDeLosFallidos(ctx) {
     acciones.push(
       boton(
         aLaPrimera.length === 1
-          ? 'Quitar de la cola el que no se arregla insistiendo'
-          : `Quitar de la cola los ${aLaPrimera.length} que no se arreglan insistiendo`,
+          ? 'Quitar el aviso de la cola'
+          : `Quitar ${aLaPrimera.length} avisos de la cola`,
         async () => {
           const seguro = await confirmar(
-            `Se van a quitar de la cola ${plural(
-              aLaPrimera.length,
-              'trabajo',
-              'trabajos'
-            )} que fallaron a la primera. No se borra nada de lo generado: solo desaparecen de esta ` +
-              'lista, con su explicación. Se pueden volver a pedir desde su pantalla cuando esté ' +
-              'arreglado lo que los tumbó. ¿Quitarlos?'
+            'Se quitará el aviso de la cola. Tus imágenes y vídeos se conservarán. Esto no corrige la causa del error. ¿Continuar?'
           );
           if (!seguro) return;
           quitarDeLaCola(aLaPrimera, ctx);

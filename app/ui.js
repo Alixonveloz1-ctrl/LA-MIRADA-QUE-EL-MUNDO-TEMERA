@@ -600,6 +600,11 @@ function motivoDeDesactivado(desactivado) {
  * («Error», «Nota», «Bien») y por el borde: nunca solo por el color.
  */
 export function aviso(mensaje, { tono = 'nota', detalle } = {}) {
+  // También resume los errores antiguos conservados en la cola.
+  if (/IMAGE_PROHIBITED_CONTENT|la ha bloqueado el filtro de contenido|Google ha bloqueado el PROMPT/i.test(String(mensaje))) {
+    detalle = detalle || String(mensaje);
+    mensaje = 'Google bloqueó esta imagen por su filtro de contenido. Hay que revisar cómo se representa la toma antes de volver a generarla. No se reintentará automáticamente.';
+  }
   const clase = String(tono || 'nota');
   const marca = MARCAS_DE_AVISO[clase] || 'Nota';
 
@@ -613,7 +618,7 @@ export function aviso(mensaje, { tono = 'nota', detalle } = {}) {
     ),
     detalle
       ? h('details', { clase: 'aviso-detalle' },
-          h('summary', { clase: 'aviso-resumen' }, 'Ver lo que ha contestado, palabra por palabra'),
+          h('summary', { clase: 'aviso-resumen' }, 'Ver detalles del error'),
           typeof detalle === 'string' || typeof detalle === 'number'
             ? h('pre', { clase: 'aviso-crudo' }, String(detalle))
             : detalle,

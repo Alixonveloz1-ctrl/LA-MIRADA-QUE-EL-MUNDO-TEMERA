@@ -144,7 +144,7 @@ const bloqueado = img.sinImagen({ promptFeedback: { blockReason: 'OTHER' } }, mo
 di(bloqueado.reintentable === false,
   'Un «OTHER» en promptFeedback NO se reintenta: es el prompt, rechazado entero',
   `reintentable = ${bloqueado.reintentable}`);
-di(/PROMPT/.test(bloqueado.mensaje), 'Y el mensaje dice que lo bloqueado fue el prompt');
+di(/bloqueó la solicitud/.test(bloqueado.mensaje), 'El mensaje explica en español que se bloqueó la solicitud');
 
 const aMedias = img.sinImagen({ candidates: [{ finishReason: 'OTHER' }] }, modeloFalso,
   [{ finishReason: 'OTHER' }]);

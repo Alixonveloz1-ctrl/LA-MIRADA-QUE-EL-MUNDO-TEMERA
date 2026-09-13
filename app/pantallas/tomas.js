@@ -787,9 +787,7 @@ function porQueNoHayBotonDeVideo(laToma, guardado, ctx) {
 
   if (!guardado.keyframe) {
     return (
-      'Primero hay que aprobar el keyframe. Mientras no lo esté, aquí no hay botón de generar ' +
-      'vídeo: no está apagado, es que no existe. Un keyframe malo cuesta céntimos y un clip malo ' +
-      'cuesta un euro, así que la imagen se mira antes de pagar el movimiento.'
+      'Aprueba la imagen para poder crear su vídeo.'
     );
   }
 
