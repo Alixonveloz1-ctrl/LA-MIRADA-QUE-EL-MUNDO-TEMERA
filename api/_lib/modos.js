@@ -60,7 +60,7 @@
 
 import { Buffer } from 'node:buffer';
 import { createHash, randomUUID } from 'node:crypto';
-import { materialVigente, necesitaDireccion, referenciaDeSecuencia } from '../../app/continuidad.js';
+import { materialVigente, necesitaDireccion, referenciaDeSecuencia, pasoDeEscena } from '../../app/continuidad.js';
 import { aplicarCorreccion } from './continuidad.js';
 
 import { ErrorDeCara } from './errores.js';
@@ -818,6 +818,8 @@ async function modoImagen(cuerpo) {
     idPiezaDelKeyframe = exigirTexto(cuerpo, 'pieza', 'de qué pieza es la toma del keyframe');
     const piezaEnEstado = piezaDelEstado(leido.estado, idPiezaDelKeyframe);
     tomaInicial = tomaDeLaPieza(idPiezaDelKeyframe, id, piezaEnEstado);
+    const paso=pasoDeEscena(piezaEnEstado,tomaInicial,leido.estado);
+    if (paso.bloqueo) throw new ErrorDeCara(paso.bloqueo,{http:409,reintentable:false});
     compuesto = promptKeyframe(idPiezaDelKeyframe, id, piezaEnEstado,
       referenciaDeSecuencia(piezaEnEstado,tomaInicial,leido.estado));
     carpeta = carpetaDeKeyframe(idPiezaDelKeyframe, id);
@@ -891,8 +893,11 @@ async function modoImagen(cuerpo) {
       if (tipo === 'keyframe') {
         const entrada = entradaDeToma(estado, `${idPiezaDelKeyframe}/${id}`);
         apuntarIntento(entrada, 'intentos_keyframe', ruta);
+        // Una nueva versión debe revisarse antes de servir de referencia o crear vídeo.
+        entrada.revision_pendiente = true;
         if (!entrada.origenes_keyframe) entrada.origenes_keyframe = {};
-        entrada.origenes_keyframe[ruta] = { revision: tomaInicial.revision_direccion || null };
+        entrada.origenes_keyframe[ruta] = { revision: tomaInicial.revision_direccion || null,
+          referencia_anterior: compuesto.referencias.find(r=>r.continuidad)?.continuidad || null };
         return;
       }
       if (tipo === 'poster') {

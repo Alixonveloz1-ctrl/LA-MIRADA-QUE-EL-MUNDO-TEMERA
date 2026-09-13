@@ -1404,3 +1404,23 @@ redesglosada no hereda un relato antiguo por compartir identificador. Las notas 
 revisión visual también exigen la ruta exacta de la imagen revisada. No certifican
 otras versiones ni vídeos. La versión más reciente se muestra cuando hay revisión
 pendiente, sin aprobarla automáticamente ni borrar las anteriores.
+
+### Producción de episodios por escenas
+
+Los episodios muestran un selector de escena y no ofrecen tandas de generación
+de imágenes o vídeos. Cada generación sigue siendo una acción explícita: aprobar
+no encola ni cobra la siguiente. El banco y las piezas no episódicas conservan sus
+acciones de tanda.
+
+`pasoDeEscena` exige que la toma narrativa precedente del mismo escenario,
+secuencia y segmento dentro de la escena esté aprobada y no regenerándose.
+No salta una imagen pendiente para utilizar otra más antigua. Los detalles del
+archivo se omiten como referencia narrativa. Al comenzar una escena puede
+utilizarse una referencia aprobada anterior compatible con su secuencia.
+El servidor aplica el mismo bloqueo antes de descargar referencias o generar.
+
+Cada imagen nueva queda pendiente de revisión, conservando aprobaciones y
+archivos anteriores. `origenes_keyframe[ruta].referencia_anterior` registra la ruta
+utilizada, o null. La tarjeta muestra la nueva versión pendiente; las miniaturas
+quedan plegadas en «Ver versiones anteriores». Elegir otra versión es reversible
+y no cambia la aprobación hasta pulsar el botón correspondiente.

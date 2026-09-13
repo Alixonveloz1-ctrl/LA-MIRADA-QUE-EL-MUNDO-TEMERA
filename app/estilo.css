@@ -2257,3 +2257,5 @@ body[data-pantalla="difusion"] .pantalla .tarjeta {
 .toma-relato p { margin: 0; line-height: 1.55; }
 .toma-relato summary, .toma-detalles summary { padding: 12px 0; cursor: pointer; color: var(--texto-suave); min-height: 44px; }
 .toma-relato details p { margin-bottom: 12px; }
+
+.toma-versiones > summary { padding:12px 0; cursor:pointer; color:var(--texto-suave); min-height:44px; }

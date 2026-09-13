@@ -19,8 +19,33 @@ export function conservaMontaje(antes, despues) {
     campos.every(c => JSON.stringify(p[c] ?? null) === JSON.stringify(antes[i]?.[c] ?? null)));
 }
 
+/** La revisión humana es obligatoria entre tomas de una misma escena. */
+export function pasoDeEscena(pieza, toma, estado) {
+  if (!/^ep\d+$/.test(pieza?.id || '') || toma.de_archivo) return {anterior:null,bloqueo:null};
+  const indice=pieza.tomas.findIndex(t=>t.id===toma.id);
+  for (let i=indice-1;i>=0;i--) {
+    const anterior=pieza.tomas[i];
+    if (String(anterior.escena)!==String(toma.escena) || anterior.escenario!==toma.escenario ||
+        !toma.continuidad?.secuencia || anterior.continuidad?.secuencia!==toma.continuidad.secuencia ||
+        anterior.segmento!==toma.segmento) break;
+    // Los detalles del banco no sustituyen la última imagen narrativa.
+    if (anterior.de_archivo) continue;
+    const e=estado.tomas?.[`${pieza.id}/${anterior.id}`];
+    const enMarcha=(estado.cola || []).some(t=>t.tipo==='keyframe' && t.args?.pieza===pieza.id &&
+      t.args?.id===anterior.id && ['pendiente','en_curso'].includes(t.estado));
+    const aprobada=!necesitaDireccion(pieza,anterior) && materialVigente(e,'keyframe') &&
+      (e.revision_aprobada ?? null)===(anterior.revision_direccion ?? null);
+    return {anterior, bloqueo:enMarcha ? `La imagen ${anterior.id} se está generando. Espera y revísala antes de continuar.` :
+      !aprobada ? `Revisa y aprueba la imagen ${anterior.id} antes de generar esta toma.` : null};
+  }
+  return {anterior:null,bloqueo:null};
+}
+
 /** Solo una imagen anterior, aprobada para su revisión y de la misma secuencia. */
 export function referenciaDeSecuencia(pieza, toma, estado) {
+  const paso=pasoDeEscena(pieza,toma,estado);
+  if (paso.bloqueo) return null;
+  if (paso.anterior) return {id:paso.anterior.id,ruta:estado.tomas[`${pieza.id}/${paso.anterior.id}`].keyframe_aprobado};
   const indice=pieza?.tomas?.findIndex(t=>t.id===toma.id) ?? -1;
   if (indice<1 || !toma.continuidad?.secuencia) return null;
   for (const candidata of pieza.tomas.slice(0,indice).reverse()) {

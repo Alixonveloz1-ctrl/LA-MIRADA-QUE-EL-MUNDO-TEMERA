@@ -54,7 +54,7 @@ import { llamar, ErrorDeCara } from '../api.js';
 import { actual, alCambiar, cambiar } from '../estado.js';
 import { encolar, encolarVarios } from '../cola.js';
 import { claveDelMaterial, esDeArchivo, porQueNoSeGenera } from '../planos.js';
-import { necesitaDireccion, materialVigente, invalidarMontajes } from '../continuidad.js';
+import { necesitaDireccion, materialVigente, invalidarMontajes, pasoDeEscena, referenciaDeSecuencia } from '../continuidad.js';
 import {
   aviso,
   barra,
@@ -724,6 +724,8 @@ function progresoDe(tomas, ctx) {
  */
 function porQueNoSePuedeKeyframe(laToma, ctx) {
   if (necesitaDireccion(ctx.pieza, laToma)) return 'Actualiza esta escena con «Corregir continuidad», arriba, antes de generar.';
+  const paso = pasoDeEscena(ctx.pieza,laToma,ctx.estado);
+  if (paso.bloqueo) return paso.bloqueo;
   // Un plano que apunta al archivo no genera nada suyo: su keyframe y su clip ya
   // existen, hechos una vez para toda la temporada. Ofrecer aquí un botón de
   // generar sería ofrecer pagar dos veces lo mismo.
@@ -951,6 +953,9 @@ function construir(modelo, repintar, repintarLuego) {
     bloquePuesto = 'todo';
   }
 
+  if (/^ep\d+$/.test(pieza.id) && bloquePuesto === 'todo' && pieza.grupos.bloques.length) {
+    bloquePuesto = pieza.grupos.bloques[0].id;
+  }
   const visibles = tomasVisibles(ctx);
   const enPantalla = visibles.slice(0, paginas * TAMANO_DE_PAGINA);
 
@@ -1060,6 +1065,7 @@ function seccionCabecera(ctx) {
         await hacer(() => encolarVarios(pendientes.map(escena => ({ tipo:'corregir-continuidad', args:{pieza:pieza.id,escena} }))), repintar);
       }, { tono:'principal', ...(enMarcha ? {desactivado:'La corrección ya está en la cola.'} : {}) }));
   }
+  if (/^ep\d+$/.test(pieza.id)) partes.push(trabajoPorEscena(ctx));
   const inicioHerramientas = partes.length;
 
   if (pidiendoEnlaces) partes.push(espera('Pidiendo los enlaces para ver los planos…'));
@@ -1070,7 +1076,7 @@ function seccionCabecera(ctx) {
     h(
       'p',
       { clase: 'tarjeta-texto tenue' },
-      'Los botones encolan: no lanzan nada de golpe. La cola los saca de UNO EN UNO ' +
+      /^ep\d+$/.test(pieza.id) ? 'Trabaja una imagen cada vez. Aprobar una imagen no genera ni cobra la siguiente: tú decides cuándo continuar.' : 'Los botones encolan: no lanzan nada de golpe. La cola los saca de UNO EN UNO ' +
         'porque saturar las cuotas de Vertex devuelve ' +
         'errores que parecen falta de acceso al modelo. Las tandas de faltantes solo piden material nuevo. ' +
         'La tanda de revisión crea otra versión de las imágenes cuya dirección cambió; las anteriores se conservan.'
@@ -1172,6 +1178,30 @@ function resumenVisualDePieza(pieza, cuenta, total) {
  * @returns {HTMLElement[]}
  */
 function accionesDeTanda(ctx) {
+  if (/^ep\d+$/.test(ctx.pieza.id)) return [boton('Recargar imágenes y vídeos',()=>olvidarEnlaces(ctx.repintar))];
+  return accionesDeTandaLibre(ctx);
+}
+
+function trabajoPorEscena(ctx) {
+  const bloques=ctx.pieza.grupos.bloques;
+  const bloque=bloques.find(b=>b.id===bloquePuesto) || bloques[0];
+  if (!bloque) return null;
+  const pendiente=bloque.tomas.find(t=>{
+    const e=ctx.estado.tomas?.[claveDelMaterial(ctx.pieza.id,t)];
+    return !materialVigente(e,'keyframe');
+  });
+  return seccion('Trabajar por escenas',
+    h('p',{clase:'tarjeta-texto'},'Elige una escena. Revisa sus imágenes en orden y aprueba cada una antes de generar la siguiente.'),
+    filtro(bloques.map(b=>({id:b.id,texto:b.titulo})),bloque.id,id=>{
+      bloquePuesto=id; filtroPuesto='todo'; paginas=1; ctx.repintar();
+    }),
+    h('p',{clase:'tarjeta-texto'},pendiente ? `Siguiente por revisar: toma ${pendiente.id}. Puedes conservar su imagen si está bien o crear otra versión.` :
+      'Las imágenes de esta escena están aprobadas. Puedes revisar sus vídeos o elegir otra escena.'),
+    boton('Ver las tomas de esta escena',()=>{filtroPuesto='todo';paginas=1;ctx.repintar();irALaLista();})
+  );
+}
+
+function accionesDeTandaLibre(ctx) {
   const { pieza, repintar } = ctx;
 
   const keyframesQueFaltan = [];
@@ -1572,6 +1602,13 @@ function tarjetaDeToma(laToma, ctx) {
         contexto.despues ? h('p', {clase:'tarjeta-texto'}, `Después: ${contexto.despues}`) : null) : null
     ));
   }
+  if (/^ep\d+$/.test(pieza.id) && !laToma.de_archivo) {
+    const paso=pasoDeEscena(pieza,laToma,ctx.estado);
+    const ref=referenciaDeSecuencia(pieza,laToma,ctx.estado);
+    if (!paso.bloqueo) pie.push(h('p',{clase:'tarjeta-texto suave'},(ref ?
+      `Para crear otra imagen se usará la toma ${ref.id}, aprobada, junto al escenario y los personajes del banco.` :
+      'Esta imagen se creará con el escenario y los personajes del banco, sin una toma anterior como referencia.')));
+  }
   const rutaVisible = rutaQueSeMira(guardado, clave);
   if (rutaVisible) {
     const numero = guardado.intentosKeyframe.indexOf(rutaVisible) + 1;
@@ -1613,7 +1650,7 @@ function tarjetaDeToma(laToma, ctx) {
   }
 
   const tira = tiraDeKeyframes(clave, guardado, laToma.id, ctx);
-  if (tira) pie.push(tira);
+  if (tira) pie.push(h('details',{clase:'toma-versiones'},h('summary',null,'Ver versiones anteriores'),tira));
 
   const clips = zonaDeClips(clave, guardado, laToma, ctx);
   if (clips) pie.push(clips);
@@ -1727,7 +1764,8 @@ function comoSeUsaLaToma(laToma) {
 
 /** Qué keyframe se está mirando: el elegido a mano, el aprobado o el último. */
 function rutaQueSeMira(guardado, clave) {
-  const elegida = clave ? mirando.get(clave) : null;
+  const seleccion = clave ? mirando.get(clave) : null;
+  const elegida = seleccion?.ultimo === guardado.intentosKeyframe.at(-1) ? seleccion?.ruta : null;
   if (elegida && (elegida === guardado.keyframe || guardado.intentosKeyframe.includes(elegida))) {
     return elegida;
   }
@@ -1870,7 +1908,7 @@ function tiraDeKeyframes(clave, guardado, idToma, ctx) {
             cursor: 'pointer'
           },
           alClic: () => {
-            mirando.set(clave, ruta);
+            mirando.set(clave, {ruta,ultimo:guardado.intentosKeyframe.at(-1)});
             ctx.repintar();
           }
         },
@@ -2186,7 +2224,7 @@ async function aprobarKeyframe(clave, ruta, idToma, guardado, ctx) {
       if (!Array.isArray(entrada.intentos_keyframe)) entrada.intentos_keyframe = [];
       if (!entrada.intentos_keyframe.includes(ruta)) entrada.intentos_keyframe.push(ruta);
     });
-    mirando.set(clave, ruta);
+    mirando.set(clave, {ruta,ultimo:guardado.intentosKeyframe.at(-1)});
     queja = null;
   } catch (fallo) {
     queja = comoErrorDeCara(fallo);

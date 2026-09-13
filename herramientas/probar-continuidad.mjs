@@ -10,7 +10,7 @@ import { segmentosDeEscena } from '../datos/segmentos.js';
 import { promptKeyframe, promptVideo, comprobarCupos } from '../api/_lib/prompt.js';
 import { revisarPlanosDeEscena, conservaDuracionDeEscena } from '../api/_lib/texto.js';
 import { aplicarCorreccion } from '../api/_lib/continuidad.js';
-import { materialVigente, necesitaDireccion, conservaMontaje, invalidarMontajes, referenciaDeSecuencia, marcarCambio } from '../app/continuidad.js';
+import { materialVigente, necesitaDireccion, conservaMontaje, invalidarMontajes, referenciaDeSecuencia, marcarCambio, pasoDeEscena } from '../app/continuidad.js';
 import { claveDelMaterial, esDeArchivo, porQueNoSeGenera } from '../app/planos.js';
 
 // Ninguna prueba de continuidad puede disparar una generación de pago.
@@ -250,7 +250,7 @@ prueba('Un clip de otro keyframe no se considera vigente',()=>{
 const encolados=[];
 const nodo=(tipo,atributos,...hijos)=>({tipo,atributos,hijos:hijos.flat().filter(x=>x!=null),appendChild(h){this.hijos.push(h);}});
 const estadoUi=inicial();
-const stubs={contextoDeToma,necesitaDireccion,materialVigente,invalidarMontajes,claveDelMaterial,esDeArchivo,porQueNoSeGenera,
+const stubs={pasoDeEscena,referenciaDeSecuencia,contextoDeToma,necesitaDireccion,materialVigente,invalidarMontajes,claveDelMaterial,esDeArchivo,porQueNoSeGenera,
   ErrorDeCara,llamar:globalThis.fetch,actual:()=>estadoUi,cambiar:async fn=>fn(estadoUi),alCambiar:()=>{},
   encolar:()=>{},encolarVarios:lista=>encolados.push(...lista),confirmar:async()=>true,
   h:nodo,seccion:(...h)=>nodo('seccion',{},h),aviso:t=>nodo('aviso',{},t),
@@ -262,7 +262,7 @@ uiFuente=uiFuente.replace(/^import\s*\{([^}]+)\}\s*from\s*['"][^'"]+['"];\s*$/gm
   `const { ${nombres.split(',').map(n=>n.trim().replace(/\s+as\s+/,': ')).join(',')} } = __stubs;`)
   .replace(/import\.meta\.url/g,JSON.stringify(new URL('../app/pantallas/tomas.js',import.meta.url).href))
   .replace(/^export default /gm,'const pantallaExportada = ').replace(/^export /gm,'');
-const ui=new Function('__stubs',`${uiFuente}\nreturn {construirModelo,seccionCabecera,accionesDeTanda,porQueNoSePuedeKeyframe,porQueNoHayBotonDeVideo,leerToma,aprobarKeyframe};`)(stubs);
+const ui=new Function('__stubs',`${uiFuente}\nreturn {construirModelo,seccionCabecera,accionesDeTanda:accionesDeTandaLibre,accionesDeTandaReal:accionesDeTanda,rutaQueSeMira,porQueNoSePuedeKeyframe,porQueNoHayBotonDeVideo,leerToma,aprobarKeyframe};`)(stubs);
 const modeloUi=ui.construirModelo(serie,estadoUi);
 const ctx={modelo:modeloUi,pieza:modeloUi.porId.get('ep01'),estado:estadoUi,repintar:()=>{},trabajos:new Map()};
 const arbol=ui.seccionCabecera(ctx);
@@ -316,7 +316,7 @@ prueba('Los intentos todavía no aprobados también se señalan para revisión',
 let servidor=inicial();
 const escrituras=[],eventos=[];
 const prestado={Buffer,createHash,randomUUID,ErrorDeCara,serie,tomaDeLaPieza,exigirAprobada,
-  materialVigente,necesitaDireccion,referenciaDeSecuencia,aplicarCorreccion,promptVideo,
+  materialVigente,necesitaDireccion,referenciaDeSecuencia,pasoDeEscena,aplicarCorreccion,promptVideo,
   leerElEstado:async()=>({estado:structuredClone(servidor),generacion:'1'}),
   escribirElEstado:async estado=>{servidor=structuredClone(estado);eventos.push('estado');return {generacion:'2'};},
   escribirEnElBucket:async(ruta,contenido)=>{escrituras.push({ruta,contenido:JSON.parse(contenido)});eventos.push(ruta.endsWith('/anterior.json')?'respaldo':'propuesta');return {ruta};},
@@ -346,6 +346,40 @@ await assert.rejects(()=>modos.montar({manifiesto:{video:[{clave:'ep01/4-1',orig
 await assert.rejects(()=>modos.montar({manifiesto:{video:[{clave:'ep01/4-1',origen:'otra.mp4'}]}}),/selección de vídeo cambió/);
 await assert.rejects(()=>modos.montar({manifiesto:{capas_previas:['montado.mp4']}}),/Una escena ya montada quedó pendiente/);
 prueba('El servidor rechaza montajes de clips cambiados o capas pendientes',()=>assert.equal(escrituras.length,2));
+prueba('El episodio no ofrece generación masiva',()=>{
+  const acciones=ui.accionesDeTandaReal(ctx).flatMap(botones);
+  assert.ok(!acciones.some(b=>/Generar|Regenerar/.test(b.texto)));
+});
+prueba('La siguiente toma espera aprobación y usa exactamente su predecesora',()=>{
+  const a=plano(1,'3'),b={...a,id:'3-2'},pieza={id:'ep01',tomas:[a,b]},estado={tomas:{}};
+  assert.match(pasoDeEscena(pieza,b,estado).bloqueo,/3-1/);
+  assert.equal(referenciaDeSecuencia(pieza,b,estado),null);
+  estado.tomas['ep01/3-1']={keyframe_aprobado:'buena.png'};
+  assert.equal(pasoDeEscena(pieza,b,estado).bloqueo,null);
+  assert.equal(referenciaDeSecuencia(pieza,b,estado).ruta,'buena.png');
+  estado.tomas['ep01/3-1'].revision_pendiente=true;
+  assert.ok(pasoDeEscena(pieza,b,estado).bloqueo);
+});
+prueba('No salta una predecesora pendiente para usar otra más antigua',()=>{
+  const a=plano(1,'3'),b={...a,id:'3-2'},c={...a,id:'3-3'};
+  const p={id:'ep01',tomas:[a,b,c]},e={tomas:{'ep01/3-1':{keyframe_aprobado:'vieja.png'}}};
+  assert.equal(referenciaDeSecuencia(p,c,e),null);
+  assert.match(pasoDeEscena(p,c,e).bloqueo,/3-2/);
+});
+prueba('Un cambio de lugar inicia otra referencia y no bloquea por la imagen anterior',()=>{
+  const a=plano(1,'3'),b={...a,id:'3-2',escenario:'jardin-elserath'};
+  const p={id:'ep01',tomas:[a,b]},e={tomas:{'ep01/3-1':{keyframe_aprobado:'comedor.png'}}};
+  assert.equal(pasoDeEscena(p,b,e).anterior,null);
+  assert.equal(referenciaDeSecuencia(p,b,e),null);
+});
+prueba('Mientras se rehace una imagen, no se usa su aprobación antigua',()=>{
+  const a=plano(1,'3'),b={...a,id:'3-2'},p={id:'ep01',tomas:[a,b]};
+  const e={tomas:{'ep01/3-1':{keyframe_aprobado:'vieja.png'}},cola:[{tipo:'keyframe',args:{pieza:'ep01',id:a.id},estado:'en_curso'}]};
+  assert.ok(pasoDeEscena(p,b,e).bloqueo);
+});
+prueba('Una nueva imagen pendiente se muestra antes que la aprobación antigua',()=>{
+  assert.equal(ui.rutaQueSeMira({keyframe:'vieja.png',intentosKeyframe:['vieja.png','nueva.png'],revisionPendiente:true},'prueba'),'nueva.png');
+});
 const relatos = JSON.parse(readFileSync(new URL('../datos/relatos-ep01.json', import.meta.url), 'utf8'));
 const piezaRelato = {id:'ep01', tomas:Object.entries(relatos).map(([id,n])=>({id,escena:id.split('-')[0],...n}))};
 prueba('Las 153 tomas existentes tienen relato vinculado a su contenido',()=>{
