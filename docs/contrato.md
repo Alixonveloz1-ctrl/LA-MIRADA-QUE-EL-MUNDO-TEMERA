@@ -1421,12 +1421,18 @@ El servidor aplica el mismo bloqueo antes de descargar referencias o generar.
 
 Cada imagen nueva queda pendiente de revisión, conservando aprobaciones y
 archivos anteriores. `origenes_keyframe[ruta].referencia_anterior` registra la ruta
-utilizada, o null. La tarjeta muestra la nueva versión pendiente; las miniaturas
-quedan plegadas en «Ver versiones anteriores». Elegir otra versión es reversible
-y no cambia la aprobación hasta pulsar el botón correspondiente.
+utilizada, o null. La tarjeta muestra la nueva versión pendiente; las miniaturas anteriores no se muestran en las tarjetas de tomas, banco ni escenarios.
+Se muestra únicamente el último intento, o la imagen aprobada si no hay intentos.
+Los archivos históricos se conservan en almacenamiento.
 
 Una toma puede declarar `referencia_anterior: false` cuando la imagen precedente
 contiene elementos que no pertenecen a la representación de ese encuadre. Se
 omite solo esa referencia: se conservan el escenario y las identidades del banco,
 y `pasoDeEscena` sigue exigiendo la aprobación de la anterior. El campo forma
 parte de la firma de continuidad. No cambia filtros de seguridad del proveedor.
+
+Cada toma narrativa del episodio muestra un interruptor «Usar imagen anterior
+como referencia». Guarda `referencia_anterior` para la próxima generación, sin
+aprobar imágenes, cambiar el banco ni lanzar trabajos. Solo permite activarlo
+cuando existe una referencia aprobada compatible; queda deshabilitado durante
+una generación. Apagarlo no retira las referencias de personajes o escenario.

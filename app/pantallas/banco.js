@@ -1404,7 +1404,7 @@ function tarjetaDePlaca(laPlaca, ctx) {
 
   const datos = [];
   if (laPlaca.luz) datos.push(`Luz ${laPlaca.luz}`);
-  datos.push(plural(entrada.intentos.length, 'intento', 'intentos'));
+  datos.push(rutaQueSeMira(clave,entrada) === entrada.aprobada && entrada.aprobada ? 'Imagen aprobada' : 'Imagen pendiente de aprobación');
 
   const pie = [
     h('p', { clase: 'tarjeta-texto' }, datos.join(' · ')),
@@ -1439,7 +1439,7 @@ function tarjetaDePlaca(laPlaca, ctx) {
     enLaCola && enLaCola.error
       ? aviso(enLaCola.error, { tono: 'error', detalle: enLaCola.detalle })
       : null,
-    tiraDeIntentos(clave, entrada, `la placa ${laPlaca.id}`, ctx)
+    null
   ].filter(Boolean);
 
   const nodo = tarjeta({
@@ -1475,7 +1475,7 @@ function tarjetaDeEscenario(elEscenario, ctx) {
 
   const datos = [];
   if (elEscenario.luz) datos.push(`Luz ${elEscenario.luz}`);
-  datos.push(plural(entrada.intentos.length, 'intento', 'intentos'));
+  datos.push(rutaQueSeMira(clave,entrada) === entrada.aprobada && entrada.aprobada ? 'Imagen aprobada' : 'Imagen pendiente de aprobación');
 
   const pie = [
     h(
@@ -1497,7 +1497,7 @@ function tarjetaDeEscenario(elEscenario, ctx) {
     enLaCola && enLaCola.error
       ? aviso(enLaCola.error, { tono: 'error', detalle: enLaCola.detalle })
       : null,
-    tiraDeIntentos(clave, entrada, `el escenario ${elEscenario.id}`, ctx)
+    null
   ].filter(Boolean);
 
   return tarjeta({
@@ -1556,7 +1556,7 @@ function comoEsta(entrada, enLaCola) {
     return 'generando';
   }
   if (enLaCola && enLaCola.estado === 'fallido') return 'fallido';
-  if (entrada.aprobada) return 'aprobada';
+  if (entrada.aprobada && rutaQueSeMira(null,entrada) === entrada.aprobada) return 'aprobada';
   if (entrada.intentos.length) return 'por-aprobar';
   return 'sin-empezar';
 }
@@ -1648,11 +1648,7 @@ function comoLoLlamaGoogle(ancho, alto) {
 
 /** Qué ruta se está mirando de una placa: la elegida, la aprobada o la última. */
 function rutaQueSeMira(clave, entrada) {
-  const elegida = mirando.get(clave);
-  if (elegida && (elegida === entrada.aprobada || entrada.intentos.includes(elegida))) {
-    return elegida;
-  }
-  return entrada.aprobada || entrada.intentos[entrada.intentos.length - 1] || null;
+  return entrada.intentos.at(-1) || entrada.aprobada || null;
 }
 
 /** El cuadro negro con una frase dentro, para cuando no hay imagen que enseñar. */
@@ -1802,8 +1798,7 @@ function accionesDeAprobable(donde, id, clave, entrada, { bloqueo, nombre, ctx, 
       acciones.push(
         boton('Aprobar', null, {
           desactivado:
-            'Esta es justo la imagen que ya está aprobada. Si quieres otra, elige un intento de ' +
-            'la tira o pide otro intento.'
+            'Esta imagen ya está aprobada. Puedes generar otra versión si necesitas cambiarla.'
         })
       );
     } else {
@@ -1843,8 +1838,8 @@ function pasaElFiltro(ficha, donde, ctx, cual = filtroPuesto) {
   if (cual === 'anclas') return ficha.ancla === true;
 
   const entrada = leerEntrada(ctx.estado, donde, ficha.id);
-  if (cual === 'aprobadas') return Boolean(entrada.aprobada);
-  if (cual === 'por-aprobar') return !entrada.aprobada && entrada.intentos.length > 0;
+  if (cual === 'aprobadas') return Boolean(entrada.aprobada) && rutaQueSeMira(null,entrada) === entrada.aprobada;
+  if (cual === 'por-aprobar') return entrada.intentos.length > 0 && rutaQueSeMira(null,entrada) !== entrada.aprobada;
   if (cual === 'sin-generar') return !entrada.aprobada && entrada.intentos.length === 0;
   return true;
 }

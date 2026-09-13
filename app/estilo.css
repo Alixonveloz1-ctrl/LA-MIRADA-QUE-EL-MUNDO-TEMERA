@@ -2259,3 +2259,11 @@ body[data-pantalla="difusion"] .pantalla .tarjeta {
 .toma-relato details p { margin-bottom: 12px; }
 
 .toma-versiones > summary { padding:12px 0; cursor:pointer; color:var(--texto-suave); min-height:44px; }
+
+.toma-referencia { display:flex; flex-direction:column; gap:10px; }
+.toma-interruptor { display:flex; align-items:center; justify-content:space-between; gap:16px; width:100%; min-height:48px; padding:12px; border:1px solid var(--borde); border-radius:12px; background:transparent; color:inherit; font:inherit; text-align:left; cursor:pointer; }
+.toma-interruptor:disabled { opacity:.55; cursor:default; }
+.toma-interruptor-pista { flex-shrink:0; display:block; width:44px; height:26px; padding:3px; border-radius:20px; background:#535b5f; }
+.toma-interruptor-pista > span { display:block; width:20px; height:20px; border-radius:50%; background:#fff; }
+.toma-interruptor[aria-checked="true"] .toma-interruptor-pista { background:#edbd5c; }
+.toma-interruptor[aria-checked="true"] .toma-interruptor-pista > span { transform:translateX(18px); background:#181a1a; }

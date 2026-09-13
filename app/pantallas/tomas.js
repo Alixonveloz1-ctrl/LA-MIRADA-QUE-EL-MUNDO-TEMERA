@@ -574,7 +574,7 @@ function leerToma(estado, clave) {
   const entrada = esObjeto(mapa[clave]) ? mapa[clave] : {};
   return {
     keyframe: rutaSiVale(entrada.keyframe_aprobado),
-    revisionPendiente: Boolean(entrada.revision_pendiente),
+    revisionPendiente: Boolean(entrada.revision_pendiente) || Boolean(entrada.intentos_keyframe?.length && entrada.intentos_keyframe.at(-1) !== entrada.keyframe_aprobado),
     intentosKeyframe: soloRutas(entrada.intentos_keyframe),
     clip: materialVigente(entrada, 'clip') ? rutaSiVale(entrada.clip_elegido) : null,
     intentosClip: soloRutas(entrada.intentos_clip),
@@ -1601,11 +1601,28 @@ function tarjetaDeToma(laToma, ctx) {
     ));
   }
   if (/^ep\d+$/.test(pieza.id) && !laToma.de_archivo) {
-    const paso=pasoDeEscena(pieza,laToma,ctx.estado);
-    const ref=referenciaDeSecuencia(pieza,laToma,ctx.estado);
-    if (!paso.bloqueo) pie.push(h('p',{clase:'tarjeta-texto suave'},(ref ?
-      `Para crear otra imagen se usará la toma ${ref.id}, aprobada, junto al escenario y los personajes del banco.` :
-      'Esta imagen se creará con el escenario y los personajes del banco, sin una toma anterior como referencia.')));
+    const compatible=referenciaDeSecuencia(pieza,{...laToma,referencia_anterior:true},ctx.estado);
+    const activa=laToma.referencia_anterior !== false;
+    const ocupado=(ctx.estado.cola || []).some(t=>t.tipo==='keyframe' && t.args?.pieza===pieza.id &&
+      t.args?.id===laToma.id && ['pendiente','en_curso'].includes(t.estado));
+    pie.push(h('div',{clase:'toma-referencia'},
+      h('button',{type:'button',role:'switch','aria-checked':String(activa && Boolean(compatible)),
+        'aria-label':'Usar imagen anterior como referencia',clase:'toma-interruptor',
+        disabled:!compatible || ocupado,
+        alClic:()=>hacer(()=>cambiar(borrador=>{
+          const actual=borrador.piezas?.[pieza.id]?.tomas?.find(t=>t.id===laToma.id);
+          if (!actual) throw new Error('No se encontró esta toma guardada. Recarga la página.');
+          const enCurso=(borrador.cola || []).some(t=>t.tipo==='keyframe' && t.args?.pieza===pieza.id &&
+            t.args?.id===laToma.id && ['pendiente','en_curso'].includes(t.estado));
+          if(enCurso) throw new Error('Espera a que termine la imagen antes de cambiar su referencia.');
+          actual.referencia_anterior=!activa;
+        }),ctx.repintar)
+      },h('span',null,'Usar imagen anterior como referencia'),
+        h('span',{'aria-hidden':'true',clase:'toma-interruptor-pista'},h('span'))),
+      h('p',{clase:'tarjeta-texto suave'}, !compatible ? 'No hay una imagen anterior aprobada compatible con esta toma.' :
+        activa ? `La próxima imagen usará la toma ${compatible.id}, además de los personajes y el escenario del banco.` :
+        'La próxima imagen usará los personajes y el escenario del banco, sin la toma anterior.')
+    ));
   }
   const rutaVisible = rutaQueSeMira(guardado, clave);
   if (rutaVisible) {
@@ -1647,8 +1664,7 @@ function tarjetaDeToma(laToma, ctx) {
     pie.push(aviso(trabajoClip.aviso, { tono: 'nota' }));
   }
 
-  const tira = tiraDeKeyframes(clave, guardado, laToma.id, ctx);
-  if (tira) pie.push(h('details',{clase:'toma-versiones'},h('summary',null,'Ver versiones anteriores'),tira));
+  // Solo se muestra la imagen vigente; los intentos anteriores se conservan en almacenamiento.
 
   const clips = zonaDeClips(clave, guardado, laToma, ctx);
   if (clips) pie.push(clips);
@@ -1762,15 +1778,7 @@ function comoSeUsaLaToma(laToma) {
 
 /** Qué keyframe se está mirando: el elegido a mano, el aprobado o el último. */
 function rutaQueSeMira(guardado, clave) {
-  const seleccion = clave ? mirando.get(clave) : null;
-  const elegida = seleccion?.ultimo === guardado.intentosKeyframe.at(-1) ? seleccion?.ruta : null;
-  if (elegida && (elegida === guardado.keyframe || guardado.intentosKeyframe.includes(elegida))) {
-    return elegida;
-  }
-  if (guardado.revisionPendiente && guardado.intentosKeyframe.length) {
-    return guardado.intentosKeyframe[guardado.intentosKeyframe.length - 1];
-  }
-  return guardado.keyframe || guardado.intentosKeyframe[guardado.intentosKeyframe.length - 1] || null;
+  return guardado.intentosKeyframe.at(-1) || guardado.keyframe || null;
 }
 
 /**
@@ -2144,8 +2152,7 @@ function accionesDeLaToma(laToma, clave, guardado, ctx, { bloqueoKeyframe, sinBo
       acciones.push(
         boton('Aprobar keyframe', null, {
           desactivado:
-            'Este es justo el keyframe que ya está aprobado. Si quieres otro, elige un intento de ' +
-            'la tira o pide otro intento.'
+            'Esta imagen ya está aprobada. Puedes generar otra versión si necesitas cambiarla.'
         })
       );
     } else {
