@@ -1545,9 +1545,10 @@ body > nav.pestanas button {
 
 .inicio-selector {
   position: absolute;
-  top: 26px;
-  right: 0;
-  width: min(46%, 210px);
+  /* Deja libre el botón de ajustes, también su zona de toque. */
+  top: 0;
+  right: 64px;
+  width: min(42%, 210px);
   height: 44px;
   display: flex;
   align-items: center;
