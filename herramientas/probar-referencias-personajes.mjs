@@ -44,6 +44,21 @@ prueba('Apagar las imágenes anteriores conserva todas las fichas del banco',()=
   assert.deepEqual(componer({...actual,referencia_anterior:false}).referencias.map(r=>r.placa||r.escenario),
     ['cripta','celebrante-mascara','saharis-bebe-ancla']);
 });
+prueba('El primer plano tranquilo del bebé no recibe la muerte de la madre ni pierde su ficha aprobada',()=>{
+  const t={...toma(1,'2','2-3',['saharis'],['saharis-bebe-cripta']),referencia_anterior:false,
+    imagen:'Close-up of Saharis as a newborn, securely supported, clothed and wrapped. His red irises match the approved reference. His eyes are open and he is quiet.',
+    direccion:{visibles:['saharis'],fuera_de_campo:['celebrante','acolitos'],
+      posiciones:'Head supported from below the crop; only face, hair and top of the wrap visible.',
+      miradas:'Looking slightly upward toward the person holding him.',camara:'Close-up, three-quarter view.',
+      estado_inicial:'Awake, eyes open, quiet.',estado_final:'Eyes remain open; quiet.'}};
+  const p={id:'ep01',tomas:[t]},antes=JSON.stringify(p),k=componer(t,estado,p);
+  assert.match(t.continuidad.reglas,/mother's death/);
+  assert.doesNotMatch(k.texto,/mother's death|lullaby|AUTHOR-CONFIRMED NARRATIVE/);
+  assert.match(k.texto,/Visible cast: saharis\. Off screen: celebrante, acolitos/);
+  assert.match(k.texto,/securely supported, clothed and wrapped/);
+  assert.deepEqual(k.referencias.map(r=>r.placa||r.escenario),['cripta','saharis-bebe-cripta']);
+  assert.equal(JSON.stringify(p),antes);
+});
 prueba('La máscara y ropa del banco prevalecen; el reparto fuera de campo permanece fuera',()=>{
   const k=componer();
   assert.match(k.texto,/FRAME CAST IS EXCLUSIVE/);

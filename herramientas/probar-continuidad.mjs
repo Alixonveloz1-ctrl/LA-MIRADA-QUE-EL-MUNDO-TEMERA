@@ -53,12 +53,14 @@ prueba('Las aclaraciones del autor prevalecen en presente, recuerdos y canción'
   for (const [ep,s] of [[2,'14'],[10,'16b'],[12,'20'],[12,'21']]) assert.match(marco(ep,s).reglas,/never heard it complete/);
   assert.match(marco(10,'16b').reglas,/INTERCUT.*do not share a room or a time/);
 });
-prueba('El canon dirige la imagen y Veo recibe solo movimiento y conservación del fotograma',()=>{
+prueba('El canon dirige el desglose; imagen y vídeo reciben solo lo que debe verse en su toma',()=>{
   const t=plano(1,'3'),pieza={id:'ep01',tomas:[t]};
+  assert.match(t.continuidad.reglas,/AUTHOR-CONFIRMED NARRATIVE.*sixteen-year-old design/);
   for (const p of [promptKeyframe('ep01',t.id,pieza)]) {
-    assert.match(p.texto,/AUTHOR-CONFIRMED NARRATIVE/);
-    assert.match(p.texto,/sixteen-year-old design/);
-    assert.match(p.texto,/Episode order is presentation order/);
+    assert.match(p.texto,/SHOT DIRECTION/);
+    assert.doesNotMatch(p.texto,/AUTHOR-CONFIRMED NARRATIVE|mother's death|lullaby|Episode order is presentation order/);
+    for (const campo of ['posiciones','miradas','camara','estado_inicial','estado_final']) assert.ok(p.texto.includes(t.direccion[campo]));
+    assert.ok(p.texto.includes(t.continuidad.luz));
   }
   const v=promptVideo('ep01',t.id,pieza).texto;
   assert.match(v,/Single continuous shot from the supplied first frame/);
@@ -69,6 +71,19 @@ prueba('Las 289 escenas resuelven su contexto sin perder el flashback 16b',()=>{
   let escenas=0;
   for (const ep of guiones.guiones) for (const s of ep.escenas) { const c=marco(ep.episodio,s.escena);assert.ok(c.luz);escenas++; }
   assert.equal(escenas,289);
+});
+prueba('La separación entre historia y encuadre funciona en los doce capítulos sin modificar sus datos',()=>{
+  for (const ep of guiones.guiones) {
+    const s=ep.escenas.find(s=>!s.flashback && s.personajes.includes('saharis'));
+    assert.ok(s,`Falta muestra del episodio ${ep.episodio}`);
+    const t=plano(ep.episodio,s.escena),id=`ep${String(ep.episodio).padStart(2,'0')}`,p={id,tomas:[t]};
+    const antes=JSON.stringify(p),k=promptKeyframe(id,t.id,p);
+    assert.doesNotMatch(k.texto,/AUTHOR-CONFIRMED NARRATIVE|mother's death|lullaby/);
+    assert.ok(k.texto.includes(t.direccion.posiciones));
+    assert.ok(k.texto.includes(t.direccion.estado_inicial));
+    assert.deepEqual(k.referencias.filter(r=>r.placa).map(r=>r.placa),t.refs);
+    assert.equal(JSON.stringify(p),antes);
+  }
 });
 prueba('El capítulo 1 conserva población y protagonista aunque no hablen',()=>{
   for (const id of ['3','4','5','6','7','8']) assert.ok(personajesDeEscena(1,id).includes('invitados'));

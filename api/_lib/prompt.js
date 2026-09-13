@@ -283,7 +283,11 @@ function direccionDelPlano(idPieza, laToma) {
   const problemas = revisarDireccion(laToma, laToma.continuidad);
   if (problemas.length) throw new ErrorDeCara(problemas.join(' '), { http:400, reintentable:false });
   const c=laToma.continuidad, d=laToma.direccion;
-  return unir('SCENE CONTEXT — background facts, not a list of people or actions to render:', c.reglas,
+  // El canon completo ya dirige el desglose. No reenviarlo al dibujante:
+  // mencionar una muerte, otro recuerdo o una edad ajena contamina incluso un
+  // primer plano tranquilo. La imagen recibe la dirección de ESTA toma; las
+  // referencias y los campos de continuidad conservan reparto, lugar y luz.
+  return unir('SHOT DIRECTION — render this single frame, using only the visible action and character designs specified for this shot:',
     `Lighting: ${c.luz}. ${c.interior === true ? 'Interior space.' : c.interior === false ? 'Exterior space.' : ''}`,
     c.precipitacion === 'nieve' ? 'Preserve the scripted outdoor snow.' : 'No added precipitation. Surface dampness is not rainfall.',
     c.goteo ? 'Only the localized drip written in the action, never indoor rain.' : 'Do not invent ceiling drips or weather effects.',
