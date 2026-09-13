@@ -64,6 +64,7 @@ import { materialVigente, necesitaDireccion, referenciaDeSecuencia, referenciasD
 import { aplicarCorreccion } from './continuidad.js';
 import { aplicarVersionLocal } from './version-local.js';
 import { escenariosParaPlanificar } from './planificacion-visual.js';
+import { imagenUnaVez, protegerDetenciones } from './solicitudes-imagen.js';
 
 import { ErrorDeCara } from './errores.js';
 import {
@@ -76,6 +77,7 @@ import {
   rutaPlaca
 } from './datos.js';
 import {
+  leer as leerDelBucket,
   leerBytes,
   escribir as escribirEnElBucket,
   listar as listarElBucket,
@@ -773,6 +775,14 @@ function instruccionDeLaMuestra(idPersonaje) {
  * viaja en la respuesta —no cabe— y NO se aprueba solo: aprobar es mirarlo.
  */
 async function modoImagen(cuerpo) {
+  const leido = await leerElEstado();
+  return imagenUnaVez(cuerpo, {
+    estado: leido.estado, leer: leerDelBucket, escribir: escribirEnElBucket,
+    generar: () => modoImagenNueva(cuerpo), firmar: urlDe
+  });
+}
+
+async function modoImagenNueva(cuerpo) {
   const tipo = exigirTexto(cuerpo, 'tipo', `qué se genera: ${TIPOS_DE_IMAGEN.join(', ')}`);
   if (!TIPOS_DE_IMAGEN.includes(tipo)) {
     throw new ErrorDeCara(
@@ -890,14 +900,20 @@ async function modoImagen(cuerpo) {
   const ruta = `${carpeta}${intento}.${EXTENSIONES[generada.mime] || 'png'}`;
   const guardado = await escribirEnElBucket(ruta, datos, { tipo: generada.mime || 'image/png' });
   const medida = medidaDeImagen(datos);
+  const resultado = { ruta, intento, bytes: guardado.bytes, ancho: medida.ancho, alto: medida.alto };
 
   await anotarLoGenerado(
     (estado) => {
+      const trabajo = (estado.cola || []).find(t => t.id === cuerpo.trabajo_id);
+      const detenida = trabajo && (trabajo.detencion_solicitada || trabajo.solicitud_id !== cuerpo.solicitud_id);
+      if (trabajo && trabajo.solicitud_id === cuerpo.solicitud_id) {
+        trabajo.resultado_imagen = { ...resultado, solicitud_id: cuerpo.solicitud_id };
+      }
       if (tipo === 'keyframe') {
         const entrada = entradaDeToma(estado, `${idPiezaDelKeyframe}/${id}`);
-        apuntarIntento(entrada, 'intentos_keyframe', ruta);
+        apuntarIntento(entrada, detenida ? 'intentos_keyframe_detenidos' : 'intentos_keyframe', ruta);
         // Una nueva versión debe revisarse antes de servir de referencia o crear vídeo.
-        entrada.revision_pendiente = true;
+        if (!detenida) entrada.revision_pendiente = true;
         if (!entrada.origenes_keyframe) entrada.origenes_keyframe = {};
         entrada.origenes_keyframe[ruta] = { revision: tomaInicial.revision_direccion || null,
           referencia_escenario: pendientes.find(p=>p.referencia.escenario)?.rutaAprobada || null,
@@ -910,27 +926,20 @@ async function modoImagen(cuerpo) {
         const clave = claveDePoster(id, formaDelPoster);
         if (!esObjeto(estado.posters)) estado.posters = {};
         if (!esObjeto(estado.posters[clave])) estado.posters[clave] = { aprobada: null, intentos: [] };
-        apuntarIntento(estado.posters[clave], 'intentos', ruta);
+        apuntarIntento(estado.posters[clave], detenida ? 'intentos_detenidos' : 'intentos', ruta);
         return;
       }
       const donde = tipo === 'placa' ? 'banco' : 'escenarios';
       if (!esObjeto(estado[donde])) estado[donde] = {};
       if (!esObjeto(estado[donde][id])) estado[donde][id] = { aprobada: null, intentos: [] };
-      apuntarIntento(estado[donde][id], 'intentos', ruta);
+      apuntarIntento(estado[donde][id], detenida ? 'intentos_detenidos' : 'intentos', ruta);
     },
     leido,
     'La imagen',
     ruta
   );
 
-  return {
-    ruta,
-    url: await urlDe(ruta),
-    intento,
-    bytes: guardado.bytes,
-    ancho: medida.ancho,
-    alto: medida.alto
-  };
+  return resultado;
 }
 
 // ---------------------------------------------------------------------------
@@ -1807,6 +1816,7 @@ async function modoEstadoEscribir(cuerpo) {
     // recoger nunca.
     const enElBucket = await leerElEstado();
     const aGuardar = conNombresDeOperacion(estado, enElBucket.estado);
+    protegerDetenciones(aGuardar, enElBucket.estado);
 
     // UNA VOZ, UN PERSONAJE —salvo entre los que no se reconocen—. Se comprueba
     // AQUÍ, en la única puerta por la que pasan todos los cambios de estado, y

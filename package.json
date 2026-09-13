@@ -13,7 +13,7 @@
     "invariantes": "node herramientas/invariantes.mjs",
     "pesar": "node herramientas/pesar.mjs",
     "comprobar": "npm run datos && npm run invariantes && npm run piezas-estado && npm run continuidad && npm run cola && npm run audio && npm run subtitulos && npm run pantalla-audio && npm run ajustes && npm run freno && npm run anotar && npm run banco && npm run veo && npm run pantalla && npm run fallos && npm run zip && npm run difusion && npm run reel && npm run pesar",
-    "cola": "node herramientas/probar-cola.mjs && node herramientas/probar-cola.mjs 24 && node herramientas/probar-cola.mjs cuota",
+    "cola": "node herramientas/probar-cola.mjs && node herramientas/probar-cola.mjs 24 && node herramientas/probar-cola.mjs cuota && node herramientas/probar-solicitudes-imagen.mjs",
     "audio": "node herramientas/probar-audio.mjs",
     "subtitulos": "node herramientas/probar-subtitulos.mjs",
     "pantalla-audio": "node herramientas/probar-pantalla-audio.mjs",

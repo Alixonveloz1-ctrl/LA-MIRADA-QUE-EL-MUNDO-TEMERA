@@ -4,6 +4,7 @@ import { Buffer } from 'node:buffer';
 import { serie, toma as tomaDeLaPieza, nivelImagen, escenasDeEpisodio, escenaDeGuion } from '../api/_lib/datos.js';
 import { marcoDeEscena } from '../datos/continuidad.js';
 import { ErrorDeCara } from '../api/_lib/errores.js';
+import { imagenUnaVez } from '../api/_lib/solicitudes-imagen.js';
 import { exigirAprobada } from '../api/_lib/estado.js';
 import { revisarPlanosDeEscena } from '../api/_lib/texto.js';
 import { promptKeyframe, comprobarCupos } from '../api/_lib/prompt.js';
@@ -136,7 +137,7 @@ const generarImagen=cargar('../api/_lib/imagen.js',{
   }
 },'generar');
 const modos=cargar('../api/_lib/modos.js',{
-  Buffer,ErrorDeCara,serie,tomaDeLaPieza,nivelImagen,promptKeyframe,comprobarCupos,exigirAprobada,
+  Buffer,ErrorDeCara,serie,tomaDeLaPieza,nivelImagen,promptKeyframe,comprobarCupos,exigirAprobada,imagenUnaVez,
   referenciaDeSecuencia,referenciasDeReparto,pasoDeEscena,generarImagen,
   leerElEstado:async()=>({estado:structuredClone(servidor),generacion:'1'}),
   escribirElEstado:async e=>{servidor=structuredClone(e);return {generacion:'2'};},

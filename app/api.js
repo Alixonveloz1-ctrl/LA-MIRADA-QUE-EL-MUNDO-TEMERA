@@ -734,6 +734,10 @@ function comoError(datos, respuesta, modo) {
  */
 function deLaRed(fallo, modo) {
   const nombre = fallo && fallo.name ? String(fallo.name) : '';
+  if (modo === 'imagen') {
+    return new ErrorDeCara('Se perdió la respuesta de la imagen. La aplicación comprobará el mismo encargo para recuperar lo que ya se guardó.',
+      { detalle: mensajeDe(fallo), reintentable: true, http: 0 });
+  }
 
   if (nombre === 'AbortError' || nombre === 'TimeoutError') {
     return new ErrorDeCara(

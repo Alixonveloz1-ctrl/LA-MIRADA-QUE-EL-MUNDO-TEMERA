@@ -453,21 +453,18 @@ function seccionMando(ctx) {
     );
   }
 
-  if (!parada || cuenta.pendientes) {
+  if (!parada || cuenta.pendientes || cuenta.enCurso) {
     mandos.push(
       boton(
         'DETENER',
         async () => {
           const seguro = await confirmar(
-            'Detener la cola deja parado todo lo que aún no ha empezado. Lo que ya se está ' +
-              'generando termina de generarse: una operación de Veo lanzada sigue su curso en ' +
-              'Google esté abierta o no esta pantalla, y ya está pagada, así que abandonarla ' +
-              'sería tirar el dinero y dejar el clip sin recoger. ¿Detener?'
+            'Se detendrán los trabajos pendientes y sus reintentos. Lo que Google ya recibió puede terminar y se conservará. ¿Detener?'
           );
           if (!seguro) return;
           paradoAqui = true;
           try {
-            detener();
+            await detener();
           } catch (fallo) {
             queja = comoErrorDeCara(fallo);
           }
@@ -475,10 +472,9 @@ function seccionMando(ctx) {
         },
         {
           tono: 'peligro',
-          desactivado: cuenta.pendientes
+          desactivado: cuenta.pendientes || cuenta.enCurso
             ? false
-            : 'No hay nada esperando turno, así que no hay nada que detener. Lo que esté en curso ' +
-              'se termina de todas formas: abandonarlo sería dejarlo pagado y sin recoger.'
+            : 'No hay trabajos en marcha.'
         }
       )
     );
@@ -1382,11 +1378,10 @@ function accionesDeUnTrabajo(trabajo, ctx) {
 
   if (enMarcha) {
     acciones.push(
-      boton('Volver a pedirlo', () => {}, {
-        desactivado:
-          'Este trabajo ya está pedido y la cola se está ocupando de él. Pedirlo otra vez ahora ' +
-          'sería generarlo dos veces y pagarlo dos veces.'
-      })
+      boton('Detener reintentos', async () => {
+        try { await detener(trabajo.id); } catch (fallo) { queja = comoErrorDeCara(fallo); }
+        ctx.repintar();
+      }, { tono: 'peligro' })
     );
   } else {
     acciones.push(boton('Volver a pedirlo', () => volverAPedir([trabajo], ctx)));
