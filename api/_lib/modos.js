@@ -60,7 +60,7 @@
 
 import { Buffer } from 'node:buffer';
 import { createHash, randomUUID } from 'node:crypto';
-import { materialVigente, necesitaDireccion, referenciaDeSecuencia, referenciasDeReparto, pasoDeEscena, firmaDeToma } from '../../app/continuidad.js';
+import { materialVigente, necesitaDireccion, referenciaDeSecuencia, referenciasDeReparto, estadoDeBaseEscena, pasoDeEscena, firmaDeToma } from '../../app/continuidad.js';
 import { aplicarCorreccion } from './continuidad.js';
 import { aplicarVersionLocal } from './version-local.js';
 import { escenariosParaPlanificar } from './planificacion-visual.js';
@@ -832,9 +832,11 @@ async function modoImagenNueva(cuerpo) {
     tomaInicial = tomaDeLaPieza(idPiezaDelKeyframe, id, piezaEnEstado);
     const paso=pasoDeEscena(piezaEnEstado,tomaInicial,leido.estado);
     if (paso.bloqueo) throw new ErrorDeCara(paso.bloqueo,{http:409,reintentable:false});
+    const base=estadoDeBaseEscena(piezaEnEstado,tomaInicial,leido.estado);
+    if (base.motivo) throw new ErrorDeCara(base.motivo,{http:409,reintentable:false});
     compuesto = promptKeyframe(idPiezaDelKeyframe, id, piezaEnEstado,
       referenciaDeSecuencia(piezaEnEstado,tomaInicial,leido.estado),
-      referenciasDeReparto(piezaEnEstado,tomaInicial,leido.estado,serie.banco.placas));
+      referenciasDeReparto(piezaEnEstado,tomaInicial,leido.estado,serie.banco.placas), base.referencia);
     carpeta = carpetaDeKeyframe(idPiezaDelKeyframe, id);
     paraQue = `generar el keyframe de la toma ${id} de la pieza «${idPiezaDelKeyframe}»`;
   }
@@ -916,6 +918,7 @@ async function modoImagenNueva(cuerpo) {
         if (!detenida) entrada.revision_pendiente = true;
         if (!entrada.origenes_keyframe) entrada.origenes_keyframe = {};
         entrada.origenes_keyframe[ruta] = { revision: tomaInicial.revision_direccion || null,
+          referencia_base: compuesto.referencias.find(r=>r.uso==='base_escena')?.continuidad || null,
           referencia_escenario: pendientes.find(p=>p.referencia.escenario)?.rutaAprobada || null,
           referencia_anterior: compuesto.referencias.find(r=>r.uso==='secuencia')?.continuidad || null,
           referencias_banco: pendientes.filter(p=>p.referencia.placa).map(p=>({placa:p.referencia.placa,ruta:p.rutaAprobada})),

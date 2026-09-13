@@ -115,6 +115,23 @@ export function estadoDeReferencia(pieza,toma,estado) {
     'Todavía no hay una imagen anterior aprobada que pueda usarse aquí. Se usarán los personajes y el escenario del banco.'};
 }
 
+/** Una vista general aprobada conserva la disposición completa aunque un
+ * detalle intermedio no la muestre o se apague el apoyo de la toma anterior.
+ * Solo se busca dentro del mismo lugar y momento narrativo. */
+export function estadoDeBaseEscena(pieza,toma,estado) {
+  if (necesitaDireccion(pieza,toma)) return {referencia:null,motivo:''};
+  for (const c of anterioresDeSecuencia(pieza,toma,estado)) {
+    const camara=String(c.toma.direccion?.camara || '');
+    const general=/\b(establishing|wide shot|wide view|whole (?:room|hall|space|gathering)|entire (?:room|hall|space|table|gathering)|full (?:room|hall|gathering)|length of (?:the |a )?(?:long )?table|plano general|vista general)\b/i.test(camara);
+    if (!general || /\b(close[ -]?up|close detail|macro|medium|medio|primer plano|detalle)\b/i.test(camara)) continue;
+    // No usar una versión antigua cuando ese general está siendo reemplazado.
+    const motivo=motivoDeReferenciaPendiente(c.pieza,c.toma,estado);
+    if (motivo) return {referencia:null,motivo};
+    return {referencia:referenciaDeCandidata(c,pieza,estado),motivo:'',etiqueta:etiquetaDeCandidata(c,pieza)};
+  }
+  return {referencia:null,motivo:''};
+}
+
 /** El interruptor decide si se envía la referencia compatible, nunca el banco. */
 export function referenciaDeSecuencia(pieza,toma,estado) {
   if (toma.referencia_anterior===false) return null;
