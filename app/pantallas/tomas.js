@@ -1599,7 +1599,7 @@ function tarjetaDeToma(laToma, ctx) {
     pie.push(h('div', {clase:'toma-relato'},
       h('p', {clase:'tarjeta-texto suave'}, [contexto.tiempo, contexto.momento?.toLowerCase(), contexto.lugar].filter(Boolean).join(' · ')),
       contexto.transicion ? h('p',{clase:'tarjeta-texto toma-transicion'},contexto.transicion) : null,
-      h('strong', null, contexto.historia ? 'Qué vemos en esta imagen' : 'Qué pasa en esta escena'),
+      h('strong', null, contexto.historia ? 'Qué debe mostrar esta imagen' : 'Qué pasa en esta escena'),
       h('p', {clase:'tarjeta-texto'}, contexto.historia || contexto.resumen || 'No se pudo cargar la historia de esta toma. Recarga la página.'),
       contexto.escena ? h('details', null,
         h('summary', null, 'Leer esta parte del guion'), h('p', {clase:'tarjeta-texto'}, contexto.escena)) : null,

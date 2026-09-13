@@ -94,7 +94,7 @@ export function estadoDeReferencia(pieza,toma,estado) {
   const guia=guiaDeEscena(ep,toma.escena);
   return {referencia:null,motivo:guia?.enlace ?
     `Esta escena continúa una anterior. Todavía falta una imagen aprobada de esa parte de la historia para usarla como referencia.` :
-    'Aquí empieza otro lugar o momento de la historia. La imagen se crea con los personajes y el escenario del banco.'};
+    'Todavía no hay una imagen anterior aprobada que pueda usarse aquí. Se usarán los personajes y el escenario del banco.'};
 }
 
 /** El interruptor decide si se envía la referencia compatible, nunca el banco. */
