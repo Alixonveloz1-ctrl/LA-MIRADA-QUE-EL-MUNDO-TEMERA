@@ -3012,11 +3012,12 @@ bloque('Código · una llamada por escena');
         .map((a) => a.trim())
         .filter(Boolean);
       const linea = codigo.slice(0, declara.index).split('\n').length;
-      if (argumentos.length !== 2) {
+      const conImagenes = argumentos.length === 3 && /^referenciasVisuales\s*=\s*\[\]$/.test(argumentos[2]);
+      if (argumentos.length !== 2 && !conImagenes) {
         quejas.push(
           `${RUTA_TEXTO}:${linea} · desglosarEscena recibe ` +
-            `${argumentos.length} argumentos y tiene que recibir dos: el ` +
-            'episodio y UNA escena.'
+            `${argumentos.length} argumentos: debe recibir episodio y UNA escena, ` +
+            'con referenciasVisuales opcionales del escenario aprobado.'
         );
       }
       if (argumentos.some((a) => a.startsWith('...') || a.startsWith('['))) {

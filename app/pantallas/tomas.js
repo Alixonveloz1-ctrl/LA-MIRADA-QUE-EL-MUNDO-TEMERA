@@ -54,7 +54,7 @@ import { llamar, ErrorDeCara } from '../api.js';
 import { actual, alCambiar, cambiar, cargar } from '../estado.js';
 import { encolar, encolarVarios } from '../cola.js';
 import { claveDelMaterial, esDeArchivo, porQueNoSeGenera } from '../planos.js';
-import { necesitaDireccion, materialVigente, invalidarMontajes, pasoDeEscena, estadoDeReferencia, referenciasDeReparto, personajesSinReferencia } from '../continuidad.js';
+import { necesitaDireccion, materialVigente, invalidarMontajes, pasoDeEscena, estadoDeReferencia, referenciasDeReparto, personajesSinReferencia, personajesOmitidosEnGeneral } from '../continuidad.js';
 import {
   aviso,
   barra,
@@ -727,6 +727,8 @@ function porQueNoSePuedeKeyframe(laToma, ctx) {
   // generar sería ofrecer pagar dos veces lo mismo.
   if (esDeArchivo(laToma)) return porQueNoSeGenera(laToma);
   const sinReferencia=personajesSinReferencia(laToma,ctx.modelo.catalogoPersonajes);
+  const omitidos=personajesOmitidosEnGeneral(laToma,ctx.modelo.catalogoPersonajes);
+  if (omitidos.length) return `El plano general deja fuera a ${omitidos.join(', ')}. Hay que corregir sus personajes antes de generarlo.`;
   if (sinReferencia.length) return `Falta asignar la referencia del banco de ${sinReferencia.join(', ')}. Usa «Corregir continuidad» en esta escena para completar sus personajes.`;
 
   const faltan = [];

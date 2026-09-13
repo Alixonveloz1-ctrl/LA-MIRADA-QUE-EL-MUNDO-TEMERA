@@ -42,9 +42,10 @@
 import { ErrorDeCara } from './errores.js';
 import { serie, escenaDeGuion, escenasDeEpisodio, personajesDeEscena, nivelImagen, pieza } from './datos.js';
 import { marcoDeEscena, reglasNarrativas } from '../../datos/continuidad.js';
+import { partesConEscenarios } from './planificacion-visual.js';
 import { segmentosDeEscena } from '../../datos/segmentos.js';
 import { guiaDePlano } from '../../datos/escenas.js';
-import { normalizarDireccion, revisarDireccion, conservaMontaje, personajesSinReferencia } from '../../app/continuidad.js';
+import { normalizarDireccion, revisarDireccion, conservaMontaje, personajesSinReferencia, personajesOmitidosEnGeneral } from '../../app/continuidad.js';
 import { comprobarCupos } from './prompt.js';
 import { entorno } from './entorno.js';
 import { llamar, urlModelo, conGrafias, comoGrafia } from './vertex.js';
@@ -191,7 +192,7 @@ function modeloDeTextoRapido() {
  *   plataforma; si no se dice, el de `vertex.js`.
  * @returns {Promise<string|object>} el texto tal cual, o el JSON parseado.
  */
-export async function generar(prompt, { json = false, limiteMs, rapido = false } = {}) {
+export async function generar(prompt, { json = false, limiteMs, rapido = false, referenciasVisuales = [] } = {}) {
   const texto = String(prompt === null || prompt === undefined ? '' : prompt).trim();
   if (!texto) {
     throw new ErrorDeCara(
@@ -209,7 +210,7 @@ export async function generar(prompt, { json = false, limiteMs, rapido = false }
   const ent = entorno();
 
   const cuerpo = {
-    contents: [{ role: 'user', parts: [{ text: texto }] }],
+    contents: [{ role: 'user', parts: partesConEscenarios(texto,referenciasVisuales) }],
     generationConfig: {
       // Sin esto el modelo contesta con el JSON envuelto en explicaciones o en
       // vallas de markdown, y el parseo se convierte en adivinar.
@@ -524,16 +525,16 @@ function soloLaFrase(devuelto) {
  * @param {string|number} escena el id de escena tal y como lo escribe el guion.
  * @returns {Promise<{planos:object[]}>} los planos ya validados.
  */
-export async function desglosarEscena(episodio, escena) {
-  return producirDesglose(episodio, escena, null);
+export async function desglosarEscena(episodio, escena, referenciasVisuales = []) {
+  return producirDesglose(episodio, escena, null, referenciasVisuales);
 }
 
-export async function corregirPlanosDeEscena(episodio, escena, existentes) {
-  return producirDesglose(episodio, escena, existentes);
+export async function corregirPlanosDeEscena(episodio, escena, existentes, referenciasVisuales = []) {
+  return producirDesglose(episodio, escena, existentes, referenciasVisuales);
 }
 
 /** Adapta UN uso del archivo. El guion y las demás tomas son solo contexto. */
-export async function adaptarPlanoDeArchivo(episodio, escena, existentes, id) {
+export async function adaptarPlanoDeArchivo(episodio, escena, existentes, id, referenciasVisuales = []) {
   const original=existentes.find(t=>t.id===id);
   const archivo=serie.piezas.archivo?.tomas?.find(t=>t.id===original?.de_archivo);
   if (!original?.de_archivo || !archivo) throw new ErrorDeCara('Esta toma no utiliza una imagen del banco disponible.', {http:400,reintentable:false});
@@ -544,12 +545,13 @@ export async function adaptarPlanoDeArchivo(episodio, escena, existentes, id) {
     'Preserve the subject of the insert (for example, the oil lamp); do not replace it with a different story action. '+
     'Adapt visible background occupancy, time of day, clothing and props to the scripted scene and its neighboring shots. '+
     'The archive may show an empty room or another time of day; those are not authoritative. '+
+    'The approved SET IMAGE is authoritative for the object design, mounting and position. Inspect it: do not import a tabletop lamp from the archive when this room has hanging lamps. Preserve the insert subject using the existing fixture in its existing position. '+
     'For a close object insert you may crop the gathering area out entirely; never show seats empty when their occupants remain there. '+
     'All other shots and the dialogue are read-only context. Do not return, rewrite or reorder them.\n'+
     JSON.stringify({toma:original,material_del_archivo:archivo,tomas_de_la_escena:existentes});
   let devuelto=null,quejas=[];
   for (let intento=0;intento<2;intento++) {
-    devuelto=await generar(intento ? conLasReglasRotas(encargo,quejas,devuelto) : encargo,{json:true});
+    devuelto=await generar(intento ? conLasReglasRotas(encargo,quejas,devuelto) : encargo,{json:true,referenciasVisuales});
     const revision=revisarAdaptacionDeArchivo(episodio,escena,original,devuelto);
     if (!revision.quejas.length) return revision.planos[0];
     quejas=revision.quejas;
@@ -569,7 +571,7 @@ export function revisarAdaptacionDeArchivo(episodio,escena,original,devuelto) {
   return revision;
 }
 
-async function producirDesglose(episodio, escena, existentes) {
+async function producirDesglose(episodio, escena, existentes, referenciasVisuales = []) {
   const contexto = contextoDeLaEscena(episodio, escena);
   const redistribuir=contexto.segmentos.length>0 && contexto.dialogo.length===0;
   const encargo = promptDeDesglose(contexto) + (existentes && redistribuir ? '\nREPAIR MIXED SCENE:\n'+
@@ -584,11 +586,14 @@ async function producirDesglose(episodio, escena, existentes) {
 
   for (let intento = 1; intento <= 2; intento += 1) {
     const prompt = intento === 1 ? encargo : conLasReglasRotas(encargo, quejas, devuelto);
-    devuelto = await generar(prompt, { json: true });
+    devuelto = await generar(prompt, { json: true, referenciasVisuales });
 
     const revision = revisar(devuelto, contexto);
     if (revision.planos.some(p=>!p.historia || p.historia.length<15)) {
       revision.quejas.push({regla:'pie-de-imagen',queja:'Cada toma necesita historia: una o dos frases en español sencillo que expliquen lo que se ve en esa imagen, también en los detalles del archivo.'});
+    }
+    if (revision.planos.some(p=>!p.de_archivo && !Array.isArray(p.direccion?.presentes))) {
+      revision.quejas.push({regla:'presencia-actual',queja:'Indica direccion.presentes: quienes están físicamente en el lugar en ese momento. Incluye a quienes quedan fuera del encuadre; excluye a quienes aún no han llegado o ya se marcharon.'});
     }
     if (existentes) {
       if (!(redistribuir ? conservaDuracionDeEscena(existentes,revision.planos) : conservaMontaje(existentes,revision.planos))) {
@@ -816,6 +821,7 @@ function promptDeDesglose(ctx) {
     bloque('COBERTURA', 'Describe only what is visible. For graphic violence, birth or child trauma, use genuinely non-graphic coverage, reactions, sound and off-screen action. No visible injury or nudity. Preserve the narrative meaning; do not merely rename harmful details. Respect the author-confirmed narrative context. Do not treat memories, time cuts or incomplete recollection as plot errors to rewrite.'),
     bloque('ENCUADRE AUTOSUFICIENTE', 'The imagen and direccion fields must completely describe this particular frame: the visible character at the correct story age, expression, wardrobe, support, positions, occupied background, props and camera. Use the full narrative context to decide these facts, but do not copy plot summaries or events outside this frame into its visual description. An infant close-up must establish secure support and clothing or wrapping even when the adult remains outside the crop. Preserve the eye color of the approved character design; do not invent luminous eyes or other supernatural visual effects unless the script explicitly requires them.'),
     bloque('PERSONAS Y ENCUADRE', 'An off-screen person has not left the room. If a table, occupied seats or a crowd are visible behind the subject, include their occupants in direccion.visibles and describe their positions. If they are outside the crop, exclude those seats and that part of the room too. A medium shot must not become a wide view of an empty gathering. For a prop insert, decide explicitly: show the occupied background, or frame only the object with no seats or gathering area visible. Do not write contradictory visible/off-screen instructions.'),
+    bloque('EL MISMO DECORADO', 'Inspect the attached approved set images. Keep the same physical layout across every shot: one continuous table cannot turn into several tables; lamps keep their design, mounting and position; windows and the fireplace cannot trade walls. A crop changes which part of the set we see, not its furniture or dimensions. In a general view of the gathering, include the physically present named characters in visibles with their bank refs, even if silent or small in the background. Extras cannot replace Saharis or other known characters. Close shots may leave named characters outside the crop. Do not introduce an object for a decorative insert if it is not in the set; choose the existing fixture.'),
     bloque('PIE DE CADA IMAGEN', 'Escribe historia en español sencillo, con una o dos frases que permitan juzgar ESTA imagen sin leer otras notas. Di quién aparece, qué está haciendo y dónde está. Cuando haya más personas en la escena, aclara si se ven a su alrededor o si quedan fuera porque solo mostramos su cara, sus manos o un objeto. Describe el estado concreto: sentado en su asiento, entrando por la puerta, caminando hacia ella; no escribas solamente "continúa", "sigue" o "conserva continuidad". No mezcles defectos de una imagen anterior con lo que debe mostrar la nueva. No copies el resumen de la escena ni hables de modelos, generación, dirección o referencias.'),
     bloque('LAS PLACAS DEL BANCO QUE PUEDES USAR EN «refs»', lasPlacasEnPalabras(ctx)),
     bloque('EL ARCHIVO: PLANOS DE AMBIENTE QUE YA ESTÁN HECHOS', elArchivoEnPalabras(ctx)),
@@ -1026,7 +1032,7 @@ function loQueSeEspera(ctx) {
     `      "refs": ${primera},`,
     '      "boca_visible": null,',
     '      "encadena_con": null,',
-    '      "direccion": { "visibles": [], "fuera_de_campo": [], "posiciones": "<blocking and visible background occupancy>", "miradas": "<who looks at whom or what; no audience gaze>", "camara": "<camera position, axis and framing>", "estado_inicial": "<initial character, wardrobe and prop state>", "estado_final": "<only the changes written in the action>" },',
+    '      "direccion": { "presentes": [], "visibles": [], "fuera_de_campo": [], "posiciones": "<blocking and visible background occupancy>", "miradas": "<who looks at whom or what; no audience gaze>", "camara": "<camera position, axis and framing>", "estado_inicial": "<initial character, wardrobe and prop state>", "estado_final": "<only the changes written in the action>" },',
     '      "de_archivo": null',
     '    }',
     '  ]',
@@ -1147,6 +1153,8 @@ const COMPROBACIONES = [
     revisar(planos, ctx) {
       return planos.flatMap(p => {
         const errores = revisarDireccion(p, contextoDelPlano(ctx,p).continuidad);
+        const omitidos=personajesOmitidosEnGeneral({...p,continuidad:contextoDelPlano(ctx,p).continuidad},ctx.placas);
+        if (omitidos.length) errores.push(`El general muestra la reunión pero omite a ${omitidos.join(', ')}. Inclúyelos en visibles con sus referencias; no los sustituyas por figurantes.`);
         for (const personaje of personajesSinReferencia(p,ctx.placas)) {
           errores.push(`Falta la referencia del banco de «${personaje}», que está visible. Añade la placa de su edad y vestuario; una toma anterior no sustituye su ficha.`);
         }

@@ -43,7 +43,7 @@ import {
   anclaDePersonaje,
   bloquesDeVoz
 } from './datos.js';
-import { necesitaDireccion, revisarDireccion, personajesSinReferencia } from '../../app/continuidad.js';
+import { necesitaDireccion, revisarDireccion, personajesSinReferencia, personajesOmitidosEnGeneral } from '../../app/continuidad.js';
 
 // ---------------------------------------------------------------------------
 // Piezas sueltas de serie.json, cada una con su queja si falta
@@ -266,14 +266,15 @@ const INSTRUCCION_ESCENARIO_POR_DEFECTO =
   'LOCATION REFERENCE above: this is the place where this shot happens. Copy the ' +
   'PLACE exactly - the same architecture, the same materials and textures, the same ' +
   'colours, the same objects and where they are placed, the same wear, damp and dirt. ' +
-  'Do NOT copy the framing, the camera angle, the scale or the composition of the ' +
-  'reference: this shot looks at the same place from where it needs to, and everything ' +
-  'in it is drawn at the size, position and perspective this shot describes. ' +
+  'Reframe this SAME physical set at the requested camera distance and angle. ' +
+  'Furniture dimensions, connectivity and positions stay fixed; only their projected size and visible crop change with the camera. ' +
   // Y esto, que es lo que evita que un figurante inventado se herede en cadena:
   'If any people or figures appear in this reference, IGNORE THEM COMPLETELY - they ' +
   'are not part of the place. Use the shot direction to preserve the established cast and ' +
   'background population of this sequence. People outside a close-up remain off screen; ' +
   'visible occupied seats must not become empty. Reference framing is not the shot camera.';
+
+const GEOMETRIA_DEL_ESCENARIO = 'SET GEOMETRY IS LOCKED TO THE APPROVED LOCATION IMAGE. It is the physical set, not a mood board. Within the matching subspace, preserve object count, connected surfaces and relative placement: a single long table remains one continuous table even when it extends beyond the crop, never separate small tables. Keep lamp design and mounting: hanging fixtures stay suspended at their installed locations; do not replace them with tabletop lamps. Do not move walls, windows, doors or the fireplace to improve the composition. Character portraits supply only characters, never their furniture, lamps or backgrounds. Earlier frames supply ongoing action and occupancy, not permission to redesign this set. Only an explicit physical change in the story permits that particular change; a new shot or an insert does not. If the master is an exterior or an overview of another subspace, use its architectural identity for the requested subspace, never copy that unrelated layout into it.';
 
 function direccionDelPlano(idPieza, laToma) {
   if (necesitaDireccion({ id:idPieza }, laToma)) {
@@ -307,7 +308,7 @@ function direccionDelPlano(idPieza, laToma) {
  */
 function instruccionDeEscenario() {
   const escrita = (serie.instrucciones_referencia || {}).escenario;
-  return typeof escrita === 'string' && escrita.trim() ? escrita : INSTRUCCION_ESCENARIO_POR_DEFECTO;
+  return unir(typeof escrita === 'string' && escrita.trim() ? escrita : INSTRUCCION_ESCENARIO_POR_DEFECTO,GEOMETRIA_DEL_ESCENARIO);
 }
 
 /**
@@ -566,10 +567,14 @@ export function promptKeyframe(idPieza, idToma, piezaAlternativa = null, referen
   }
 
   const cuerpo = unir(
+    laToma.escenario ? 'Reframe the approved LOCATION IMAGE to make this shot in the same physical set. Place the specified cast in it using their CHARACTER BANK images. Change the camera crop, not the room layout or the furniture.' : '',
     laToma.imagen,
     laToma.continuidad?.luz || luzDe(laToma.luz, `La toma «${idToma}» de la pieza «${idPieza}»`),
     direccionDelPlano(idPieza, laToma)
   );
+
+  const omitidos=personajesOmitidosEnGeneral(laToma,serie.banco.placas);
+  if (omitidos.length) throw new ErrorDeCara(`El plano general deja fuera a ${omitidos.join(', ')}. Hay que incluir a los personajes presentes y sus referencias antes de generarlo.`,{http:409,reintentable:false});
 
   const sinReferencia=personajesSinReferencia(laToma,serie.banco.placas);
   if (sinReferencia.length) throw new ErrorDeCara(
@@ -610,7 +615,7 @@ export function promptKeyframe(idPieza, idToma, piezaAlternativa = null, referen
   if (referenciaSecuencia) ponerReferencia(referencias, {
     continuidad: referenciaSecuencia.ruta,
     uso:'secuencia',
-    instruccion:'SEQUENCE REFERENCE: an approved earlier frame from this same sequence, for spatial relationships, established population and prop continuity. The CHARACTER BANK controls the design of named characters; never replace their face, costume or mask with a conflicting design from this frame. Render only this shot\'s visible cast. Follow the NEW camera, framing, scripted movements and changes. Do not copy the old composition or override this shot\'s lighting. People outside a close-up remain off screen, not erased from the location.',
+    instruccion:'SEQUENCE REFERENCE: an approved earlier frame from this same sequence, for established seating, population, ongoing action and handled props. The LOCATION IMAGE controls architecture, furniture connectivity and installed fixtures; do not inherit spatial errors from this frame. The CHARACTER BANK controls the design of named characters; never replace their face, costume or mask with a conflicting design from this frame. Render only this shot\'s visible cast. Follow the NEW camera, framing, scripted movements and changes. Reframe the same set, without moving its objects, and follow this shot\'s lighting. People outside a close-up remain off screen, not erased from the location.',
     cupo:'objeto'
   });
 
@@ -628,7 +633,7 @@ export function promptKeyframe(idPieza, idToma, piezaAlternativa = null, referen
     if (ref) ref.instruccion += ` This shot takes place in: ${laToma.continuidad.subespacio}. The master supplies the location identity, materials and architectural language; frame the specified subspace, never copy an exterior aerial view into an interior or populate it with people from another segment.`;
   }
 
-  return { texto: sellar(cuerpo), negativo: negativoDeEstilo(), referencias };
+  return { texto: sellar(unir(cuerpo,laToma.escenario ? GEOMETRIA_DEL_ESCENARIO : '')), negativo: negativoDeEstilo(), referencias };
 }
 
 // ---------------------------------------------------------------------------
