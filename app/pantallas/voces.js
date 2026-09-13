@@ -45,6 +45,7 @@
 
 import { llamar } from '../api.js';
 import { actual, alCambiar, cambiar } from '../estado.js';
+import { crearActualizador } from '../ui.js';
 import { encolar, comoVa, cuantosPorDelante } from '../cola.js';
 import {
   h, pantalla, seccion, tarjeta, boton, aviso, barra, filtro, espera, confirmar, vaciar,
@@ -115,6 +116,7 @@ export default {
     const duraciones = new Map();
     /** Personaje → su tarjeta puesta, para repintar solo la que cambia. */
     const nodos = new Map();
+    const actualizadores = new Map();
     /** Personaje → firma de lo suyo en el estado, para saber si hay que repintar. */
     const firmas = new Map();
     /** Personaje → muestras generadas en esta sesión, antes de recargar el estado. */
@@ -136,6 +138,7 @@ export default {
       seccion('El resto del reparto', huecoResto),
     );
     raiz.appendChild(cuerpo);
+    const actualizarCabecera = crearActualizador(intro, construirCabecera);
 
     intro.appendChild(espera('Trayendo el reparto y la lista de voces…'));
 
@@ -152,6 +155,9 @@ export default {
     return () => {
       vivo = false;
       desuscribir();
+      actualizarCabecera.destruir();
+      for(const actualizar of actualizadores.values()) actualizar.destruir();
+      actualizadores.clear();
     };
 
     // -----------------------------------------------------------------------
@@ -203,16 +209,15 @@ export default {
         .then((traidos) => {
           if (!vivo) return;
           guiones = traidos;
-          // Los guiones cambian el nombre con el que se llama a cada personaje y
-          // rellenan la línea de los que no tienen frase de muestra, así que se
-          // repinta la lista entera. Llega a los pocos segundos de entrar, mucho
-          // antes de que pueda haber nada sonando.
-          pintarTodo();
+          // La lectura puede tardar: no reconstruir las listas si el usuario
+          // ya está escuchando o eligiendo una voz cuando llegan los guiones.
+          actualizarCabecera();
+          for (const ficha of repartoDeLaSerie()) refrescar(String(ficha.personaje));
         })
         .catch((fallo) => {
           if (!vivo) return;
           guiones = { fallo };
-          pintarTodo();
+          actualizarCabecera();
         });
     }
 
@@ -222,28 +227,16 @@ export default {
 
     /** Repinta la cabecera y las dos listas enteras. */
     function pintarTodo() {
+      for(const actualizar of actualizadores.values()) actualizar.destruir();
+      actualizadores.clear();
       const fichas = repartoDeLaSerie();
       const mandan = fichas.slice(0, CUANTOS_MANDAN);
       const resto = fichas.slice(CUANTOS_MANDAN);
 
-      vaciar(intro);
       vaciar(huecoSeis);
       vaciar(huecoResto);
       nodos.clear();
-
-      intro.appendChild(pintarCabecera(fichas, mandan));
-
-      if (porQueNoHayVoces) {
-        intro.appendChild(aviso(porQueNoHayVoces, { tono: 'error' }));
-      }
-
-      if (guiones && guiones.fallo) {
-        intro.appendChild(aviso(
-          'No se han podido leer los guiones, así que a cada personaje se le llama aquí por su id ' +
-          'y los que no tienen frase de muestra escrita no pueden enseñar su línea más difícil. ' +
-          'Todo lo demás funciona igual.',
-          { tono: 'nota', detalle: guiones.fallo.mensaje || String(guiones.fallo) }));
-      }
+      actualizarCabecera();
 
       if (!fichas.length) {
         huecoSeis.appendChild(aviso(
@@ -261,6 +254,18 @@ export default {
         return;
       }
       for (const ficha of resto) huecoResto.appendChild(pintarPersonaje(ficha, false));
+    }
+
+    function construirCabecera() {
+      const fichas=repartoDeLaSerie();
+      return h('div', { clase:'rejilla' },
+        pintarCabecera(fichas,fichas.slice(0,CUANTOS_MANDAN)),
+        porQueNoHayVoces ? aviso(porQueNoHayVoces,{tono:'error'}) : null,
+        guiones?.fallo ? aviso(
+          'No se han podido leer los guiones, así que a cada personaje se le llama aquí por su id ' +
+          'y los que no tienen frase de muestra escrita no pueden enseñar su línea más difícil. ' +
+          'Todo lo demás funciona igual.',
+          {tono:'nota',detalle:guiones.fallo.mensaje || String(guiones.fallo)}) : null);
     }
 
     /**
@@ -1198,8 +1203,11 @@ export default {
       const posicion = fichas.findIndex((f) => String(f.personaje) === id);
       if (posicion < 0) return;
 
-      const nuevo = pintarPersonaje(fichas[posicion], posicion < CUANTOS_MANDAN);
-      antes.replaceWith(nuevo);
+      if(!actualizadores.has(id)) actualizadores.set(id,crearActualizador(antes,()=>{
+        const actuales=repartoDeLaSerie(),indice=actuales.findIndex(f=>String(f.personaje)===id);
+        return indice<0?null:pintarPersonaje(actuales[indice],indice<CUANTOS_MANDAN);
+      },{reemplazar:true}));
+      actualizadores.get(id)();
     }
 
     /**

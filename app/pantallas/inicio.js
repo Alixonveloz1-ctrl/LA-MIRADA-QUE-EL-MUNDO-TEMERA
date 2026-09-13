@@ -3,7 +3,7 @@
 // las demás pantallas y enlaza con el lugar donde se hace cada trabajo.
 
 import { actual, alCambiar, cambiar } from '../estado.js';
-import { h, pantalla, seccion, vaciar } from '../ui.js';
+import { h, pantalla, seccion, crearActualizador } from '../ui.js';
 import { plural, segundos } from '../formato.js';
 
 let promesaDeDatos = null;
@@ -23,16 +23,14 @@ export default {
       datos = { serie: {}, guiones: { guiones: [] } };
     }
 
-    const pintar = () => {
-      if (!vivo) return;
-      vaciar(raiz).appendChild(construir(datos));
-    };
+    const pintar = crearActualizador(raiz,()=>vivo?construir(datos):null);
 
     pintar();
     const desuscribir = alCambiar(pintar);
 
     return () => {
       vivo = false;
+      pintar.destruir();
       if (typeof desuscribir === 'function') desuscribir();
     };
   },

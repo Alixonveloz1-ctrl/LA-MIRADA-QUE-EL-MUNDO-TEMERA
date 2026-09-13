@@ -66,6 +66,7 @@ import {
   pantalla,
   seccion,
   tarjeta,
+  crearActualizador,
   vaciar
 } from '../ui.js';
 import { plural, segundos } from '../formato.js';
@@ -263,23 +264,16 @@ export default {
         return;
       }
 
-      /**
-       * El repintado de verdad, el que se hace cuando el usuario toca algo.
-       *
-       * Rehacer la pantalla se lleva por delante los `<video>` que hubiera, así
-       * que lo primero es olvidarse de los que estuvieran sonando: esos nodos ya
-       * no van a existir y nunca van a avisar de que se han pausado. Sin esto,
-       * un vídeo que se estaba reproduciendo cuando se tocó un filtro dejaría la
-       * pantalla congelada para siempre, esperando una pausa que no llega.
-       */
-      const repintar = () => {
+      // Se prepara fuera de la pantalla y se aplica al terminar el toque.
+      // El actualizador conserva lectura, detalles y reproducción; una elección
+      // de escena o capítulo sí cambia la vista cuando la pide el usuario.
+      const repintar = crearActualizador(marco, () => {
         modelo = construirModelo(datos, leerEstado());
         sonando.clear();
         repintadoPendiente = false;
         pararElReloj();
-        vaciar(marco);
-        marco.appendChild(construir(modelo, repintar, pedirRepintado));
-      };
+        return construir(modelo, repintar, pedirRepintado);
+      }, {contexto:()=>`${leerEstado().pieza_activa}/${bloquePuesto}/${filtroPuesto}`});
 
       /**
        * El repintado que espera a que termine lo que se está reproduciendo.
@@ -289,9 +283,7 @@ export default {
        * firmadas. Repintar por eso en mitad de un clip lo cortaría justo cuando
        * se está juzgando, que es lo único que esta pantalla no puede hacer.
        *
-       * Lo que sí pide el usuario —un filtro, un botón— repinta en el acto
-       * aunque haya algo sonando: si toca algo y no pasa nada, la pantalla está
-       * rota aunque el vídeo siga.
+       * Los cambios de escena o capítulo pasan por el actualizador compartido.
        */
       const pedirRepintado = () => {
         if (sonando.size) {
@@ -316,6 +308,7 @@ export default {
       const desapuntar = alCambiar(pedirRepintado);
       soltar = () => {
         desapuntar();
+        repintar.destruir();
         sonando.clear();
         repintadoPendiente = false;
         pararElReloj();
@@ -919,7 +912,7 @@ function rutasDeLaTarjeta(guardado) {
 /**
  * La pantalla entera.
  * @param {object} modelo
- * @param {() => void} repintar el repintado inmediato: lo que toca el usuario
+ * @param {() => void} repintar actualiza al terminar la interacción
  * @param {() => void} repintarLuego el que espera a que acabe lo que suena
  * @returns {HTMLElement}
  */
@@ -1210,7 +1203,7 @@ function trabajoPorEscena(ctx) {
       h('p',{clase:'tarjeta-texto'},historia.resumen || 'No se pudo cargar el guion. Recarga la página.')) : null,
     h('p',{clase:'tarjeta-texto'},pendiente ? `Siguiente por revisar: toma ${pendiente.id}. Puedes conservar su imagen si está bien o crear otra versión.` :
       'Las imágenes de esta escena están aprobadas. Puedes revisar sus vídeos o elegir otra escena.'),
-    boton('Ver las tomas de esta escena',()=>{filtroPuesto='todo';paginas=1;ctx.repintar();irALaLista();})
+    boton('Ver las tomas de esta escena',()=>{filtroPuesto='todo';paginas=1;ctx.repintar(irALaLista);})
   );
 }
 
@@ -1342,8 +1335,7 @@ function seccionProgreso(ctx) {
             alClic: () => {
               bloquePuesto = bloque.id;
               paginas = 1;
-              ctx.repintar();
-              irALaLista();
+              ctx.repintar(irALaLista);
             },
           },
           h('span', { clase: 'material-symbols-rounded', 'aria-hidden': 'true' }, cuenta.elegidos === cuenta.total ? 'check' : 'pending'),
@@ -1427,14 +1419,12 @@ function filaDeGrupo(titulo, tomas, ctx, idBloque) {
             ? boton('Ver todos los planos otra vez', () => {
                 bloquePuesto = 'todo';
                 paginas = 1;
-                ctx.repintar();
-                irALaLista();
+                ctx.repintar(irALaLista);
               })
             : boton(`Ver solo ${titulo}`, () => {
                 bloquePuesto = idBloque;
                 paginas = 1;
-                ctx.repintar();
-                irALaLista();
+                ctx.repintar(irALaLista);
               })
         )
       : null

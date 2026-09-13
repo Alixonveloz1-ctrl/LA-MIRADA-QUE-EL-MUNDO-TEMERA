@@ -35,6 +35,7 @@
 
 import { ErrorDeCara, llamar } from '../api.js';
 import { actual, alCambiar, cambiar } from '../estado.js';
+import { crearActualizador } from '../ui.js';
 import { encolar, encolarVarios } from '../cola.js';
 import { claveDelMaterial } from '../planos.js';
 import { materialVigente } from '../continuidad.js';
@@ -285,13 +286,12 @@ export default {
         return;
       }
 
-      const repintar = () => {
+      const repintar = crearActualizador(marco, () => {
         sonando.clear();
         repintadoPendiente = false;
         pararElReloj();
-        vaciar(marco);
-        marco.appendChild(construir(serie, repintar, pedirRepintado));
-      };
+        return construir(serie, repintar, pedirRepintado);
+      }, {contexto:()=>leerEstado().pieza_activa});
 
       const pedirRepintado = () => {
         if (sonando.size) {
@@ -313,6 +313,7 @@ export default {
       const desapuntar = alCambiar(pedirRepintado);
       soltar = () => {
         desapuntar();
+        repintar.destruir();
         sonando.clear();
         repintadoPendiente = false;
         pararElReloj();
@@ -2289,7 +2290,7 @@ function dentroDelAmbito(t, ambito) {
 
 /**
  * @param {object} serie
- * @param {() => void} repintar el repintado inmediato: lo que toca el usuario
+ * @param {() => void} repintar actualiza al terminar la interacción
  * @param {() => void} repintarLuego el que espera a que acabe lo que se reproduce
  * @returns {HTMLElement}
  */

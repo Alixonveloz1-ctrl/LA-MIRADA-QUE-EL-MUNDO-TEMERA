@@ -46,7 +46,7 @@ import { llamar, pesos, duraciones } from '../api.js';
 import { actual, alCambiar, cambiar } from '../estado.js';
 import { serie } from '../cola.js';
 import {
-  h, pantalla, seccion, tarjeta, boton, aviso, espera, vaciar, filtro, contarFalloSuelto,
+  h, pantalla, seccion, tarjeta, boton, aviso, espera, vaciar, filtro, contarFalloSuelto, crearActualizador,
 } from '../ui.js';
 import { bytes, fecha, porcentaje, plural } from '../formato.js';
 
@@ -180,17 +180,29 @@ export default {
     // Los pesos no dependen de la comprobación: se leen del estado y de lo que
     // lleva medido esta sesión, así que se pintan ya y se repintan solos cada vez
     // que alguien escribe el estado.
-    pintarPesos(huecos.pesos);
+    const actualizarPesos = crearActualizador(huecos.pesos, () => {
+      const nuevo=h('div',{clase:'rejilla'});
+      pintarPesos(nuevo);
+      huecos.pesos=nuevo;
+      return nuevo;
+    }, {reemplazar:true});
+    actualizarPesos();
 
     // Con qué se genera: tampoco depende de la comprobación. Sale de los datos
     // (qué niveles hay) y del estado (cuál está elegido), así que se pinta en
     // cuanto llegan los datos y se repinta cada vez que alguien elige.
     let laSerie = null;
+    const actualizarGeneradores = crearActualizador(huecos.generadores, () => {
+      const nuevo=h('div',{clase:'rejilla'});
+      pintarConQueSeGenera(nuevo,null,laSerie);
+      huecos.generadores=nuevo;
+      return nuevo;
+    }, {reemplazar:true});
     pintarConQueSeGenera(huecos.generadores, null, null);
     serie().then(
       (datos) => {
         laSerie = datos;
-        if (vivo) pintarConQueSeGenera(huecos.generadores, null, laSerie);
+        if (vivo) actualizarGeneradores();
       },
       (fallo) => {
         if (!vivo) return;
@@ -204,8 +216,8 @@ export default {
 
     const desuscribir = alCambiar(() => {
       if (!vivo) return;
-      pintarPesos(huecos.pesos);
-      if (laSerie) pintarConQueSeGenera(huecos.generadores, null, laSerie);
+      actualizarPesos();
+      if (laSerie) actualizarGeneradores();
     });
 
     const tic = setInterval(() => {
@@ -305,6 +317,8 @@ export default {
 
     return () => {
       vivo = false;
+      actualizarPesos.destruir();
+      actualizarGeneradores.destruir();
       clearInterval(tic);
       desuscribir();
     };

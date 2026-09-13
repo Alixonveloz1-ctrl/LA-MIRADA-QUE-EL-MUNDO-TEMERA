@@ -22,6 +22,7 @@
 // texto y nodos, y devuelve nodos.
 
 import { porcentaje } from './formato.js';
+export { crearActualizador } from './vista.js';
 
 // ---------------------------------------------------------------------------
 // Los fallos que no recogió nadie
