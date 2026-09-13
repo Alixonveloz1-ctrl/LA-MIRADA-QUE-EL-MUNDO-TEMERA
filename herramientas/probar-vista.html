@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="es">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Comprobación de estabilidad</title>
+<link rel="stylesheet" href="../app/estilo.css">
+<style>
+  body { max-width:414px; margin:0 auto; padding:20px; }
+  #resultado { white-space:pre-wrap; }
+  #prueba { overflow-anchor:none; }
+  .relleno { height:650px; }
+  .despues { height:1600px; }
+  .deslizador { overflow-x:auto; width:220px; }
+  .deslizador > div { width:900px; height:50px; }
+</style>
+<main id="pantalla">
+  <h1>Comprobación de estabilidad</h1>
+  <p>Datos de prueba. No conecta con producción ni genera imágenes, vídeos o audio.</p>
+  <button id="ejecutar" class="boton principal">Ejecutar comprobaciones</button>
+  <p id="resultado" role="status">Sin ejecutar</p>
+  <div id="prueba"></div>
+</main>
+<script type="module" src="probar-vista.js"></script>
+</html>

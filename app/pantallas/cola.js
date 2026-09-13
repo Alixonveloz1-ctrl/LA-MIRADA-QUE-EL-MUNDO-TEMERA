@@ -48,6 +48,7 @@
 
 import { ErrorDeCara } from '../api.js';
 import { actual, alCambiar, cambiar } from '../estado.js';
+import { crearActualizador } from '../ui.js';
 import {
   EVENTO_FALLO_DE_COLA,
   corriendo,
@@ -207,11 +208,10 @@ export default {
     const marco = h('div', { clase: 'cola' });
     raiz.appendChild(marco);
 
-    const repintar = () => {
+    const repintar = crearActualizador(marco, () => {
       relojes = [];
-      vaciar(marco);
-      marco.appendChild(construir(repintar));
-    };
+      return construir(repintar);
+    });
 
     const alFallar = (evento) => {
       const dicho = (evento && evento.detail) || {};
@@ -241,6 +241,7 @@ export default {
 
     return () => {
       desapuntar();
+      repintar.destruir();
       window.removeEventListener(EVENTO_FALLO_DE_COLA, alFallar);
       clearInterval(latido);
       relojes = [];

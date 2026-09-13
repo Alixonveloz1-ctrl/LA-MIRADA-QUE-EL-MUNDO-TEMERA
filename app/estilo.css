@@ -1849,12 +1849,8 @@ body[data-pantalla="salud"] .pantalla > .suave {
   border-top: 1px solid var(--borde);
 }
 
-body[data-pantalla="tomas"] .pantalla > .seccion:nth-last-child(1) .tarjeta,
-body[data-pantalla="banco"] .pantalla .tarjeta,
-body[data-pantalla="difusion"] .pantalla .tarjeta {
-  content-visibility: auto;
-  contain-intrinsic-size: 460px;
-}
+/* Las tarjetas conservan su altura real. Estimarlas en 460px desplazaba la
+   pantalla al entrar en vista, especialmente con relatos y pliegues abiertos. */
 
 /* Tomas: el resumen y los bloques quedan a la vista; la operación masiva y
    los filtros exhaustivos siguen completos dentro de un único pliegue. */

@@ -63,6 +63,7 @@
 
 import { llamar, ErrorDeCara } from '../api.js';
 import { actual, alCambiar, cambiar } from '../estado.js';
+import { crearActualizador } from '../ui.js';
 import { encolarVarios } from '../cola.js';
 import { prepararGuiones } from '../../datos/continuidad.js';
 import { marcarCambio, invalidarMontajes } from '../continuidad.js';
@@ -176,13 +177,10 @@ export default {
         return;
       }
 
-      const repintar = () => {
-        vaciar(marco);
-        marco.appendChild(construir(modelo, repintar));
-      };
+      const repintar = crearActualizador(marco,()=>construir(modelo,repintar));
 
       const desapuntar = alCambiar(repintar);
-      soltar = () => desapuntar();
+      soltar = () => {desapuntar();repintar.destruir();};
       repintar();
     };
 

@@ -61,6 +61,7 @@
 
 import { ErrorDeCara, llamar } from '../api.js';
 import { actual, alCambiar, cambiar } from '../estado.js';
+import { crearActualizador } from '../ui.js';
 import { encolar } from '../cola.js';
 import { ajustesDelReel, manifiestoDelReel, nombreDelReel, esReelDe, CAPA_DEL_REEL } from '../reel.js';
 import {
@@ -232,13 +233,11 @@ export default {
         return;
       }
 
-      const repintar = () => {
-        vaciar(marco);
-        marco.appendChild(construir(serie, repintar));
-      };
+      const repintar = crearActualizador(marco,()=>construir(serie,repintar));
 
       repintar();
-      soltar = alCambiar(repintar);
+      const desapuntar=alCambiar(repintar);
+      soltar = ()=>{desapuntar();repintar.destruir();};
     };
 
     await arrancar();

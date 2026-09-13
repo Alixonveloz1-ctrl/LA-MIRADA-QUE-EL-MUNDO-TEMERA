@@ -46,6 +46,7 @@
 
 import { ErrorDeCara, llamar } from '../api.js';
 import { actual, alCambiar, cambiar } from '../estado.js';
+import { crearActualizador } from '../ui.js';
 import { encolar, encolarVarios } from '../cola.js';
 import {
   aviso,
@@ -228,20 +229,14 @@ export default {
         return;
       }
 
-      /**
-       * El repintado de verdad, el que se hace cuando el usuario toca algo.
-       *
-       * Rehacer la pantalla se lleva por delante los `<audio>` que hubiera, así
-       * que lo primero es olvidarse de los que estuvieran sonando: esos nodos ya
-       * no existen y nunca van a avisar de que se han pausado.
-       */
-      const repintar = () => {
+      // Conserva los controles y la reproducción durante las actualizaciones;
+      // el cambio de capítulo se aplica al terminar el toque.
+      const repintar = crearActualizador(marco, () => {
         sonando.clear();
         repintadoPendiente = false;
         pararElReloj();
-        vaciar(marco);
-        marco.appendChild(construir(serie, repintar, pedirRepintado));
-      };
+        return construir(serie, repintar, pedirRepintado);
+      }, {contexto:()=>`${leerEstado().pieza_activa}/${mirandoElBanco}`});
 
       /**
        * El repintado que espera a que termine lo que se está escuchando. Por
@@ -270,6 +265,7 @@ export default {
       const desapuntar = alCambiar(pedirRepintado);
       soltar = () => {
         desapuntar();
+        repintar.destruir();
         sonando.clear();
         repintadoPendiente = false;
         pararElReloj();
@@ -796,7 +792,7 @@ function olvidarEnlaces(repintar) {
 
 /**
  * @param {object} serie
- * @param {() => void} repintar el repintado inmediato: lo que toca el usuario
+ * @param {() => void} repintar actualiza al terminar la interacción
  * @param {() => void} repintarLuego el que espera a que acabe lo que suena
  * @returns {HTMLElement}
  */

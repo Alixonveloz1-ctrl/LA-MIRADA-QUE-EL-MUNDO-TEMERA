@@ -46,6 +46,7 @@
 
 import { llamar, ErrorDeCara } from '../api.js';
 import { actual, alCambiar, cambiar } from '../estado.js';
+import { crearActualizador } from '../ui.js';
 import { encolar, encolarVarios } from '../cola.js';
 import {
   aviso,
@@ -183,13 +184,10 @@ export default {
 
       vaciar(marco);
 
-      const repintar = () => {
-        vaciar(marco);
-        marco.appendChild(construir(modelo, repintar));
-      };
+      const repintar = crearActualizador(marco,()=>construir(modelo,repintar),{contexto:()=>filtroPuesto});
 
       const desapuntar = alCambiar(repintar);
-      soltar = () => desapuntar();
+      soltar = () => {desapuntar();repintar.destruir();};
       repintar();
     };
 
@@ -1318,13 +1316,10 @@ function irALaPlaca(laPlaca, ctx) {
   const idPersonaje = String(laPlaca.personaje ?? '');
   abiertos.add(idPersonaje);
   filtroPuesto = 'todo';
-  ctx.repintar();
-
-  // Después de repintar: el nodo de antes ya no existe.
-  const destino = document.getElementById(idDeTarjeta(laPlaca.id));
-  if (destino && typeof destino.scrollIntoView === 'function') {
-    destino.scrollIntoView({ block: 'center' });
-  }
+  ctx.repintar(()=>{
+    const destino=document.getElementById(idDeTarjeta(laPlaca.id));
+    destino?.scrollIntoView({block:'center'});
+  });
 }
 
 // ---------------------------------------------------------------------------
