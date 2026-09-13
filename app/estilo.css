@@ -2264,6 +2264,15 @@ body[data-pantalla="difusion"] .pantalla .tarjeta {
 .toma-versiones > summary { padding:12px 0; cursor:pointer; color:var(--texto-suave); min-height:44px; }
 
 .toma-referencia { display:flex; flex-direction:column; gap:10px; }
+.toma-fichas { display:flex; flex-direction:column; gap:10px; }
+.toma-fichas p { margin:0; }
+.toma-referencias-banco { display:grid; grid-template-columns:repeat(auto-fit,minmax(120px,1fr)); gap:12px; }
+.toma-referencias-banco figure { margin:0; min-width:0; max-width:260px; }
+.toma-referencias-banco img { display:block; width:100%; height:auto; aspect-ratio:16/9; object-fit:contain; background:#080a0a; border:1px solid var(--borde); border-radius:10px; }
+.toma-referencias-banco a:focus-visible { display:block; outline:2px solid var(--acento); outline-offset:3px; border-radius:10px; }
+.toma-referencias-banco figcaption { font-size:14px; line-height:1.4; margin-top:6px; overflow-wrap:anywhere; }
+.toma-referencia-hueco { display:grid; place-content:center; aspect-ratio:16/9; padding:10px; border:1px solid var(--borde); border-radius:10px; color:var(--texto-suave); font-size:14px; }
+.toma-referencias-extra summary { min-height:44px; padding:12px 0; cursor:pointer; color:var(--texto-suave); }
 .toma-interruptor { display:flex; align-items:center; justify-content:space-between; gap:16px; width:100%; min-height:48px; padding:12px; border:1px solid var(--borde); border-radius:12px; background:transparent; color:inherit; font:inherit; text-align:left; cursor:pointer; }
 .toma-interruptor:disabled { opacity:.55; cursor:default; }
 .toma-interruptor-pista { flex-shrink:0; display:block; width:44px; height:26px; padding:3px; border-radius:20px; background:#535b5f; }

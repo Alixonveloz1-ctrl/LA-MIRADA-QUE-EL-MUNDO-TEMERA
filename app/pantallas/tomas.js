@@ -54,7 +54,7 @@ import { llamar, ErrorDeCara } from '../api.js';
 import { actual, alCambiar, cambiar } from '../estado.js';
 import { encolar, encolarVarios } from '../cola.js';
 import { claveDelMaterial, esDeArchivo, porQueNoSeGenera } from '../planos.js';
-import { necesitaDireccion, materialVigente, invalidarMontajes, pasoDeEscena, estadoDeReferencia } from '../continuidad.js';
+import { necesitaDireccion, materialVigente, invalidarMontajes, pasoDeEscena, estadoDeReferencia, referenciasDeReparto, personajesSinReferencia } from '../continuidad.js';
 import {
   aviso,
   barra,
@@ -471,7 +471,9 @@ function construirModelo(datos, estado = {}) {
       .filter(Boolean)
   );
 
-  return { piezas, porId: new Map(piezas.map((una) => [una.id, una])), placas, escenarios, guiones:datos.relatoGuiones || {}, relatos:datos.relatos || {} };
+  return { piezas, porId: new Map(piezas.map((una) => [una.id, una])), placas, escenarios,
+    catalogoPersonajes:datos.banco?.placas || [], personajes:datos.personajes || {},
+    guiones:datos.relatoGuiones || {}, relatos:datos.relatos || {} };
 }
 
 /**
@@ -730,6 +732,8 @@ function porQueNoSePuedeKeyframe(laToma, ctx) {
   // existen, hechos una vez para toda la temporada. Ofrecer aquí un botón de
   // generar sería ofrecer pagar dos veces lo mismo.
   if (esDeArchivo(laToma)) return porQueNoSeGenera(laToma);
+  const sinReferencia=personajesSinReferencia(laToma,ctx.modelo.catalogoPersonajes);
+  if (sinReferencia.length) return `Falta asignar la referencia del banco de ${sinReferencia.join(', ')}. Usa «Corregir continuidad» en esta escena para completar sus personajes.`;
 
   const faltan = [];
   const inexistentes = [];
@@ -960,6 +964,10 @@ function construir(modelo, repintar, repintarLuego) {
   const rutas = [];
   for (const una of enPantalla) {
     rutas.push(...rutasDeLaTarjeta(leerToma(estado, claveDelMaterial(pieza.id, una))));
+    if (!una.de_archivo) {
+      rutas.push(...(una.refs || []).map(id=>estado.banco?.[id]?.aprobada).filter(Boolean));
+      rutas.push(...referenciasDeReparto(pieza,una,estado,modelo.catalogoPersonajes).map(r=>r.ruta));
+    }
   }
   // Las firmas llegan solas, sin que nadie las haya pedido a mano: su repintado
   // es de los que esperan a que termine el clip que se esté mirando.
@@ -1608,6 +1616,10 @@ function tarjetaDeToma(laToma, ctx) {
         contexto.despues ? h('p', {clase:'tarjeta-texto'}, `Después (${contexto.despuesTitulo}): ${contexto.despues}`) : null) : null
     ));
   }
+  if (!laToma.de_archivo) {
+    const personajes=referenciasDelBanco(laToma,ctx);
+    if (personajes) pie.push(personajes);
+  }
   if (/^ep\d+$/.test(pieza.id) && !laToma.de_archivo) {
     const referencia=estadoDeReferencia(pieza,laToma,ctx.estado);
     const compatible=referencia.referencia;
@@ -1632,6 +1644,11 @@ function tarjetaDeToma(laToma, ctx) {
         activa ? `Referencia para la próxima imagen: ${referencia.etiqueta}. También se usan los personajes y el escenario del banco.` :
         `Puedes usar ${referencia.etiqueta} encendiendo el interruptor. Apagado, se usan los personajes y el escenario del banco.`)
     ));
+    const reparto=referenciasDeReparto(pieza,laToma,ctx.estado,ctx.modelo.catalogoPersonajes);
+    if (reparto.length) pie.push(h('details',{clase:'toma-referencias-extra'},
+      h('summary',null,'Aspecto de los acompañantes'),
+      h('p',{clase:'tarjeta-texto suave'},'Se conserva su aspecto usando estas imágenes aprobadas del mismo momento de la historia.'),
+      h('div',{clase:'toma-referencias-banco'},reparto.map(r=>miniaturaDeReferencia(r.ruta,r.etiqueta, r.personajes.join(', '))))));
   }
   const rutaVisible = rutaQueSeMira(guardado, clave);
   if (rutaVisible) {
@@ -1696,6 +1713,30 @@ function tarjetaDeToma(laToma, ctx) {
 
   nodo.id = idDeTarjeta(laToma.id);
   return nodo;
+}
+
+/** Solo las fichas aprobadas que viajarán en la próxima petición, sin intentos
+ * descartados. El usuario puede contrastar el diseño antes de generar. */
+function referenciasDelBanco(toma,ctx) {
+  const refs=[...new Set(toma.refs || [])].map(id=>ctx.modelo.catalogoPersonajes.find(p=>p.id===id)).filter(Boolean);
+  if (!refs.length) return null;
+  return h('div',{clase:'toma-fichas'},
+    h('strong',null,'Personajes del banco para la próxima imagen'),
+    h('p',{clase:'tarjeta-texto suave'},'Estas referencias fijan el aspecto, la ropa y los accesorios. Se usan aunque apagues la imagen anterior.'),
+    h('div',{clase:'toma-referencias-banco'},refs.map(p=>{
+      const ficha=ctx.modelo.personajes[p.personaje];
+      const nombre=ficha?.nombre || p.personaje.replaceAll('-',' ').replace(/^./,c=>c.toUpperCase());
+      return miniaturaDeReferencia(ctx.estado.banco?.[p.id]?.aprobada,nombre,'Referencia aprobada del banco');
+    })));
+}
+
+function miniaturaDeReferencia(ruta,nombre,detalle) {
+  const url=ruta ? enlaceDe(ruta) : null;
+  return h('figure',null,
+    url ? h('a',{href:url,target:'_blank',rel:'noopener','aria-label':`Ver referencia de ${nombre}`},
+      h('img',{src:url,alt:`${nombre}: ${detalle}`,loading:'lazy',width:240,height:135})) :
+      h('div',{clase:'toma-referencia-hueco'},ruta?'Cargando imagen…':'Pendiente de aprobación'),
+    h('figcaption',null,nombre));
 }
 
 /** El id del nodo de una tarjeta, para poder llevar el pulgar hasta ella. */

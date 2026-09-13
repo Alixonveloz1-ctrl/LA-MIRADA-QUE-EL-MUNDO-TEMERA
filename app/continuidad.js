@@ -49,6 +49,31 @@ function motivoDeReferenciaPendiente(pieza,toma,estado) {
   return null;
 }
 
+// Una sola búsqueda compartida: ni los figurantes ni el plano anterior pueden
+// saltar a otro lugar, otro momento del relato o una imagen futura.
+function anterioresDeSecuencia(pieza,toma,estado) {
+  const indice=pieza?.tomas?.findIndex(t=>t.id===toma.id) ?? -1;
+  const identidad=identidadDeSecuencia(pieza,toma);
+  if (indice<0 || !identidad || toma.de_archivo) return [];
+  const ep=Number(pieza.id.slice(2));
+  const anteriores=Object.entries(estado.piezas || {}).filter(([id])=>/^ep\d+$/.test(id) && Number(id.slice(2))<ep)
+    .sort(([a],[b])=>Number(a.slice(2))-Number(b.slice(2)))
+    .flatMap(([id,p])=>(p.tomas || []).map(t=>({pieza:{...p,id},toma:t})));
+  return [...anteriores,...pieza.tomas.slice(0,indice).map(t=>({pieza,toma:t}))].reverse()
+    .filter(c=>!c.toma.de_archivo && identidadDeSecuencia(c.pieza,c.toma)===identidad);
+}
+
+function referenciaDeCandidata(c,pieza,estado) {
+  const referencia={id:c.toma.id,ruta:estado.tomas[`${c.pieza.id}/${c.toma.id}`].keyframe_aprobado};
+  if (c.pieza.id!==pieza.id) referencia.pieza=c.pieza.id;
+  return referencia;
+}
+
+function etiquetaDeCandidata(c,pieza) {
+  const orden=c.pieza.tomas.filter(t=>String(t.escena)===String(c.toma.escena)).findIndex(t=>t.id===c.toma.id)+1;
+  return `${c.pieza.id!==pieza.id?`Capítulo ${Number(c.pieza.id.slice(2))} · `:''}Escena ${c.toma.escena} · Toma ${orden}`;
+}
+
 /** La revisión humana es obligatoria entre tomas de una misma escena. */
 export function pasoDeEscena(pieza, toma, estado) {
   if (!/^ep\d+$/.test(pieza?.id || '') || toma.de_archivo) return {anterior:null,bloqueo:null};
@@ -76,22 +101,13 @@ export function estadoDeReferencia(pieza,toma,estado) {
   const indice=pieza?.tomas?.findIndex(t=>t.id===toma.id) ?? -1;
   const identidad=identidadDeSecuencia(pieza,toma);
   if (indice<0 || !identidad || toma.de_archivo) return {referencia:null,motivo:'Esta toma no tiene una referencia anterior disponible.'};
-  const ep=Number(pieza.id.slice(2));
-  const anteriores=Object.entries(estado.piezas || {}).filter(([id])=>/^ep\d+$/.test(id) && Number(id.slice(2))<ep)
-    .sort(([a],[b])=>Number(a.slice(2))-Number(b.slice(2)))
-    .flatMap(([id,p])=>(p.tomas || []).map(t=>({pieza:{...p,id},toma:t})));
-  const candidatas=[...anteriores,...pieza.tomas.slice(0,indice).map(t=>({pieza,toma:t}))];
-  for (const c of candidatas.reverse()) {
+  for (const c of anterioresDeSecuencia(pieza,toma,estado)) {
     const candidata=c.toma;
-    if (candidata.de_archivo || identidadDeSecuencia(c.pieza,candidata)!==identidad) continue;
     const motivo=motivoDeReferenciaPendiente(c.pieza,candidata,estado);
     if (motivo) return {referencia:null,motivo};
-    const referencia={id:candidata.id,ruta:estado.tomas[`${c.pieza.id}/${candidata.id}`].keyframe_aprobado};
-    if (c.pieza.id!==pieza.id) referencia.pieza=c.pieza.id;
-    const orden=c.pieza.tomas.filter(t=>String(t.escena)===String(candidata.escena)).findIndex(t=>t.id===candidata.id)+1;
-    return {referencia,motivo:'',etiqueta:`${c.pieza.id!==pieza.id?`Capítulo ${Number(c.pieza.id.slice(2))} · `:''}Escena ${candidata.escena} · Toma ${orden}`};
+    return {referencia:referenciaDeCandidata(c,pieza,estado),motivo:'',etiqueta:etiquetaDeCandidata(c,pieza)};
   }
-  const guia=guiaDeEscena(ep,toma.escena);
+  const guia=guiaDeEscena(Number(pieza.id.slice(2)),toma.escena);
   return {referencia:null,motivo:guia?.enlace ?
     `Esta escena continúa una anterior. Todavía falta una imagen aprobada de esa parte de la historia para usarla como referencia.` :
     'Todavía no hay una imagen anterior aprobada que pueda usarse aquí. Se usarán los personajes y el escenario del banco.'};
@@ -101,6 +117,37 @@ export function estadoDeReferencia(pieza,toma,estado) {
 export function referenciaDeSecuencia(pieza,toma,estado) {
   if (toma.referencia_anterior===false) return null;
   return estadoDeReferencia(pieza,toma,estado).referencia;
+}
+
+export function placaDePersonaje(placa,personaje) {
+  return placa.personaje===personaje || placa.personaje.startsWith(personaje+'-');
+}
+
+/** El banco sigue siendo obligatorio aunque haya una imagen de continuidad.
+ * No elegimos una edad o un vestuario por nuestra cuenta si el plan los omitió. */
+export function personajesSinReferencia(toma,placas) {
+  if (toma.de_archivo) return [];
+  return (toma.direccion?.visibles || []).filter(p=>
+    placas.some(r=>placaDePersonaje(r,p)) &&
+    !placas.some(r=>placaDePersonaje(r,p) && (toma.refs || []).includes(r.id)));
+}
+
+/** Conserva el aspecto de acompañantes sin ficha propia cuando un primer plano
+ * intermedio deja de mostrarlos. Solo usa su última aparición aprobada en esta
+ * secuencia, nunca una versión vieja de una aparición pendiente de revisión. */
+export function referenciasDeReparto(pieza,toma,estado,placas) {
+  if (!referenciaDeSecuencia(pieza,toma,estado)) return [];
+  const sinFicha=(toma.direccion?.visibles || []).filter(p=>!placas.some(r=>placaDePersonaje(r,p)));
+  const buscadas=new Set(sinFicha), resultado=[];
+  for (const c of anterioresDeSecuencia(pieza,toma,estado)) {
+    const visibles=[...buscadas].filter(p=>(c.toma.direccion?.visibles || []).includes(p));
+    if (!visibles.length) continue;
+    for (const p of visibles) buscadas.delete(p);
+    if (motivoDeReferenciaPendiente(c.pieza,c.toma,estado)) continue;
+    resultado.push({...referenciaDeCandidata(c,pieza,estado),personajes:visibles,etiqueta:etiquetaDeCandidata(c,pieza)});
+    if (!buscadas.size) break;
+  }
+  return resultado;
 }
 
 export function normalizarDireccion(d) {

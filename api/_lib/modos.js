@@ -60,7 +60,7 @@
 
 import { Buffer } from 'node:buffer';
 import { createHash, randomUUID } from 'node:crypto';
-import { materialVigente, necesitaDireccion, referenciaDeSecuencia, pasoDeEscena } from '../../app/continuidad.js';
+import { materialVigente, necesitaDireccion, referenciaDeSecuencia, referenciasDeReparto, pasoDeEscena } from '../../app/continuidad.js';
 import { aplicarCorreccion } from './continuidad.js';
 
 import { ErrorDeCara } from './errores.js';
@@ -821,7 +821,8 @@ async function modoImagen(cuerpo) {
     const paso=pasoDeEscena(piezaEnEstado,tomaInicial,leido.estado);
     if (paso.bloqueo) throw new ErrorDeCara(paso.bloqueo,{http:409,reintentable:false});
     compuesto = promptKeyframe(idPiezaDelKeyframe, id, piezaEnEstado,
-      referenciaDeSecuencia(piezaEnEstado,tomaInicial,leido.estado));
+      referenciaDeSecuencia(piezaEnEstado,tomaInicial,leido.estado),
+      referenciasDeReparto(piezaEnEstado,tomaInicial,leido.estado,serie.banco.placas));
     carpeta = carpetaDeKeyframe(idPiezaDelKeyframe, id);
     paraQue = `generar el keyframe de la toma ${id} de la pieza «${idPiezaDelKeyframe}»`;
   }
@@ -897,7 +898,9 @@ async function modoImagen(cuerpo) {
         entrada.revision_pendiente = true;
         if (!entrada.origenes_keyframe) entrada.origenes_keyframe = {};
         entrada.origenes_keyframe[ruta] = { revision: tomaInicial.revision_direccion || null,
-          referencia_anterior: compuesto.referencias.find(r=>r.continuidad)?.continuidad || null };
+          referencia_anterior: compuesto.referencias.find(r=>r.uso==='secuencia')?.continuidad || null,
+          referencias_banco: pendientes.filter(p=>p.referencia.placa).map(p=>({placa:p.referencia.placa,ruta:p.rutaAprobada})),
+          referencias_reparto: pendientes.filter(p=>p.referencia.reparto).map(p=>({personajes:p.referencia.reparto,ruta:p.rutaAprobada})) };
         return;
       }
       if (tipo === 'poster') {

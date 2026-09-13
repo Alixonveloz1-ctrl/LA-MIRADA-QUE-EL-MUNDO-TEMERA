@@ -43,7 +43,7 @@ import {
   anclaDePersonaje,
   bloquesDeVoz
 } from './datos.js';
-import { necesitaDireccion, revisarDireccion } from '../../app/continuidad.js';
+import { necesitaDireccion, revisarDireccion, personajesSinReferencia } from '../../app/continuidad.js';
 
 // ---------------------------------------------------------------------------
 // Piezas sueltas de serie.json, cada una con su queja si falta
@@ -283,15 +283,16 @@ function direccionDelPlano(idPieza, laToma) {
   const problemas = revisarDireccion(laToma, laToma.continuidad);
   if (problemas.length) throw new ErrorDeCara(problemas.join(' '), { http:400, reintentable:false });
   const c=laToma.continuidad, d=laToma.direccion;
-  return unir('SHOT CONTINUITY — these instructions govern the scene:', c.reglas,
+  return unir('SCENE CONTEXT — background facts, not a list of people or actions to render:', c.reglas,
     `Lighting: ${c.luz}. ${c.interior === true ? 'Interior space.' : c.interior === false ? 'Exterior space.' : ''}`,
     c.precipitacion === 'nieve' ? 'Preserve the scripted outdoor snow.' : 'No added precipitation. Surface dampness is not rainfall.',
     c.goteo ? 'Only the localized drip written in the action, never indoor rain.' : 'Do not invent ceiling drips or weather effects.',
     `Visible cast: ${d.visibles.join(', ') || 'none'}. Off screen: ${d.fuera_de_campo.join(', ') || 'none'}.`,
+    'FRAME CAST IS EXCLUSIVE: render only the visible cast. People marked off screen must stay outside the frame even if mentioned in the scene context or shown in any reference. Preserving population does not mean adding people to a close-up.',
     `Blocking and occupied background: ${d.posiciones}`, `Eyelines: ${d.miradas}`, `Camera: ${d.camara}`,
     `Starting state: ${d.estado_inicial}`, `Permitted changes: ${d.estado_final}`,
     'Characters act within the story, with eyelines toward their partner or object of attention. No audience address. Preserve human proportions against furniture and shared perspective.',
-    'Use reference identity with the age, wardrobe and physical state written for this scene. Do not copy reference portrait pose or camera gaze.');
+    'CHARACTER BANK IS THE DESIGN AUTHORITY: preserve each referenced face, hair, eyes, build, clothing cut, material, colors, mask shape and accessories. Earlier scene frames must not redesign them. Only an explicitly scripted age, costume change or physical change permits that specific difference; generic shot wording or lighting is not permission to replace clothing or a mask. Pose, eyelines and the position of a mask follow this shot, while its design stays the same.');
 }
 
 /**
@@ -548,7 +549,7 @@ export function promptEscenario(id) {
  * @param {string} idToma
  * @returns {{texto:string, negativo:string, referencias:{placa?:string, escenario?:string, instruccion:string, cupo:string}[]}}
  */
-export function promptKeyframe(idPieza, idToma, piezaAlternativa = null, referenciaSecuencia = null) {
+export function promptKeyframe(idPieza, idToma, piezaAlternativa = null, referenciaSecuencia = null, referenciasReparto = []) {
   const laToma = toma(idPieza, idToma, piezaAlternativa);
 
   if (typeof laToma.imagen !== 'string' || !laToma.imagen.trim()) {
@@ -564,6 +565,11 @@ export function promptKeyframe(idPieza, idToma, piezaAlternativa = null, referen
     laToma.continuidad?.luz || luzDe(laToma.luz, `La toma «${idToma}» de la pieza «${idPieza}»`),
     direccionDelPlano(idPieza, laToma)
   );
+
+  const sinReferencia=personajesSinReferencia(laToma,serie.banco.placas);
+  if (sinReferencia.length) throw new ErrorDeCara(
+    `Falta asignar la referencia del banco de ${sinReferencia.join(', ')}. Usa «Corregir continuidad» en esta escena para completar sus personajes.`,
+    {http:409,reintentable:false});
 
   const referencias = [];
 
@@ -591,16 +597,26 @@ export function promptKeyframe(idPieza, idToma, piezaAlternativa = null, referen
     ponerReferencia(referencias, {
       placa: laPlaca.id,
       instruccion: instruccionDeToma(laPlaca.personaje) + (laToma.continuidad ?
-        ' For this narrative shot, the written age, wardrobe and physical state take precedence over the reference. Preserve underlying identity, not the reference costume or portrait pose.' : ''),
+        ' This approved CHARACTER BANK image is authoritative for this character\'s identity, clothing design, mask design and accessories. Do not replace them with designs from scene references or other characters. Change only the specific age, costume detail or physical state explicitly required by the story; preserve everything else. Follow this shot\'s pose and mask placement, not the portrait pose. Do not distribute this character\'s costume or mask to background people.' : ''),
       cupo: 'personaje'
     });
   }
 
   if (referenciaSecuencia) ponerReferencia(referencias, {
     continuidad: referenciaSecuencia.ruta,
-    instruccion:'SEQUENCE REFERENCE: an approved earlier frame from this same sequence. Preserve identities, established background population, furniture relationships and prop designs where they remain visible. Follow the NEW shot camera, framing, scripted movements, time and prop changes. Do not copy the old composition or override this shot\'s lighting. People outside a close-up remain off screen, not erased from the location.',
+    uso:'secuencia',
+    instruccion:'SEQUENCE REFERENCE: an approved earlier frame from this same sequence, for spatial relationships, established population and prop continuity. The CHARACTER BANK controls the design of named characters; never replace their face, costume or mask with a conflicting design from this frame. Render only this shot\'s visible cast. Follow the NEW camera, framing, scripted movements and changes. Do not copy the old composition or override this shot\'s lighting. People outside a close-up remain off screen, not erased from the location.',
     cupo:'objeto'
   });
+
+  for (const ref of referenciasReparto) {
+    const instruccion=`BACKGROUND CAST APPEARANCE ONLY: the approved earlier frame shows ${ref.personajes.join(', ')}. Preserve ONLY these background characters' established appearance, silhouettes, garment cuts, materials, colors, headwear and accessories, and their distinct roles. Do not add items absent from their design or turn them into copies of a named character. Ignore every other person, action and pose in this reference; do not bring them into the new shot. The current visible cast and action remain authoritative, and the CHARACTER BANK controls all named character designs.`;
+    const existente=referencias.find(r=>r.continuidad===ref.ruta);
+    if (existente) {
+      existente.instruccion+=' '+instruccion;
+      existente.reparto=ref.personajes;
+    } else ponerReferencia(referencias,{continuidad:ref.ruta,uso:'reparto',reparto:ref.personajes,instruccion,cupo:'objeto'});
+  }
 
   if (laToma.continuidad?.subespacio) {
     const ref=referencias.find(r=>r.escenario);

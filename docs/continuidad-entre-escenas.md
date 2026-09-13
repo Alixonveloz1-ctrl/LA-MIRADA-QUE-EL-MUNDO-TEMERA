@@ -47,3 +47,40 @@ doce capítulos y las descripciones de sus nuevos desgloses.
 
 Verificación: `npm run comprobar`, incluidas 54 pruebas de continuidad sin red
 ni generación. El mapa publicado se compara con su construcción desde el guion.
+
+## Referencias de personajes y acompañantes
+
+El banco fija la identidad y el diseño: rostro, pelo, ojos, ropa, máscara y
+accesorios. Una toma anterior aporta relaciones espaciales y continuidad de la
+acción; no puede sustituir las fichas ni cambiar su diseño. Solo un cambio
+explícito del relato permite modificar la edad, el vestuario o el estado físico.
+La colocación de una máscara puede cambiar sin rediseñar la máscara.
+
+`personajesSinReferencia` comprueba que cada personaje visible con ficha tenga
+una placa asignada, también en detalles y fondos desenfocados. La comprobación
+se usa al validar el desglose, al habilitar el botón y antes de generar. El
+desglose debe corregir las omisiones; no se adivinan variantes de edad por luz.
+Los personajes fuera de campo no deben dibujarse aunque aparezcan en una ficha
+o en el contexto general de la escena.
+
+`referenciasDeReparto` busca además la última aparición aprobada de acompañantes
+sin ficha propia que estén visibles en la nueva toma. Usa la misma secuencia
+canónica que la imagen anterior: no cruza visitas distintas, recuerdos, lugares
+ni planos futuros. Un primer plano intermedio no borra su vestuario. No se usa
+una versión anterior de una aparición que aún está pendiente de revisión.
+La referencia se limita al aspecto de esos acompañantes y excluye a las demás
+personas que pueda contener. Si comparte imagen con la referencia de secuencia,
+se envía una sola copia con ambos cometidos. El interruptor apaga ambos usos de
+imágenes anteriores; las fichas del banco siempre permanecen.
+
+La pantalla muestra solo las fichas aprobadas que se usarán en la próxima
+imagen y permite ver la fuente del aspecto de los acompañantes. Cada encargo
+guarda las rutas exactas y el cometido de las referencias antes de enviarse.
+Los orígenes de la imagen generada registran también qué fichas se utilizaron.
+
+`herramientas/probar-referencias-personajes.mjs` añade diez pruebas sin red.
+Recorre los doce capítulos y un enlace entre capítulos; ejecuta los módulos
+reales de generación con transporte simulado y verifica los bytes e
+instrucciones de cada referencia en el cuerpo enviado a Vertex, su registro y
+la aprobación pendiente del resultado. No permite pagar con una ficha sin
+aprobar y comprueba que apagar continuidad conserva el banco.

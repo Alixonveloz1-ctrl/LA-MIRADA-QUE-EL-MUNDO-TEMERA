@@ -44,7 +44,7 @@ import { serie, escenaDeGuion, escenasDeEpisodio, personajesDeEscena, nivelImage
 import { marcoDeEscena, reglasNarrativas } from '../../datos/continuidad.js';
 import { segmentosDeEscena } from '../../datos/segmentos.js';
 import { guiaDePlano } from '../../datos/escenas.js';
-import { normalizarDireccion, revisarDireccion, conservaMontaje } from '../../app/continuidad.js';
+import { normalizarDireccion, revisarDireccion, conservaMontaje, personajesSinReferencia } from '../../app/continuidad.js';
 import { comprobarCupos } from './prompt.js';
 import { entorno } from './entorno.js';
 import { llamar, urlModelo, conGrafias, comoGrafia } from './vertex.js';
@@ -905,15 +905,15 @@ function lasPlacasEnPalabras(ctx) {
     'esas placas encadenan al mismo ancla, así que son la misma persona.',
     ctx.flashback
       ? 'Esta escena es un FLASHBACK: elige la placa de la edad que dice el guion, no la del adulto.'
-      : 'Esta escena NO es un flashback, es presente: usa las placas del personaje adulto y no las ' +
+      : 'Esta escena NO es un flashback, es presente: usa las placas del personaje en el presente y no las ' +
         'de sus otras edades.',
-    'Elige la placa cuya luz coincida con la de la escena cuando la haya, y el ancla cuando no.',
+    'Cada personaje visible que tenga ficha debe llevar su referencia en «refs», también si aparece desenfocado o solo se ven sus manos, ropa o espalda. La imagen anterior nunca sustituye estas referencias.',
+    'Elige primero la variante de edad y vestuario que exige el guion, incluida la máscara cuando corresponda. Entre variantes compatibles, prefiere la luz de la escena y después el ancla. Una coincidencia de luz no justifica una edad o ropa incorrectas.',
     'Las placas de detalle son las que hacen posible la regla de la boca: son los planos de manos, ' +
     'de nuca y de espalda sobre los que va el resto de un intercambio hablado.',
     sinPlaca.length
       ? `De esta escena no tienen placa en el banco: ${sinPlaca.join(', ')}. No te inventes un id ` +
-        'para ellos: los planos donde salgan van con «refs»: [] y se dibujan desde lo que escribas ' +
-        'en «imagen».'
+        'para ellos. Describe su aspecto en «imagen» y conserva TODAS las referencias de los demás personajes visibles que sí tienen ficha. La lista solo queda vacía si ninguno de los visibles tiene ficha.'
       : null,
     'Un plano donde no se reconozca a nadie —un techo, una gota de agua, una pared— va con ' +
     '«refs»: [].'
@@ -1104,6 +1104,9 @@ const COMPROBACIONES = [
     revisar(planos, ctx) {
       return planos.flatMap(p => {
         const errores = revisarDireccion(p, contextoDelPlano(ctx,p).continuidad);
+        for (const personaje of personajesSinReferencia(p,ctx.placas)) {
+          errores.push(`Falta la referencia del banco de «${personaje}», que está visible. Añade la placa de su edad y vestuario; una toma anterior no sustituye su ficha.`);
+        }
         for (const id of p.refs || []) {
           const placa = ctx.placas.find(r => r.id === id);
           if (placa && p.direccion && !p.direccion.visibles.some(v => placa.personaje === v || placa.personaje.startsWith(v+'-'))) errores.push(`La referencia ${id} es de alguien que no figura visible.`);

@@ -13,7 +13,7 @@ import { segmentosDeEscena } from '../datos/segmentos.js';
 import { promptKeyframe, promptVideo, comprobarCupos } from '../api/_lib/prompt.js';
 import { revisarPlanosDeEscena, conservaDuracionDeEscena } from '../api/_lib/texto.js';
 import { aplicarCorreccion } from '../api/_lib/continuidad.js';
-import { materialVigente, necesitaDireccion, conservaMontaje, invalidarMontajes, referenciaDeSecuencia, estadoDeReferencia, marcarCambio, pasoDeEscena } from '../app/continuidad.js';
+import { materialVigente, necesitaDireccion, conservaMontaje, invalidarMontajes, referenciaDeSecuencia, estadoDeReferencia, marcarCambio, pasoDeEscena, referenciasDeReparto, personajesSinReferencia } from '../app/continuidad.js';
 import { claveDelMaterial, esDeArchivo, porQueNoSeGenera } from '../app/planos.js';
 
 // Ninguna prueba de continuidad puede disparar una generación de pago.
@@ -25,7 +25,7 @@ function plano(ep,esc) {
   const s=escenaDeGuion(ep,esc), c=marco(ep,esc);
   return {id:`${esc}-1`,escena:String(esc),imagen:'Saharis studies the room.',video:'Saharis slowly turns his head toward the table.',
     dur:3,dur_gen:4,recorte:[0,3],veo:'medio',luz:s.luz,escenario:s.escenario,
-    refs:[],boca_visible:null,encadena_con:null,de_archivo:null,continuidad:c,
+    refs:['saharis-ancla'],boca_visible:null,encadena_con:null,de_archivo:null,continuidad:c,
     direccion:{visibles:['saharis'],fuera_de_campo:s.personajes.filter(p=>p!=='saharis'),
       posiciones:'Saharis beside the table; established guests occupy their seats outside this close-up.',
       miradas:'Toward the table and the partner, not toward the viewer.',camara:'Three-quarter view at seated eye height.',
@@ -201,6 +201,7 @@ prueba('Una edición concurrente detiene la migración sin tocar el estado nuevo
 const planosSegmentados=(ep,esc)=>segmentosDeEscena(ep,esc).map((s,i)=>({
   ...plano(ep,esc),id:`${esc}-${i+1}`,segmento:s.id,escenario:s.escenario,luz:s.luz,
   imagen:s.accion,video:'The visible person makes a small natural movement. Camera locked.',
+  refs:s.personajes.map(id=>serie.banco.placas.find(p=>p.personaje===id && p.ancla)?.id).filter(Boolean),
   direccion:{...plano(ep,esc).direccion,visibles:s.personajes,fuera_de_campo:[],
     posiciones:'Keep the visible people in their established positions.',miradas:'Eyes toward the partner or the task.'}
 }));
@@ -254,7 +255,7 @@ prueba('Un clip de otro keyframe no se considera vigente',()=>{
 const encolados=[];
 const nodo=(tipo,atributos,...hijos)=>({tipo,atributos,hijos:hijos.flat().filter(x=>x!=null),appendChild(h){this.hijos.push(h);}});
 const estadoUi=inicial();
-const stubs={pasoDeEscena,referenciaDeSecuencia,estadoDeReferencia,contextoDeToma,contextoDeEscena,necesitaDireccion,materialVigente,invalidarMontajes,claveDelMaterial,esDeArchivo,porQueNoSeGenera,
+const stubs={pasoDeEscena,referenciaDeSecuencia,estadoDeReferencia,referenciasDeReparto,personajesSinReferencia,contextoDeToma,contextoDeEscena,necesitaDireccion,materialVigente,invalidarMontajes,claveDelMaterial,esDeArchivo,porQueNoSeGenera,
   ErrorDeCara,llamar:globalThis.fetch,actual:()=>estadoUi,cambiar:async fn=>fn(estadoUi),alCambiar:()=>{},
   encolar:()=>{},encolarVarios:lista=>encolados.push(...lista),confirmar:async()=>true,
   h:nodo,seccion:(...h)=>nodo('seccion',{},h),aviso:t=>nodo('aviso',{},t),
@@ -286,6 +287,7 @@ prueba('Una imagen existente puede conservarse tras volver a aprobarla',()=>{
 });
 estadoUi.piezas.ep01.tomas=[{...plano(1,'4'),revision_direccion:'r4'}];
 estadoUi.escenarios={[plano(1,'4').escenario]:{aprobada:'escenario.png'}};
+estadoUi.banco={'saharis-ancla':{aprobada:'saharis.png'}};
 e.revision_pendiente=true;
 const ctxNuevo={...ctx,pieza:ui.construirModelo(serie,estadoUi).porId.get('ep01')};
 const botones=n=>[...(n?.texto ? [n] : []),...(n?.hijos||[]).flatMap(botones)];
