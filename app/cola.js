@@ -749,6 +749,8 @@ function prepararEncolado(tipo, args) {
 
   const { args: limpios, identidad } = normalizador(args && typeof args === 'object' ? args : {});
   const id = idDeTrabajo(nombre, identidad);
+  // Se crea una vez por clic, fuera del cambio que puede repetirse tras un 409.
+  const solicitudId = crypto.randomUUID();
 
   const cambio = (estado) => {
     const cola = colaDe(estado);
@@ -763,6 +765,8 @@ function prepararEncolado(tipo, args) {
       // sea seguro: pedir otra vez el mismo keyframe vuelve a ponerlo en marcha
       // sin crear un trabajo gemelo que nadie sabría distinguir.
       ya.args = limpios;
+      ya.solicitud_id = solicitudId;
+      ya.detencion_solicitada = false;
       ya.estado = PENDIENTE;
       ya.intentos = 0;
       ya.consultas = 0;
@@ -777,6 +781,7 @@ function prepararEncolado(tipo, args) {
 
     cola.push({
       id,
+      solicitud_id: solicitudId,
       tipo: nombre,
       args: limpios,
       estado: PENDIENTE,
@@ -1066,18 +1071,23 @@ export async function arrancar() {
  * que lo recoja ni sepa que existe. Lo que se está haciendo se termina de hacer y
  * se apunta; lo que no ha empezado, ese sí se para.
  */
-export function detener() {
-  parado = true;
-  escribirYa((estado) => {
+export function detener(id = null) {
+  if (!id) parado = true;
+  const escritura = escribirYa((estado) => {
     const cuando = ahoraIso();
     for (const trabajo of colaDe(estado)) {
-      if (trabajo && trabajo.estado === PENDIENTE) {
+      if (trabajo && (!id || trabajo.id === id) && [PENDIENTE, EN_CURSO].includes(trabajo.estado)) {
         trabajo.estado = DETENIDO;
+        trabajo.detencion_solicitada = true;
+        trabajo.proximo = null;
+        trabajo.error = null;
+        trabajo.detalle = null;
         trabajo.actualizado = cuando;
       }
     }
   });
   despertarBucle();
+  return escritura;
 }
 
 /**
@@ -1085,10 +1095,13 @@ export function detener() {
  */
 export function reanudar() {
   parado = false;
+  const reanudacion = crypto.randomUUID();
   escribirYa((estado) => {
     const cuando = ahoraIso();
     for (const trabajo of colaDe(estado)) {
       if (trabajo && trabajo.estado === DETENIDO) {
+        trabajo.detencion_solicitada = false;
+        trabajo.reanudacion_id = reanudacion;
         trabajo.estado = PENDIENTE;
         trabajo.actualizado = cuando;
       }
@@ -1240,6 +1253,17 @@ async function cogerLaTanda(tanda) {
     for (const candidato of tanda) {
       const trabajo = buscarEnCola(estado, candidato.id);
       if (!trabajo || trabajo.estado !== PENDIENTE || !leToca(trabajo, ahora)) continue;
+      if (trabajo.detencion_solicitada) { trabajo.estado = DETENIDO; continue; }
+      if (!trabajo.solicitud_id) {
+        if (['placa','escenario','poster','keyframe'].includes(trabajo.tipo) && trabajo.intentos > 0) {
+          trabajo.estado = DETENIDO;
+          trabajo.detencion_solicitada = true;
+          trabajo.error = null;
+          trabajo.detalle = 'Revisa el material existente antes de pedir otra imagen.';
+          continue;
+        }
+        trabajo.solicitud_id = crypto.randomUUID();
+      }
       trabajo.estado = EN_CURSO;
       trabajo.actualizado = cuando;
       // Se trabaja sobre una copia suelta: lo que el ejecutor toque no puede
@@ -1273,14 +1297,15 @@ async function ejecutarUno(trabajo) {
 
   try {
     await ejecutor(trabajo.args || {}, trabajo);
-    return { id: trabajo.id, fin: HECHO };
+    return { id: trabajo.id, solicitud_id: trabajo.solicitud_id, fin: HECHO };
   } catch (fallo) {
     if (fallo instanceof Aplazamiento) {
-      return { id: trabajo.id, fin: 'espera', ms: fallo.ms, nota: fallo.nota };
+      return { id: trabajo.id, solicitud_id: trabajo.solicitud_id, fin: 'espera', ms: fallo.ms, nota: fallo.nota };
     }
     const error = comoErrorDeCara(fallo, trabajo);
     return {
       id: trabajo.id,
+      solicitud_id: trabajo.solicitud_id,
       fin: error.reintentable ? 'reintentar' : FALLIDO,
       mensaje: error.mensaje,
       detalle: error.detalle,
@@ -1307,6 +1332,7 @@ async function escribirLaTanda(cambios, resoluciones) {
       for (const resolucion of resoluciones) {
         const trabajo = buscarEnCola(estado, resolucion.id);
         if (!trabajo) continue;
+        if (resolucion.solicitud_id && trabajo.solicitud_id !== resolucion.solicitud_id) continue;
         trabajo.actualizado = cuando;
         resolver(trabajo, resolucion);
       }
@@ -1331,6 +1357,13 @@ async function escribirLaTanda(cambios, resoluciones) {
  * @param {object} resolucion
  */
 function resolver(trabajo, resolucion) {
+  if (trabajo.detencion_solicitada) {
+    trabajo.estado = DETENIDO;
+    trabajo.error = null;
+    trabajo.detalle = null;
+    trabajo.proximo = null;
+    return;
+  }
   if (resolucion.fin === HECHO) {
     trabajo.estado = HECHO;
     trabajo.error = null;
@@ -1548,6 +1581,16 @@ async function revivirHuerfanos() {
     for (const trabajo of colaDe(estado)) {
       if (!pareceHuerfano(trabajo, ahora)) continue;
 
+      if (trabajo.detencion_solicitada || (!trabajo.solicitud_id && ['placa','escenario','poster','keyframe'].includes(trabajo.tipo))) {
+        trabajo.estado = DETENIDO;
+        trabajo.detencion_solicitada = true;
+        trabajo.error = null;
+        trabajo.detalle = 'Revisa el material existente antes de pedir otra imagen.';
+        trabajo.proximo = null;
+        trabajo.actualizado = cuando;
+        continue;
+      }
+
       // Quién puede darse por hecho y quién no, y esto se decide por TIPO, no
       // por si hay una operación apuntada.
       //
@@ -1761,23 +1804,23 @@ class Aplazamiento extends Error {
  */
 export const EJECUTORES = {
   /** Una placa del banco de personajes. */
-  async placa(args) {
-    await generarImagen('placa', args);
+  async placa(args, trabajo) {
+    await generarImagen('placa', args, trabajo);
   },
 
   /** Una placa de escenario. */
-  async escenario(args) {
-    await generarImagen('escenario', args);
+  async escenario(args, trabajo) {
+    await generarImagen('escenario', args, trabajo);
   },
 
   /** Un póster o una miniatura, en el formato que se haya elegido. */
-  async poster(args) {
-    await generarImagen('poster', args);
+  async poster(args, trabajo) {
+    await generarImagen('poster', args, trabajo);
   },
 
   /** El keyframe de una toma: lo que se mira para aprobar antes de gastar vídeo. */
-  async keyframe(args) {
-    await generarImagen('keyframe', args);
+  async keyframe(args, trabajo) {
+    await generarImagen('keyframe', args, trabajo);
   },
 
   /**
@@ -2207,8 +2250,12 @@ export const EJECUTORES = {
  * @param {object} args
  * @returns {Promise<void>}
  */
-async function generarImagen(tipo, args) {
+async function generarImagen(tipo, args, trabajo) {
   const campos = { tipo, id: args.id };
+  if (trabajo?.solicitud_id) {
+    campos.solicitud_id = trabajo.solicitud_id;
+    campos.trabajo_id = trabajo.id;
+  }
   if (tipo === 'keyframe') campos.pieza = args.pieza;
   // La proporción solo la pide el póster: todo lo que se anima va en 16:9.
   if (tipo === 'poster') campos.proporcion = soloTexto(args.proporcion);
@@ -2224,19 +2271,26 @@ async function generarImagen(tipo, args) {
   if (resolucion) campos.resolucion = resolucion;
 
   const hecho = await llamar('imagen', campos);
+  if (hecho.pendiente) throw new Aplazamiento(15_000, hecho.mensaje);
 
   anotar((estado) => {
+    const guardado = trabajo && buscarEnCola(estado, trabajo.id);
+    const detenida = guardado && (guardado.detencion_solicitada || guardado.solicitud_id !== trabajo.solicitud_id);
     if (tipo === 'keyframe') {
       const entrada = entradaDeToma(estado, `${args.pieza}/${args.id}`);
-      apuntarIntento(entrada, 'intentos_keyframe', hecho.ruta);
+      apuntarIntento(entrada, detenida ? 'intentos_keyframe_detenidos' : 'intentos_keyframe', hecho.ruta);
+      if (!detenida && entrada.keyframe_aprobado !== hecho.ruta) entrada.revision_pendiente = true;
     } else if (tipo === 'poster') {
       const clave = `${args.id}/${String(args.proporcion || '').replace(/:/g, '-')}`;
-      apuntarIntento(entradaAprobable(estado, 'posters', clave), 'intentos', hecho.ruta);
+      apuntarIntento(entradaAprobable(estado, 'posters', clave), detenida ? 'intentos_detenidos' : 'intentos', hecho.ruta);
     } else {
       const donde = tipo === 'placa' ? 'banco' : 'escenarios';
-      apuntarIntento(entradaAprobable(estado, donde, args.id), 'intentos', hecho.ruta);
+      apuntarIntento(entradaAprobable(estado, donde, args.id), detenida ? 'intentos_detenidos' : 'intentos', hecho.ruta);
     }
-    anotarGasto(estado, 'imagen', usado, 1);
+    if (!trabajo?.solicitud_id || guardado?.gasto_solicitud !== trabajo.solicitud_id) {
+      anotarGasto(estado, 'imagen', usado, 1);
+      if (guardado && trabajo.solicitud_id) guardado.gasto_solicitud = trabajo.solicitud_id;
+    }
   });
 }
 
