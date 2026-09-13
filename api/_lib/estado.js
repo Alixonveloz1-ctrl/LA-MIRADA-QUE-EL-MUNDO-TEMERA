@@ -364,10 +364,11 @@ export function asegurar(estado) {
   const piezas = serie.piezas || {};
   const idsDePieza = Object.keys(piezas);
 
-  // Qué pieza se está produciendo. Si la que hay escrita ya no existe (o no hay
-  // ninguna), se pasa a la primera de serie.json, que hoy es el teaser.
-  if (!idsDePieza.includes(completo.pieza_activa)) {
-    completo.pieza_activa = idsDePieza.length ? idsDePieza[0] : null;
+  // Los capítulos desglosados viven en el estado. Excluirlos devolvía al teaser
+  // al releer tras cada generación, aunque el usuario siguiera en una escena.
+  const idsDisponibles=[...new Set([...idsDePieza,...Object.keys(esObjeto(completo.piezas)?completo.piezas:{})])];
+  if (!idsDisponibles.includes(completo.pieza_activa)) {
+    completo.pieza_activa = idsDisponibles[0] || null;
   }
 
   // Banco de personajes: una entrada por placa, ancla o no.

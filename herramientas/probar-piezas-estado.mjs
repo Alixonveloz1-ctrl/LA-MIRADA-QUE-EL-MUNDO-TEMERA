@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { serie, pieza, toma, bloquesDeVoz } from '../api/_lib/datos.js';
 import { promptKeyframe, promptVideo, guionDeVoz } from '../api/_lib/prompt.js';
+import { asegurar } from '../api/_lib/estado.js';
 
 const base = serie.piezas.teaser;
 assert.ok(base, 'La prueba necesita la pieza teaser preexistente');
@@ -45,5 +46,17 @@ assert.match(tomasUi, /const dinamicas = .*estado\.piezas/);
 assert.match(tomasUi, /modelo = construirModelo\(datos, leerEstado\(\)\)/);
 assert.match(audioUi, /const dinamicas = .*estado\.piezas/);
 assert.match(desgloseUi, /audio: \{ voz: vozDelEpisodio\(episodio, tomas\) \}/);
+
+for (let ep=1;ep<=12;ep++) {
+  const id=`ep${String(ep).padStart(2,'0')}`;
+  const estado=asegurar({pieza_activa:id,piezas:{[id]:{...dinamica,id}},
+    tomas:{[`${id}/1-1`]:{keyframe_aprobado:'aprobada.png',intentos_keyframe:['aprobada.png','nueva.png']}}});
+  // La lectura tras generar no cambia de capítulo ni sustituye su aprobación.
+  assert.equal(asegurar(estado).pieza_activa,id);
+  assert.equal(estado.tomas[`${id}/1-1`].keyframe_aprobado,'aprobada.png');
+  assert.deepEqual(estado.tomas[`${id}/1-1`].intentos_keyframe,['aprobada.png','nueva.png']);
+}
+assert.equal(asegurar({pieza_activa:'inexistente'}).pieza_activa,Object.keys(serie.piezas)[0]);
+console.log('✓ Los doce capítulos conservan la selección y sus imágenes al volver a leer el estado');
 
 console.log('✓ Desglose → Tomas → Imagen → Vídeo → Audio/Voz acepta piezas de estado.json');
