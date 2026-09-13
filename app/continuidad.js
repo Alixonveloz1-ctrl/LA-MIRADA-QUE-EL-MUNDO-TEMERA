@@ -9,7 +9,7 @@ export function necesitaDireccion(pieza, toma) {
 export function firmaDeToma(toma) {
   // Cadena canónica sin colisiones de hash: los campos de tiempo también cuentan.
   return JSON.stringify([toma?.id, toma?.segmento, toma?.imagen, toma?.video, toma?.escenario, toma?.luz,
-    toma?.refs || [], toma?.direccion || null, toma?.continuidad || null,
+    toma?.refs || [], toma?.referencia_anterior ?? null, toma?.direccion || null, toma?.continuidad || null,
     toma?.inicio, toma?.veo, toma?.revision_direccion, toma?.dur, toma?.dur_gen, toma?.recorte, toma?.encadena_con, toma?.boca_visible, toma?.de_archivo]);
 }
 
@@ -44,7 +44,7 @@ export function pasoDeEscena(pieza, toma, estado) {
 /** Solo una imagen anterior, aprobada para su revisión y de la misma secuencia. */
 export function referenciaDeSecuencia(pieza, toma, estado) {
   const paso=pasoDeEscena(pieza,toma,estado);
-  if (paso.bloqueo) return null;
+  if (paso.bloqueo || toma.referencia_anterior === false) return null;
   if (paso.anterior) return {id:paso.anterior.id,ruta:estado.tomas[`${pieza.id}/${paso.anterior.id}`].keyframe_aprobado};
   const indice=pieza?.tomas?.findIndex(t=>t.id===toma.id) ?? -1;
   if (indice<1 || !toma.continuidad?.secuencia) return null;

@@ -1424,3 +1424,9 @@ archivos anteriores. `origenes_keyframe[ruta].referencia_anterior` registra la r
 utilizada, o null. La tarjeta muestra la nueva versión pendiente; las miniaturas
 quedan plegadas en «Ver versiones anteriores». Elegir otra versión es reversible
 y no cambia la aprobación hasta pulsar el botón correspondiente.
+
+Una toma puede declarar `referencia_anterior: false` cuando la imagen precedente
+contiene elementos que no pertenecen a la representación de ese encuadre. Se
+omite solo esa referencia: se conservan el escenario y las identidades del banco,
+y `pasoDeEscena` sigue exigiendo la aprobación de la anterior. El campo forma
+parte de la firma de continuidad. No cambia filtros de seguridad del proveedor.

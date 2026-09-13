@@ -380,6 +380,13 @@ prueba('Mientras se rehace una imagen, no se usa su aprobación antigua',()=>{
 prueba('Una nueva imagen pendiente se muestra antes que la aprobación antigua',()=>{
   assert.equal(ui.rutaQueSeMira({keyframe:'vieja.png',intentosKeyframe:['vieja.png','nueva.png'],revisionPendiente:true},'prueba'),'nueva.png');
 });
+prueba('Omitir una referencia inadecuada conserva la revisión obligatoria',()=>{
+  const a=plano(1,'1'),b={...a,id:'1-3',referencia_anterior:false},p={id:'ep01',tomas:[a,b]},e={tomas:{}};
+  assert.ok(pasoDeEscena(p,b,e).bloqueo);
+  e.tomas['ep01/'+a.id]={keyframe_aprobado:'anterior.png'};
+  assert.equal(pasoDeEscena(p,b,e).bloqueo,null);
+  assert.equal(referenciaDeSecuencia(p,b,e),null);
+});
 const relatos = JSON.parse(readFileSync(new URL('../datos/relatos-ep01.json', import.meta.url), 'utf8'));
 const piezaRelato = {id:'ep01', tomas:Object.entries(relatos).map(([id,n])=>({id,escena:id.split('-')[0],...n}))};
 prueba('Las 153 tomas existentes tienen relato vinculado a su contenido',()=>{
