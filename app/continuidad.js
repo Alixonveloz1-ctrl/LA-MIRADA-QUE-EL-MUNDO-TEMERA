@@ -168,9 +168,17 @@ export function personajesOmitidosEnGeneral(toma,placas) {
  * intermedio deja de mostrarlos. Solo usa su última aparición aprobada en esta
  * secuencia, nunca una versión vieja de una aparición pendiente de revisión. */
 export function referenciasDeReparto(pieza,toma,estado,placas) {
-  if (!referenciaDeSecuencia(pieza,toma,estado)) return [];
+  const base=estadoDeBaseEscena(pieza,toma,estado);
+  if (!base.referencia && !referenciaDeSecuencia(pieza,toma,estado)) return [];
   const sinFicha=(toma.direccion?.visibles || []).filter(p=>!placas.some(r=>placaDePersonaje(r,p)));
   const buscadas=new Set(sinFicha), resultado=[];
+  if (base.referencia) {
+    const origen=base.referencia.pieza ? estado.piezas?.[base.referencia.pieza] : pieza;
+    const general=origen?.tomas?.find(t=>t.id===base.referencia.id);
+    const presentes=sinFicha.filter(p=>general?.direccion?.visibles?.includes(p));
+    if (presentes.length) resultado.push({...base.referencia,personajes:presentes,etiqueta:base.etiqueta});
+    presentes.forEach(p=>buscadas.delete(p));
+  }
   for (const c of anterioresDeSecuencia(pieza,toma,estado)) {
     const visibles=[...buscadas].filter(p=>(c.toma.direccion?.visibles || []).includes(p));
     if (!visibles.length) continue;

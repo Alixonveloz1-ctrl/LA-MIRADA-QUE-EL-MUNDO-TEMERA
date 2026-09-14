@@ -140,6 +140,18 @@ for (const ep of [1,2,12]) {
     assert.ok(estadoDeBaseEscena(p,destino,e).motivo);
   });
 }
+prueba('Una toma posterior no sustituye los figurantes establecidos en el general',()=>{
+  const g={...culto,id:'general',direccion:{...culto.direccion,visibles:['acolitos'],camara:'Wide establishing shot.'}};
+  const p={...pieza,tomas:[g,...pieza.tomas]},e=structuredClone(estado);
+  e.tomas['ep01/general']=aprobada('general.png');
+  const refs=referenciasDeReparto(p,actual,e,placas);
+  assert.deepEqual(refs.map(r=>r.ruta),['general.png']);
+  const k=componer(actual,e,p);
+  assert.equal(k.referencias[0].uso,'base_escena');
+  assert.doesNotMatch(k.referencias[0].instruccion,/Ignore every other person/);
+  assert.match(k.referencias.find(r=>r.uso==='secuencia').instruccion,/ACTION SUPPORT ONLY/);
+  assert.ok(!k.referencias.some(r=>r.continuidad==='culto.png'));
+});
 prueba('El general no se adjunta dos veces si también es el apoyo anterior',()=>{
   const p=promptKeyframe(pieza.id,actual.id,pieza,{ruta:'general.png'},[],{ruta:'general.png'});
   assert.equal(p.referencias.filter(r=>r.continuidad==='general.png').length,1);
@@ -202,10 +214,12 @@ await modos.imagen({tipo:'keyframe',pieza:'ep01',id:'2-1'});
 prueba('Servidor: apagar el apoyo sigue enviando los bytes del general y las fichas del banco',()=>{
   assert.equal(envios.length,1);
   const log=JSON.parse(escritos.get('keyframes/ep01/2-1/1.encargo.json'));
-  assert.deepEqual(log.referencias.map(r=>r.ruta),['cripta.png','mascara.png','ancla-bebe.png','general.png']);
+  assert.deepEqual(log.referencias.map(r=>r.ruta),['general.png','cripta.png','mascara.png','ancla-bebe.png']);
   const partes=envios[0].contents[0].parts;
-  assert.equal(partes[6].inlineData.data,bytesDe('general.png').toString('base64'));
-  assert.match(partes[7].text,/SCENE BASE/);
+  assert.equal(partes[0].inlineData.data,bytesDe('general.png').toString('base64'));
+  assert.match(partes[1].text,/SCENE BASE/);
+  assert.doesNotMatch(log.texto,/SET GEOMETRY IS LOCKED TO THE APPROVED LOCATION IMAGE/);
+  assert.match(log.referencias.find(r=>r.escenario).instruccion,/MATERIALS ONLY/);
   assert.equal(servidor.tomas['ep01/2-1'].origenes_keyframe[respuesta.ruta].referencia_base,'general.png');
 });
 servidor=structuredClone(estado);delete servidor.banco['celebrante-mascara'].aprobada;

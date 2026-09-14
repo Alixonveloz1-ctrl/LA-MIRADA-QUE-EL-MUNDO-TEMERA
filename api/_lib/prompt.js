@@ -567,8 +567,8 @@ export function promptKeyframe(idPieza, idToma, piezaAlternativa = null, referen
   }
 
   const cuerpo = unir(
-    laToma.escenario ? 'Reframe the approved LOCATION IMAGE to make this shot in the same physical set. Place the specified cast in it using their CHARACTER BANK images. Change the camera crop, not the room layout or the furniture.' : '',
-    referenciaBase ? 'Use the SCENE BASE as the starting composition: this is the occupied set, not an empty room to repopulate. Preserve each established person in their same seat or position and preserve the connected furniture, table setting and installed lamps. Change the camera crop and only the actions explicitly required in this shot. An occupied seat visible in the new crop must retain its occupant; people outside the crop remain off screen. If a character is marked off screen, crop out their seat too: never show their established seat empty or give it to someone else. Do not clear plates or diners, split tables, relocate lamps or redistribute the guests.' : '',
+    !referenciaBase && laToma.escenario ? 'Reframe the approved LOCATION IMAGE to make this shot in the same physical set. Place the specified cast in it using their CHARACTER BANK images. Change the camera crop, not the room layout or the furniture.' : '',
+    referenciaBase ? 'EDIT IMAGE 1 (SCENE BASE). It is the sole authority for spatial layout, seats, neighbors and object placement. Keep every person exactly once. Use the SCENE BASE as the starting composition: this is the occupied set, not an empty room to repopulate. Preserve each established person in their same seat or position and preserve the connected furniture, table setting and installed lamps. Change the camera crop and only the actions explicitly required in this shot. An occupied seat visible in the new crop must retain its occupant; people outside the crop remain off screen. If a character is marked off screen, crop out their seat too: never show their established seat empty or give it to someone else. Do not clear plates or diners, split tables, relocate lamps or redistribute the guests.' : '',
     laToma.imagen,
     laToma.continuidad?.luz || luzDe(laToma.luz, `La toma «${idToma}» de la pieza «${idPieza}»`),
     direccionDelPlano(idPieza, laToma)
@@ -597,7 +597,7 @@ export function promptKeyframe(idPieza, idToma, piezaAlternativa = null, referen
     const suEscenario = escenario(laToma.escenario);
     ponerReferencia(referencias, {
       escenario: suEscenario.id,
-      instruccion: instruccionDeEscenario(),
+      instruccion: referenciaBase ? 'LOCATION MATERIALS ONLY: this bank image predates the occupied scene. Use it only for architectural materials and surface detail missing from IMAGE 1. IMAGE 1 controls the actual layout, chairs, table, lamps and occupancy. Do not substitute this empty arrangement or its camera for IMAGE 1.' : instruccionDeEscenario(),
       cupo: 'objeto'
     });
   }
@@ -615,14 +615,14 @@ export function promptKeyframe(idPieza, idToma, piezaAlternativa = null, referen
 
   if (referenciaBase) ponerReferencia(referencias, {
     continuidad:referenciaBase.ruta, uso:'base_escena',
-    instruccion:'SCENE BASE: approved wide frame of this same place and narrative moment. This is the persistent occupied layout: retain the same seats, occupants, neighboring people, tableware, connected furniture and fixtures. Reframe THIS arrangement for the new shot instead of rebuilding it. The empty LOCATION IMAGE supplies architecture, not empty seats. CHARACTER BANK images refine identity and clothing, not seating or portrait backgrounds. Apply only explicit scripted movements or departures. A detail insert does not reset this arrangement.',
+    instruccion:'SCENE BASE: approved wide frame of this same place and narrative moment. This is the persistent occupied layout: retain the same seats, occupants, neighboring people, tableware, connected furniture and fixtures. Reframe THIS arrangement for the new shot instead of rebuilding it. This image alone controls geometry and where each person sits. The LOCATION IMAGE is only a materials reference, not a competing layout. CHARACTER BANK images refine identity and clothing, not seating or portrait backgrounds. Apply only explicit scripted movements or departures. A detail insert does not reset this arrangement.',
     cupo:'objeto'
   });
 
   if (referenciaSecuencia && referenciaSecuencia.ruta !== referenciaBase?.ruta) ponerReferencia(referencias, {
     continuidad: referenciaSecuencia.ruta,
     uso:'secuencia',
-    instruccion:'SEQUENCE REFERENCE: an approved earlier frame from this same sequence, for established seating, population, ongoing action and handled props. The LOCATION IMAGE controls architecture, furniture connectivity and installed fixtures; do not inherit spatial errors from this frame. The CHARACTER BANK controls the design of named characters; never replace their face, costume or mask with a conflicting design from this frame. Render only this shot\'s visible cast. Follow the NEW camera, framing, scripted movements and changes. Reframe the same set, without moving its objects, and follow this shot\'s lighting. People outside a close-up remain off screen, not erased from the location.',
+    instruccion:referenciaBase ? 'ACTION SUPPORT ONLY: this earlier close shot may show the ongoing gesture or expression. Do not copy its seating, furniture, camera, background, character placement or background character designs. IMAGE 1 alone controls all those relationships. Keep identities and neighbors from IMAGE 1; bank portraits refine named identities. Apply only the action explicitly requested by the shot.' : 'SEQUENCE REFERENCE: an approved earlier frame from this same sequence, for established seating, population, ongoing action and handled props. The LOCATION IMAGE controls architecture, furniture connectivity and installed fixtures; do not inherit spatial errors from this frame. The CHARACTER BANK controls the design of named characters; never replace their face, costume or mask with a conflicting design from this frame. Render only this shot\'s visible cast. Follow the NEW camera, framing, scripted movements and changes. Reframe the same set, without moving its objects, and follow this shot\'s lighting. People outside a close-up remain off screen, not erased from the location.',
     cupo:'objeto'
   });
 
@@ -630,7 +630,7 @@ export function promptKeyframe(idPieza, idToma, piezaAlternativa = null, referen
     const instruccion=`BACKGROUND CAST APPEARANCE ONLY: the approved earlier frame shows ${ref.personajes.join(', ')}. Preserve ONLY these background characters' established appearance, silhouettes, garment cuts, materials, colors, headwear and accessories, and their distinct roles. Do not add items absent from their design or turn them into copies of a named character. Ignore every other person, action and pose in this reference; do not bring them into the new shot. The current visible cast and action remain authoritative, and the CHARACTER BANK controls all named character designs.`;
     const existente=referencias.find(r=>r.continuidad===ref.ruta);
     if (existente) {
-      existente.instruccion+=' '+instruccion;
+      if (existente.uso !== 'base_escena') existente.instruccion+=' '+instruccion;
       existente.reparto=ref.personajes;
     } else ponerReferencia(referencias,{continuidad:ref.ruta,uso:'reparto',reparto:ref.personajes,instruccion,cupo:'objeto'});
   }
@@ -640,7 +640,9 @@ export function promptKeyframe(idPieza, idToma, piezaAlternativa = null, referen
     if (ref) ref.instruccion += ` This shot takes place in: ${laToma.continuidad.subespacio}. The master supplies the location identity, materials and architectural language; frame the specified subspace, never copy an exterior aerial view into an interior or populate it with people from another segment.`;
   }
 
-  return { texto: sellar(unir(cuerpo,laToma.escenario ? GEOMETRIA_DEL_ESCENARIO : '')), negativo: negativoDeEstilo(), referencias };
+  // El fotograma que se edita llega primero, antes de cualquier apoyo.
+  if (referenciaBase) referencias.unshift(...referencias.splice(referencias.findIndex(r=>r.uso==='base_escena'),1));
+  return { texto: sellar(unir(cuerpo,!referenciaBase && laToma.escenario ? GEOMETRIA_DEL_ESCENARIO : '')), negativo: negativoDeEstilo(), referencias };
 }
 
 // ---------------------------------------------------------------------------
