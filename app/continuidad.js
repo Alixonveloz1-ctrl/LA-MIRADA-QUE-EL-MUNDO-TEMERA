@@ -34,17 +34,48 @@ function identidadDeSecuencia(pieza,toma) {
   return `${guia.secuencia}/${guia.espacio}/${guia.flashback?'pasado':'presente'}`;
 }
 
+/**
+ * La ruta del keyframe EN USO de una entrada: la apuntada en
+ * `keyframe_aprobado`, o el último intento generado si el campo está vacío.
+ * No hay aprobación: lo que existe es lo que vale, y lo último generado es
+ * lo vigente.
+ */
+export function rutaKeyframeEnUso(entrada) {
+  const lista = Array.isArray(entrada?.intentos_keyframe) ? entrada.intentos_keyframe : [];
+  for (let i = lista.length - 1; i >= 0; i--) {
+    if (typeof lista[i] === 'string' && lista[i].trim()) return lista[i];
+  }
+  const puesta = typeof entrada?.keyframe_aprobado === 'string' && entrada.keyframe_aprobado.trim();
+  return puesta ? entrada.keyframe_aprobado : null;
+}
+
+/** Lo mismo para el clip: `clip_elegido` o el último intento de la lista. */
+export function rutaClipEnUso(entrada) {
+  const lista = Array.isArray(entrada?.intentos_clip) ? entrada.intentos_clip : [];
+  for (let i = lista.length - 1; i >= 0; i--) {
+    if (typeof lista[i] === 'string' && lista[i].trim()) return lista[i];
+  }
+  const puesta = typeof entrada?.clip_elegido === 'string' && entrada.clip_elegido.trim();
+  return puesta ? entrada.clip_elegido : null;
+}
+
 function motivoDeReferenciaPendiente(pieza,toma,estado) {
   if ((estado.cola || []).some(t=>t.tipo==='keyframe' && t.args?.pieza===pieza.id &&
     t.args?.id===toma.id && ['pendiente','en_curso'].includes(t.estado))) {
-    return `La imagen ${toma.id} se está generando. Espera y revísala antes de continuar.`;
+    return `La imagen ${toma.id} se está generando. Espera a que termine para continuar.`;
   }
   const e=estado.tomas?.[`${pieza.id}/${toma.id}`];
-  const ultima=e?.intentos_keyframe?.at(-1);
-  if (necesitaDireccion(pieza,toma) || !materialVigente(e,'keyframe') ||
-      (ultima && ultima!==e.keyframe_aprobado) ||
-      (e.revision_aprobada ?? null)!==(toma.revision_direccion ?? null)) {
-    return `Revisa y aprueba la imagen ${toma.id}${pieza.id ? ` del capítulo ${Number(pieza.id.slice(2))}`:''} antes de continuar.`;
+  if (necesitaDireccion(pieza,toma)) {
+    return `Primero actualiza la continuidad de la escena de la imagen ${toma.id}.`;
+  }
+  // Sin aprobación, las únicas faltas posibles son que la imagen no exista
+  // todavía —en cuanto se genera, ES la referencia— o que su dirección haya
+  // cambiado después de generarla, y entonces hay que regenerarla.
+  if (!rutaKeyframeEnUso(e)) {
+    return `La imagen ${toma.id}${pieza.id ? ` del capítulo ${Number(pieza.id.slice(2))}`:''} todavía no se ha generado.`;
+  }
+  if (e?.revision_pendiente) {
+    return `La dirección de la imagen ${toma.id} cambió después de generarla. Genera otra versión con la dirección actual antes de continuar.`;
   }
   return null;
 }
@@ -66,7 +97,7 @@ function anterioresDeSecuencia(pieza,toma,estado) {
 }
 
 function referenciaDeCandidata(c,pieza,estado) {
-  const referencia={id:c.toma.id,ruta:estado.tomas[`${c.pieza.id}/${c.toma.id}`].keyframe_aprobado};
+  const referencia={id:c.toma.id,ruta:rutaKeyframeEnUso(estado.tomas[`${c.pieza.id}/${c.toma.id}`])};
   if (c.pieza.id!==pieza.id) referencia.pieza=c.pieza.id;
   return referencia;
 }
@@ -76,7 +107,8 @@ function etiquetaDeCandidata(c,pieza) {
   return `${c.pieza.id!==pieza.id?`Capítulo ${Number(c.pieza.id.slice(2))} · `:''}Escena ${c.toma.escena} · Toma ${orden}`;
 }
 
-/** La revisión humana es obligatoria entre tomas de una misma escena. */
+/** Entre tomas de una misma escena manda la última imagen generada: es la
+ * referencia de la siguiente en cuanto existe, sin revisión humana previa. */
 export function pasoDeEscena(pieza, toma, estado) {
   if (!/^ep\d+$/.test(pieza?.id || '') || toma.de_archivo) return {anterior:null,bloqueo:null};
   const indice=pieza.tomas.findIndex(t=>t.id===toma.id);
@@ -111,11 +143,11 @@ export function estadoDeReferencia(pieza,toma,estado) {
   }
   const guia=guiaDeEscena(Number(pieza.id.slice(2)),toma.escena);
   return {referencia:null,motivo:guia?.enlace ?
-    `Esta escena continúa una anterior. Todavía falta una imagen aprobada de esa parte de la historia para usarla como referencia.` :
-    'Todavía no hay una imagen anterior aprobada que pueda usarse aquí. Se usarán los personajes y el escenario del banco.'};
+    `Esta escena continúa una anterior. Todavía falta una imagen de esa parte de la historia para usarla como referencia.` :
+    'Todavía no hay una imagen anterior que pueda usarse aquí. Se usarán los personajes y el escenario del banco.'};
 }
 
-/** Una vista general aprobada conserva la disposición completa aunque un
+/** Una vista general generada conserva la disposición completa aunque un
  * detalle intermedio no la muestre o se apague el apoyo de la toma anterior.
  * Solo se busca dentro del mismo lugar y momento narrativo. */
 export function estadoDeBaseEscena(pieza,toma,estado) {
@@ -165,8 +197,8 @@ export function personajesOmitidosEnGeneral(toma,placas) {
 }
 
 /** Conserva el aspecto de acompañantes sin ficha propia cuando un primer plano
- * intermedio deja de mostrarlos. Solo usa su última aparición aprobada en esta
- * secuencia, nunca una versión vieja de una aparición pendiente de revisión. */
+ * intermedio deja de mostrarlos. Solo usa su última aparición generada en
+ * esta secuencia. */
 export function referenciasDeReparto(pieza,toma,estado,placas) {
   const base=estadoDeBaseEscena(pieza,toma,estado);
   if (!base.referencia && !referenciaDeSecuencia(pieza,toma,estado)) return [];
@@ -238,13 +270,22 @@ export function invalidarMontajes(estado, pieza) {
   }
 }
 
+/**
+ * Si el material está vigente, y vigente quiere decir que EXISTE. Las marcas
+ * de revisión pendiente (`revision_pendiente`, `clip_revision_pendiente`) y
+ * el origen de un clip ya no desvalorizan nada: son avisos para quien quiera
+ * mirarlos, no cerrojos. Lo que hay generado es lo que se usa, y si se
+ * regenera, lo nuevo es lo vigente.
+ */
 export function materialVigente(entrada, tipo) {
-  const ruta = tipo === 'keyframe' ? entrada?.keyframe_aprobado : entrada?.clip_elegido;
-  if (!ruta) return false;
-  if (tipo === 'keyframe') return !entrada.revision_pendiente;
-  if (entrada.revision_pendiente || entrada.clip_revision_pendiente) return false;
-  const origen=entrada.origenes_clip?.[ruta];
-  return !origen || origen.keyframe === entrada.keyframe_aprobado;
+  // Vigente = existe y no quedó desactualizado por un cambio de dirección.
+  // La marca de revisión NO es una aprobación: nadie la quita a mano; se
+  // limpia sola cuando la imagen se regenera con la dirección actual.
+  if (!entrada) return false;
+  if (entrada.revision_pendiente) return false;
+  if (tipo === 'keyframe') return Boolean(rutaKeyframeEnUso(entrada));
+  if (entrada.clip_revision_pendiente) return false;
+  return Boolean(rutaClipEnUso(entrada));
 }
 
 export function marcarCambio(entrada, antes, despues) {

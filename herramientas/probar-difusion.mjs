@@ -230,8 +230,8 @@ di(typeof dif.porQueNoSePuedeEmpaquetar(conFicha, null, null) === 'string',
   'Sin vídeo, no: y lo dice con palabras');
 di(typeof dif.porQueNoSePuedeEmpaquetar({ ficha: null, ficha_aprobada: false }, montado, null) === 'string',
   'Sin ficha, tampoco');
-di(typeof dif.porQueNoSePuedeEmpaquetar({ ...conFicha, ficha_aprobada: false }, montado, null) === 'string',
-  'Y con la ficha sin aprobar, tampoco: con ella se sube el vídeo');
+di(dif.porQueNoSePuedeEmpaquetar({ ...conFicha, ficha_aprobada: false }, montado, null) === null,
+  'Y con la ficha escrita basta, sin aprobarla: la última ficha es la que va en el paquete');
 di(typeof dif.porQueNoSePuedeEmpaquetar(conFicha, montado, { estado: 'en_curso' }) === 'string',
   'Ni dos veces a la vez');
 
@@ -293,8 +293,9 @@ const conDos = {
 };
 const vertical = dif.posterGuardado(conDos, 'poster-oficial', '9:16');
 const horizontal = dif.posterGuardado(conDos, 'poster-oficial', '16:9');
-di(vertical.aprobada && !horizontal.aprobada,
-  'El vertical está aprobado y el horizontal no, y cada uno lo sabe de sí mismo');
+di(vertical.aprobada === 'difusion/posters/poster-oficial/9-16/2.png' &&
+  horizontal.aprobada === 'difusion/posters/poster-oficial/16-9/1.png',
+  'Cada formato sabe cuál es su imagen en uso, sin mezclarse con el otro');
 di(vertical.intentos.length === 2 && horizontal.intentos.length === 1,
   'Y los intentos de uno no se cuentan en el otro');
 

@@ -92,6 +92,19 @@ export default {
     let candidatas = [];
     /** Por qué no hay lista de voces, si no la hay. */
     let porQueNoHayVoces = null;
+    /**
+     * ElevenLabs: si hay clave puesta y, si la hay, su lista de voces y el
+     * modelo con el que graba. Sin clave esto queda `{ clave:false }` y la
+     * pantalla lo dice una vez en la cabecera; ninguna tarjeta enseña un
+     * panel vacío ni un botón que vaya a fallar.
+     */
+    let elevenlabs = { clave: false, modelo: null, voces: [] };
+    /** Qué personajes tienen abierto el panel de voces de ElevenLabs. */
+    const abiertosEL = new Set();
+    /** Las muestras de ElevenLabs pedidas que la cola aún no ha visto: «personaje|voz». */
+    const pedidasEL = new Set();
+    /** Personaje → muestras de ElevenLabs recién generadas en esta sesión. */
+    const muestrasRecientesEL = new Map();
 
     /** Ruta lógica → URL firmada, para poder oír lo ya generado sin repetirlo. */
     const urls = new Map();
@@ -172,9 +185,10 @@ export default {
      * @returns {Promise<void>}
      */
     async function arrancar() {
-      const [deLaSerie, deLasVoces] = await Promise.allSettled([
+      const [deLaSerie, deLasVoces, deElevenLabs] = await Promise.allSettled([
         bajarLaSerie(),
         llamar('voces'),
+        llamar('voces-elevenlabs'),
       ]);
 
       if (!vivo) return;
@@ -195,6 +209,18 @@ export default {
         porQueNoHayVoces = deLasVoces.reason && deLasVoces.reason.mensaje
           ? deLasVoces.reason.mensaje
           : 'No se ha podido traer la lista de voces de Google.';
+      }
+
+      // ElevenLabs no tumba nada si falla: sin su lista, las tarjetas siguen
+      // con Gemini y la cabecera dice que no está activo. Solo si la función
+      // contesta se sabe si hay clave; si ni contesta, se enseña lo mismo que
+      // sin clave, que es lo único que el usuario puede hacer algo con ello.
+      if (deElevenLabs.status === 'fulfilled' && deElevenLabs.value) {
+        elevenlabs = {
+          clave: Boolean(deElevenLabs.value.clave),
+          modelo: deElevenLabs.value.modelo || null,
+          voces: Array.isArray(deElevenLabs.value.voces) ? deElevenLabs.value.voces : []
+        };
       }
 
       pintarTodo();
@@ -261,6 +287,16 @@ export default {
       return h('div', { clase:'rejilla' },
         pintarCabecera(fichas,fichas.slice(0,CUANTOS_MANDAN)),
         porQueNoHayVoces ? aviso(porQueNoHayVoces,{tono:'error'}) : null,
+        aviso(
+          elevenlabs.clave
+            ? `ElevenLabs está activo${elevenlabs.modelo ? ` (modelo ${elevenlabs.modelo})` : ''}: ` +
+              'en la tarjeta de cada personaje puedes oír sus voces y fijar una, más expresiva. ' +
+              'Los bloques de un personaje con voz de ElevenLabs fijada se graban allí; los de ' +
+              'los demás siguen con Gemini, como hasta hoy.'
+            : 'ElevenLabs no está activo: falta su clave (la variable ELEVENLABS_API_KEY en ' +
+              'Vercel). Sin ella no pasa nada: todas las voces se siguen grabando con Gemini, ' +
+              'como hasta hoy. La pantalla de Salud dice si la clave está puesta.',
+          { tono: 'nota' }),
         guiones?.fallo ? aviso(
           'No se han podido leer los guiones, así que a cada personaje se le llama aquí por su id ' +
           'y los que no tienen frase de muestra escrita no pueden enseñar su línea más difícil. ' +
@@ -412,6 +448,7 @@ export default {
           h('p', { clase: 'tenue mono', estilo: { margin: '2px 0 0', 'font-size': '12px' } }, id),
           elegida ? pintarLaElegida(id, elegida) : null,
           pintarLaMuestra(id, muestra),
+          pintarElevenLabs(id),
           recado ? aviso(recado.mensaje, { tono: recado.tono, detalle: recado.detalle }) : null,
           abiertos.has(id) && !elegida ? pintarCandidatas(ficha) : null),
         acciones,
@@ -947,6 +984,249 @@ export default {
     }
 
     // -----------------------------------------------------------------------
+    // ElevenLabs: la segunda voz de cada personaje
+    // -----------------------------------------------------------------------
+
+    /**
+     * El bloque de ElevenLabs de la tarjeta: su voz fijada si la tiene, o el
+     * panel para oír y fijar una. Sin clave no se pinta NADA aquí: la
+     * cabecera ya lo ha dicho una vez, y veintinueve tarjetas repitiendo
+     * «falta la clave» serían ruido, no información.
+     *
+     * La fijación vive AL LADO de la de Gemini (`elevenlabs_voz_id` junto a
+     * `voz_id`), no en su lugar: quitarla no toca la voz de Gemini, y un
+     * bloque solo se graba con ElevenLabs cuando TODOS los que hablan en él
+     * tienen la suya fijada y hay clave —lo demás sigue con Gemini—.
+     *
+     * @param {string} id
+     * @returns {HTMLElement|null}
+     */
+    function pintarElevenLabs(id) {
+      if (!elevenlabs.clave) return null;
+
+      const fijada = vozElevenLabsDe(id);
+      const caja = h('div', {
+        estilo: {
+          'margin-top': '10px',
+          padding: '10px 12px',
+          background: 'var(--fondo-hundido)',
+          border: '1px solid var(--borde)',
+          'border-radius': 'var(--radio-chico)',
+        },
+      },
+        h('p', { clase: 'tenue', estilo: { margin: '0 0 4px', 'font-size': '12px' } },
+          'ElevenLabs · la voz más expresiva'));
+
+      if (fijada) {
+        const oible = muestraElevenLabsOible(id, fijada);
+        const nota = h('p', { clase: 'tenue', estilo: { margin: '4px 0 0', 'font-size': '12px' } });
+        caja.append(
+          h('p', { estilo: { margin: '0' } },
+            'Voz fijada: ', h('span', { clase: 'mono' }, nombreDeVozElevenLabs(fijada))),
+          oible
+            ? h('div', { estilo: { 'margin-top': '8px' } },
+                reproductor(oible, `Muestra de ${nombreEnPantalla(id)} con ${nombreDeVozElevenLabs(fijada)}`, nota),
+                nota)
+            : null,
+          h('p', { clase: 'tenue', estilo: { margin: '6px 0 0', 'font-size': '12px' } },
+            'Sus bloques se graban con ElevenLabs cuando todos los que hablan en el bloque ' +
+            'tienen la suya fijada. Lo ya grabado con Gemini no se rehace solo.'),
+          h('div', { estilo: { 'margin-top': '8px' } },
+            boton('Quitar la voz de ElevenLabs', () => quitarVozElevenLabs(id), { tono: 'suave' })));
+        return caja;
+      }
+
+      caja.append(
+        h('p', { clase: 'suave', estilo: { margin: '0 0 8px', 'font-size': '13px' } },
+          'Sin voz de ElevenLabs: sus bloques se graban con Gemini.'),
+        boton(
+          abiertosEL.has(id) ? 'Cerrar las voces de ElevenLabs' : 'Oír las voces de ElevenLabs',
+          () => {
+            if (abiertosEL.has(id)) abiertosEL.delete(id);
+            else abiertosEL.add(id);
+            refrescar(id);
+          },
+          { tono: 'suave' }));
+
+      if (abiertosEL.has(id)) caja.append(pintarCandidatasElevenLabs(id));
+      return caja;
+    }
+
+    /**
+     * Las candidatas de ElevenLabs de un personaje: las de su género primero
+     * y con las mismas reglas que las de Gemini —se elige oyendo la misma
+     * frase difícil, y no se ofrece la que ya es de otro que no puede
+     * compartir timbre—.
+     *
+     * @param {string} id
+     * @returns {HTMLElement}
+     */
+    function pintarCandidatasElevenLabs(id) {
+      const suyo = generoDelPersonaje(serie, id);
+      const dueno = duenosDeLasVocesElevenLabs();
+      const deOtro = (voz) => {
+        const quien = dueno.get(voz.id);
+        if (!quien || quien === id) return null;
+        return puedenCompartir(id, quien) ? null : quien;
+      };
+      const lista = elevenlabs.voces
+        .filter((v) => v && v.id && !deOtro(v))
+        .slice()
+        .sort((a, b) =>
+          ((suyo && b.genero === suyo ? 1 : 0) - (suyo && a.genero === suyo ? 1 : 0)) ||
+          String(a.nombre || a.id).localeCompare(String(b.nombre || b.id)));
+
+      const panel = h('div', { estilo: { 'margin-top': '10px' } },
+        h('p', { clase: 'tenue', estilo: { margin: '0 0 8px', 'font-size': '13px' } },
+          'Cada muestra dice la misma frase difícil, con la misma traducción guardada que ' +
+          'dicen las de Gemini: se pueden comparar entre proveedores. Se genera una cada vez, ' +
+          'por la cola.'));
+
+      if (!lista.length) {
+        panel.appendChild(h('p', { estilo: { margin: '0' } },
+          'No queda ninguna voz de ElevenLabs libre para este personaje: las de la cuenta ya ' +
+          'están fijadas en otros que no pueden compartir timbre.'));
+        return panel;
+      }
+
+      for (const voz of lista) {
+        const oible = muestraElevenLabsOible(id, voz.id);
+        const enLaCola = comoVaLaMuestraElevenLabs(id, voz.id);
+        const nota = h('p', { clase: 'tenue', estilo: { margin: '4px 0 0', 'font-size': '12px' } });
+        panel.appendChild(h('div', {
+          estilo: {
+            padding: '8px 10px',
+            'margin-top': '8px',
+            border: '1px solid var(--borde)',
+            'border-radius': 'var(--radio-chico)',
+          },
+        },
+          h('p', { estilo: { margin: '0' } },
+            h('span', { clase: 'mono' }, voz.nombre || voz.id)),
+          h('p', { clase: 'tenue', estilo: { margin: '2px 0 0', 'font-size': '12px' } },
+            [voz.genero, voz.descripcion].filter(Boolean).join(' · ') || 'Sin descripción en la cuenta.'),
+          oible
+            ? h('div', { estilo: { 'margin-top': '6px' } },
+                reproductor(oible, `Muestra de ${nombreEnPantalla(id)} con ${voz.nombre || voz.id}`, nota),
+                nota)
+            : null,
+          h('div', { estilo: { 'margin-top': '8px', display: 'flex', gap: '8px', 'flex-wrap': 'wrap' } },
+            enLaCola
+              ? boton(enLaCola.estado === 'pendiente' ? 'En la cola…' : 'Generando…', () => {}, {
+                  desactivado: 'Ya se está generando esta muestra de ElevenLabs. Se paga una vez.' })
+              : boton(oible ? 'Volver a oírla' : 'Oír esta voz', () => generarMuestraElevenLabs(id, voz), {
+                  tono: oible ? 'suave' : 'principal' }),
+            boton('Fijar esta voz', () => elegirVozElevenLabs(id, voz.id), {
+              tono: 'principal',
+              desactivado: oible
+                ? false
+                : 'Todavía no la has oído. Fijar una voz por su nombre, sin escucharla, es justo ' +
+                  'lo que esta pantalla existe para evitar: genera antes su muestra.' }))));
+      }
+      return panel;
+    }
+
+    /** Pide la muestra de ElevenLabs de un personaje con una candidata, por la cola. */
+    function generarMuestraElevenLabs(id, voz) {
+      recados.delete(id);
+      pedidasEL.add(`${id}|${voz.id}`);
+      try {
+        encolar('muestra-elevenlabs', { personaje: id, voz_id: voz.id });
+      } catch (fallo) {
+        pedidasEL.delete(`${id}|${voz.id}`);
+        recados.set(id, {
+          tono: 'error',
+          mensaje: fallo && fallo.mensaje ? fallo.mensaje : 'No se ha podido pedir la muestra de ElevenLabs.',
+          detalle: fallo && fallo.detalle ? fallo.detalle : null,
+        });
+      }
+      if (vivo) refrescar(id);
+    }
+
+    /** Cómo va la muestra de ElevenLabs de esta voz: en la cola, haciéndose, o nada. */
+    function comoVaLaMuestraElevenLabs(id, vozId) {
+      const args = { personaje: id, voz_id: vozId };
+      const estado = comoVa('muestra-elevenlabs', args);
+
+      if (estado === 'pendiente' || estado === 'en_curso') {
+        pedidasEL.delete(`${id}|${vozId}`);
+        return { estado, porDelante: cuantosPorDelante('muestra-elevenlabs', args) };
+      }
+      if (pedidasEL.has(`${id}|${vozId}`)) {
+        if (estado === 'hecho' || estado === 'fallido') {
+          pedidasEL.delete(`${id}|${vozId}`);
+          return null;
+        }
+        return { estado: 'pendiente', porDelante: 0 };
+      }
+      return null;
+    }
+
+    /** Fija la voz de ElevenLabs de un personaje. Se pregunta antes, como la de Gemini. */
+    async function elegirVozElevenLabs(id, vozId) {
+      try {
+        const seguro = await confirmar(
+          `¿Fijar ${nombreDeVozElevenLabs(vozId)} como la voz de ElevenLabs de ` +
+          `${nombreEnPantalla(id)}? Sus bloques se grabarán allí cuando todos los que hablan ` +
+          'en el bloque tengan la suya fijada.',
+        );
+        if (!seguro || !vivo) return;
+
+        const otro = duenosDeLasVocesElevenLabs().get(vozId);
+        if (otro && otro !== id && !puedenCompartir(id, otro)) {
+          recados.set(id, {
+            tono: 'error',
+            mensaje:
+              `${nombreDeVozElevenLabs(vozId)} ya es la voz de ElevenLabs de ` +
+              `${nombreEnPantalla(otro)}, y esos dos no pueden compartir timbre: elige otra, o ` +
+              'quítasela en su tarjeta.',
+            detalle: null,
+          });
+          refrescar(id);
+          return;
+        }
+
+        recados.delete(id);
+        abiertosEL.delete(id);
+        await cambiar((estado) => {
+          entradaDeVoz(estado, id).elevenlabs_voz_id = vozId;
+        });
+        if (vivo) refrescar(id);
+      } catch (fallo) {
+        recados.set(id, {
+          tono: 'error',
+          mensaje: fallo && fallo.mensaje ? fallo.mensaje : 'No se ha podido fijar la voz de ElevenLabs.',
+          detalle: fallo && fallo.detalle ? fallo.detalle : null,
+        });
+        if (vivo) refrescar(id);
+      }
+    }
+
+    /** Suelta la voz de ElevenLabs de un personaje: sus bloques vuelven a Gemini. */
+    async function quitarVozElevenLabs(id) {
+      try {
+        const seguro = await confirmar(
+          `¿Quitar la voz de ElevenLabs de ${nombreEnPantalla(id)}? Sus bloques volverán a ` +
+          'grabarse con Gemini. Lo ya grabado con ElevenLabs no se rehace solo.',
+        );
+        if (!seguro || !vivo) return;
+
+        recados.delete(id);
+        await cambiar((estado) => {
+          entradaDeVoz(estado, id).elevenlabs_voz_id = null;
+        });
+        if (vivo) refrescar(id);
+      } catch (fallo) {
+        recados.set(id, {
+          tono: 'error',
+          mensaje: fallo && fallo.mensaje ? fallo.mensaje : 'No se ha podido quitar la voz de ElevenLabs.',
+          detalle: fallo && fallo.detalle ? fallo.detalle : null,
+        });
+        if (vivo) refrescar(id);
+      }
+    }
+
+    // -----------------------------------------------------------------------
     // Estado y repintado
     // -----------------------------------------------------------------------
 
@@ -1080,6 +1360,69 @@ export default {
       return salida;
     }
 
+    /** Las muestras de ElevenLabs guardadas de un personaje: voz → ruta. */
+    function muestrasElevenLabsDe(id) {
+      const dentro = loGuardadoDe(id).muestras_elevenlabs;
+      const salida = new Map();
+      if (dentro && typeof dentro === 'object') {
+        for (const voz of Object.keys(dentro)) {
+          const ruta = dentro[voz];
+          if (typeof ruta === 'string' && ruta) salida.set(voz, ruta);
+        }
+      }
+      const recientes = muestrasRecientesEL.get(id);
+      if (recientes) {
+        for (const [voz, ruta] of recientes) salida.set(voz, ruta);
+      }
+      return salida;
+    }
+
+    /** La voz de ElevenLabs fijada de un personaje, o null. */
+    function vozElevenLabsDe(id) {
+      const dicho = loGuardadoDe(id).elevenlabs_voz_id;
+      return typeof dicho === 'string' && dicho.trim() ? dicho.trim() : null;
+    }
+
+    /** Cómo se llama una voz de ElevenLabs en su lista, o su id si no está. */
+    function nombreDeVozElevenLabs(vozId) {
+      const encontrada = elevenlabs.voces.find((v) => v && v.id === vozId);
+      return encontrada && encontrada.nombre ? encontrada.nombre : vozId;
+    }
+
+    /** La URL con la que se oye una muestra de ElevenLabs, si la hay. */
+    function muestraElevenLabsOible(id, vozId) {
+      const ruta = muestrasElevenLabsDe(id).get(vozId);
+      if (!ruta) return null;
+      return urls.get(ruta) || null;
+    }
+
+    /** De quién es ya cada voz de ElevenLabs: `voz_id → personaje`. */
+    function duenosDeLasVocesElevenLabs() {
+      const voces = elEstado().voces;
+      const salida = new Map();
+      if (!voces || typeof voces !== 'object') return salida;
+      for (const [personaje, dentro] of Object.entries(voces)) {
+        if (!dentro || typeof dentro !== 'object') continue;
+        const vozId = typeof dentro.elevenlabs_voz_id === 'string' ? dentro.elevenlabs_voz_id.trim() : '';
+        if (vozId) salida.set(vozId, personaje);
+      }
+      return salida;
+    }
+
+    /** Cómo están en la cola las muestras de ElevenLabs de este personaje. */
+    function enLaColaELDe(id) {
+      const estado = elEstado();
+      const cola = estado && Array.isArray(estado.cola) ? estado.cola : [];
+      const suyas = [];
+      for (const trabajo of cola) {
+        if (!trabajo || trabajo.tipo !== 'muestra-elevenlabs') continue;
+        const args = trabajo.args || {};
+        if (args.personaje !== id) continue;
+        suyas.push(`${args.voz_id}:${trabajo.estado}`);
+      }
+      return suyas.sort().join(',');
+    }
+
     /**
      * La URL con la que se puede oír una muestra, si la hay. Sin URL no se pinta
      * reproductor: un `<audio>` sin fuente es peor que ninguno.
@@ -1114,6 +1457,11 @@ export default {
       for (const ficha of repartoDeLaSerie()) {
         const id = String(ficha.personaje);
         for (const ruta of muestrasDe(id).values()) {
+          if (urls.has(ruta) || faltan.includes(ruta)) continue;
+          faltan.push(ruta);
+          tocados.add(id);
+        }
+        for (const ruta of muestrasElevenLabsDe(id).values()) {
           if (urls.has(ruta) || faltan.includes(ruta)) continue;
           faltan.push(ruta);
           tocados.add(id);
@@ -1153,8 +1501,17 @@ export default {
         .map(([voz, ruta]) => `${voz}=${urls.has(ruta) ? '1' : '0'}`)
         .sort()
         .join(',');
+      const muestrasEL = [...muestrasElevenLabsDe(id).entries()]
+        .map(([voz, ruta]) => `${voz}=${urls.has(ruta) ? '1' : '0'}`)
+        .sort()
+        .join(',');
       return [
         guardado.voz_id || '',
+        guardado.elevenlabs_voz_id || '',
+        muestrasEL,
+        abiertosEL.has(id) ? 'abiertoEL' : '',
+        enLaColaELDe(id),
+        [...pedidasEL].filter((clave) => clave.startsWith(`${id}|`)).sort().join(','),
         japonesDe(id) || '',
         muestras,
         abiertos.has(id) ? 'abierto' : '',

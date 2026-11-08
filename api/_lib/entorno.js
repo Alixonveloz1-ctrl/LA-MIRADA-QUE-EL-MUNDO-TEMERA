@@ -80,6 +80,10 @@ export const FICHA_DE_VARIABLES = [
     // —y ese caso existe—; lo que hace Salud ahora es MIRAR EL JOB y decir si
     // esa clave hace falta o no, que es lo único que contesta la pregunta.
     para: 'La clave que comparten esta función y el montador. Si el job tiene la suya —y el instalador se la pone SIEMPRE—, esta variable hace falta y tiene que valer lo mismo, o el montador rechaza el encargo. Salud mira el job y lo dice.' },
+  { nombre: 'ELEVENLABS_API_KEY', obligatoria: false,
+    para: 'La clave de ElevenLabs: las voces fijadas allí (más expresivas) y los efectos de sonido de los planos. Sin ella el estudio funciona entero con Gemini como hasta hoy; solo faltan esas dos cosas. La pone el dueño en Vercel y no vive en ningún archivo.' },
+  { nombre: 'ELEVENLABS_TTS_MODEL', obligatoria: false,
+    para: 'Sustituye el modelo de voz de ElevenLabs sin tocar código. Sin ponerla se usa eleven_v3, el más expresivo y con japonés; la alternativa estable es eleven_multilingual_v2.' },
   { nombre: 'CLAVE_ACCESO', obligatoria: false,
     para: 'El pestillo de la puerta. Sin ella la función queda abierta y cualquiera que dé con la URL gasta el dinero del proyecto.' },
   { nombre: 'GCP_PROJECT_NUMBER', obligatoria: false,

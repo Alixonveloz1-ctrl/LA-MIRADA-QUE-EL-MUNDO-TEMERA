@@ -22,12 +22,17 @@
 //     Por la misma razón `intentos`, `cola` y `montajes` solo se comprueban como
 //     listas: lo que haya dentro es de quien lo escribió.
 //
-//  3. LA APROBACIÓN ES UN CERROJO, NO UN AVISO. `exigirAprobada()` es la mitad
-//     de servidor del invariante «ninguna toma genera vídeo con
-//     `keyframe_aprobado` en null» (contrato §5). La otra mitad la pone la
-//     interfaz, que ni siquiera enseña el botón. Dos cerrojos, y este contesta
-//     con una frase que dice qué falta y para qué hacía falta, nunca con un
-//     código.
+//  3. NO HAY APROBACIÓN: LO GENERADO ES LO QUE VALE. Esta es una herramienta
+//     de uso personal y nadie aprueba pasos a mano. El campo `aprobada` (y
+//     `keyframe_aprobado` / `clip_elegido` en las tomas) guarda la versión EN
+//     USO de cada cosa, y la pone la propia generación: lo último que se
+//     genera es lo que se usa, sin pasos intermedios. `rutaAprobada()` —el
+//     nombre es el del contrato §12 y se conserva— devuelve esa versión en
+//     uso: la apuntada en el campo o, si el campo está vacío (material
+//     generado antes de esta regla), el último intento que haya. Y
+//     `exigirAprobada()` ya no exige una aprobación que nadie da: exige que
+//     el material EXISTA, y si no existe contesta con una frase que dice qué
+//     falta y para qué hacía falta, nunca con un código.
 //
 // Y una cuarta, que es de dinero: `operacionesPendientes()` existe para que
 // ninguna operación de Veo quede huérfana. Una operación lanzada y olvidada es
@@ -37,7 +42,6 @@ import {
   serie,
   pieza,
   placa,
-  placasDePersonaje,
   bloquesDeVoz
 } from './datos.js';
 import { ErrorDeCara } from './errores.js';
@@ -600,24 +604,34 @@ function tipoValido(tipo) {
   const limpio = String(tipo == null ? '' : tipo).trim().toLowerCase();
   if (TIPOS.includes(limpio)) return limpio;
   throw new ErrorDeCara(
-    `«${tipo}» no es una cosa que se apruebe. Lo que se aprueba mirándolo es: ` +
+    `«${tipo}» no es una cosa que tenga versión en uso. Las que la tienen son: ` +
       `${TIPOS.join(', ')}.`,
     { reintentable: false, http: 500 }
   );
 }
 
-/** Dónde vive cada tipo dentro del estado y en qué campo guarda su ruta. */
+/**
+ * Dónde vive cada tipo dentro del estado, en qué campo guarda su ruta EN USO
+ * y en qué lista guarda sus intentos. La lista hace falta porque la versión
+ * en uso, cuando el campo está vacío, es el último intento generado.
+ */
 function dondeVive(estado, tipo, id) {
   const clave = String(id == null ? '' : id);
-  if (tipo === 'banco') return { entrada: (estado.banco || {})[clave], campo: 'aprobada' };
-  if (tipo === 'escenario') return { entrada: (estado.escenarios || {})[clave], campo: 'aprobada' };
+  if (tipo === 'banco') return { entrada: (estado.banco || {})[clave], campo: 'aprobada', intentos: 'intentos' };
+  if (tipo === 'escenario') return { entrada: (estado.escenarios || {})[clave], campo: 'aprobada', intentos: 'intentos' };
   const deLaToma = (estado.tomas || {})[clave];
-  if (tipo === 'keyframe') return { entrada: deLaToma, campo: 'keyframe_aprobado' };
-  return { entrada: deLaToma, campo: 'clip_elegido' };
+  if (tipo === 'keyframe') return { entrada: deLaToma, campo: 'keyframe_aprobado', intentos: 'intentos_keyframe' };
+  return { entrada: deLaToma, campo: 'clip_elegido', intentos: 'intentos_clip' };
 }
 
 /**
- * La ruta de lo que hay aprobado, o null si todavía no hay nada.
+ * La ruta de la versión EN USO, o null si todavía no se ha generado nada.
+ *
+ * La versión en uso es el ÚLTIMO intento generado; el campo apuntado
+ * (`aprobada`, `keyframe_aprobado`, `clip_elegido`) solo manda cuando la
+ * lista de intentos no trae la ruta (material de tandas viejas). Lo que
+ * existe es lo que vale, y lo último generado es lo vigente: nadie tiene
+ * que aprobar nada para que esto devuelva la ruta.
  *
  * @param {object} estado
  * @param {'banco'|'escenario'|'keyframe'|'clip'} tipo
@@ -628,10 +642,19 @@ function dondeVive(estado, tipo, id) {
 export function rutaAprobada(estado, tipo, id) {
   if (!esObjeto(estado)) return null;
   const cual = tipoValido(tipo);
-  const { entrada, campo } = dondeVive(estado, cual, id);
+  const { entrada, campo, intentos } = dondeVive(estado, cual, id);
   if (!esObjeto(entrada)) return null;
+  // Manda el ÚLTIMO intento: la generación más nueva es la que está en uso.
+  // El campo apuntado (`aprobada`, `keyframe_aprobado`, `clip_elegido`) es el
+  // respaldo para material cuya ruta no quedó en la lista de intentos.
+  const lista = Array.isArray(entrada[intentos]) ? entrada[intentos] : [];
+  for (let i = lista.length - 1; i >= 0; i--) {
+    const intento = lista[i];
+    if (typeof intento === 'string' && intento.trim()) return intento;
+  }
   const ruta = entrada[campo];
-  return typeof ruta === 'string' && ruta.trim() ? ruta : null;
+  if (typeof ruta === 'string' && ruta.trim()) return ruta;
+  return null;
 }
 
 /**
@@ -648,52 +671,54 @@ function loQueFalta(tipo, id, porQue) {
 
   if (tipo === 'banco') {
     return loNombra(id)
-      ? 'esa placa del banco todavía no está aprobada'
-      : `la placa «${id}» del banco todavía no está aprobada`;
+      ? 'esa placa del banco todavía no se ha generado'
+      : `la placa «${id}» del banco todavía no se ha generado`;
   }
   if (tipo === 'escenario') {
     return loNombra(id)
-      ? 'ese escenario todavía no está aprobado'
-      : `el escenario «${id}» todavía no está aprobado`;
+      ? 'ese escenario todavía no se ha generado'
+      : `el escenario «${id}» todavía no se ha generado`;
   }
   const { pieza: idPieza, toma: idToma } = partirClaveDeToma(id);
   const laNombra = loNombra(idToma);
   if (tipo === 'keyframe') {
     return laNombra
-      ? 'su keyframe todavía no está aprobado'
+      ? 'su keyframe todavía no se ha generado'
       : `el keyframe de la toma ${idToma}${idPieza ? ` de la pieza «${idPieza}»` : ''} ` +
-          'todavía no está aprobado';
+          'todavía no se ha generado';
   }
   return laNombra
-    ? 'todavía no hay ningún clip elegido para ella'
-    : `todavía no hay ningún clip elegido para la toma ${idToma}` +
+    ? 'todavía no hay ningún clip generado para ella'
+    : `todavía no hay ningún clip generado para la toma ${idToma}` +
         `${idPieza ? ` de la pieza «${idPieza}»` : ''}`;
 }
 
 /** Qué hacer para que deje de faltar, que es la mitad útil del mensaje. */
 function comoSeArregla(tipo) {
   if (tipo === 'banco') {
-    return 'Genérala en la pantalla de Banco, mírala y apruébala: sin una placa ' +
-      'aprobada no hay a qué parecerse, y lo que salga será otra persona.';
+    return 'Genérala en la pantalla de Banco: sin una placa generada no hay a qué ' +
+      'parecerse, y lo que salga será otra persona.';
   }
   if (tipo === 'escenario') {
-    return 'Genéralo en la pantalla de Banco, míralo y apruébalo: sin la placa del ' +
-      'escenario aprobada, cada plano del mismo sitio sale de un sitio distinto.';
+    return 'Genéralo en la pantalla de Banco: sin la placa del escenario generada, ' +
+      'cada plano del mismo sitio sale de un sitio distinto.';
   }
   if (tipo === 'keyframe') {
-    return 'Genera su keyframe en la pantalla de Tomas y apruébalo mirándolo. Un ' +
-      'keyframe malo cuesta céntimos y un clip malo cuesta un euro: por eso no hay ' +
-      'vídeo sin keyframe aprobado.';
+    return 'Genera su keyframe en la pantalla de Tomas: el clip se anima desde esa ' +
+      'imagen, así que sin keyframe no hay vídeo que lanzar.';
   }
-  return 'Genera el clip en la pantalla de Tomas y elige el intento que valga ' +
-    'reproduciéndolo. Nada entra en el montaje sin haberse visto antes.';
+  return 'Genera el clip en la pantalla de Tomas: el último que se genere es el ' +
+    'que entra en el montaje.';
 }
 
 /**
- * Devuelve la ruta aprobada o se planta con una frase que dice qué falta y para
- * qué hacía falta. Es el cerrojo de servidor de los invariantes del plan §13:
- * ninguna toma genera vídeo sin keyframe aprobado, y ninguna placa que no sea
- * ancla se genera sin el ancla de su personaje aprobada.
+ * Devuelve la ruta de la versión en uso o se planta con una frase que dice
+ * qué falta y para qué hacía falta. Ya no es un cerrojo de aprobación —nadie
+ * aprueba nada—: es un control de EXISTENCIA. Ninguna toma genera vídeo sin
+ * keyframe porque el clip se anima desde esa imagen, y ninguna placa que no
+ * sea ancla se genera sin el ancla de su personaje porque no habría a qué
+ * parecerse. Si el material existe, esta función devuelve su ruta y el
+ * trabajo sigue, esté el campo de «aprobada» apuntado o no.
  *
  * @param {object} estado
  * @param {'banco'|'escenario'|'keyframe'|'clip'} tipo
@@ -730,94 +755,28 @@ export function exigirAprobada(estado, tipo, id, porQue) {
 }
 
 // ---------------------------------------------------------------------------
-// Reprobar en cadena
+// Reprobar en cadena: ya no se reprueba nada
 // ---------------------------------------------------------------------------
 
 /**
- * Las placas que dependen directamente de una: las de su personaje cuando la
- * placa es el ancla, y las de cualquier personaje que encadene a ella.
+ * Al cambiar un ancla, ANTES esto dejaba por reprobar todo lo que se generó
+ * pareciéndose a ella, y esas placas quedaban bloqueadas hasta que alguien
+ * las mirara y aprobara otra vez. Esa regla ya no existe: sin aprobación, lo
+ * generado sigue en uso hasta que se regenere, y regenerar el ancla no
+ * desvaloriza el trabajo que cuelga de ella. La función se conserva porque
+ * el contrato §12 la nombra y porque la pantalla puede seguir preguntando
+ * qué placas dependen de un ancla —pero ya no toca el estado ni deja nada
+ * fuera de uso: devuelve siempre una lista vacía.
  *
- * Las dos cadenas del banco (plan §6 y contrato §13.1) salen de aquí:
- *   · saharis-ancla → todas las placas de saharis.
- *   · saharis-ancla → saharis-5-ancla (encadena_a), y de ahí a todas las placas
- *     de saharis-5, incluidas las de detalle: manos, nuca, escorzo.
- * Por eso la cadena se sigue en profundidad y no un nivel: cambiar el ancla del
- * adulto mueve las siete edades y todos sus detalles.
- *
- * @param {string} idPlaca
- * @returns {string[]} ids de placa, sin repetir.
- */
-function dependientesDe(idPlaca) {
-  const todas = (serie.banco && serie.banco.placas) || [];
-  const esta = todas.find((p) => p && p.id === idPlaca);
-  const hijas = [];
-
-  // Las demás placas de su personaje solo cuelgan del ancla: son ellas las que
-  // se generan con el ancla adjunta como referencia de personaje.
-  if (esta && esta.ancla === true) {
-    for (const suya of placasDePersonaje(esta.personaje)) {
-      if (suya.id !== idPlaca) hijas.push(suya.id);
-    }
-  }
-
-  // Y cualquier placa que la nombre en `encadena_a`, sea del personaje que sea:
-  // así es como las edades de Saharis cuelgan del ancla del adulto.
-  for (const otra of todas) {
-    if (otra && otra.encadena_a === idPlaca && otra.id !== idPlaca) hijas.push(otra.id);
-  }
-
-  return [...new Set(hijas)];
-}
-
-/**
- * Al cambiar un ancla, deja por reprobar todo lo que se generó pareciéndose a
- * ella: las demás placas de su personaje y las de los personajes que encadenan a
- * ella, en profundidad. El ancla en sí no se toca —es la que acaba de cambiar y
- * la aprueba quien la mire—.
- *
- * @param {object} estado se modifica en el sitio.
+ * @param {object} estado no se modifica.
  * @param {string} idPlacaAncla la placa que ha cambiado.
- * @returns {string[]} los ids que de verdad se han quedado sin aprobación, para
- *   poder decirlo en pantalla con nombres. Los que ya estaban sin aprobar no
- *   salen en la lista: nombrarlos sería asustar por nada.
+ * @returns {string[]} siempre vacío: ya no hay nada que reprobar.
  */
 export function reprobarCadena(estado, idPlacaAncla) {
   // Si la placa no existe, `placa()` se planta con su frase en español. Mejor
-  // eso que reprobar en silencio un id mal escrito, que no reprobaría nada.
-  const laPlaca = placa(idPlacaAncla);
-  if (!esObjeto(estado)) return [];
-
-  const banco = mapaDe(estado, 'banco');
-  const reprobadas = [];
-  const vistas = new Set([laPlaca.id]);
-  const porVisitar = dependientesDe(laPlaca.id).filter((id) => !vistas.has(id));
-  for (const id of porVisitar) vistas.add(id);
-
-  // Anchura primero, con `vistas` para que un ciclo mal escrito en los datos no
-  // deje esto dando vueltas para siempre.
-  while (porVisitar.length) {
-    const id = porVisitar.shift();
-
-    const entrada = esObjeto(banco[id]) ? banco[id] : null;
-    if (entrada) {
-      const tenia = typeof entrada.aprobada === 'string' && entrada.aprobada.trim();
-      entrada.aprobada = null;
-      if (tenia) reprobadas.push(id);
-    } else {
-      // No estaba en el estado (una placa nueva que aún no se ha asegurado):
-      // se deja creada y sin aprobar, que es lo que corresponde.
-      asegurarAprobable(banco, id);
-    }
-
-    for (const hija of dependientesDe(id)) {
-      if (!vistas.has(hija)) {
-        vistas.add(hija);
-        porVisitar.push(hija);
-      }
-    }
-  }
-
-  return reprobadas;
+  // eso que contestar en silencio sobre un id mal escrito.
+  placa(idPlacaAncla);
+  return [];
 }
 
 // ---------------------------------------------------------------------------
@@ -841,7 +800,7 @@ export function reprobarCadena(estado, idPlacaAncla) {
  * @param {object} estado
  * @param {string} idPieza
  * @returns {{tomas:number, conKeyframe:number, conClip:number, listas:number}}
- *   `listas` son las que ya tienen keyframe aprobado y clip elegido: las que no
+ *   `listas` son las que ya tienen keyframe y clip en uso: las que no
  *   necesitan nada más para entrar en el montaje.
  */
 export function resumenDePieza(estado, idPieza) {
@@ -857,8 +816,8 @@ export function resumenDePieza(estado, idPieza) {
     if (!unaToma || !unaToma.id) continue;
     const entrada = enEstado[claveDeToma(idPieza, unaToma.id)];
     if (!esObjeto(entrada)) continue;
-    const keyframe = typeof entrada.keyframe_aprobado === 'string' && entrada.keyframe_aprobado.trim();
-    const clip = typeof entrada.clip_elegido === 'string' && entrada.clip_elegido.trim();
+    const keyframe = rutaAprobada(estado, 'keyframe', claveDeToma(idPieza, unaToma.id));
+    const clip = rutaAprobada(estado, 'clip', claveDeToma(idPieza, unaToma.id));
     if (keyframe) conKeyframe += 1;
     if (clip) conClip += 1;
     if (keyframe && clip) listas += 1;

@@ -7,7 +7,7 @@ import { readFileSync } from 'node:fs';
 import { createHash, randomUUID } from 'node:crypto';
 import { serie, guiones, toma as tomaDeLaPieza, escenaDeGuion, escenasDeEpisodio, personajesDeEscena } from '../api/_lib/datos.js';
 import { ErrorDeCara } from '../api/_lib/errores.js';
-import { exigirAprobada } from '../api/_lib/estado.js';
+import { exigirAprobada, rutaAprobada } from '../api/_lib/estado.js';
 import { marcoDeEscena, prepararGuiones } from '../datos/continuidad.js';
 import { segmentosDeEscena } from '../datos/segmentos.js';
 import { promptKeyframe, promptVideo, comprobarCupos } from '../api/_lib/prompt.js';
@@ -156,9 +156,12 @@ prueba('Se adjunta la imagen aprobada anterior compatible junto al banco y escen
   assert.equal(comprobarCupos(encargo.referencias,serie.modelos.imagen.calidad.id).total,3);
   estado.tomas['ep01/4-1'].revision_pendiente=true;
   assert.equal(referenciaDeSecuencia(pieza,c,estado),null);
-  assert.match(estadoDeReferencia(pieza,c,estado).motivo,/aprueba la imagen 4-1/);
+  assert.match(estadoDeReferencia(pieza,c,estado).motivo,/imagen 4-1/);
+  estado.tomas['ep01/4-1'].revision_pendiente=false;
   estado.tomas['ep01/3-1'].revision_aprobada='vieja';
-  assert.equal(referenciaDeSecuencia(pieza,c,estado),null);
+  // Sin aprobación, una marca vieja de revisión ya no frena nada: la imagen
+  // que existe es la referencia, sin que nadie la apruebe.
+  assert.deepEqual(referenciaDeSecuencia(pieza,c,estado),{id:'4-1',ruta:'4.png'});
 });
 prueba('Una referencia no cruza flashbacks ni toma una imagen futura',()=>{
   const a=plano(1,'14'),b=plano(1,'15'),c=plano(1,'16');
@@ -263,8 +266,14 @@ prueba('Separar un plano mixto mantiene la duración, audio, siguiente escena e 
   assert.equal(e.tomas['ep10/16b-1'].revision_pendiente,true);
   assert.equal(e.tomas['ep10/16b-2'].keyframe_aprobado,undefined);
 });
-prueba('Un clip de otro keyframe no se considera vigente',()=>{
-  assert.equal(materialVigente({keyframe_aprobado:'new.png',clip_elegido:'old.mp4',origenes_clip:{'old.mp4':{keyframe:'old.png'}}},'clip'),false);
+prueba('Un clip generado es el vigente aunque saliera de otro keyframe',()=>{
+  // Sin aprobación ni elección: el último clip generado es el que se usa,
+  // aunque su keyframe de origen ya no sea el actual. Solo lo tumba la marca
+  // de revisión, que se limpia regenerando.
+  assert.equal(materialVigente({keyframe_aprobado:'new.png',clip_elegido:'old.mp4',intentos_clip:['old.mp4'],origenes_clip:{'old.mp4':{keyframe:'old.png'}}},'clip'),true);
+  assert.equal(materialVigente({clip_elegido:'old.mp4',intentos_clip:['old.mp4'],clip_revision_pendiente:true},'clip'),false);
+  assert.equal(materialVigente({intentos_clip:[]},'clip'),false);
+  assert.equal(materialVigente({intentos_keyframe:['nueva.png']},'keyframe'),true);
 });
 // Ejecutar la pantalla con material antiguo: el botón debe encolar la reparación,
 // y los botones de generación no deben saltarse las comprobaciones del servidor.
@@ -283,7 +292,7 @@ uiFuente=uiFuente.replace(/^import\s*\{([^}]+)\}\s*from\s*['"][^'"]+['"];\s*$/gm
   `const { ${nombres.split(',').map(n=>n.trim().replace(/\s+as\s+/,': ')).join(',')} } = __stubs;`)
   .replace(/import\.meta\.url/g,JSON.stringify(new URL('../app/pantallas/tomas.js',import.meta.url).href))
   .replace(/^export default /gm,'const pantallaExportada = ').replace(/^export /gm,'');
-const ui=new Function('__stubs',`${uiFuente}\nreturn {construirModelo,seccionCabecera,accionesDeTanda:accionesDeTandaLibre,accionesDeTandaReal:accionesDeTanda,rutaQueSeMira,porQueNoSePuedeKeyframe,porQueNoHayBotonDeVideo,leerToma,aprobarKeyframe};`)(stubs);
+const ui=new Function('__stubs',`${uiFuente}\nreturn {construirModelo,seccionCabecera,accionesDeTanda:accionesDeTandaLibre,accionesDeTandaReal:accionesDeTanda,rutaQueSeMira,porQueNoSePuedeKeyframe,porQueNoHayBotonDeVideo,leerToma};`)(stubs);
 const modeloUi=ui.construirModelo(serie,estadoUi);
 const ctx={modelo:modeloUi,pieza:modeloUi.porId.get('ep01'),estado:estadoUi,repintar:()=>{},trabajos:new Map()};
 const arbol=ui.seccionCabecera(ctx);
@@ -296,10 +305,12 @@ prueba('El botón de Tomas encola la escena correcta sin generar imágenes',()=>
   assert.match(ui.porQueNoSePuedeKeyframe(ctx.pieza.tomas[0],ctx),/Corregir continuidad/);
 });
 const e=estadoUi.tomas['ep01/4-1'];e.revision_pendiente=true;
-await ui.aprobarKeyframe('ep01/4-1','old.png','4-1',ui.leerToma(estadoUi,'ep01/4-1'),ctx);
-prueba('Una imagen existente puede conservarse tras volver a aprobarla',()=>{
-  assert.equal(e.revision_pendiente,false);assert.equal(e.keyframe_aprobado,'old.png');
-  assert.deepEqual(e.intentos_keyframe,['old.png']);
+prueba('Una imagen existente sigue en uso aunque quede marcada por revisión',()=>{
+  // Ya no hay botón de aprobar que la «conserve»: la imagen es la que manda
+  // tal como está guardada, y la marca solo avisa de que la dirección cambió.
+  const leida=ui.leerToma(estadoUi,'ep01/4-1');
+  assert.equal(leida.keyframe,'old.png');assert.equal(leida.revisionPendiente,true);
+  assert.deepEqual(leida.intentosKeyframe,['old.png']);
 });
 estadoUi.piezas.ep01.tomas=[{...plano(1,'4'),revision_direccion:'r4'}];
 estadoUi.escenarios={[plano(1,'4').escenario]:{aprobada:'escenario.png'}};
@@ -326,7 +337,7 @@ prueba('La tanda de vídeo exige imagen revisada y conserva los intentos anterio
   e.origenes_clip={};e.revision_pendiente=true;
   assert.ok(!ui.accionesDeTanda(ctxNuevo).flatMap(botones).some(b=>b.texto.includes('vídeos con imágenes revisadas')));
 });
-prueba('Los intentos todavía no aprobados también se señalan para revisión',()=>{
+prueba('Los intentos generados también se señalan para revisión si cambia el plano',()=>{
   const entrada={intentos_keyframe:['intento.png'],intentos_clip:['intento.mp4']};
   const antes=plano(1,'4'),despues={...antes,imagen:'The guests stay seated.'};
   marcarCambio(entrada,antes,despues);
@@ -337,23 +348,26 @@ prueba('Los intentos todavía no aprobados también se señalan para revisión',
 // los cerrojos del servidor y el orden de escritura, no solo los de la pantalla.
 let servidor=inicial();
 const escrituras=[],eventos=[];
-const prestado={Buffer,createHash,randomUUID,ErrorDeCara,serie,tomaDeLaPieza,exigirAprobada,escenariosParaPlanificar,
+const prestado={Buffer,createHash,randomUUID,ErrorDeCara,serie,tomaDeLaPieza,exigirAprobada,rutaAprobada,escenariosParaPlanificar,
   materialVigente,necesitaDireccion,referenciaDeSecuencia,pasoDeEscena,aplicarCorreccion,promptVideo,
   leerElEstado:async()=>({estado:structuredClone(servidor),generacion:'1'}),
   escribirElEstado:async estado=>{servidor=structuredClone(estado);eventos.push('estado');return {generacion:'2'};},
   escribirEnElBucket:async(ruta,contenido)=>{escrituras.push({ruta,contenido:JSON.parse(contenido)});eventos.push(ruta.endsWith('/anterior.json')?'respaldo':'propuesta');return {ruta};},
   corregirPlanosDeEscena:async()=>{eventos.push('texto-simulado');return {planos:[plano(1,'4')]};},
-  lanzarVeo:globalThis.fetch,lanzarMontaje:globalThis.fetch
+  lanzarVeo:async()=>{throw new Error('red-simulada');},lanzarMontaje:async()=>{throw new Error('red-simulada');}
 };
 let fuenteModos=readFileSync(new URL('../api/_lib/modos.js',import.meta.url),'utf8')
   .replace(/^import\s*\{([^}]+)\}\s*from\s*['"][^'"]+['"];\s*$/gm,(_,nombres)=>
     `const { ${nombres.split(',').map(n=>n.trim().split(/\s+as\s+/).at(-1)).join(',')} } = __stubs;`)
   .replace(/^export /gm,'');
 const modos=new Function('__stubs',`${fuenteModos}\nreturn MODOS;`)(prestado);
-await assert.rejects(()=>modos['veo-lanzar']({pieza:'ep01',toma:'4-1',imagen_ruta:'otra.png',imagen_b64:'fake'}),/keyframe aprobado cambió/);
+await assert.rejects(()=>modos['veo-lanzar']({pieza:'ep01',toma:'4-1',imagen_ruta:'otra.png',imagen_b64:'fake'}),/El keyframe cambió/);
 servidor.tomas['ep01/4-1'].revision_pendiente=true;
-await assert.rejects(()=>modos['veo-lanzar']({pieza:'ep01',toma:'4-1',imagen_ruta:'old.png',imagen_b64:'fake'}),/Revisa y aprueba/);
-prueba('El servidor frena vídeo con origen distinto o aprobación pendiente antes de gastar',()=>assert.equal(escrituras.length,0));
+// Con la marca de revisión puesta, el servidor ya no frena el vídeo por
+// aprobación: lo único que lo frena aquí es que a esta toma de la prueba le
+// falta la continuidad (un bloqueo de contenido, no de aprobación).
+await assert.rejects(()=>modos['veo-lanzar']({pieza:'ep01',toma:'4-1',imagen_ruta:'old.png',imagen_b64:'fake'}),/actualizar su continuidad/);
+prueba('El servidor frena vídeo solo si la imagen en uso cambió antes de gastar',()=>assert.equal(escrituras.length,0));
 servidor=inicial();
 const reparada=await modos['corregir-continuidad']({pieza:'ep01',escena:'4'});
 prueba('El modo guarda respaldo y propuesta antes de aplicar la corrección',()=>{
@@ -364,15 +378,17 @@ prueba('El modo guarda respaldo y propuesta antes de aplicar la corrección',()=
   assert.equal(servidor.tomas['ep01/4-1'].revision_pendiente,true);
   assert.equal(servidor.piezas.ep01.tomas[0].revision_direccion,servidor.piezas.ep01.correcciones_continuidad['4'].revision);
 });
-await assert.rejects(()=>modos.montar({manifiesto:{video:[{clave:'ep01/4-1',origen:'old.mp4'}]}}),/pendiente de revisar/);
-await assert.rejects(()=>modos.montar({manifiesto:{video:[{clave:'ep01/4-1',origen:'otra.mp4'}]}}),/selección de vídeo cambió/);
-await assert.rejects(()=>modos.montar({manifiesto:{capas_previas:['montado.mp4']}}),/Una escena ya montada quedó pendiente/);
-prueba('El servidor rechaza montajes de clips cambiados o capas pendientes',()=>assert.equal(escrituras.length,2));
+// Ni la marca de revisión de la toma ni la de una capa previa frenan ya un
+// montaje: llegan hasta el lanzamiento y lo que falla es la red simulada.
+await assert.rejects(()=>modos.montar({manifiesto:{video:[{clave:'ep01/4-1',origen:'old.mp4'}]}}),/red-simulada/);
+await assert.rejects(()=>modos.montar({manifiesto:{video:[{clave:'ep01/4-1',origen:'otra.mp4'}]}}),/El vídeo en uso cambió/);
+await assert.rejects(()=>modos.montar({manifiesto:{capas_previas:['montado.mp4']}}),/red-simulada/);
+prueba('El servidor solo rechaza el montaje si el clip en uso cambió',()=>assert.equal(escrituras.length,2));
 prueba('El episodio no ofrece generación masiva',()=>{
   const acciones=ui.accionesDeTandaReal(ctx).flatMap(botones);
   assert.ok(!acciones.some(b=>/Generar|Regenerar/.test(b.texto)));
 });
-prueba('La siguiente toma espera aprobación y usa exactamente su predecesora',()=>{
+prueba('La siguiente toma espera a su predecesora y usa exactamente su imagen',()=>{
   const a=plano(1,'3'),b={...a,id:'3-2'},pieza={id:'ep01',tomas:[a,b]},estado={tomas:{}};
   assert.match(pasoDeEscena(pieza,b,estado).bloqueo,/3-1/);
   assert.equal(referenciaDeSecuencia(pieza,b,estado),null);
@@ -394,12 +410,12 @@ prueba('Un cambio de lugar inicia otra referencia y no bloquea por la imagen ant
   assert.equal(pasoDeEscena(p,b,e).anterior,null);
   assert.equal(referenciaDeSecuencia(p,b,e),null);
 });
-prueba('Mientras se rehace una imagen, no se usa su aprobación antigua',()=>{
+prueba('Mientras se rehace una imagen, no se usa la anterior como referencia',()=>{
   const a=plano(1,'3'),b={...a,id:'3-2'},p={id:'ep01',tomas:[a,b]};
   const e={tomas:{'ep01/3-1':{keyframe_aprobado:'vieja.png'}},cola:[{tipo:'keyframe',args:{pieza:'ep01',id:a.id},estado:'en_curso'}]};
   assert.ok(pasoDeEscena(p,b,e).bloqueo);
 });
-prueba('Una nueva imagen pendiente se muestra antes que la aprobación antigua',()=>{
+prueba('Una imagen nueva se muestra antes que la anterior',()=>{
   assert.equal(ui.rutaQueSeMira({keyframe:'vieja.png',intentosKeyframe:['vieja.png','nueva.png'],revisionPendiente:true},'prueba'),'nueva.png');
 });
 prueba('Omitir una referencia inadecuada conserva la revisión obligatoria',()=>{
@@ -509,11 +525,12 @@ prueba('La cena de Ilmen atraviesa la alternancia; la madre conserva su propia c
   assert.equal(referenciaDeSecuencia(p,final,e).id,mixtas[3].id);
   assert.notEqual(guiaDePlano(10,'16b','madre-1').secuencia,guiaDePlano(10,'16b','nina-1').secuencia);
 });
-prueba('Una última imagen nueva o en marcha impide usar la aprobación antigua entre escenas',()=>{
+prueba('La imagen que manda entre escenas es la última generada, no una antigua',()=>{
   const a=plano(2,'23'),b=plano(2,'24'),p={id:'ep02',tomas:[a,b]};
   const e={tomas:{'ep02/23-1':{keyframe_aprobado:'vieja.png',intentos_keyframe:['vieja.png','nueva.png']}}};
-  assert.equal(referenciaDeSecuencia(p,b,e),null);
-  e.tomas['ep02/23-1'].keyframe_aprobado='nueva.png';
+  // Sin aprobar nada: el intento nuevo ya es la imagen en uso, aunque el
+  // campo apuntado siga diciendo la vieja.
+  assert.equal(referenciaDeSecuencia(p,b,e).ruta,'nueva.png');
   e.cola=[{tipo:'keyframe',args:{pieza:p.id,id:a.id},estado:'pendiente'}];
   assert.equal(referenciaDeSecuencia(p,b,e),null);
   e.cola=[];

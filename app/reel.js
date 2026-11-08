@@ -1,8 +1,8 @@
 // EL REEL: treinta segundos en vertical, armados solos.
 //
 // Un reel no genera nada. No llama a ningún modelo, no cuesta un céntimo de
-// Vertex y no espera a nada: coge los clips que YA están aprobados y la música
-// que YA está aprobada, y los pone uno detrás de otro. Lo único que gasta es un
+// Vertex y no espera a nada: coge los clips en uso y la música en uso, y los
+// pone uno detrás de otro. Lo único que gasta es un
 // rato de máquina en el montador, igual que cualquier otro montaje.
 //
 // POR QUÉ ES UN MÓDULO APARTE Y NO UN TROZO DE LA PANTALLA. Porque el corte se
@@ -125,7 +125,7 @@ export function ajustesDelReel(serie) {
  * Qué planos entran en el reel y con qué recorte, en el orden del guion.
  *
  * Devuelve la lista lista para el manifiesto: cada entrada ya trae su `origen`
- * —el clip aprobado que existe en el bucket—, su recorte y el segundo en el que
+ * —el clip en uso que existe en el bucket—, su recorte y el segundo en el que
  * entra, que aquí siempre es «justo detrás del anterior»: un reel no tiene línea
  * de tiempo propia, se va pegando.
  *
@@ -278,7 +278,7 @@ function recorteDeLaToma(laToma) {
 
 /**
  * La pista de música del reel: la primera pieza de música de esa pieza que esté
- * generada Y aprobada, desde su segundo cero y recortada a lo que dure el reel.
+ * generada, desde su segundo cero y recortada a lo que dure el reel.
  *
  * Devuelve null si no hay ninguna. Un reel sin música se puede montar —sale
  * mudo— y esta función no decide si eso vale: lo decide la pantalla.
@@ -297,7 +297,7 @@ export function musicaDelReel(serie, estado, idPieza, duracionS) {
   for (const una of lista) {
     if (!esObjeto(una) || soloTexto(una.pieza) !== idPieza) continue;
     const guardado = musicaGuardada(estado, soloTexto(una.id));
-    if (!guardado.ruta || !guardado.aprobada) continue;
+    if (!guardado.ruta) continue;
 
     const largo = guardado.durS > 0 ? Math.min(guardado.durS, duracionS) : duracionS;
     return {
@@ -340,9 +340,8 @@ export function manifiestoDelReel(serie, estado, idPieza, version) {
   if (!corte.planos.length) {
     faltas.push(
       corte.sinClip > 0
-        ? `Ningún plano de esta pieza tiene clip elegido todavía (hay ${corte.sinClip} sin él). Un ` +
-          'clip se elige reproduciéndolo, en la pantalla de Tomas, y el reel se arma con los que ' +
-          'ya estén elegidos: no genera vídeo nuevo.'
+        ? `Ningún plano de esta pieza tiene clip todavía (hay ${corte.sinClip} sin él). El reel ` +
+          'se arma con los clips que ya existan, en la pantalla de Tomas: no genera vídeo nuevo.'
         : 'Esta pieza no tiene ni un plano que sirva para un reel.'
     );
   }
@@ -350,8 +349,8 @@ export function manifiestoDelReel(serie, estado, idPieza, version) {
   const musica = musicaDelReel(serie, estado, idPieza, corte.duracionS);
   if (!musica) {
     faltas.push(
-      'No hay música aprobada de esta pieza, y un reel mudo no se sube a ninguna parte. Se genera ' +
-        'y se escucha en la pantalla de Audio.'
+      'No hay música generada de esta pieza, y un reel mudo no se sube a ninguna parte. Se ' +
+        'genera en la pantalla de Audio.'
     );
   }
 
@@ -364,13 +363,13 @@ export function manifiestoDelReel(serie, estado, idPieza, version) {
   if (corte.duracionS + MARGEN_S < ajustes.duracionS && corte.planos.length) {
     notas.push(
       `El reel va a durar ${redondear(corte.duracionS)} s en vez de ${ajustes.duracionS}: no hay ` +
-        'más clips elegidos con los que llenarlo. En cuanto haya más, se rehace.'
+        'más clips con los que llenarlo. En cuanto haya más, se rehace.'
     );
   }
   if (corte.sinClip && corte.planos.length) {
     notas.push(
       `${corte.sinClip} plano${corte.sinClip === 1 ? '' : 's'} de esta pieza todavía no ` +
-        `${corte.sinClip === 1 ? 'tiene' : 'tienen'} clip elegido y no ` +
+        `${corte.sinClip === 1 ? 'tiene' : 'tienen'} clip y no ` +
         `${corte.sinClip === 1 ? 'entra' : 'entran'} en el reel.`
     );
   }
@@ -424,11 +423,13 @@ function acabadoDeLaPieza(serie, idPieza) {
 // Lo que se lee del estado
 // ---------------------------------------------------------------------------
 
-/** El clip elegido de un plano, si lo hay. */
+/** El clip en uso de un plano, si lo hay: el apuntado o el último generado. */
 function clipAprobado(estado, clave) {
   const tomas = esObjeto(estado && estado.tomas) ? estado.tomas : {};
   const entrada = esObjeto(tomas[clave]) ? tomas[clave] : {};
-  return soloTexto(entrada.clip_elegido) || null;
+  if (soloTexto(entrada.clip_elegido)) return soloTexto(entrada.clip_elegido);
+  const intentos = Array.isArray(entrada.intentos_clip) ? entrada.intentos_clip : [];
+  return soloTexto(intentos[intentos.length - 1]) || null;
 }
 
 /** Lo guardado de una pieza de música. */

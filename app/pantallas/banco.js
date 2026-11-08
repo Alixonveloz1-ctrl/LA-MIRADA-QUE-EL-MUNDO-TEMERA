@@ -1,14 +1,16 @@
 // El Banco: los personajes y los escenarios de toda la serie.
 //
-// Aquí se genera, se mira, se aprueba y se vuelve a pedir. Es la pantalla donde
-// se decide qué cara tiene cada personaje para siempre, así que está construida
-// alrededor de tres cosas que el plan (§6) y el contrato (§2, §5, §13.1) dan por
+// Aquí se genera, se mira y se vuelve a pedir. Nadie aprueba nada: la última
+// imagen generada de cada placa ES la que se usa como referencia, y si se
+// genera otra, la nueva la sustituye en el acto. Es la pantalla donde se
+// decide qué cara tiene cada personaje para siempre, así que está construida
+// alrededor de dos cosas que el plan (§6) y el contrato (§2, §5, §13.1) dan por
 // ley y esta pantalla tiene que hacer VISIBLES, no solo cumplir:
 //
 //   1. EL ANCLA VA PRIMERO Y SE VE QUE ES EL ANCLA. Un ancla se genera solo con
 //      texto, sin referencias. Todas las demás placas de ese personaje se
 //      generan con esa imagen delante. Por eso, mientras el ancla no esté
-//      aprobada, las demás placas NO TIENEN BOTÓN DE GENERAR: no está apagado,
+//      GENERADA, las demás placas NO TIENEN BOTÓN DE GENERAR: no está apagado,
 //      es que no existe, y en su sitio hay una frase que dice qué falta. Un
 //      botón que se puede pulsar y siempre falla enseña a desconfiar de la
 //      pantalla; una frase enseña qué hacer.
@@ -21,16 +23,12 @@
 //      izquierda y una flecha a cada edad. La flecha sale del ancla y va a la
 //      edad, nunca de una edad a la siguiente, porque no es así como está hecha.
 //
-//   3. CAMBIAR UN ANCLA APROBADA CUESTA. Deja por reprobar todas las placas que
-//      se generaron pareciéndose a ella, en profundidad: las de su personaje y
-//      las de las edades que le encadenan. Así que se pregunta antes, con la
-//      cuenta y con los nombres delante, y solo entonces se hace.
-//
 // POR QUÉ LOS ESCENARIOS ENSEÑAN EN CUÁNTAS ESCENAS SALEN. Un escenario no tiene
 // cadena: es una placa única, y esa placa viaja como referencia en TODOS los
 // planos que ocurren ahí. Que «tuneles» salga en 46 escenas y «puerto» en una
-// dice, sin más explicación, cuál de las dos hay que mirar con lupa antes de
-// aprobar. El dato está en `escenarios.placas[].escenas` y se pinta tal cual.
+// dice, sin más explicación, cuál de las dos hay que mirar con lupa, porque
+// cambiarla cambia todos esos planos. El dato está en
+// `escenarios.placas[].escenas` y se pinta tal cual.
 //
 // POR QUÉ LOS DOS BOTONES GRANDES ENCOLAN Y NO LANZAN. Son 73 placas y 28
 // escenarios. Lanzarlos de golpe satura las cuotas de Vertex, y cuando eso pasa
@@ -45,14 +43,13 @@
 // tarjetas, y solo se construyen cuando se abre.
 
 import { llamar, ErrorDeCara } from '../api.js';
-import { actual, alCambiar, cambiar } from '../estado.js';
+import { actual, alCambiar } from '../estado.js';
 import { crearActualizador } from '../ui.js';
 import { encolar, encolarVarios } from '../cola.js';
 import {
   aviso,
   barra,
   boton,
-  confirmar,
   espera,
   filtro,
   h,
@@ -85,8 +82,7 @@ const FILTROS = {
   todo: 'Todo',
   anclas: 'Anclas',
   'sin-generar': 'Sin generar',
-  'por-aprobar': 'Por aprobar',
-  aprobadas: 'Aprobadas'
+  'en-uso': 'En uso'
 };
 
 // ---------------------------------------------------------------------------
@@ -412,72 +408,8 @@ function conMayuscula(texto) {
   return t ? t[0].toUpperCase() + t.slice(1) : '';
 }
 
-// ---------------------------------------------------------------------------
-// Las dos cadenas del banco
-// ---------------------------------------------------------------------------
-
 /**
- * Las placas que dependen DIRECTAMENTE de una.
- *
- * Es la misma regla que aplica la función en `api/_lib/estado.js`, y tiene que
- * serlo: si aquí se contaran menos placas de las que la función va a reprobar, la
- * confirmación mentiría sobre lo que va a pasar.
- *
- *   · Si la placa es el ancla de su personaje → todas las demás placas suyas,
- *     porque son las que se generan con ella delante.
- *   · Cualquier placa que la nombre en `encadena_a`, sea del personaje que sea:
- *     así es como las edades de Saharis cuelgan del ancla del adulto.
- *
- * @param {object} modelo
- * @param {string} idPlaca
- * @returns {string[]} ids, sin repetir
- */
-function dependientesDirectas(modelo, idPlaca) {
-  const esta = modelo.porId.get(idPlaca);
-  const hijas = [];
-
-  if (esta && esta.ancla === true) {
-    const grupo = modelo.porPersonaje.get(String(esta.personaje ?? ''));
-    for (const suya of (grupo && grupo.placas) || []) {
-      if (suya.id !== idPlaca) hijas.push(suya.id);
-    }
-  }
-
-  for (const edad of modelo.encadenadasA.get(idPlaca) || []) {
-    if (edad.id !== idPlaca) hijas.push(edad.id);
-  }
-
-  return [...new Set(hijas)];
-}
-
-/**
- * Todas las placas que cuelgan de una, en profundidad. Cambiar el ancla del
- * adulto mueve las cinco edades y todos sus detalles, no solo el primer nivel.
- * @param {object} modelo
- * @param {string} idPlaca
- * @returns {string[]}
- */
-function cadenaDe(modelo, idPlaca) {
-  const vistas = new Set([idPlaca]);
-  const cola = dependientesDirectas(modelo, idPlaca).filter((id) => !vistas.has(id));
-  for (const id of cola) vistas.add(id);
-
-  const todas = [];
-  while (cola.length) {
-    const id = cola.shift();
-    todas.push(id);
-    for (const hija of dependientesDirectas(modelo, id)) {
-      if (!vistas.has(hija)) {
-        vistas.add(hija);
-        cola.push(hija);
-      }
-    }
-  }
-  return todas;
-}
-
-/**
- * Qué placas tienen que estar APROBADAS para poder generar esta, y por qué.
+ * Qué placas tienen que estar GENERADAS para poder generar esta, y por qué.
  *
  * Es exactamente lo que `promptPlaca()` va a adjuntar y lo que la función va a
  * exigir con `exigirAprobada()`. Aquí no se decide nada nuevo: se dice antes.
@@ -550,12 +482,12 @@ function porQueNoSePuedeGenerar(modelo, laPlaca, estado) {
 
   const arrastre = detrasDeOtra.length
     ? ' Y esa, a su vez, todavía espera a la suya: hay que subir la cadena hasta el ancla de ' +
-      'linaje y bajar aprobando.'
+      'linaje y bajar generando en orden.'
     : '';
 
   return (
-    `Falta aprobar ${lista}. Una placa que no es ancla se genera con esa imagen delante, y hasta ` +
-    'que no esté aprobada no hay contra qué generarla. Por eso aquí no hay botón de generar ' +
+    `Falta generar ${lista}. Una placa que no es ancla se genera con esa imagen delante, y hasta ` +
+    'que no exista no hay contra qué generarla. Por eso aquí no hay botón de generar ' +
     `todavía: no serviría de nada pulsarlo.${arrastre}`
   );
 }
@@ -578,7 +510,10 @@ function leerEstado() {
 }
 
 /**
- * Lo aprobado y los intentos de una placa o de un escenario, ya limpios.
+ * La imagen EN USO y los intentos de una placa o de un escenario, ya limpios.
+ * La que se usa es la apuntada en `aprobada` o, si el campo está vacío
+ * (material generado antes de que la generación la apuntara sola), el último
+ * intento: lo generado es lo que vale, sin aprobarlo nadie.
  * @param {object} estado
  * @param {'banco'|'escenarios'} donde
  * @param {string} id
@@ -587,15 +522,17 @@ function leerEstado() {
 function leerEntrada(estado, donde, id) {
   const mapa = estado && typeof estado[donde] === 'object' && estado[donde] ? estado[donde] : {};
   const entrada = mapa[id];
-  const aprobada =
-    entrada && typeof entrada.aprobada === 'string' && entrada.aprobada.trim()
-      ? entrada.aprobada
-      : null;
-  const intentos =
+  const listaCruda =
     entrada && Array.isArray(entrada.intentos)
       ? entrada.intentos.filter((ruta) => typeof ruta === 'string' && ruta.trim())
       : [];
-  return { aprobada, intentos };
+  const aprobada =
+    entrada && typeof entrada.aprobada === 'string' && entrada.aprobada.trim()
+      ? entrada.aprobada
+      : listaCruda.length
+        ? listaCruda[listaCruda.length - 1]
+        : null;
+  return { aprobada, intentos: listaCruda };
 }
 
 /**
@@ -671,7 +608,7 @@ function enlaceDe(ruta) {
 }
 
 /**
- * Todas las rutas que esta pantalla puede necesitar enseñar: lo aprobado y todos
+ * Todas las rutas que esta pantalla puede necesitar enseñar: la que se usa y todos
  * los intentos, de las placas y de los escenarios.
  * @param {object} modelo
  * @param {object} estado
@@ -825,17 +762,16 @@ function seccionCabecera(ctx) {
   if (quejaDeEnlaces) {
     partes.push(
       aviso(
-        `${quejaDeEnlaces.mensaje} Sin esos enlaces no se pueden ver las imágenes, así que tampoco ` +
-          'se puede aprobar nada: aprobar es mirar.',
+        `${quejaDeEnlaces.mensaje} Sin esos enlaces no se pueden ver las imágenes.`,
         { tono: 'error', detalle: quejaDeEnlaces.detalle }
       )
     );
   }
 
   partes.push(
-    barra(hechas, total, { etiqueta: 'Aprobado de todo el banco' }),
+    barra(hechas, total, { etiqueta: 'Con imagen de todo el banco' }),
     barra(modelo.anclas.length - anclasSinAprobar.length, modelo.anclas.length, {
-      etiqueta: 'Anclas aprobadas'
+      etiqueta: 'Anclas con imagen'
     })
   );
 
@@ -846,7 +782,7 @@ function seccionCabecera(ctx) {
   if (anclasSinAprobar.length) {
     partes.push(
       aviso(
-        `Primero las anclas. Faltan por aprobar ${plural(
+        `Primero las anclas. Faltan por generar ${plural(
           anclasSinAprobar.length,
           'ancla',
           'anclas'
@@ -854,14 +790,14 @@ function seccionCabecera(ctx) {
           anclasSinAprobar.map((p) => nombreDeGrupo(modelo, p)),
           6
         )}. Un ancla se genera sola, solo con texto y sin ninguna referencia; hasta que no está ` +
-          'aprobada, las demás placas de ese personaje no se pueden generar.',
+          'generada, las demás placas de ese personaje no se pueden generar.',
         { tono: 'nota' }
       )
     );
   } else {
     partes.push(
       aviso(
-        'Todas las anclas están aprobadas. A partir de aquí cualquier placa del banco se puede ' +
+        'Todas las anclas tienen imagen. A partir de aquí cualquier placa del banco se puede ' +
           'generar contra la suya.',
         { tono: 'bien' }
       )
@@ -883,9 +819,9 @@ function seccionCabecera(ctx) {
         )
       : boton('Generar las anclas que faltan', null, {
           desactivado: anclasSinAprobar.length
-            ? 'Las anclas que faltan encadenan a otra que todavía no está aprobada. Aprueba ' +
+            ? 'Las anclas que faltan encadenan a otra que todavía no está generada. Genera ' +
               'primero el ancla de linaje y estas se podrán generar.'
-            : 'No falta ninguna ancla: están todas aprobadas.'
+            : 'No falta ninguna ancla: todas tienen imagen.'
         })
   );
 
@@ -899,7 +835,7 @@ function seccionCabecera(ctx) {
       : boton('Generar el resto del banco', null, {
           desactivado:
             'No queda ninguna placa ni ningún escenario sin imagen que se pueda generar ahora ' +
-            'mismo. Lo que falte está esperando a que se apruebe su ancla.'
+            'mismo. Lo que falte está esperando a que se genere su ancla.'
         })
   );
 
@@ -925,7 +861,7 @@ function seccionCabecera(ctx) {
         'p',
         { clase: 'tarjeta-texto tenue' },
         `${plural(anclasQueEsperan, 'ancla', 'anclas')} de edad no se pueden encolar todavía: ` +
-          'encadenan al ancla de linaje del adulto y esa hay que aprobarla antes, mirándola.'
+          'encadenan al ancla de linaje del adulto y esa hay que generarla antes.'
       )
     );
   }
@@ -952,9 +888,8 @@ function seccionCabecera(ctx) {
  * Lo que encola el botón de «el resto del banco»: las placas no-ancla y los
  * escenarios que no tienen NINGUNA imagen todavía y que se pueden generar ya.
  *
- * Lo que ya tiene un intento sin aprobar no entra a propósito: pedir otra
- * versión de algo que ya se puede mirar es una decisión de gastar, y esa se toma
- * mirándolo, en su tarjeta.
+ * Lo que ya tiene un intento no entra a propósito: pedir otra versión de algo
+ * que ya tiene imagen es una decisión de gastar, y esa se toma en su tarjeta.
  *
  * @param {object} modelo
  * @param {object} estado
@@ -1002,7 +937,7 @@ function seccionPersonajes(ctx) {
   const total = modelo.placas.length;
   const hechas = modelo.placas.filter((p) => leerEntrada(estado, 'banco', p.id).aprobada).length;
 
-  const partes = [barra(hechas, total, { etiqueta: 'Placas de personaje aprobadas' })];
+  const partes = [barra(hechas, total, { etiqueta: 'Placas de personaje con imagen' })];
 
   for (const cadena of modelo.cadenas) partes.push(filaDeCadena(cadena, ctx));
 
@@ -1125,7 +1060,7 @@ function filaDeCadena(cadena, ctx) {
 
 /**
  * Un eslabón de la cadena: la imagen pequeña, cómo se llama esa edad y en qué
- * estado está. Se pulsa y lleva a su tarjeta, que es donde se aprueba.
+ * estado está. Se pulsa y lleva a su tarjeta.
  * @param {object} laPlaca
  * @param {object} ctx
  * @param {{linaje:boolean}} opciones
@@ -1137,9 +1072,9 @@ function eslabonDeCadena(laPlaca, ctx, { linaje }) {
   const ruta = entrada.aprobada || entrada.intentos[entrada.intentos.length - 1] || null;
   const nombre = nombreDeGrupo(modelo, laPlaca);
   const comoEsta = entrada.aprobada
-    ? 'Aprobada'
+    ? 'En uso'
     : entrada.intentos.length
-      ? 'Por aprobar'
+      ? 'En uso'
       : 'Sin generar';
 
   return h(
@@ -1265,7 +1200,7 @@ function pliegueDePersonaje(grupo, suyas, ctx) {
       h(
         'span',
         { clase: 'suave numero', estilo: { 'margin-left': 'var(--espacio-2)' } },
-        `${hechas} de ${todas} aprobadas`
+        `${hechas} de ${todas} con imagen`
       ),
       grupo.ancla && !anclaAprobada
         ? h(
@@ -1344,7 +1279,7 @@ function seccionEscenarios(ctx) {
   ).length;
 
   const partes = [
-    barra(hechos, total, { etiqueta: 'Escenarios aprobados' }),
+    barra(hechos, total, { etiqueta: 'Escenarios con imagen' }),
     aviso(
       'Un escenario no tiene ancla ni cadena: se genera una vez, solo con texto, y a partir de ' +
         'ahí su placa viaja como referencia en TODOS los planos que ocurren ahí. Sin eso, once ' +
@@ -1551,13 +1486,12 @@ function comoEsta(entrada, enLaCola) {
     return 'generando';
   }
   if (enLaCola && enLaCola.estado === 'fallido') return 'fallido';
-  if (entrada.aprobada && rutaQueSeMira(null,entrada) === entrada.aprobada) return 'aprobada';
-  if (entrada.intentos.length) return 'por-aprobar';
+  if (entrada.intentos.length) return 'aprobada';
   return 'sin-empezar';
 }
 
 /**
- * Lo que se mira: la imagen aprobada, o el intento que se esté mirando, o un
+ * Lo que se mira: la imagen en uso, o el intento que se esté mirando, o un
  * hueco que dice que todavía no hay nada. Nunca un `<img>` roto.
  * @param {string} clave `«banco»:«id»` o `«escenarios»:«id»`
  * @param {{aprobada:string|null, intentos:string[]}} entrada
@@ -1581,7 +1515,7 @@ function marcoDeImagen(clave, entrada, alt) {
   const esLaAprobada = ruta === entrada.aprobada;
   const img = h('img', {
     src: url,
-    alt: `${alt}. ${esLaAprobada ? 'Imagen aprobada' : 'Intento sin aprobar'}.`,
+    alt: `${alt}. ${esLaAprobada ? 'Imagen en uso' : 'Otro intento'}.`,
     loading: 'lazy',
     decoding: 'async'
   });
@@ -1641,7 +1575,7 @@ function comoLoLlamaGoogle(ancho, alto) {
   return '0,5K';
 }
 
-/** Qué ruta se está mirando de una placa: la elegida, la aprobada o la última. */
+/** Qué ruta se está mirando de una placa: la que se esté mirando o la última. */
 function rutaQueSeMira(clave, entrada) {
   return entrada.intentos.at(-1) || entrada.aprobada || null;
 }
@@ -1725,7 +1659,7 @@ function tiraDeIntentos(clave, entrada, que, ctx) {
         {
           type: 'button',
           'aria-pressed': esta ? 'true' : 'false',
-          'aria-label': `Intento ${indice + 1} de ${que}${esLaAprobada ? ', el aprobado' : ''}. Verlo en grande.`,
+          'aria-label': `Intento ${indice + 1} de ${que}${esLaAprobada ? ', el que se usa' : ''}. Verlo en grande.`,
           estilo: {
             flex: '0 0 auto',
             width: '96px',
@@ -1762,7 +1696,7 @@ function tiraDeIntentos(clave, entrada, que, ctx) {
             clase: esLaAprobada ? 'suave' : 'tenue',
             estilo: { display: 'block', 'font-size': '11px', 'padding-top': '2px' }
           },
-          esLaAprobada ? `${indice + 1} · aprobado` : String(indice + 1)
+          esLaAprobada ? `${indice + 1} · en uso` : String(indice + 1)
         )
       );
     })
@@ -1770,10 +1704,12 @@ function tiraDeIntentos(clave, entrada, que, ctx) {
 }
 
 /**
- * Los botones de una placa o de un escenario.
+ * Los botones de una placa o de un escenario: generar, y nada más. No hay
+ * botón de aprobar: la última imagen generada es la que se usa, y pedir otra
+ * la sustituye en el acto.
  *
- * Con el ancla sin aprobar no devuelve NINGUNO: la frase que dice qué falta ya
- * está en el pie, y un botón que siempre falla es peor que no tener botón.
+ * Con el ancla sin generar no devuelve NINGUNO: la frase que dice qué falta
+ * ya está en el pie, y un botón que siempre falla es peor que no tener botón.
  *
  * @param {'banco'|'escenarios'} donde
  * @param {string} id
@@ -1787,25 +1723,6 @@ function accionesDeAprobable(donde, id, clave, entrada, { bloqueo, nombre, ctx, 
 
   const puesta = rutaQueSeMira(clave, entrada);
   const acciones = [];
-
-  if (puesta) {
-    if (puesta === entrada.aprobada) {
-      acciones.push(
-        boton('Aprobar', null, {
-          desactivado:
-            'Esta imagen ya está aprobada. Puedes generar otra versión si necesitas cambiarla.'
-        })
-      );
-    } else {
-      acciones.push(
-        boton(
-          entrada.aprobada ? 'Aprobar este intento' : 'Aprobar',
-          () => aprobar(donde, id, clave, puesta, { nombre, ctx }),
-          { tono: 'principal' }
-        )
-      );
-    }
-  }
 
   acciones.push(
     boton(puesta ? 'Otro intento' : 'Generar', alGenerar, {
@@ -1833,8 +1750,7 @@ function pasaElFiltro(ficha, donde, ctx, cual = filtroPuesto) {
   if (cual === 'anclas') return ficha.ancla === true;
 
   const entrada = leerEntrada(ctx.estado, donde, ficha.id);
-  if (cual === 'aprobadas') return Boolean(entrada.aprobada) && rutaQueSeMira(null,entrada) === entrada.aprobada;
-  if (cual === 'por-aprobar') return entrada.intentos.length > 0 && rutaQueSeMira(null,entrada) !== entrada.aprobada;
+  if (cual === 'en-uso') return Boolean(entrada.aprobada);
   if (cual === 'sin-generar') return !entrada.aprobada && entrada.intentos.length === 0;
   return true;
 }
@@ -1854,63 +1770,6 @@ function contarConFiltro(ctx, cual) {
 // ---------------------------------------------------------------------------
 // Las acciones
 // ---------------------------------------------------------------------------
-
-/**
- * Aprueba una imagen.
- *
- * Si de esa placa cuelga algo que ya estaba aprobado —las demás placas de su
- * personaje cuando es el ancla, y las edades que le encadenan, en profundidad—,
- * antes se cuenta, se enseña con nombres y se pregunta. Cambiar un ancla no es
- * un ajuste: es tirar todo lo que se generó pareciéndose a ella.
- *
- * @param {'banco'|'escenarios'} donde
- * @param {string} id
- * @param {string} clave la del mapa de «qué se está mirando»
- * @param {string} ruta la imagen que se aprueba
- * @param {{nombre:string, ctx:object}} opciones
- */
-async function aprobar(donde, id, clave, ruta, { nombre, ctx }) {
-  const { modelo, estado, repintar } = ctx;
-
-  // Solo cuelga algo de las placas del banco: un escenario es una placa única y
-  // no arrastra a nadie. Y de una placa que no es ancla ni tiene edades
-  // encadenadas, `cadenaDe()` devuelve la lista vacía y esto no hace nada.
-  const cuelgan = donde === 'banco' ? cadenaDe(modelo, id) : [];
-  const seCaen = cuelgan.filter((otra) => leerEntrada(estado, 'banco', otra).aprobada);
-  const cambiaAlgoAprobado = Boolean(leerEntrada(estado, donde, id).aprobada);
-
-  if (seCaen.length && cambiaAlgoAprobado) {
-    const pregunta =
-      `Vas a cambiar ${nombre}, que ya estaba aprobada, y todo lo que se generó pareciéndose a ` +
-      `ella deja de valer. Quedan por reprobar ${plural(seCaen.length, 'placa', 'placas')}: ` +
-      `${enumerar(seCaen, 8)}. Habrá que mirarlas y aprobarlas otra vez, o volver a generarlas. ` +
-      '¿Lo hago?';
-    if (!(await confirmar(pregunta))) return;
-  }
-
-  try {
-    await cambiar((borrador) => {
-      const entrada = entradaMutable(borrador, donde, id);
-      entrada.aprobada = ruta;
-      // El intento aprobado tiene que seguir estando en la lista: si vino de una
-      // tanda vieja y ya no estaba, se vuelve a apuntar para no perderlo de vista.
-      if (!Array.isArray(entrada.intentos)) entrada.intentos = [];
-      if (!entrada.intentos.includes(ruta)) entrada.intentos.push(ruta);
-
-      // La misma cadena que se ha contado arriba, recalculada sobre el estado
-      // que se está escribiendo: `cambiar()` puede aplicar esto dos veces si el
-      // bucket contesta 409, y las dos veces tiene que dejar lo mismo.
-      for (const otra of cuelgan) {
-        entradaMutable(borrador, 'banco', otra).aprobada = null;
-      }
-    });
-    mirando.set(clave, ruta);
-    queja = null;
-  } catch (fallo) {
-    queja = comoErrorDeCara(fallo);
-  }
-  repintar();
-}
 
 /**
  * Encola un trabajo suelto: el botón de «Generar» o de «Otro intento» de una

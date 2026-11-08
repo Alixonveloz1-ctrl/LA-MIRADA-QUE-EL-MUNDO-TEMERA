@@ -1261,7 +1261,6 @@ function componerVoz(modelo, ambito, estado, salida) {
   const { audio, subtitulos, faltas, notas } = salida;
 
   const sinGrabar = [];
-  const sinAprobar = [];
   const sinMedir = [];
   const estimados = [];
   const movidas = [];
@@ -1297,8 +1296,6 @@ function componerVoz(modelo, ambito, estado, salida) {
       sinGrabar.push(bloque.id);
       continue;
     }
-    if (!guardado.aprobada) sinAprobar.push(bloque.id);
-
     // CUÁNTO SE SUBE ESTE BLOQUE, una sola vez: es del archivo entero, no de
     // cada línea. Todas las líneas de un bloque salen del mismo WAV, así que
     // subirlas por separado las descuadraría entre ellas.
@@ -1535,15 +1532,6 @@ function componerVoz(modelo, ambito, estado, salida) {
         `${plural(sinMedir.length, 'bloque tiene', 'bloques tienen')} líneas sin medir: ` +
         `${enumerar(sinMedir, 8)}. Los subtítulos se queman con la entrada y la salida REALES de ` +
         'cada línea, no con las estimadas; el botón de medir está en la pantalla de Audio.',
-      donde: '#audio'
-    });
-  }
-  if (sinAprobar.length) {
-    faltas.push({
-      texto:
-        `${plural(sinAprobar.length, 'bloque de voz está', 'bloques de voz están')} sin aprobar: ` +
-        `${enumerar(sinAprobar, 8)}. Nada suena en un montaje sin haber sonado antes en la pantalla ` +
-        'de Audio.',
       donde: '#audio'
     });
   }
@@ -2127,7 +2115,6 @@ function componerMusica(modelo, ambito, estado, duracion, salida) {
   if (!ambito.musica.length) return;
 
   const sinGenerar = [];
-  const sinAprobar = [];
 
   // Cuando las piezas van seguidas —un episodio pide una por acto o por bloque—
   // se colocan una detrás de otra. Cuando una es el canto, entra sobre el lecho
@@ -2159,8 +2146,6 @@ function componerMusica(modelo, ambito, estado, duracion, salida) {
       sinGenerar.push(String(laMusica.id));
       continue;
     }
-    if (!guardado.aprobada) sinAprobar.push(String(laMusica.id));
-
     const propia = Number(laMusica.entra_s);
     const en = Number.isFinite(propia) && propia >= 0
       ? propia
@@ -2214,15 +2199,6 @@ function componerMusica(modelo, ambito, estado, duracion, salida) {
       texto:
         `${plural(sinGenerar.length, 'pieza de música está', 'piezas de música están')} sin ` +
         `generar: ${enumerar(sinGenerar, 6)}. Se generan y se escuchan en la pantalla de Audio.`,
-      donde: '#audio'
-    });
-  }
-  if (sinAprobar.length) {
-    faltas.push({
-      texto:
-        `${plural(sinAprobar.length, 'pieza de música está', 'piezas de música están')} sin ` +
-        `aprobar: ${enumerar(sinAprobar, 6)}. Nada suena en un montaje sin haber sonado antes en la ` +
-        'pantalla de Audio.',
       donde: '#audio'
     });
   }

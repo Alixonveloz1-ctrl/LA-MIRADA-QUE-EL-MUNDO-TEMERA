@@ -1,14 +1,8 @@
 // Audio: la música de Lyria y las voces de Gemini TTS, con reproductor.
 //
-// La regla que gobierna esta pantalla entera está escrita en el plan §11 y en el
-// contrato §9: **nada suena en un montaje sin haber sonado antes aquí**. De ahí
-// sale todo lo que parece manía y no lo es:
-//
-//   1. NO HAY BOTÓN DE APROBAR SIN HABER OÍDO. Cada tarjeta trae su `<audio
-//      controls>` con la pista entera, y el botón de aprobar aparece apagado —con
-//      su motivo escrito— hasta que ese audio se ha reproducido en esta pantalla.
-//      Aprobar de una lista, por el nombre del archivo, es exactamente lo que
-//      esta pantalla existe para impedir.
+// Cada tarjeta trae su `<audio controls>` con la pista entera para poder
+// oírla aquí. No hay botón de aprobar: lo último que se genera es lo que suena
+// en el montaje, y rehacer una pista la sustituye en el acto.
 //
 //   2. LA UNIDAD DE LA VOZ ES EL BLOQUE, NO LA LÍNEA. Un bloque es una sola
 //      llamada al modelo con todas sus líneas dentro y hasta dos hablantes, y es
@@ -947,9 +941,8 @@ function seccionCabecera(ctx) {
     h(
       'p',
       { clase: 'tenue' },
-      'Nada suena en un montaje sin haber sonado antes aquí: hasta que una pista no se ha ' +
-        'reproducido en esta pantalla, su botón de aprobar está apagado. Lo aprobado es lo único ' +
-        'que la pantalla de Montaje deja mezclar.'
+      'Lo que suena en un montaje es lo último generado aquí: rehacer una pista la sustituye ' +
+        'en el acto, sin aprobar nada.'
     )
   );
 
@@ -1041,8 +1034,8 @@ function seccionMusica(ctx) {
     );
   }
 
-  const aprobadas = musica.lista.filter((una) => musicaGuardada(estado, una.id).aprobada).length;
-  partes.push(barra(aprobadas, musica.lista.length, { etiqueta: 'Música aprobada' }));
+  const aprobadas = musica.lista.filter((una) => musicaGuardada(estado, una.id).ruta).length;
+  partes.push(barra(aprobadas, musica.lista.length, { etiqueta: 'Música generada' }));
 
   for (const una of musica.lista) partes.push(tarjetaDeMusica(ctx, una, maximo));
 
@@ -1085,9 +1078,9 @@ function seccionBanco(ctx) {
     partes.push(h('p', { clase: 'tenue' }, soloTexto(dicho.silencio)));
   }
 
-  const aprobadas = banco.filter((una) => musicaGuardada(estado, una.id).aprobada).length;
+  const aprobadas = banco.filter((una) => musicaGuardada(estado, una.id).ruta).length;
   partes.push(
-    barra(aprobadas, banco.length, { etiqueta: 'Banco de la temporada aprobado' })
+    barra(aprobadas, banco.length, { etiqueta: 'Banco de la temporada generado' })
   );
 
   for (const una of banco) partes.push(tarjetaDeMusica(ctx, una, maximo));
@@ -1140,18 +1133,6 @@ function tarjetaDeMusica(ctx, laMusica, maximo) {
       );
     }
 
-    if (guardado.aprobada) {
-      acciones.appendChild(
-        boton('Quitar el visto bueno', () => aprobarMusica(ctx, id, false), { tono: 'suave' })
-      );
-    } else {
-      acciones.appendChild(
-        boton('Aprobar', () => aprobarMusica(ctx, id, true), {
-          tono: 'principal',
-          desactivado: motivoParaNoAprobar(guardado.ruta, url, oidos.has(guardado.ruta || ''))
-        })
-      );
-    }
   };
 
   pintarAcciones();
@@ -1245,8 +1226,7 @@ function tarjetaDeMusica(ctx, laMusica, maximo) {
       h(
         'p',
         { clase: 'tenue', estilo: { margin: '8px 0 0', 'font-size': '13px' } },
-        'Todavía no se ha generado. En cuanto esté, aparece aquí el reproductor con la pista entera ' +
-          'y se puede aprobar.'
+        'Todavía no se ha generado. En cuanto esté, aparece aquí el reproductor con la pista entera.'
       )
     );
   }
@@ -1294,8 +1274,7 @@ function tarjetaDeMusica(ctx, laMusica, maximo) {
 function estadoDeMusica(guardado, trabajando) {
   if (trabajando) return { tipo: 'generando', texto: 'Componiéndose' };
   if (!guardado.ruta) return { tipo: 'pendiente', texto: 'Sin generar' };
-  if (guardado.aprobada) return { tipo: 'aprobada', texto: 'Aprobada' };
-  return { tipo: 'por-aprobar', texto: 'Por aprobar' };
+  return { tipo: 'aprobada', texto: 'En uso' };
 }
 
 /**
@@ -1408,10 +1387,10 @@ function seccionVoces(ctx) {
   }
 
   const aprobados = bloques.filter(
-    (bloque) => vozGuardada(estado, `${pieza.id}/${bloque.id}`).aprobada
+    (bloque) => vozGuardada(estado, `${pieza.id}/${bloque.id}`).ruta
   ).length;
 
-  partes.push(barra(aprobados, bloques.length, { etiqueta: 'Bloques de voz aprobados' }));
+  partes.push(barra(aprobados, bloques.length, { etiqueta: 'Bloques de voz grabados' }));
 
   const sinVoz = personajesSinVoz(ctx);
   if (sinVoz.length) {
@@ -1555,18 +1534,6 @@ function tarjetaDeBloque(ctx, bloque) {
       );
     }
 
-    if (guardado.aprobada) {
-      acciones.appendChild(
-        boton('Quitar el visto bueno', () => aprobarBloque(ctx, clave, false), { tono: 'suave' })
-      );
-    } else {
-      acciones.appendChild(
-        boton('Aprobar', () => aprobarBloque(ctx, clave, true), {
-          tono: 'principal',
-          desactivado: motivoParaNoAprobar(guardado.ruta, url, oidos.has(guardado.ruta || ''))
-        })
-      );
-    }
   };
 
   pintarAcciones();
@@ -1705,13 +1672,12 @@ function tituloDelBloque(ctx, bloque) {
 function estadoDeBloque(guardado, medida, grabando) {
   if (grabando) return { tipo: 'generando', texto: 'Grabándose' };
   if (!guardado.ruta) return { tipo: 'pendiente', texto: 'Sin grabar' };
-  if (guardado.aprobada) return { tipo: 'aprobado', texto: 'Aprobado' };
   if (!medida.hayTiempos) return { tipo: 'por-aprobar', texto: 'Sin medir' };
   // Un bloque con tramos a ojo se ve DESDE FUERA, sin abrir la tarjeta: con
   // subtítulos, esos tiempos paran el montaje, y conviene saber cuál es antes de
   // llegar allí.
   if (medida.algunoEstimado) return { tipo: 'por-aprobar', texto: 'Tiempos a ojo' };
-  return { tipo: 'por-aprobar', texto: 'Por aprobar' };
+  return { tipo: 'aprobado', texto: 'En uso' };
 }
 
 /**
@@ -2053,28 +2019,6 @@ async function alinearBloque(ctx, bloque) {
   }
 }
 
-/** Aprueba o desaprueba una pieza de música. */
-function aprobarMusica(ctx, id, comoQueda) {
-  const { repintar } = ctx;
-  cambiar((borrador) => {
-    entradaDeMusica(borrador, id).aprobada = comoQueda === true;
-  }).catch((fallo) => {
-    queja = comoErrorDeCara(fallo);
-    repintar();
-  });
-}
-
-/** Aprueba o desaprueba un bloque de voz. */
-function aprobarBloque(ctx, clave, comoQueda) {
-  const { repintar } = ctx;
-  cambiar((borrador) => {
-    entradaDeVoz(borrador, clave).aprobada = comoQueda === true;
-  }).catch((fallo) => {
-    queja = comoErrorDeCara(fallo);
-    repintar();
-  });
-}
-
 // ---------------------------------------------------------------------------
 // El reproductor
 // ---------------------------------------------------------------------------
@@ -2105,8 +2049,8 @@ function reproductor(ruta, url, queEs, nota, alOir) {
       sonando.add(ruta);
       if (!oidos.has(ruta)) {
         oidos.add(ruta);
-        // Se enciende el botón de aprobar sin repintar la tarjeta: repintarla
-        // pararía esta misma pista justo cuando acaba de empezar a sonar.
+        // Sin repintar la tarjeta: repintarla pararía esta misma pista justo
+        // cuando acaba de empezar a sonar.
         if (typeof alOir === 'function') alOir();
       }
     },
@@ -2126,29 +2070,6 @@ function reproductor(ruta, url, queEs, nota, alOir) {
         'hay que pagarlo otra vez.';
     }
   });
-}
-
-/**
- * Por qué no se puede aprobar todavía, con palabras. Devuelve `false` cuando sí
- * se puede, que es lo que `boton()` entiende como «encendido».
- * @param {string|null} ruta
- * @param {string|null} url
- * @param {boolean} oida
- * @returns {string|false}
- */
-function motivoParaNoAprobar(ruta, url, oida) {
-  if (!ruta) {
-    return 'Todavía no hay nada grabado que aprobar. Primero se genera y después se escucha.';
-  }
-  if (!url) {
-    return 'Está grabado, pero no hay enlace para oírlo, así que no se puede juzgar. Vuelve a ' +
-      'pedir los enlaces desde arriba.';
-  }
-  if (!oida) {
-    return 'Todavía no lo has escuchado. Nada suena en un montaje sin haber sonado antes aquí: ' +
-      'dale al play y el botón se enciende solo.';
-  }
-  return false;
 }
 
 // ---------------------------------------------------------------------------

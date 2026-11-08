@@ -202,8 +202,8 @@ di(conMusica && conMusica.agacha === false,
 
 const sinAprobar = estadoLleno();
 for (const id of Object.keys(sinAprobar.audio.musica)) sinAprobar.audio.musica[id].aprobada = false;
-di(rl.musicaDelReel(serie, sinAprobar, 'teaser', 30) === null,
-  'Una música generada pero SIN APROBAR no entra: nada suena sin haber sonado antes');
+di(rl.musicaDelReel(serie, sinAprobar, 'teaser', 30) !== null,
+  'Una música generada entra aunque nadie la haya aprobado: lo generado es lo que suena');
 
 // ── EL MANIFIESTO, PASADO POR EL VALIDADOR DE PRODUCCIÓN ───────────────────
 console.log('\n  Y EL VALIDADOR DE VERDAD LO ACEPTA\n');

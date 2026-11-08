@@ -91,7 +91,7 @@ const EVENTOS = {
 /**
  * Los estados que se pintan como punto de color, y la familia visual de cada
  * uno. Vienen de dos sitios: los de la cola (docs/contrato.md §8: pendiente,
- * en_curso, hecho, fallido, detenido) y los del material (aprobada o no).
+ * en_curso, hecho, fallido, detenido) y los del material (en uso o no).
  *
  * Se normaliza el guion bajo a guion medio para que «en_curso» y «en-curso»
  * sean lo mismo, que es lo que va a pasar en cuanto haya dos pantallas.
@@ -100,13 +100,13 @@ const ESTADOS = {
   'pendiente':    { familia: 'pendiente', texto: 'Pendiente' },
   'sin-empezar':  { familia: 'pendiente', texto: 'Sin empezar' },
   'sin-keyframe': { familia: 'pendiente', texto: 'Sin keyframe' },
-  'por-aprobar':  { familia: 'pendiente', texto: 'Por aprobar' },
+  'por-aprobar':  { familia: 'pendiente', texto: 'Pendiente' },
   'en-curso':     { familia: 'en-curso',  texto: 'En curso' },
   'generando':    { familia: 'en-curso',  texto: 'Generando' },
   'hecho':        { familia: 'listo',     texto: 'Listo' },
   'listo':        { familia: 'listo',     texto: 'Listo' },
-  'aprobada':     { familia: 'listo',     texto: 'Aprobada' },
-  'aprobado':     { familia: 'listo',     texto: 'Aprobado' },
+  'aprobada':     { familia: 'listo',     texto: 'En uso' },
+  'aprobado':     { familia: 'listo',     texto: 'En uso' },
   'elegido':      { familia: 'listo',     texto: 'Elegido' },
   'fallido':      { familia: 'fallido',   texto: 'Fallido' },
   'fallida':      { familia: 'fallido',   texto: 'Fallida' },

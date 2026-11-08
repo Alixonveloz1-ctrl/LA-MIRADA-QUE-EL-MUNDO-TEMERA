@@ -84,7 +84,11 @@ prueba('Un primer plano sin esos acompañantes no les presta otra apariencia',()
   assert.deepEqual(referenciasDeReparto(pieza,sinGrupo,estado,placas),[]);
   const pendiente=structuredClone(estado);
   pendiente.tomas['ep01/1-2'].intentos_keyframe.push('culto-nuevo-sin-aprobar.png');
-  assert.deepEqual(referenciasDeReparto(pieza,actual,pendiente,placas),[]);
+  // Sin aprobación: el intento nuevo ya es la imagen en uso, así que es ella
+  // la que presta la apariencia al reparto, sin esperar a que nadie la apruebe.
+  const conLaNueva=referenciasDeReparto(pieza,actual,pendiente,placas);
+  assert.equal(conLaNueva.length,1);
+  assert.equal(conLaNueva[0].ruta,'culto-nuevo-sin-aprobar.png');
   pendiente.tomas['ep01/1-2']=aprobada('culto.png');
   pendiente.cola=[{tipo:'keyframe',estado:'en_curso',args:{pieza:'ep01',id:'1-2'}}];
   assert.deepEqual(referenciasDeReparto(pieza,actual,pendiente,placas),[]);
@@ -198,8 +202,10 @@ prueba('El cuerpo que sale a Vertex contiene los bytes aprobados de las cinco re
     assert.equal(partes[2*i+1].text,ref.instruccion);
   }
   const material=servidor.tomas['ep01/2-1'];
-  assert.equal(material.revision_pendiente,true);
-  assert.equal(material.keyframe_aprobado,null);
+  // Sin aprobación: la imagen recién generada ya es la que se usa, y no
+  // queda marcada como pendiente de que nadie la revise.
+  assert.equal(material.revision_pendiente ?? false,false);
+  assert.equal(material.keyframe_aprobado,respuesta.ruta);
   assert.deepEqual(material.origenes_keyframe[respuesta.ruta].referencias_banco.map(r=>r.placa),actual.refs);
   assert.equal(material.origenes_keyframe[respuesta.ruta].referencia_anterior,'bebe.png');
   assert.deepEqual(material.origenes_keyframe[respuesta.ruta].referencias_reparto,[{personajes:['acolitos'],ruta:'culto.png'}]);
@@ -224,7 +230,7 @@ prueba('Servidor: apagar el apoyo sigue enviando los bytes del general y las fic
 });
 servidor=structuredClone(estado);delete servidor.banco['celebrante-mascara'].aprobada;
 envios=[];leidos=[];
-await assert.rejects(()=>modos.imagen({tipo:'keyframe',pieza:'ep01',id:'2-1'}),/aprobad/);
+await assert.rejects(()=>modos.imagen({tipo:'keyframe',pieza:'ep01',id:'2-1'}),/todavía no se ha generado/);
 prueba('Una ficha sin aprobar impide enviar una petición pagada incompleta',()=>{
   assert.equal(envios.length,0);assert.equal(leidos.length,0);
 });

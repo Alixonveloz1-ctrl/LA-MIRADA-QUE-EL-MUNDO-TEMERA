@@ -56,7 +56,7 @@ import { ErrorDeCara, llamar, ponerRitmoMinimo, ritmoActual } from './api.js';
 import { actual, cambiar, cargar, anotarGasto } from './estado.js';
 import { reducirParaVeo, pesoDeB64 } from './imagen.js';
 import { bytes as enBytes } from './formato.js';
-import { materialVigente, necesitaDireccion } from './continuidad.js';
+import { materialVigente, necesitaDireccion, rutaKeyframeEnUso, rutaClipEnUso } from './continuidad.js';
 import { claveDelMaterial } from './planos.js';
 
 // ---------------------------------------------------------------------------
@@ -646,6 +646,26 @@ const NORMALIZADORES = {
     const voz_id = exigirArg(crudos, ['voz_id', 'voz'], 'qué voz candidata tiene que decirla');
     const args = { personaje, voz_id };
     return { args, identidad: args };
+  },
+
+  'muestra-elevenlabs'(crudos) {
+    const personaje = exigirArg(crudos, ['personaje'], 'de qué personaje es la frase de muestra');
+    const voz_id = exigirArg(crudos, ['voz_id', 'voz'], 'qué voz candidata de ElevenLabs tiene que decirla');
+    const args = { personaje, voz_id };
+    return { args, identidad: args };
+  },
+
+  efecto(crudos) {
+    const pieza = exigirArg(crudos, ['pieza'], 'de qué pieza es el plano del efecto');
+    const id = exigirArg(crudos, ['id', 'toma'], 'de qué toma es el efecto');
+    const texto = exigirArg(crudos, ['texto'], 'qué sonido se pide: la descripción del efecto');
+    const args = { pieza, id, texto };
+    const dur = Number(crudos.dur_s);
+    if (Number.isFinite(dur) && dur > 0) args.dur_s = dur;
+    // La identidad es el PLANO, no el texto: volver a pedir el efecto de la
+    // misma toma con otra descripción es rehacer ESE efecto, no crear otro
+    // trabajo gemelo. Lo último que se pida es lo que vale.
+    return { args, identidad: { pieza, id } };
   },
 
   ficha(crudos) {
@@ -1818,15 +1838,15 @@ export const EJECUTORES = {
     await generarImagen('poster', args, trabajo);
   },
 
-  /** El keyframe de una toma: lo que se mira para aprobar antes de gastar vídeo. */
+  /** El keyframe de una toma: la imagen desde la que se anima su clip. */
   async keyframe(args, trabajo) {
     await generarImagen('keyframe', args, trabajo);
   },
 
   /**
-   * Lanzar el clip de una toma. Es el trabajo caro: un keyframe malo cuesta
-   * céntimos y un clip malo cuesta un euro, así que aquí se comprueba todo antes
-   * de llamar a Veo.
+   * Lanzar el clip de una toma. Es el trabajo caro, así que antes de llamar a
+   * Veo se comprueba lo único que hace falta: que el keyframe EXISTA, porque
+   * el clip se anima desde él. Nadie lo aprueba: el que hay es el que se usa.
    */
   async clip(args, trabajo) {
     const idPieza = args.pieza;
@@ -1834,19 +1854,18 @@ export const EJECUTORES = {
     const clave = `${idPieza}/${idToma}`;
 
     const entrada = tomaDelEstado(actual(), clave);
-    const keyframe = soloTexto(entrada.keyframe_aprobado);
+    const keyframe = soloTexto(rutaKeyframeEnUso(entrada));
     if (!keyframe) {
       throw new ErrorDeCara(
-        `La toma ${idToma} no tiene keyframe aprobado, así que no se le genera vídeo. Un clip malo ` +
-          'cuesta un euro y un keyframe malo cuesta céntimos: primero se mira la imagen y se ' +
-          'aprueba, y solo entonces aparece el botón de generar el vídeo.',
+        `La toma ${idToma} no tiene keyframe todavía, así que no se le genera vídeo: el clip se ` +
+          'anima desde esa imagen. Genera antes su keyframe y el vídeo se podrá pedir.',
         { reintentable: false, http: 400 }
       );
     }
 
     const laToma = await tomaDeLaSerie(idPieza, idToma);
-    if (necesitaDireccion({id:idPieza}, laToma) || !materialVigente(entrada,'keyframe')) {
-      throw new ErrorDeCara('Corrige la continuidad y revisa el keyframe antes de generar vídeo.', { http:409,reintentable:false });
+    if (necesitaDireccion({id:idPieza}, laToma)) {
+      throw new ErrorDeCara('Actualiza la continuidad de esta escena antes de generar vídeo.', { http:409,reintentable:false });
     }
     const siguiente = soloTexto(laToma.encadena_con);
 
@@ -1857,12 +1876,12 @@ export const EJECUTORES = {
     if (siguiente) {
       const tomaSiguiente = await tomaDeLaSerie(idPieza, siguiente);
       const otra = tomaDelEstado(actual(), claveDelMaterial(idPieza, tomaSiguiente));
-      keyframeSiguiente = soloTexto(otra.keyframe_aprobado);
-      if (!keyframeSiguiente || !materialVigente(otra,'keyframe')) {
+      keyframeSiguiente = soloTexto(rutaKeyframeEnUso(otra));
+      if (!keyframeSiguiente) {
         throw new ErrorDeCara(
           `La toma ${idToma} encadena con ${siguiente}, y para encadenar hace falta el keyframe de ` +
-            `${siguiente} aprobado: es la imagen a la que Veo tiene que llegar. Genera y aprueba ` +
-            `antes el keyframe de ${siguiente} y vuelve a pedir este clip.`,
+            `${siguiente}: es la imagen a la que Veo tiene que llegar. Genera antes el keyframe ` +
+            `de ${siguiente} y vuelve a pedir este clip.`,
           { reintentable: false, http: 400 }
         );
       }
@@ -1998,6 +2017,39 @@ export const EJECUTORES = {
   },
 
   /**
+   * La frase de muestra de un personaje con una voz candidata de ElevenLabs.
+   * Igual que `muestra`: aquí no se apunta nada, la función ya deja la
+   * muestra apuntada antes de contestar; encolarla solo pone orden.
+   */
+  async 'muestra-elevenlabs'(args) {
+    await llamar('voz-muestra-elevenlabs', { personaje: args.personaje, voz_id: args.voz_id });
+  },
+
+  /**
+   * El efecto de sonido de un plano, generado con ElevenLabs. La función ya
+   * lo deja apuntado en el estado antes de contestar; esto lo vuelve a
+   * apuntar igual que hacen `musica` y `voz` con lo suyo, porque el cambio
+   * de la cola se aplica sobre el estado fresco y tiene que dejar el mismo
+   * resultado lo haya escrito quien lo haya escrito.
+   */
+  async efecto(args) {
+    const hecho = await llamar('efecto', {
+      pieza: args.pieza,
+      id: args.id,
+      texto: args.texto,
+      dur_s: args.dur_s ?? null
+    });
+    const durS = Number(hecho.dur_s) || 0;
+
+    anotar((estado) => {
+      const entrada = entradaDeToma(estado, `${args.pieza}/${args.id}`);
+      entrada.efecto = { ruta: hecho.ruta, dur_s: durS, texto: args.texto, proveedor: 'elevenlabs' };
+      apuntarIntento(entrada, 'intentos_efecto', hecho.ruta);
+      anotarGasto(estado, 'efecto_s', null, durS);
+    });
+  },
+
+  /**
    * Escribe la ficha de difusión de una pieza —título, descripción y etiquetas—.
    *
    * Aquí no se apunta nada en el estado: la función la deja apuntada antes de
@@ -2017,7 +2069,7 @@ export const EJECUTORES = {
       const entrada = entradaDeAudio(estado, 'musica', args.id);
       entrada.ruta = hecho.ruta;
       entrada.dur_s = durS;
-      entrada.aprobada = false; // Es una grabación nueva: se escucha antes de usarla.
+      entrada.aprobada = true; // Grabación nueva: queda en uso en el acto.
       apuntarIntento(entrada, 'intentos', hecho.ruta);
       anotarGasto(estado, 'musica_s', null, durS);
     });
@@ -2038,7 +2090,7 @@ export const EJECUTORES = {
       const entrada = entradaDeAudio(estado, 'voz', clave);
       entrada.ruta = hecho.ruta;
       entrada.dur_s = durS;
-      entrada.aprobada = false;
+      entrada.aprobada = true; // Grabación nueva: queda en uso en el acto.
       // Los tiempos que hubiera eran de la grabación anterior. Dejarlos puestos
       // desplazaría todos los subtítulos de la pieza.
       entrada.lineas = lineas.map(() => ({ inicio: 0, fin: 0 }));
@@ -2231,7 +2283,7 @@ export const EJECUTORES = {
         const yaEsta = estado.montajes.some((uno) => uno && uno.ruta === ruta);
         if (yaEsta) continue;
         const revisionPendiente = (args.manifiesto.video || []).some(v => v.clave &&
-          (estado.tomas?.[v.clave]?.clip_elegido !== v.origen || !materialVigente(estado.tomas?.[v.clave],'clip'))) ||
+          (rutaClipEnUso(estado.tomas?.[v.clave]) !== v.origen || !materialVigente(estado.tomas?.[v.clave],'clip'))) ||
           (args.manifiesto.capas_previas || []).some(r => estado.montajes.some(m => m.ruta===r && m.revision_pendiente));
         estado.montajes.push({ ruta, capa: args.capa, id: args.id, cuando, revision_pendiente:revisionPendiente });
       }
@@ -2279,13 +2331,29 @@ async function generarImagen(tipo, args, trabajo) {
     if (tipo === 'keyframe') {
       const entrada = entradaDeToma(estado, `${args.pieza}/${args.id}`);
       apuntarIntento(entrada, detenida ? 'intentos_keyframe_detenidos' : 'intentos_keyframe', hecho.ruta);
-      if (!detenida && entrada.keyframe_aprobado !== hecho.ruta) entrada.revision_pendiente = true;
+      // La imagen nueva es la que se usa: de ella se anima el clip y ella es
+      // la referencia de la toma siguiente, sin aprobarla nadie. Y como nace
+      // de la dirección actual, la marca de «dirección cambiada» se limpia
+      // sola; los clips que hubiera salieron de la imagen anterior, así que
+      // quedan marcados hasta que se genere uno nuevo de esta.
+      if (!detenida) {
+        entrada.keyframe_aprobado = hecho.ruta;
+        entrada.revision_pendiente = false;
+        if (Array.isArray(entrada.intentos_clip) && entrada.intentos_clip.length) {
+          entrada.clip_revision_pendiente = true;
+        }
+      }
     } else if (tipo === 'poster') {
       const clave = `${args.id}/${String(args.proporcion || '').replace(/:/g, '-')}`;
-      apuntarIntento(entradaAprobable(estado, 'posters', clave), detenida ? 'intentos_detenidos' : 'intentos', hecho.ruta);
+      const entrada = entradaAprobable(estado, 'posters', clave);
+      apuntarIntento(entrada, detenida ? 'intentos_detenidos' : 'intentos', hecho.ruta);
+      if (!detenida) entrada.aprobada = hecho.ruta;
     } else {
       const donde = tipo === 'placa' ? 'banco' : 'escenarios';
-      apuntarIntento(entradaAprobable(estado, donde, args.id), detenida ? 'intentos_detenidos' : 'intentos', hecho.ruta);
+      const entrada = entradaAprobable(estado, donde, args.id);
+      apuntarIntento(entrada, detenida ? 'intentos_detenidos' : 'intentos', hecho.ruta);
+      // La placa nueva es la que viaja como referencia desde este momento.
+      if (!detenida) entrada.aprobada = hecho.ruta;
     }
     if (!trabajo?.solicitud_id || guardado?.gasto_solicitud !== trabajo.solicitud_id) {
       anotarGasto(estado, 'imagen', usado, 1);
@@ -2321,6 +2389,10 @@ async function cambioDeClipTerminado(idPieza, idToma, ruta) {
     entrada.operacion_en_curso = null;
     entrada.operacion_prefijo = null;
     apuntarIntento(entrada, 'intentos_clip', ruta);
+    // El clip nuevo es el que se usa en el montaje, sin elegirlo a mano, y
+    // nace de la imagen actual: la marca de clips por rehacer se limpia.
+    entrada.clip_elegido = ruta;
+    entrada.clip_revision_pendiente = false;
     // El gasto se apunta con el nivel que se ha usado DE VERDAD, que es el
     // elegido en Salud si lo hay y, si no, el del plano.
     if (laToma) {

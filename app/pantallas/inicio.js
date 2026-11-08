@@ -222,8 +222,10 @@ function contarPreparacion(serie, estado) {
   const escenarios = serie && serie.escenarios && Array.isArray(serie.escenarios.placas) ? serie.escenarios.placas : [];
   const bancoEstado = estado && estado.banco && typeof estado.banco === 'object' ? estado.banco : {};
   const escenariosEstado = estado && estado.escenarios && typeof estado.escenarios === 'object' ? estado.escenarios : {};
-  const bancoHecho = placas.filter((una) => bancoEstado[una.id] && bancoEstado[una.id].aprobada).length
-    + escenarios.filter((una) => escenariosEstado[una.id] && escenariosEstado[una.id].aprobada).length;
+  const conImagen = (entrada) =>
+    Boolean(entrada && (entrada.aprobada || (Array.isArray(entrada.intentos) && entrada.intentos.length)));
+  const bancoHecho = placas.filter((una) => conImagen(bancoEstado[una.id])).length
+    + escenarios.filter((una) => conImagen(escenariosEstado[una.id])).length;
   const bancoTotal = placas.length + escenarios.length;
   return {
     vocesHechas,

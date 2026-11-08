@@ -43,14 +43,16 @@ prueba('Los acercamientos no arrastran a todo el reparto dentro de la imagen',()
   assert.deepEqual(personajesOmitidosEnGeneral(t,serie.banco.placas),[]);
   assert.deepEqual(promptKeyframe('ep01',t.id,{id:'ep01',tomas:[t]}).referencias.map(r=>r.escenario || r.placa),['elserath-salon','saharis-noble']);
 });
-prueba('Las 289 escenas solo seleccionan sus escenarios aprobados, incluidos los segmentos separados',()=>{
+prueba('Las 289 escenas solo seleccionan sus escenarios generados, incluidos los segmentos separados',()=>{
   for(const ep of guiones.guiones) for(const s of ep.escenas) {
     const segmentos=segmentosDeEscena(ep.episodio,s.escena);
     const ids=[...new Set(segmentos.length?segmentos.map(s=>s.escenario):[s.escenario])];
-    const e={escenarios:Object.fromEntries([...ids,'escenario-ajeno'].map(id=>[id,{aprobada:id+'.png',intentos:[id+'-pendiente.png']}]))};
+    const e={escenarios:Object.fromEntries([...ids,'escenario-ajeno'].map(id=>[id,{aprobada:id+'.png',intentos:[id+'-anterior.png',id+'.png']}]))};
     assert.deepEqual(escenariosParaPlanificar(e,ep.episodio,s.escena),ids.map(id=>({escenario:id,ruta:id+'.png'})));
   }
-  assert.deepEqual(escenariosParaPlanificar({escenarios:{'elserath-salon':{intentos:['sin-aprobar.png']}}},1,'3'),[]);
+  // Sin aprobación: un escenario con un intento generado ya es el que se usa,
+  // aunque nadie llegara a apuntarlo en el campo.
+  assert.deepEqual(escenariosParaPlanificar({escenarios:{'elserath-salon':{intentos:['unica.png']}}},1,'3'),[{escenario:'elserath-salon',ruta:'unica.png'}]);
 });
 const png=Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+jGqkAAAAASUVORK5CYII=','base64');
 prueba('El director recibe los bytes del escenario y una instrucción de inspeccionarlo, sin alterar llamadas de solo texto',()=>{
@@ -73,7 +75,7 @@ const fuente=readFileSync(new URL('../api/_lib/texto.js',import.meta.url),'utf8'
   .replace(/^export /gm,'');
 const generar=new Function('__stubs',fuente+'\nreturn generar;')(stubs);
 await generar('Planear',{json:true,referenciasVisuales:[{escenario:'elserath-salon',datos:png}]});
-prueba('La petición enviada al modelo de planificación contiene la imagen aprobada',()=>{
+prueba('La petición enviada al modelo de planificación contiene la imagen en uso',()=>{
   assert.equal(enviados.length,1);
   assert.equal(enviados[0].contents[0].parts[1].inlineData.data,png.toString('base64'));
   assert.equal(enviados[0].generationConfig.responseMimeType,'application/json');

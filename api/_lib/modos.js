@@ -14,10 +14,13 @@
 //      horas. Esta es la razón de que el censor deje pasar enteras las URLs
 //      firmadas: sin ellas no se podría mirar nada de lo generado.
 //
-//   2. LOS CERROJOS SE COMPRUEBAN AQUÍ OTRA VEZ. La interfaz no enseña el botón
-//      de generar vídeo sin keyframe aprobado; este archivo lo vuelve a exigir
-//      con `exigirAprobada()`. Dos cerrojos, no un aviso. Lo mismo con el ancla
-//      de una placa y con la placa del escenario de un keyframe.
+//   2. LO QUE HACE FALTA SE COMPRUEBA AQUÍ OTRA VEZ. No hay aprobación en
+//      esta herramienta: nadie da el visto bueno a un keyframe para poder
+//      gastar vídeo. Lo que este archivo comprueba con `exigirAprobada()` es
+//      que el material EXISTA —un clip se anima desde su keyframe, una placa
+//      se parece a su ancla, un plano ocurre en su escenario—, y si no existe
+//      se dice qué falta. Lo mismo con el ancla de una placa y con la placa
+//      del escenario de un keyframe.
 //
 //   3. TODO LO QUE ESCRIBE EN EL ESTADO LO HACE LEYENDO, MODIFICANDO Y
 //      ESCRIBIENDO CON GENERACIÓN, y reintenta una vez ante un 409. El bucket es
@@ -60,7 +63,7 @@
 
 import { Buffer } from 'node:buffer';
 import { createHash, randomUUID } from 'node:crypto';
-import { materialVigente, necesitaDireccion, referenciaDeSecuencia, referenciasDeReparto, estadoDeBaseEscena, pasoDeEscena, firmaDeToma } from '../../app/continuidad.js';
+import { necesitaDireccion, referenciaDeSecuencia, referenciasDeReparto, estadoDeBaseEscena, pasoDeEscena, firmaDeToma } from '../../app/continuidad.js';
 import { aplicarCorreccion } from './continuidad.js';
 import { aplicarVersionLocal } from './version-local.js';
 import { escenariosParaPlanificar } from './planificacion-visual.js';
@@ -88,7 +91,8 @@ import {
 import {
   leer as leerElEstado,
   escribir as escribirElEstado,
-  exigirAprobada
+  exigirAprobada,
+  rutaAprobada
 } from './estado.js';
 import {
   promptPlaca,
@@ -110,6 +114,13 @@ import {
   alinear as alinearAudio,
   nivelDeVoz
 } from './audio.js';
+import {
+  hayClaveElevenLabs,
+  modeloDeVozElevenLabs,
+  listarVocesElevenLabs,
+  vozElevenLabs,
+  efectoElevenLabs
+} from './elevenlabs.js';
 import { traducirAJapones, desglosarEscena, corregirPlanosDeEscena, adaptarPlanoDeArchivo, fichaDePieza } from './texto.js';
 import { salud as comprobarSalud } from './salud.js';
 import { lanzar as lanzarMontaje, estado as estadoDeMontaje } from './montaje.js';
@@ -702,6 +713,106 @@ async function modoVozMuestra(cuerpo) {
   return { es: textoEs, ja, ruta, url: await urlDe(ruta), dur_s: generada.durS };
 }
 
+// ---------------------------------------------------------------------------
+// voces-elevenlabs y voz-muestra-elevenlabs
+// ---------------------------------------------------------------------------
+
+/**
+ * Las voces que la cuenta de ElevenLabs tiene de verdad, y si hay clave.
+ *
+ * Sin clave NO es un error: se devuelve `clave:false` y la lista vacía, para
+ * que la pantalla de Voces pueda decir «falta la clave» en vez de romperse.
+ * Con clave, la lista sale de la API de ElevenLabs tal cual —aquí tampoco se
+ * inventa ni un id— y se elige escuchándola, igual que las de Google.
+ */
+async function modoVocesElevenLabs() {
+  if (!hayClaveElevenLabs()) {
+    return { clave: false, modelo: modeloDeVozElevenLabs().id, voces: [] };
+  }
+  return {
+    clave: true,
+    modelo: modeloDeVozElevenLabs().id,
+    voces: await listarVocesElevenLabs()
+  };
+}
+
+/**
+ * Genera la frase de muestra de un personaje con una voz candidata de
+ * ElevenLabs. Es la hermana de `voz-muestra`: misma frase difícil, misma
+ * traducción al japonés guardada una sola vez por personaje (las candidatas
+ * de los dos proveedores dicen EXACTAMENTE lo mismo, o no se podrían comparar
+ * ni entre ellas ni con las de Gemini), y el mismo cerrojo de no pagar una
+ * muestra de una voz que ya es de otro y no se va a poder fijar.
+ *
+ * La muestra queda en `muestras-elevenlabs/` y apuntada en
+ * `estado.voces[personaje].muestras_elevenlabs`, al lado de las de Gemini y
+ * sin pisarlas: son dos catálogos y dos decisiones distintas.
+ */
+async function modoVozMuestraElevenLabs(cuerpo) {
+  const idPersonaje = exigirTexto(cuerpo, 'personaje', 'de qué personaje es la frase de muestra');
+  const vozId = exigirTexto(cuerpo, 'voz_id', 'qué voz candidata de ElevenLabs tiene que decirla');
+
+  const ficha = fichaDelReparto(idPersonaje);
+  const muestra = esObjeto(ficha.muestra) ? ficha.muestra : {};
+  const textoEs = typeof muestra.texto === 'string' ? muestra.texto.trim() : '';
+
+  if (!textoEs) {
+    throw new ErrorDeCara(
+      `El personaje «${idPersonaje}» no tiene frase de muestra escrita en ` +
+        'voces.reparto[].muestra.texto de datos/serie.json. La muestra es su frase más difícil de ' +
+        'toda la serie, y es lo que se oye para elegirle voz: sin ella no hay nada que decir.',
+      { reintentable: false, http: 500 }
+    );
+  }
+
+  const leido = await leerElEstado();
+
+  // El mismo cerrojo que en Gemini, en su catálogo: si esa voz de ElevenLabs
+  // ya está fijada en otro personaje que no puede compartir timbre, la
+  // muestra no se paga.
+  const deQuienEs = duenoDeLaVozElevenLabs(leido.estado, vozId);
+  if (deQuienEs && deQuienEs !== idPersonaje && !puedenCompartir(idPersonaje, deQuienEs)) {
+    throw new ErrorDeCara(
+      `No se ha generado nada y no se ha gastado nada: la voz de ElevenLabs «${vozId}» ya está ` +
+        `fijada en «${deQuienEs}» y esos dos no pueden compartir timbre, así que esta muestra no ` +
+        `se podría elegir aunque sonara bien. ${porQueNoPuedenCompartir(idPersonaje, deQuienEs)} ` +
+        `Elige otra de la lista, o ve a la tarjeta de «${deQuienEs}» y quítale la voz de ` +
+        'ElevenLabs.',
+      { reintentable: false, http: 409 }
+    );
+  }
+
+  // La traducción es la del personaje, la misma que usan las muestras de
+  // Gemini: se hizo una vez y se guarda. Si no está, se hace ahora y queda.
+  const ja = japonesGuardado(leido.estado, idPersonaje) || (await traducirAJapones(textoEs, typeof muestra.intencion === 'string' ? muestra.intencion : ''));
+
+  const generada = await vozElevenLabs({
+    partes: [{ quien: idPersonaje, texto_ja: ja }],
+    voces: { [idPersonaje]: vozId }
+  });
+
+  const ruta = `muestras-elevenlabs/${idPersonaje}/${vozId}${generada.extension}`;
+  await escribirEnElBucket(ruta, generada.datos, { tipo: generada.tipo });
+
+  await anotarLoGenerado(
+    (estado) => {
+      if (!esObjeto(estado.voces)) estado.voces = {};
+      if (!esObjeto(estado.voces[idPersonaje])) {
+        estado.voces[idPersonaje] = { voz_id: null, ja: null, muestras: {} };
+      }
+      const entrada = estado.voces[idPersonaje];
+      entrada.ja = ja;
+      if (!esObjeto(entrada.muestras_elevenlabs)) entrada.muestras_elevenlabs = {};
+      entrada.muestras_elevenlabs[vozId] = ruta;
+    },
+    leido,
+    'La muestra de voz de ElevenLabs',
+    ruta
+  );
+
+  return { es: textoEs, ja, ruta, url: await urlDe(ruta), dur_s: generada.durS };
+}
+
 /** La ficha de reparto de un personaje, o una queja que dice dónde se escribe. */
 function fichaDelReparto(idPersonaje) {
   const reparto = (serie.voces && serie.voces.reparto) || [];
@@ -770,9 +881,11 @@ function instruccionDeLaMuestra(idPersonaje) {
 
 /**
  * Genera una placa del banco, un escenario o un keyframe: compone el prompt,
- * adjunta las referencias aprobadas, comprueba los cupos antes de gastar, guarda
+ * adjunta las referencias en uso, comprueba los cupos antes de gastar, guarda
  * el PNG de 2K en el bucket y devuelve su ruta con una URL firmada. El PNG NO
- * viaja en la respuesta —no cabe— y NO se aprueba solo: aprobar es mirarlo.
+ * viaja en la respuesta —no cabe—. La imagen generada queda EN USO en el
+ * acto: es la que sirve de referencia y de la que se anima el clip, hasta
+ * que se genere otra y la sustituya.
  */
 async function modoImagen(cuerpo) {
   const leido = await leerElEstado();
@@ -845,9 +958,9 @@ async function modoImagenNueva(cuerpo) {
   // claro del otro lado, da una llamada fallida ya cobrada.
   comprobarCupos(compuesto.referencias, modelo.id);
 
-  // Cada referencia tiene que estar APROBADA. Este es el cerrojo de servidor del
-  // invariante «ninguna placa que no sea ancla se genera sin el ancla de su
-  // personaje aprobada»: si falta, se dice cuál falta y cómo se arregla.
+  // Cada referencia tiene que EXISTIR. Sin el ancla de su personaje no hay a
+  // qué parecerse, y sin la placa del escenario cada plano sale de un sitio
+  // distinto: si falta, se dice cuál falta y cómo se arregla.
   const pendientes = compuesto.referencias.map((referencia) => {
     const esEscenario = Boolean(referencia.escenario);
     const rutaAprobada = referencia.continuidad || exigirAprobada(
@@ -865,9 +978,8 @@ async function modoImagenNueva(cuerpo) {
       if (!archivo) {
         throw new ErrorDeCara(
           `Para ${paraQue} hace falta «${referencia.escenario || referencia.placa || referencia.continuidad}», que figura ` +
-            `como aprobada en «${rutaAprobada}», y ese archivo ya no está en el bucket. O se ha ` +
-            'borrado, o se aprobó una ruta que nunca llegó a guardarse. Genérala otra vez y ' +
-            'apruébala mirándola.',
+            `como en uso en «${rutaAprobada}», y ese archivo ya no está en el bucket. O se ha ` +
+            'borrado, o se apuntó una ruta que nunca llegó a guardarse. Genérala otra vez.',
           { reintentable: false, http: 400 }
         );
       }
@@ -914,8 +1026,9 @@ async function modoImagenNueva(cuerpo) {
       if (tipo === 'keyframe') {
         const entrada = entradaDeToma(estado, `${idPiezaDelKeyframe}/${id}`);
         apuntarIntento(entrada, detenida ? 'intentos_keyframe_detenidos' : 'intentos_keyframe', ruta);
-        // Una nueva versión debe revisarse antes de servir de referencia o crear vídeo.
-        if (!detenida) entrada.revision_pendiente = true;
+        // La imagen nueva ES la que se usa: sirve de referencia y de ella se
+        // anima el clip, sin que nadie tenga que aprobarla antes.
+        if (!detenida) entrada.keyframe_aprobado = ruta;
         if (!entrada.origenes_keyframe) entrada.origenes_keyframe = {};
         entrada.origenes_keyframe[ruta] = { revision: tomaInicial.revision_direccion || null,
           referencia_base: compuesto.referencias.find(r=>r.uso==='base_escena')?.continuidad || null,
@@ -930,12 +1043,15 @@ async function modoImagenNueva(cuerpo) {
         if (!esObjeto(estado.posters)) estado.posters = {};
         if (!esObjeto(estado.posters[clave])) estado.posters[clave] = { aprobada: null, intentos: [] };
         apuntarIntento(estado.posters[clave], detenida ? 'intentos_detenidos' : 'intentos', ruta);
+        if (!detenida) estado.posters[clave].aprobada = ruta;
         return;
       }
       const donde = tipo === 'placa' ? 'banco' : 'escenarios';
       if (!esObjeto(estado[donde])) estado[donde] = {};
       if (!esObjeto(estado[donde][id])) estado[donde][id] = { aprobada: null, intentos: [] };
       apuntarIntento(estado[donde][id], detenida ? 'intentos_detenidos' : 'intentos', ruta);
+      // La placa nueva es la que viaja como referencia desde este momento.
+      if (!detenida) estado[donde][id].aprobada = ruta;
     },
     leido,
     'La imagen',
@@ -951,9 +1067,9 @@ async function modoImagenNueva(cuerpo) {
 
 /**
  * Lanza la generación del clip de una toma y guarda su operación en el estado
- * ANTES de contestar. NO llama a Veo si el keyframe de esa toma no está aprobado
- * —segundo cerrojo; el primero es que el botón no existe en la interfaz— y NO
- * devuelve ningún MP4: Veo lo escribe directo en el bucket.
+ * ANTES de contestar. NO llama a Veo si esa toma todavía no tiene keyframe:
+ * el clip se anima desde esa imagen y sin imagen no hay nada que animar. Y
+ * NO devuelve ningún MP4: Veo lo escribe directo en el bucket.
  */
 async function modoVeoLanzar(cuerpo) {
   const idPieza = exigirTexto(cuerpo, 'pieza', 'de qué pieza es la toma');
@@ -964,15 +1080,13 @@ async function modoVeoLanzar(cuerpo) {
   const piezaEnEstado = piezaDelEstado(leido.estado, idPieza);
   const laToma = tomaDeLaPieza(idPieza, idToma, piezaEnEstado);
 
-  // EL SEGUNDO CERROJO. Un keyframe malo cuesta céntimos y un clip malo cuesta
-  // un euro: aquí se vuelve a comprobar lo que la interfaz ya impide.
+  // El keyframe en uso, que es desde el que se anima. Si la toma no tiene
+  // ninguno, `exigirAprobada()` lo dice con palabras; si lo tiene, el vídeo
+  // se lanza sin más pasos.
   const rutaInicial = exigirAprobada(leido.estado, 'keyframe', clave, `generar el vídeo de ${idToma}`);
   const entradaInicial = entradaDeToma(leido.estado, clave);
-  if (!materialVigente(entradaInicial, 'keyframe')) {
-    throw new ErrorDeCara('Revisa y aprueba el keyframe con la continuidad corregida antes de generar vídeo.', { http:409, reintentable:false });
-  }
   if (cuerpo.imagen_ruta !== rutaInicial) {
-    throw new ErrorDeCara('El keyframe aprobado cambió mientras se preparaba el vídeo. Vuelve a pedirlo desde la imagen actual.', { http:409, reintentable:false });
+    throw new ErrorDeCara('El keyframe cambió mientras se preparaba el vídeo. Vuelve a pedirlo desde la imagen actual.', { http:409, reintentable:false });
   }
   if (entradaInicial.operacion_en_curso) throw new ErrorDeCara('Ya hay un vídeo de esta toma en curso.', { http:409, reintentable:false });
 
@@ -995,8 +1109,8 @@ async function modoVeoLanzar(cuerpo) {
     const siguiente = tomaDeLaPieza(idPieza,laToma.encadena_con,piezaEnEstado);
     const claveSiguiente = siguiente?.de_archivo ? `archivo/${siguiente.de_archivo}` : `${idPieza}/${laToma.encadena_con}`;
     const fin = exigirAprobada(leido.estado, 'keyframe', claveSiguiente, 'encadenar el vídeo');
-    if (!lastFrame || cuerpo.lastFrame_ruta !== fin || !materialVigente(entradaDeToma(leido.estado, claveSiguiente), 'keyframe')) {
-      throw new ErrorDeCara('El fotograma de enlace no coincide con el aprobado. Revisa la toma siguiente.', { http:409, reintentable:false });
+    if (!lastFrame || cuerpo.lastFrame_ruta !== fin) {
+      throw new ErrorDeCara('El fotograma de enlace no coincide con el keyframe en uso de la toma siguiente. Vuelve a pedirlo desde la imagen actual.', { http:409, reintentable:false });
     }
   }
   const origen = { keyframe:rutaInicial, enlace:encadena ? cuerpo.lastFrame_ruta : null,
@@ -1229,6 +1343,9 @@ async function modoVeoConsultar(cuerpo) {
     entrada.operacion_prefijo = null;
     entrada.operacion_nivel = null;
     apuntarIntento(entrada, 'intentos_clip', ruta);
+    // El clip que acaba de llegar ES el que se usa en el montaje, sin elegir
+    // nada a mano. Si se genera otro, el nuevo lo sustituye.
+    entrada.clip_elegido = ruta;
     if (origenRecuperado) {
       if (!entrada.origenes_clip) entrada.origenes_clip = {};
       entrada.origenes_clip[ruta] = origenRecuperado;
@@ -1281,8 +1398,10 @@ async function modoMusica(cuerpo) {
       const entrada = estado.audio.musica[idMusica];
       entrada.ruta = ruta;
       entrada.dur_s = generada.durS;
-      // Es una grabación nueva: la que hubiera aprobada ya no es esta.
-      entrada.aprobada = false;
+      // Es una grabación nueva y queda EN USO en el acto: es la que suena en
+      // el montaje hasta que se genere otra. El campo conserva el nombre del
+      // contrato, pero ya no significa «aprobada a mano»: significa «vigente».
+      entrada.aprobada = true;
       apuntarIntento(entrada, 'intentos', ruta);
     },
     leido,
@@ -1329,16 +1448,32 @@ async function modoVoz(cuerpo) {
   // Las voces salen del estado, que es donde queda la elección que se hizo
   // escuchando. Si a alguien le falta, `audio.js` lo dice con su nombre.
   const reparto = {};
+  const repartoElevenLabs = {};
   for (const quien of elBloque.personajes) {
     const entrada = esObjeto(leido.estado.voces) ? leido.estado.voces[quien] : null;
     reparto[quien] = esObjeto(entrada) ? entrada.voz_id : null;
+    repartoElevenLabs[quien] = esObjeto(entrada) ? (entrada.elevenlabs_voz_id ?? null) : null;
   }
 
-  const generada = await generarVoz({
-    partes: guion.partes,
-    instruccion: guion.instruccion,
-    voces: reparto
-  });
+  // ¿ESTE BLOQUE LO GRABA ELEVENLABS O GEMINI? La regla es entera o no es:
+  // hay clave puesta Y todos los que hablan en el bloque tienen su voz de
+  // ElevenLabs fijada. Un bloque a medias —una línea con cada proveedor—
+  // sonaría a dos estudios distintos dentro de la misma escena, así que si a
+  // alguien le falta la suya, el bloque entero va con Gemini como hasta hoy.
+  // Sin clave, ni se pregunta: Gemini, sin cambiar ni un comportamiento.
+  const conElevenLabs =
+    hayClaveElevenLabs() &&
+    elBloque.personajes.length > 0 &&
+    elBloque.personajes.every((quien) => soloTexto(repartoElevenLabs[quien]));
+
+  const generada = conElevenLabs
+    ? await vozElevenLabs({ partes: guion.partes, voces: repartoElevenLabs })
+    : await generarVoz({
+        partes: guion.partes,
+        instruccion: guion.instruccion,
+        voces: reparto
+      });
+  const proveedor = conElevenLabs ? 'elevenlabs' : 'gemini';
 
   const ruta = `audio/voz/${idPieza}/${idBloque}${generada.extension}`;
   await escribirEnElBucket(ruta, generada.datos, { tipo: generada.tipo });
@@ -1381,7 +1516,13 @@ async function modoVoz(cuerpo) {
 
       entrada.ruta = ruta;
       entrada.dur_s = generada.durS;
-      entrada.aprobada = false;
+      // La grabación nueva queda EN USO en el acto, como la música (regla de
+      // vigencia: lo generado manda, no hay aprobación).
+      entrada.aprobada = true;
+      // Quién lo grabó esta vez. Hace falta saberlo: un bloque de ElevenLabs y
+      // uno de Gemini no se rehacen igual, y dentro de unos meses nadie se
+      // acordará de qué clave había puesta aquella noche.
+      entrada.proveedor = proveedor;
       // Los tiempos de línea eran de la grabación anterior: se miden otra vez
       // con `alinear`. Dejarlos puestos desplazaría todos los subtítulos.
       entrada.lineas = elBloque.lineas.map(() => ({ inicio: 0, fin: 0 }));
@@ -1396,6 +1537,7 @@ async function modoVoz(cuerpo) {
     ruta,
     url: await urlDe(ruta),
     dur_s: generada.durS,
+    proveedor,
     lineas: elBloque.lineas.map((linea) => ({
       quien: linea.quien,
       ja: linea.ja,
@@ -1449,6 +1591,59 @@ async function modoAlinear(cuerpo) {
 }
 
 // ---------------------------------------------------------------------------
+// efecto
+// ---------------------------------------------------------------------------
+
+/**
+ * Genera el efecto de sonido de UN plano con ElevenLabs y lo deja guardado
+ * junto a su toma: `audio/efectos/{pieza}/{toma}.mp3`, con la descripción y
+ * la duración apuntadas en `estado.tomas["{pieza}/{toma}"].efecto`.
+ *
+ * Es la primera cadena de efectos del estudio: hasta hoy el sonido de escena
+ * solo se describía en las reglas y nadie lo generaba. La descripción la
+ * escribe quien pide el efecto (desde la tarjeta del plano, en Tomas) y va
+ * en el idioma que entienda el modelo —el endpoint trabaja mejor en inglés,
+ * como Lyria—; lo que se guarda en el estado es el texto tal cual se pidió,
+ * para que regenerarlo sea pedir lo mismo y no una variación.
+ *
+ * Un plano, un efecto: si se vuelve a pedir, el nuevo SUSTITUYE al anterior
+ * en el estado —lo que vale es lo último generado, como en todo el estudio— y
+ * el archivo anterior se queda en el bucket como intento, sin apuntar.
+ */
+async function modoEfecto(cuerpo) {
+  const idPieza = exigirTexto(cuerpo, 'pieza', 'de qué pieza es el plano del efecto');
+  const idToma = exigirTexto(cuerpo, 'id', 'de qué toma es el efecto');
+  const texto = exigirTexto(cuerpo, 'texto', 'qué sonido se pide: la descripción del efecto');
+  const durPedida = Number(cuerpo.dur_s);
+  const durS = Number.isFinite(durPedida) && durPedida > 0 ? durPedida : null;
+
+  const generado = await efectoElevenLabs({ texto, durS });
+
+  const ruta = `audio/efectos/${idPieza}/${idToma}${generado.extension}`;
+  await escribirEnElBucket(ruta, generado.datos, { tipo: generado.tipo });
+
+  const clave = `${idPieza}/${idToma}`;
+  const leido = await leerElEstado();
+  await anotarLoGenerado(
+    (estado) => {
+      const entrada = entradaDeToma(estado, clave);
+      entrada.efecto = {
+        ruta,
+        dur_s: generado.durS,
+        texto,
+        proveedor: 'elevenlabs'
+      };
+      apuntarIntento(entrada, 'intentos_efecto', ruta);
+    },
+    leido,
+    'El efecto de sonido',
+    ruta
+  );
+
+  return { ruta, url: await urlDe(ruta), dur_s: generado.durS, texto };
+}
+
+// ---------------------------------------------------------------------------
 // desglosar-escena
 // ---------------------------------------------------------------------------
 
@@ -1468,7 +1663,7 @@ async function modoDesglosarEscena(cuerpo) {
 async function leerEscenariosParaPlanificar(estado,episodio,escena) {
   return Promise.all(escenariosParaPlanificar(estado,episodio,escena).map(async ref=>{
     const archivo=await leerBytes(ref.ruta);
-    if (!archivo) throw new ErrorDeCara('No se encontró la imagen aprobada del escenario. No se han preparado ni generado nuevas tomas.',{http:409,reintentable:false});
+    if (!archivo) throw new ErrorDeCara('No se encontró la imagen del escenario. No se han preparado ni generado nuevas tomas.',{http:409,reintentable:false});
     return {...ref,datos:archivo.datos};
   }));
 }
@@ -1563,9 +1758,9 @@ async function modoFicha(cuerpo) {
       const entrada = estado.difusion[idPieza];
       entrada.ficha = ficha;
       entrada.ficha_ruta = ruta;
-      // Una ficha nueva es una ficha sin aprobar: se lee antes de publicar con
-      // ella, igual que una pista se oye antes de montarla.
-      entrada.ficha_aprobada = false;
+      // Una ficha nueva es la ficha que se usa: nadie la aprueba a mano. El
+      // campo conserva el nombre del contrato y significa «hay ficha vigente».
+      entrada.ficha_aprobada = true;
     },
     leido,
     'La ficha',
@@ -1633,6 +1828,28 @@ function duenoDeLaVoz(estado, vozId) {
   for (const [personaje, dentro] of Object.entries(voces)) {
     if (!esObjeto(dentro)) continue;
     if (soloTexto(dentro.voz_id) === buscada) return personaje;
+  }
+  return null;
+}
+
+/**
+ * De qué personaje es ya una voz DE ELEVENLABS, según el estado del bucket.
+ * Es el mismo cerrojo que `duenoDeLaVoz()` pero en el otro catálogo: los ids
+ * de ElevenLabs y los de Gemini viven en campos distintos del estado
+ * (`elevenlabs_voz_id` frente a `voz_id`) y nunca se comparan entre sí.
+ * @param {object} estado
+ * @param {string} vozId
+ * @returns {string|null} el id del personaje, o null si la voz está libre
+ */
+function duenoDeLaVozElevenLabs(estado, vozId) {
+  const voces = esObjeto(estado) && esObjeto(estado.voces) ? estado.voces : null;
+  if (!voces) return null;
+  const buscada = soloTexto(vozId);
+  if (!buscada) return null;
+
+  for (const [personaje, dentro] of Object.entries(voces)) {
+    if (!esObjeto(dentro)) continue;
+    if (soloTexto(dentro.elevenlabs_voz_id) === buscada) return personaje;
   }
   return null;
 }
@@ -1961,12 +2178,13 @@ async function modoMontar(cuerpo) {
 
   const vigente = await leerElEstado();
   for (const clip of manifiesto.video || []) {
-    const usado = clip.clave ? vigente.estado.tomas?.[clip.clave] : Object.values(vigente.estado.tomas || {}).find(t => t.clip_elegido === clip.origen);
-    if (clip.clave && (!usado || usado.clip_elegido !== clip.origen)) throw new ErrorDeCara('La selección de vídeo cambió después de preparar el montaje. Vuelve a montarlo con la selección actual.',{http:409,reintentable:false});
-    if (usado && !materialVigente(usado,'clip')) throw new ErrorDeCara('El montaje contiene un vídeo pendiente de revisar tras corregir su continuidad. Revisa la selección en Tomas.', {http:409,reintentable:false});
-  }
-  for (const ruta of manifiesto.capas_previas || []) {
-    if ((vigente.estado.montajes || []).some(m => m.ruta === ruta && m.revision_pendiente)) throw new ErrorDeCara('Una escena ya montada quedó pendiente tras una corrección. Vuelve a montar esa escena antes de unirla al episodio.', {http:409,reintentable:false});
+    const usado = clip.clave
+      ? vigente.estado.tomas?.[clip.clave]
+      : Object.entries(vigente.estado.tomas || {}).find(([claveToma]) => rutaAprobada(vigente.estado, 'clip', claveToma) === clip.origen)?.[1];
+    // Solo se comprueba que el clip del manifiesto sigue siendo el que está
+    // en uso. Que una toma o una escena lleven una marca de «revisión
+    // pendiente» ya no bloquea ningún montaje: es un aviso, no un cerrojo.
+    if (clip.clave && (!usado || rutaAprobada(vigente.estado, 'clip', clip.clave) !== clip.origen)) throw new ErrorDeCara('El vídeo en uso cambió después de preparar el montaje. Vuelve a montarlo con el material actual.',{http:409,reintentable:false});
   }
   const lanzado = await lanzarMontaje(manifiesto);
   return { ejecucion: lanzado.ejecucion, manifiesto_ruta: lanzado.manifiestoRuta };
@@ -2023,6 +2241,9 @@ export const MODOS = {
   salud: modoSalud,
   voces: modoVoces,
   'voz-muestra': modoVozMuestra,
+  'voces-elevenlabs': modoVocesElevenLabs,
+  'voz-muestra-elevenlabs': modoVozMuestraElevenLabs,
+  efecto: modoEfecto,
   imagen: modoImagen,
   'veo-lanzar': modoVeoLanzar,
   'veo-consultar': modoVeoConsultar,

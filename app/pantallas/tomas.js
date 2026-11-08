@@ -38,7 +38,7 @@
 //      hacia el keyframe de la toma siguiente y `dur == dur_gen`. Se enseña
 //      dicho con palabras y no se ofrece recorte para ella: recortarla dejaría
 //      la interpolación sin llegar al corte. Y hace falta el keyframe de la
-//      toma SIGUIENTE aprobado, así que mientras no lo esté tampoco hay botón.
+//      toma SIGUIENTE generado, así que mientras no lo esté tampoco hay botón.
 //
 //   7. AQUÍ NO SE VE NI SE EDITA EL PROMPT DE UN PLANO. El plano es un detalle
 //      interno de la máquina: lo que el usuario juzga es la imagen y el vídeo.
@@ -54,7 +54,7 @@ import { llamar, ErrorDeCara } from '../api.js';
 import { actual, alCambiar, cambiar, cargar } from '../estado.js';
 import { encolar, encolarVarios } from '../cola.js';
 import { claveDelMaterial, esDeArchivo, porQueNoSeGenera } from '../planos.js';
-import { necesitaDireccion, materialVigente, invalidarMontajes, pasoDeEscena, estadoDeReferencia, estadoDeBaseEscena, referenciasDeReparto, personajesSinReferencia, personajesOmitidosEnGeneral } from '../continuidad.js';
+import { necesitaDireccion, materialVigente, pasoDeEscena, estadoDeReferencia, estadoDeBaseEscena, referenciasDeReparto, personajesSinReferencia, personajesOmitidosEnGeneral } from '../continuidad.js';
 import {
   aviso,
   barra,
@@ -167,9 +167,6 @@ const preparandoVersion = new Set();
 
 /** Qué keyframe se está mirando de cada toma: `«pieza/toma» → ruta`. */
 const mirando = new Map();
-
-/** Los clips que se han reproducido en esta sesión. Sin esto no se elige uno. */
-const vistos = new Set();
 
 /** Los vídeos que están sonando ahora mismo: mientras haya uno, no se repinta. */
 const sonando = new Set();
@@ -568,15 +565,30 @@ function leerEstado() {
 function leerToma(estado, clave) {
   const mapa = esObjeto(estado) && esObjeto(estado.tomas) ? estado.tomas : {};
   const entrada = esObjeto(mapa[clave]) ? mapa[clave] : {};
+  const intentosKeyframe = soloRutas(entrada.intentos_keyframe);
+  const intentosClip = soloRutas(entrada.intentos_clip);
   return {
-    keyframe: rutaSiVale(entrada.keyframe_aprobado),
-    revisionPendiente: Boolean(entrada.revision_pendiente) || Boolean(entrada.intentos_keyframe?.length && entrada.intentos_keyframe.at(-1) !== entrada.keyframe_aprobado),
-    intentosKeyframe: soloRutas(entrada.intentos_keyframe),
-    clip: materialVigente(entrada, 'clip') ? rutaSiVale(entrada.clip_elegido) : null,
-    intentosClip: soloRutas(entrada.intentos_clip),
+    // Lo que se usa es lo apuntado o, si el campo está vacío, el último
+    // intento: lo generado vale sin que nadie lo apruebe.
+    keyframe: rutaSiVale(entrada.keyframe_aprobado) || intentosKeyframe.at(-1) || null,
+    // Solo avisa de que la dirección del plano cambió después de la imagen:
+    // no es una aprobación, es que la imagen ya no corresponde a lo escrito.
+    revisionPendiente: Boolean(entrada.revision_pendiente),
+    intentosKeyframe,
+    clip: rutaSiVale(entrada.clip_elegido) || intentosClip.at(-1) || null,
+    intentosClip,
     // `true` cuando hay vídeo en vuelo. El nombre de la operación no viaja hasta
     // el navegador: lleva el project id dentro y vive en el bucket.
-    operacion: Boolean(entrada.operacion_en_curso)
+    operacion: Boolean(entrada.operacion_en_curso),
+    // El efecto de sonido de este plano, si ya se pidió: ruta, duración y la
+    // descripción con la que se pidió, tal como quedó apuntado al generarlo.
+    efecto: esObjeto(entrada.efecto) && rutaSiVale(entrada.efecto.ruta)
+      ? {
+          ruta: entrada.efecto.ruta,
+          durS: Number(entrada.efecto.dur_s) || 0,
+          texto: soloTexto(entrada.efecto.texto)
+        }
+      : null
   };
 }
 
@@ -601,11 +613,12 @@ function entradaMutable(estado, clave) {
   return estado.tomas[clave];
 }
 
-/** Si una placa del banco o un escenario está aprobado. */
+/** Si una placa del banco o un escenario tiene imagen generada. */
 function estaAprobada(estado, donde, id) {
   const mapa = esObjeto(estado) && esObjeto(estado[donde]) ? estado[donde] : {};
   const entrada = mapa[id];
-  return Boolean(esObjeto(entrada) && rutaSiVale(entrada.aprobada));
+  if (!esObjeto(entrada)) return false;
+  return Boolean(rutaSiVale(entrada.aprobada)) || soloRutas(entrada.intentos).length > 0;
 }
 
 /**
@@ -626,7 +639,9 @@ function indexarCola(estado) {
     if (!trabajo) continue;
     const tipo = String(trabajo.tipo || '');
     const familia =
-      tipo === 'keyframe' ? 'keyframe' : tipo === 'clip' || tipo === 'clip-consultar' ? 'clip' : '';
+      tipo === 'keyframe' ? 'keyframe'
+      : tipo === 'clip' || tipo === 'clip-consultar' ? 'clip'
+      : tipo === 'efecto' ? 'efecto' : '';
     if (!familia) continue;
 
     const args = esObjeto(trabajo.args) ? trabajo.args : {};
@@ -711,7 +726,7 @@ function progresoDe(tomas, ctx) {
  *
  * Es exactamente lo que va a exigir la función: la placa del escenario viaja
  * como referencia de objeto y cada `ref` como referencia de personaje, y si
- * alguna no está aprobada, `exigirAprobada()` falla y dice cuál. Aquí se dice
+ * alguna no está generada, `exigirAprobada()` falla y dice cuál. Aquí se dice
  * antes, para no gastar la llamada.
  *
  * @param {object} laToma
@@ -771,7 +786,7 @@ function porQueNoSePuedeKeyframe(laToma, ctx) {
  * Por qué no hay botón de generar vídeo, con palabras. Null si lo hay.
  *
  * La primera razón es LA regla dura de toda la herramienta y por eso va la
- * primera: sin keyframe aprobado no existe el botón. La segunda es la del
+ * primera: sin keyframe generado no existe el botón. La segunda es la del
  * encadenado, que es la misma regla mirando una toma más allá.
  *
  * @param {object} laToma
@@ -781,7 +796,7 @@ function porQueNoSePuedeKeyframe(laToma, ctx) {
  */
 function porQueNoHayBotonDeVideo(laToma, guardado, ctx) {
   if (necesitaDireccion(ctx.pieza, laToma)) return 'Primero corrige la continuidad de esta escena.';
-  if (guardado.revisionPendiente) return 'La dirección cambió. Revisa y vuelve a aprobar la imagen antes de generar vídeo.';
+  if (guardado.revisionPendiente) return 'La dirección de este plano cambió después de generar la imagen. Genera otra imagen con la dirección nueva antes de pedir el vídeo.';
   // Igual que con el keyframe: el clip de un plano de archivo ya está pagado.
   if (esDeArchivo(laToma)) return porQueNoSeGenera(laToma);
 
@@ -795,14 +810,14 @@ function porQueNoHayBotonDeVideo(laToma, guardado, ctx) {
   if (siguiente) {
     // El keyframe al que hay que llegar puede estar en el archivo, si el plano
     // siguiente es uno de ambiente. Buscarlo siempre a nombre de esta pieza
-    // diría que falta un keyframe que existe y está aprobado desde hace meses.
+    // diría que falta un keyframe que existe y está generado desde hace meses.
     const laSiguiente = ctx.pieza.tomas.find((una) => una.id === siguiente) || { id: siguiente };
     const suyo = leerToma(ctx.estado, claveDelMaterial(ctx.pieza.id, laSiguiente));
     if (!suyo.keyframe || suyo.revisionPendiente) {
       return (
         `Esta toma encadena con ${siguiente}, y para encadenar hace falta el keyframe de ` +
-        `${siguiente} aprobado: es la imagen a la que Veo tiene que llegar interpolando. Genera y ` +
-        `aprueba antes el keyframe de ${siguiente} y aquí aparecerá el botón.`
+        `${siguiente}: es la imagen a la que Veo tiene que llegar interpolando. Genera antes ` +
+        `el keyframe de ${siguiente} y aquí aparecerá el botón.`
       );
     }
   }
@@ -895,7 +910,7 @@ function olvidarEnlaces(repintar) {
 /**
  * Todas las rutas que hace falta firmar para pintar una tarjeta: el keyframe que
  * se mira, la tira de intentos si se enseña, y los clips, que además necesitan
- * el keyframe aprobado de poster.
+ * el keyframe en uso de poster.
  * @param {object} guardado
  * @returns {string[]}
  */
@@ -961,7 +976,7 @@ function construir(modelo, repintar, repintarLuego) {
   for (const una of enPantalla) {
     rutas.push(...rutasDeLaTarjeta(leerToma(estado, claveDelMaterial(pieza.id, una))));
     if (!una.de_archivo) {
-      rutas.push(...(una.refs || []).map(id=>estado.banco?.[id]?.aprobada).filter(Boolean));
+      rutas.push(...(una.refs || []).map(id=>{const e=estado.banco?.[id]; return e?.aprobada || (Array.isArray(e?.intentos) ? e.intentos.at(-1) : null);}).filter(Boolean));
       rutas.push(...referenciasDeReparto(pieza,una,estado,modelo.catalogoPersonajes).map(r=>r.ruta));
     }
   }
@@ -1078,7 +1093,7 @@ function seccionCabecera(ctx) {
     h(
       'p',
       { clase: 'tarjeta-texto tenue' },
-      /^ep\d+$/.test(pieza.id) ? 'Trabaja una imagen cada vez. Aprobar una imagen no genera ni cobra la siguiente: tú decides cuándo continuar.' : 'Los botones encolan: no lanzan nada de golpe. La cola los saca de UNO EN UNO ' +
+      /^ep\d+$/.test(pieza.id) ? 'Trabaja una imagen cada vez. Generar una imagen no cobra la siguiente: tú decides cuándo continuar.' : 'Los botones encolan: no lanzan nada de golpe. La cola los saca de UNO EN UNO ' +
         'porque saturar las cuotas de Vertex devuelve ' +
         'errores que parecen falta de acceso al modelo. Las tandas de faltantes solo piden material nuevo. ' +
         'La tanda de revisión crea otra versión de las imágenes cuya dirección cambió; las anteriores se conservan.'
@@ -1194,7 +1209,7 @@ function trabajoPorEscena(ctx) {
     return !materialVigente(e,'keyframe');
   });
   return seccion('Trabajar por escenas',
-    h('p',{clase:'tarjeta-texto'},'Elige una escena. Revisa sus imágenes en orden y aprueba cada una antes de generar la siguiente.'),
+    h('p',{clase:'tarjeta-texto'},'Elige una escena. Trabaja sus imágenes en orden: la última que generes de cada plano es la que se usa.'),
     filtro(bloques.map(b=>({id:b.id,texto:b.titulo})),bloque.id,id=>{
       bloquePuesto=id; filtroPuesto='todo'; paginas=1; ctx.repintar();
     }),
@@ -1204,8 +1219,8 @@ function trabajoPorEscena(ctx) {
       h('p',{clase:'tarjeta-texto toma-transicion'},historia.transicion),
       h('strong',null,'Qué pasa en esta escena'),
       h('p',{clase:'tarjeta-texto'},historia.resumen || 'No se pudo cargar el guion. Recarga la página.')) : null,
-    h('p',{clase:'tarjeta-texto'},pendiente ? `Siguiente por revisar: toma ${pendiente.id}. Puedes conservar su imagen si está bien o crear otra versión.` :
-      'Las imágenes de esta escena están aprobadas. Puedes revisar sus vídeos o elegir otra escena.'),
+    h('p',{clase:'tarjeta-texto'},pendiente ? `Siguiente con la dirección cambiada: toma ${pendiente.id}. Su imagen ya no corresponde a lo escrito: genera otra versión.` :
+      'Las imágenes de esta escena están listas. Puedes revisar sus vídeos o elegir otra escena.'),
     boton('Ver las tomas de esta escena',()=>{filtroPuesto='todo';paginas=1;ctx.repintar(irALaLista);})
   );
 }
@@ -1254,7 +1269,7 @@ function accionesDeTandaLibre(ctx) {
   ));
 
   if (keyframesPorRevisar.length) acciones.push(boton(
-    `Regenerar ${keyframesPorRevisar.length} keyframes por revisar`, async () => {
+    `Regenerar ${keyframesPorRevisar.length} keyframes con la dirección cambiada`, async () => {
       if (!(await confirmar(`Se generarán ${keyframesPorRevisar.length} imágenes nuevas con la dirección corregida. Esto usa el modelo de imagen y tiene coste. Se conservarán las versiones anteriores; las nuevas tendrás que aprobarlas antes de generar vídeos. Conviene comprobar primero una toma de cada secuencia. ¿Encolar las imágenes?`))) return;
       hacer(() => encolarVarios(keyframesPorRevisar),repintar);
     }, {tono:'principal'}
@@ -1284,8 +1299,8 @@ function accionesDeTandaLibre(ctx) {
         )
       : boton('Generar los clips que faltan', null, {
           desactivado: clipsQueEsperan.length
-            ? `Los ${clipsQueEsperan.length} planos sin vídeo todavía no tienen keyframe aprobado ` +
-              '—o encadenan con una toma que tampoco lo tiene—. Aprueba esos keyframes y ' +
+            ? `Los ${clipsQueEsperan.length} planos sin vídeo todavía no tienen keyframe ` +
+              '—o encadenan con una toma que tampoco lo tiene—. Genera esos keyframes y ' +
               'aparecerán aquí.'
             : 'No falta ningún clip por generar en esta pieza.'
         })
@@ -1353,8 +1368,8 @@ function seccionProgreso(ctx) {
     h(
       'p',
       { clase: 'tarjeta-texto suave' },
-      'La barra de cada bloque cuenta los planos TERMINADOS —los que ya tienen clip elegido—, y ' +
-        'debajo va cuántos keyframes hay aprobados. Es lo que permite saber si la pieza va por la ' +
+      'La barra de cada bloque cuenta los planos TERMINADOS —los que ya tienen clip—, y ' +
+        'debajo va cuántos keyframes hay generados. Es lo que permite saber si la pieza va por la ' +
         'mitad sin contar planos a mano.'
     )
   ];
@@ -1411,7 +1426,7 @@ function filaDeGrupo(titulo, tomas, ctx, idBloque) {
     h(
       'p',
       { clase: 'tarjeta-texto suave', estilo: { margin: '0' } },
-      `Keyframes aprobados: ${cuenta.keyframes} de ${cuenta.total}.` +
+      `Keyframes generados: ${cuenta.keyframes} de ${cuenta.total}.` +
         (cuenta.sinNada ? ` Sin empezar: ${cuenta.sinNada}.` : '')
     ),
     idBloque
@@ -1581,6 +1596,69 @@ function separadorDeBloque(bloque, ctx) {
  * @param {object} ctx
  * @returns {HTMLElement}
  */
+/**
+ * El efecto de sonido de este plano, que se pide a ElevenLabs describiéndolo.
+ *
+ * Hasta hoy el estudio no tenía cadena de efectos: el sonido de la escena se
+ * nombraba en las reglas y nadie lo generaba. Aquí se pide por plano, con la
+ * descripción que se escriba —el generador trabaja mejor en inglés, como
+ * Lyria— y con la duración del plano como duración pedida. Va por la cola,
+ * como todo lo que se genera, y lo que vale es el último que se pida: pedir
+ * otro sustituye al anterior en la tarjeta y en el estado.
+ *
+ * Sin clave de ElevenLabs la petición vuelve con el error que lo dice; la
+ * tarjeta no lo esconde ni lo disfraza de otra cosa.
+ */
+function bloqueDeEfecto(laToma, clave, guardado, ctx) {
+  const [piezaDelEfecto, idDelEfecto] = clave.split('/');
+  const trabajo = ctx.trabajos.get(`efecto:${clave}`) || null;
+  const efecto = guardado.efecto;
+
+  const campo = h('input', {
+    type: 'text',
+    'aria-label': `Descripción del efecto de sonido de ${laToma.id}`,
+    placeholder: 'El sonido, en inglés: «a single drop of water falls into a puddle»',
+    estilo: {
+      width: '100%',
+      'min-height': 'var(--toque, 48px)',
+      padding: '0 12px',
+      background: 'var(--fondo-hundido)',
+      border: '1px solid var(--borde)',
+      'border-radius': 'var(--radio-chico)',
+      color: 'var(--texto)'
+    }
+  });
+  if (efecto && efecto.texto) campo.value = efecto.texto;
+
+  const enMarcha = trabajo && (trabajo.estado === 'pendiente' || trabajo.estado === 'en_curso');
+
+  return h('div', { clase: 'toma-efecto' },
+    h('strong', null, 'Efecto de sonido'),
+    efecto
+      ? h('p', { clase: 'tarjeta-texto' },
+          `«${efecto.texto}» · ${efecto.durS ? `${efecto.durS.toFixed(1)} s · ` : ''}generado con ElevenLabs.`)
+      : h('p', { clase: 'tarjeta-texto suave' },
+          'Este plano no tiene efecto generado. El vídeo va sin sonido: el efecto se pide aparte.'),
+    campo,
+    h('div', { estilo: { 'margin-top': '8px' } },
+      boton(enMarcha ? 'Generando el efecto…' : efecto ? 'Volver a pedirlo' : 'Pedir el efecto', () => {
+        const texto = soloTexto(campo.value);
+        if (!texto) return;
+        hacer(
+          () => encolar('efecto', {
+            pieza: piezaDelEfecto,
+            id: idDelEfecto,
+            texto,
+            dur_s: Number(laToma.dur) || undefined
+          }),
+          ctx.repintar
+        );
+      }, { tono: 'suave', desactivado: enMarcha ? 'Ya se está generando el efecto de este plano.' : false })),
+    trabajo && trabajo.error
+      ? aviso(trabajo.error, { tono: 'error', detalle: trabajo.detalle })
+      : null);
+}
+
 function tarjetaDeToma(laToma, ctx) {
   const { pieza } = ctx;
   // De dónde sale el material de este plano. Casi siempre es suyo; si apunta al
@@ -1645,13 +1723,13 @@ function tarjetaDeToma(laToma, ctx) {
     const reparto=referenciasDeReparto(pieza,laToma,ctx.estado,ctx.modelo.catalogoPersonajes);
     if (reparto.length) pie.push(h('details',{clase:'toma-referencias-extra'},
       h('summary',null,'Aspecto de los acompañantes'),
-      h('p',{clase:'tarjeta-texto suave'},'Se conserva su aspecto usando estas imágenes aprobadas del mismo momento de la historia.'),
+      h('p',{clase:'tarjeta-texto suave'},'Se conserva su aspecto usando estas imágenes del banco del mismo momento de la historia.'),
       h('div',{clase:'toma-referencias-banco'},reparto.map(r=>miniaturaDeReferencia(r.ruta,r.etiqueta, r.personajes.join(', '))))));
   }
   if (rutaVisible) {
     const numero = guardado.intentosKeyframe.indexOf(rutaVisible) + 1;
-    const aprobada = rutaVisible === guardado.keyframe && !guardado.revisionPendiente;
-    pie.push(h('p', {clase:'tarjeta-texto suave'}, `Imagen${numero ? ` · Versión ${numero}` : ' del banco'} · ${aprobada ? 'Aprobada' : 'Por revisar'}`));
+    const enUso = rutaVisible === guardado.keyframe;
+    pie.push(h('p', {clase:'tarjeta-texto suave'}, `Imagen${numero ? ` · Versión ${numero}` : ' del banco'} · ${guardado.revisionPendiente ? 'Dirección cambiada' : enUso ? 'En uso' : 'Otro intento'}`));
   }
   pie.push(h('details', {clase:'toma-detalles'}, h('summary', null, 'Detalles de generación'),
     h('p', {clase:'tarjeta-texto suave'}, datosDeLaToma(laToma)),
@@ -1691,6 +1769,8 @@ function tarjetaDeToma(laToma, ctx) {
   const clips = zonaDeClips(clave, guardado, laToma, ctx);
   if (clips) pie.push(clips);
 
+  pie.push(bloqueDeEfecto(laToma, clave, guardado, ctx));
+
   const nodo = tarjeta({
     titulo: contexto ? contexto.titulo : tituloDeTarjeta(laToma),
     media: marcoDeKeyframe(clave, guardado, laToma.id),
@@ -1699,7 +1779,7 @@ function tarjetaDeToma(laToma, ctx) {
       (trabajoKeyframe && trabajoKeyframe.estado === 'fallido') ||
       (trabajoClip && trabajoClip.estado === 'fallido')
         ? { tipo: 'fallido', texto: 'Ha fallado' }
-        : guardado.revisionPendiente ? { tipo:'pendiente', texto:'Revisión pendiente' }
+        : guardado.revisionPendiente ? { tipo:'pendiente', texto:'Dirección cambiada' }
         : PUNTOS[como] || { tipo: como },
     acciones: accionesDeLaToma(laToma, clave, guardado, ctx, {
       bloqueoKeyframe,
@@ -1711,8 +1791,8 @@ function tarjetaDeToma(laToma, ctx) {
   return nodo;
 }
 
-/** Solo las fichas aprobadas que viajarán en la próxima petición, sin intentos
- * descartados. El usuario puede contrastar el diseño antes de generar. */
+/** Solo las fichas en uso que viajarán en la próxima petición. El usuario
+ * puede contrastar el diseño antes de generar. */
 function referenciasDelBanco(toma,ctx) {
   const refs=[...new Set(toma.refs || [])].map(id=>ctx.modelo.catalogoPersonajes.find(p=>p.id===id)).filter(Boolean);
   if (!refs.length) return null;
@@ -1722,7 +1802,9 @@ function referenciasDelBanco(toma,ctx) {
     h('div',{clase:'toma-referencias-banco'},refs.map(p=>{
       const ficha=ctx.modelo.personajes[p.personaje];
       const nombre=ficha?.nombre || p.personaje.replaceAll('-',' ').replace(/^./,c=>c.toUpperCase());
-      return miniaturaDeReferencia(ctx.estado.banco?.[p.id]?.aprobada,nombre,'Referencia aprobada del banco');
+      const entradaBanco=ctx.estado.banco?.[p.id];
+      const rutaBanco=entradaBanco?.aprobada || (Array.isArray(entradaBanco?.intentos) ? entradaBanco.intentos.at(-1) : null);
+      return miniaturaDeReferencia(rutaBanco,nombre,'Referencia del banco');
     })));
 }
 
@@ -1822,14 +1904,14 @@ function comoSeUsaLaToma(laToma) {
 // El keyframe de la tarjeta
 // ---------------------------------------------------------------------------
 
-/** Qué keyframe se está mirando: el elegido a mano, el aprobado o el último. */
+/** Qué keyframe se está mirando: el último generado. */
 function rutaQueSeMira(guardado, clave) {
   return guardado.intentosKeyframe.at(-1) || guardado.keyframe || null;
 }
 
 /**
- * Lo que se mira para aprobar: el keyframe aprobado, el intento que se esté
- * mirando, o un hueco que dice con palabras qué falta. Nunca un `<img>` roto.
+ * Lo que se mira: el keyframe en uso, o un hueco que dice con palabras qué
+ * falta. Nunca un `<img>` roto.
  * @param {string} clave
  * @param {object} guardado
  * @param {string} idToma
@@ -1852,7 +1934,7 @@ function marcoDeKeyframe(clave, guardado, idToma) {
   const esElAprobado = ruta === guardado.keyframe;
   const img = h('img', {
     src: url,
-    alt: `Keyframe del plano ${idToma}. ${esElAprobado ? (guardado.revisionPendiente ? 'Revisión pendiente' : 'Aprobado') : 'Intento sin aprobar'}.`,
+    alt: `Keyframe del plano ${idToma}. ${esElAprobado ? (guardado.revisionPendiente ? 'Dirección cambiada' : 'En uso') : 'Otro intento'}.`,
     loading: 'lazy',
     decoding: 'async'
   });
@@ -1947,7 +2029,7 @@ function tiraDeKeyframes(clave, guardado, idToma, ctx) {
           'aria-pressed': esta ? 'true' : 'false',
           'aria-label':
             `Intento ${indice + 1} de keyframe del plano ${idToma}` +
-            `${esElAprobado ? (guardado.revisionPendiente ? ', revisión pendiente' : ', el aprobado') : ''}. Verlo en grande.`,
+            `${esElAprobado ? (guardado.revisionPendiente ? ', dirección cambiada' : ', el que se usa') : ''}. Verlo en grande.`,
           estilo: {
             flex: '0 0 auto',
             width: '96px',
@@ -1984,7 +2066,7 @@ function tiraDeKeyframes(clave, guardado, idToma, ctx) {
             clase: esElAprobado ? 'suave' : 'tenue',
             estilo: { display: 'block', 'font-size': '11px', 'padding-top': '2px' }
           },
-          esElAprobado ? `${indice + 1} · ${guardado.revisionPendiente ? 'revisar' : 'aprobado'}` : String(indice + 1)
+          esElAprobado ? `${indice + 1} · ${guardado.revisionPendiente ? 'dirección cambiada' : 'en uso'}` : String(indice + 1)
         )
       );
     })
@@ -1996,12 +2078,9 @@ function tiraDeKeyframes(clave, guardado, idToma, ctx) {
 // ---------------------------------------------------------------------------
 
 /**
- * La zona de vídeos: un reproductor por intento, con el keyframe de poster, y
- * debajo el botón de elegirlo.
- *
- * El botón está apagado hasta que ese vídeo se ha reproducido, y el motivo se
- * lee al tocarlo. No es una molestia gratuita: lo que se elige aquí es lo que
- * entra en el montaje, y elegir sin mirar es como no elegir.
+ * La zona de vídeos: un reproductor por intento, con el keyframe de poster.
+ * No hay botón de elegir: el último vídeo generado es el que entra en el
+ * montaje, y pedir otro lo sustituye en el acto.
  *
  * @param {string} clave
  * @param {object} guardado
@@ -2027,10 +2106,9 @@ function zonaDeClips(clave, guardado, laToma, ctx) {
       'p',
       { clase: 'tarjeta-texto suave', estilo: { margin: '0' } },
       guardado.clip
-        ? `${plural(todos.length, 'vídeo generado', 'vídeos generados')}. El elegido es el que ` +
-          'entra en el montaje; se puede cambiar reproduciendo otro y eligiéndolo.'
-        : `${plural(todos.length, 'vídeo generado', 'vídeos generados')} y ninguno elegido ` +
-          'todavía. Reprodúcelos y elige uno: sin elegir, este plano no entra en el montaje.'
+        ? `${plural(todos.length, 'vídeo generado', 'vídeos generados')}. El último es el que ` +
+          'entra en el montaje; pedir otro lo sustituye.'
+        : `${plural(todos.length, 'vídeo generado', 'vídeos generados')}.`
     )
   );
 
@@ -2042,7 +2120,8 @@ function zonaDeClips(clave, guardado, laToma, ctx) {
 }
 
 /**
- * Un intento de clip: su reproductor y su botón de elegir.
+ * Un intento de clip: su reproductor. El que se usa se marca con el borde y
+ * con la palabra «en uso»; no hay nada que elegir.
  * @returns {HTMLElement}
  */
 function unClip(ruta, indice, cuantos, clave, guardado, laToma, poster, ctx) {
@@ -2050,35 +2129,6 @@ function unClip(ruta, indice, cuantos, clave, guardado, laToma, poster, ctx) {
   const nombre = `Vídeo ${indice + 1} de ${cuantos} del plano ${laToma.id}`;
 
   const nota = h('p', { clase: 'tarjeta-texto tenue', estilo: { margin: '0' } });
-  const acciones = h('div', { clase: 'tarjeta-acciones' });
-
-  /** Pinta el botón de elegir según si ese vídeo ya se ha reproducido. */
-  const pintarElegir = () => {
-    vaciar(acciones);
-    if (esElElegido) {
-      acciones.appendChild(
-        boton('Elegido', null, {
-          desactivado:
-            'Este es justo el vídeo que ya está elegido: es el que va a entrar en el montaje. Para ' +
-            'cambiarlo, reproduce otro intento y elígelo.'
-        })
-      );
-      return;
-    }
-    if (!vistos.has(ruta)) {
-      acciones.appendChild(
-        boton('Elegir este', null, {
-          desactivado:
-            'Primero reprodúcelo. Lo que se elige aquí es lo que entra en el montaje, y nada entra ' +
-            'sin haberse visto antes: dale al play y el botón se enciende solo.'
-        })
-      );
-      return;
-    }
-    acciones.appendChild(
-      boton('Elegir este', () => elegirClip(clave, ruta, ctx), { tono: 'principal' })
-    );
-  };
 
   const url = enlaceDe(ruta);
 
@@ -2095,7 +2145,7 @@ function unClip(ruta, indice, cuantos, clave, guardado, laToma, poster, ctx) {
       }
     },
     url
-      ? reproductor(url, nombre, poster, ruta, nota, pintarElegir)
+      ? reproductor(url, nombre, poster, ruta, nota)
       : hueco(
           sinEnlace.has(ruta)
             ? 'Este vídeo existe en el bucket pero no se ha conseguido enlace para reproducirlo. ' +
@@ -2104,8 +2154,6 @@ function unClip(ruta, indice, cuantos, clave, guardado, laToma, poster, ctx) {
         )
   );
 
-  pintarElegir();
-
   return h(
     'div',
     { estilo: { display: 'flex', 'flex-direction': 'column', gap: 'var(--espacio-1)' } },
@@ -2113,10 +2161,9 @@ function unClip(ruta, indice, cuantos, clave, guardado, laToma, poster, ctx) {
     h(
       'p',
       { clase: esElElegido ? 'suave' : 'tenue', estilo: { margin: '0', 'font-size': '13px' } },
-      esElElegido ? `Intento ${indice + 1} · elegido` : `Intento ${indice + 1}`
+      esElElegido ? `Intento ${indice + 1} · en uso` : `Intento ${indice + 1}`
     ),
-    nota,
-    acciones
+    nota
   );
 }
 
@@ -2132,7 +2179,7 @@ function unClip(ruta, indice, cuantos, clave, guardado, laToma, poster, ctx) {
  *
  * @returns {HTMLElement}
  */
-function reproductor(url, queEs, poster, ruta, nota, pintarElegir) {
+function reproductor(url, queEs, poster, ruta, nota) {
   const video = h('video', {
     controls: true,
     preload: 'none',
@@ -2143,12 +2190,6 @@ function reproductor(url, queEs, poster, ruta, nota, pintarElegir) {
     estilo: { width: '100%', height: '100%', display: 'block', background: 'var(--negro)' },
     alReproducir: () => {
       sonando.add(video);
-      if (!vistos.has(ruta)) {
-        vistos.add(ruta);
-        // Se enciende el botón sin repintar la tarjeta: repintarla borraría este
-        // mismo vídeo justo cuando acaba de empezar a sonar.
-        pintarElegir();
-      }
     },
     alPausar: () => {
       sonando.delete(video);
@@ -2179,8 +2220,9 @@ function reproductor(url, queEs, poster, ruta, nota, pintarElegir) {
  *
  * El de generar vídeo NO SE DEVUELVE mientras `sinBotonDeVideo` diga algo: la
  * frase ya está en el pie y un botón que siempre falla enseña a desconfiar de la
- * pantalla. Y con el keyframe bloqueado por una referencia sin aprobar tampoco
- * hay botón de generar keyframe, por lo mismo.
+ * pantalla. Y con el keyframe bloqueado por una referencia sin generar tampoco
+ * hay botón de generar keyframe, por lo mismo. No hay botón de aprobar: la
+ * última imagen y el último vídeo generados son los que se usan.
  *
  * @param {object} laToma
  * @param {string} clave
@@ -2200,25 +2242,6 @@ function accionesDeLaToma(laToma, clave, guardado, ctx, { bloqueoKeyframe, sinBo
         ...(preparando ? {desactivado:'Se está preparando esta toma.'} : {})})];
   }
 
-  if (puesta) {
-    if (puesta === guardado.keyframe && !guardado.revisionPendiente) {
-      acciones.push(
-        boton('Aprobar keyframe', null, {
-          desactivado:
-            'Esta imagen ya está aprobada. Puedes generar otra versión si necesitas cambiarla.'
-        })
-      );
-    } else {
-      acciones.push(
-        boton(
-          guardado.keyframe ? 'Aprobar este keyframe' : 'Aprobar keyframe',
-          () => aprobarKeyframe(clave, puesta, laToma.id, guardado, ctx),
-          { tono: 'principal' }
-        )
-      );
-    }
-  }
-
   if (!bloqueoKeyframe) {
     acciones.push(
       boton(
@@ -2229,7 +2252,7 @@ function accionesDeLaToma(laToma, clave, guardado, ctx, { bloqueoKeyframe, sinBo
     );
   }
 
-  // LA REGLA DURA. Sin keyframe aprobado —o sin el de la toma siguiente, cuando
+  // LA REGLA DURA. Sin keyframe en uso —o sin el de la toma siguiente, cuando
   // encadena— aquí no se añade nada. No hay botón que pulsar.
   if (!sinBotonDeVideo) {
     const yaHayVideo = guardado.intentosClip.length > 0;
@@ -2252,7 +2275,7 @@ function accionesDeLaToma(laToma, clave, guardado, ctx, { bloqueoKeyframe, sinBo
 async function prepararVersionLocal(toma,ctx) {
   const clave=`${ctx.pieza.id}/${toma.id}`;
   if (preparandoVersion.has(clave)) return;
-  if (!(await confirmar('Se preparará esta toma según lo que ocurre en la escena. El material del banco no cambiará. Después podrás generar la nueva imagen y aprobarla. ¿Preparar la versión?'))) return;
+  if (!(await confirmar('Se preparará esta toma según lo que ocurre en la escena. El material del banco no cambiará. Después podrás generar la nueva imagen. ¿Preparar la versión?'))) return;
   preparandoVersion.add(clave);
   ctx.repintar();
   await hacer(async()=>{
@@ -2261,73 +2284,6 @@ async function prepararVersionLocal(toma,ctx) {
       await cargar();
     } finally { preparandoVersion.delete(clave); }
   },ctx.repintar);
-}
-
-/**
- * Aprueba un keyframe. Si ya había vídeos generados a partir de otro, se avisa
- * antes: esos clips salieron de una imagen que ya no es la aprobada, y eso hay
- * que saberlo antes de tocar nada.
- *
- * Se conserva el archivo de `clip_elegido`, pero queda pendiente de revisión
- * si cambia la imagen. Un clip con origen conocido distinto no es vigente.
- */
-async function aprobarKeyframe(clave, ruta, idToma, guardado, ctx) {
-  const cuantos = guardado.intentosClip.length;
-
-  if (guardado.keyframe && guardado.keyframe !== ruta && cuantos) {
-    const pregunta =
-      `Vas a cambiar el keyframe aprobado de ${idToma}, y ya hay ` +
-      `${plural(cuantos, 'vídeo generado', 'vídeos generados')} a partir del anterior. Esos clips ` +
-      'se conservan para revisión. Los que estén vinculados a otra imagen no podrán usarse en ' +
-      'el nuevo montaje. Los vídeos que pidas a partir de ahora partirán de este keyframe. ¿Lo hago?';
-    if (!(await confirmar(pregunta))) return;
-  }
-
-  try {
-    await cambiar((borrador) => {
-      const entrada = entradaMutable(borrador, clave);
-      if (entrada.keyframe_aprobado !== ruta && entrada.intentos_clip?.length) entrada.clip_revision_pendiente = true;
-      if (entrada.keyframe_aprobado !== ruta || entrada.revision_pendiente) invalidarMontajes(borrador,ctx.pieza.id);
-      entrada.keyframe_aprobado = ruta;
-      entrada.revision_pendiente = false;
-      entrada.revision_aprobada = borrador.piezas?.[ctx.pieza.id]?.tomas?.find(t=>t.id===idToma)?.revision_direccion || null;
-      // El intento aprobado tiene que seguir en la lista: si vino de una tanda
-      // vieja y ya no estaba, se vuelve a apuntar para no perderlo de vista.
-      if (!Array.isArray(entrada.intentos_keyframe)) entrada.intentos_keyframe = [];
-      if (!entrada.intentos_keyframe.includes(ruta)) entrada.intentos_keyframe.push(ruta);
-    });
-    mirando.set(clave, {ruta,ultimo:guardado.intentosKeyframe.at(-1)});
-    queja = null;
-  } catch (fallo) {
-    queja = comoErrorDeCara(fallo);
-  }
-  ctx.repintar();
-}
-
-/**
- * Elige el clip que entra en el montaje. Aquí no se pregunta nada: elegir es
- * gratis, se ha reproducido antes —el botón no existía si no— y cambiar de
- * elección es un toque.
- */
-async function elegirClip(clave, ruta, ctx) {
-  try {
-    await cambiar((borrador) => {
-      const entrada = entradaMutable(borrador, clave);
-      const origen = entrada.origenes_clip?.[ruta];
-      if (entrada.revision_pendiente || (origen && origen.keyframe !== entrada.keyframe_aprobado)) {
-        throw new ErrorDeCara('Este vídeo procede de otra imagen o de una continuidad pendiente. Revisa el keyframe y genera un vídeo compatible.', {reintentable:false,http:409});
-      }
-      entrada.clip_elegido = ruta;
-      entrada.clip_revision_pendiente = false;
-      invalidarMontajes(borrador,ctx.pieza.id);
-      if (!Array.isArray(entrada.intentos_clip)) entrada.intentos_clip = [];
-      if (!entrada.intentos_clip.includes(ruta)) entrada.intentos_clip.push(ruta);
-    });
-    queja = null;
-  } catch (fallo) {
-    queja = comoErrorDeCara(fallo);
-  }
-  ctx.repintar();
 }
 
 /**
@@ -2341,8 +2297,7 @@ async function encolarUnClip(laToma, ctx) {
   if (guardado.intentosClip.length) {
     const pregunta =
       `Ya hay ${plural(guardado.intentosClip.length, 'vídeo', 'vídeos')} de ${laToma.id}. Pedir ` +
-      'otro cuesta cerca de un euro y no borra los anteriores: se añade a la lista y se elige ' +
-      'mirándolos. ¿Lo pido?';
+      'otro cuesta cerca de un euro y no borra los anteriores: se añade a la lista y el nuevo pasa a ser el que se usa. ¿Lo pido?';
     if (!(await confirmar(pregunta))) return;
   }
 
@@ -2356,7 +2311,7 @@ async function encolarUnClip(laToma, ctx) {
 async function encolarLosClips(trabajos, ctx) {
   const pregunta =
     `Vas a encolar ${plural(trabajos.length, 'clip', 'clips')}. Cada uno cuesta cerca de un euro, ` +
-    `así que esto son alrededor de ${trabajos.length} euros. Todos tienen su keyframe aprobado, ` +
+    `así que esto son alrededor de ${trabajos.length} euros. Todos tienen su imagen lista, ` +
     'así que no se gasta a ciegas. La cola los saca de uno en uno y se puede detener en la ' +
     'pantalla de Cola. ¿Los encolo?';
   if (!(await confirmar(pregunta))) return;

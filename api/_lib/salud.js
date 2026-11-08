@@ -51,6 +51,7 @@ import { token, AMBITOS } from './auth.js';
 import { escribir, leer, firmar } from './gcs.js';
 import { llamar, urlModelo, urlServicio, conGrafias, comoGrafia } from './vertex.js';
 import { listarVoces } from './audio.js';
+import { hayClaveElevenLabs, modeloDeVozElevenLabs } from './elevenlabs.js';
 
 // Los dos objetos que Salud deja en el bucket. Son ruidosos a propósito: quien
 // abra el bucket tiene que entender en un vistazo qué hacen ahí y poder
@@ -188,6 +189,18 @@ export async function salud() {
     // montar nada aunque todos los modelos estén en verde. Se dice aquí porque
     // Salud es la pantalla donde se mira si falta algo por instalar.
     montaje: deMontaje,
+
+    // ElevenLabs: SOLO se dice si la clave está puesta o falta, y con qué
+    // modelo se grabaría. No se llama a ElevenLabs para comprobarlo: saber si
+    // hay clave es mirar la variable, y llamar gastaría la cuota de otro.
+    // Que la clave VALGA solo se sabe al generar la primera muestra, y el
+    // error de esa llamada sale a pantalla con las palabras de ElevenLabs.
+    elevenlabs: {
+      clave_puesta: hayClaveElevenLabs(),
+      modelo: modeloDeVozElevenLabs().id,
+      variable: 'ELEVENLABS_API_KEY',
+      variable_modelo: modeloDeVozElevenLabs().variable
+    },
 
     modelos: deLosModelos,
     voces: deLasVoces.voces,

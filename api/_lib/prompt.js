@@ -276,6 +276,32 @@ const INSTRUCCION_ESCENARIO_POR_DEFECTO =
 
 const GEOMETRIA_DEL_ESCENARIO = 'SET GEOMETRY IS LOCKED TO THE APPROVED LOCATION IMAGE. It is the physical set, not a mood board. Within the matching subspace, preserve object count, connected surfaces and relative placement: a single long table remains one continuous table even when it extends beyond the crop, never separate small tables. Keep lamp design and mounting: hanging fixtures stay suspended at their installed locations; do not replace them with tabletop lamps. Do not move walls, windows, doors or the fireplace to improve the composition. Character portraits supply only characters, never their furniture, lamps or backgrounds. Earlier frames supply ongoing action and occupancy, not permission to redesign this set. Only an explicit physical change in the story permits that particular change; a new shot or an insert does not. If the master is an exterior or an overview of another subspace, use its architectural identity for the requested subspace, never copy that unrelated layout into it.';
 
+// LA ESCALA, que es el defecto que paró la producción del capítulo 1: el fondo
+// salía pequeño y los personajes gigantes. La geometría de arriba fija QUÉ hay
+// y DÓNDE está; esto fija CUÁNTO MIDE cada cosa contra las personas. No hay
+// alturas escritas en los datos de ningún personaje ni de ningún escenario,
+// así que la medida se escribe como proporción contra un adulto de pie, que
+// es la única vara que el modelo puede aplicar igual en todos los planos: la
+// puerta, la mesa, la silla y el techo de la imagen del lugar son la regla, y
+// una persona que no cupiera por esa puerta está mal dibujada, salga en el
+// plano que salga.
+const ESCALA_DEL_ESCENARIO = 'SCALE IS LOCKED TO ONE HUMAN MEASURE IN EVERY SHOT OF THIS SET. A standing adult is about seven and a half heads tall, and that measure never changes: only the camera distance changes. Judge every size against the architecture and the furniture shown in the references: a doorway is a little taller than a standing adult, about one and a quarter adult heights; a tabletop reaches a standing adult\'s hip, about half an adult height; a chair seat is at knee height; a ceiling is at least one and a half adult heights unless the set itself shows a low vault. A seated person\'s head stays below a standing person\'s head, and a seated figure rises above the back of their chair only by their head and shoulders. Nobody towers over a door, a table or another person, and nobody shrinks against them: if a figure drawn at its size could not walk through the doorway of this set, it is too big. Figures are larger only when they are closer to the camera, inside the shared perspective of the set, never because the person grew and never because the room shrank.';
+
+/** Y el lado negativo de la escala, que es donde el modelo hace más caso. */
+const NEGATIVO_DE_ESCALA =
+  'giant people, oversized characters, tiny room, miniature furniture, dollhouse ' +
+  'scale, people taller than doorways, seated figure taller than a standing ' +
+  'figure, wrong scale, distorted proportions';
+
+/**
+ * La escala con la que se DIBUJA la placa de un escenario. La placa es la vara
+ * de medir de todos los planos que ocurren ahí —si ella nace con las puertas
+ * y los muebles a otra escala, cada plano hereda el error—, así que la
+ * proporción se le pide al dibujarla, aunque salga vacía: la arquitectura se
+ * mide contra el adulto que luego ocupará el sitio.
+ */
+const ESCALA_ARQUITECTONICA = 'Draw the architecture and the furniture at true human scale, measured for the adults who will stand in this place: doorways a little taller than a standing adult, about one and a quarter adult heights; tabletops at a standing adult\'s hip height; chair seats at knee height; steps at ankle height; ceilings at least one and a half adult heights unless the description itself says the vault is low. These proportions are part of the set and every later shot of this place inherits them.';
+
 function direccionDelPlano(idPieza, laToma) {
   if (necesitaDireccion({ id:idPieza }, laToma)) {
     throw new ErrorDeCara('Esta toma necesita actualizar su continuidad. En Tomas, pulsa «Corregir continuidad» antes de generar imágenes o vídeos.', { http:409, reintentable:false });
@@ -295,7 +321,9 @@ function direccionDelPlano(idPieza, laToma) {
     `Visible cast: ${d.visibles.join(', ') || 'none'}. Off screen: ${d.fuera_de_campo.join(', ') || 'none'}.`,
     'FRAME CAST IS EXCLUSIVE: render only the visible cast. People marked off screen must stay outside the frame even if mentioned in the scene context or shown in any reference. Preserving population does not mean adding people to a close-up.',
     'OFF SCREEN MEANS OUTSIDE THE CROP, NOT ABSENT FROM THE ROOM. Follow the specified camera distance: never turn a medium shot or a close-up into a wide view of an emptied room. If occupied seats or the crowd are outside this frame, crop those seats and that area out as well. Do not show their places empty. If guests are listed as visible, show the guests whose seats fall inside the crop, in their established positions; do not squeeze the entire gathering into a close-up.',
-    `Blocking and occupied background: ${d.posiciones}`, `Eyelines: ${d.miradas}`, `Camera: ${d.camara}`,
+    `Blocking and occupied background: ${d.posiciones}`,
+    'SEATING AND POSITIONS ARE MANDATORY, NOT A SUGGESTION. The blocking above names the seat or place of each person, and that seat is part of the set: nobody changes seat, side of the table or neighbour between shots of this scene. If the shot description, a bank portrait or an earlier frame suggests a different seat or position for anyone, THE BLOCKING ABOVE WINS. A person marked off screen keeps their established seat: never show that seat empty and never give it to someone else.',
+    `Eyelines: ${d.miradas}`, `Camera: ${d.camara}`,
     `Starting state: ${d.estado_inicial}`, `Permitted changes: ${d.estado_final}`,
     'Characters act within the story, with eyelines toward their partner or object of attention. No audience address. Preserve human proportions against furniture and shared perspective.',
     'CHARACTER BANK IS THE DESIGN AUTHORITY: preserve each referenced face, hair, eyes, build, clothing cut, material, colors, mask shape and accessories. Earlier scene frames must not redesign them. Only an explicitly scripted age, costume change or physical change permits that specific difference; generic shot wording or lighting is not permission to replace clothing or a mask. Pose, eyelines and the position of a mask follow this shot, while its design stays the same.');
@@ -527,12 +555,13 @@ export function promptEscenario(id) {
     elEscenario.descripcion,
     elEscenario.encuadre,
     SITIO_VACIO,
+    ESCALA_ARQUITECTONICA,
     luzDe(elEscenario.luz, `El escenario «${id}»`)
   );
 
   return {
     texto: sellar(cuerpo),
-    negativo: unir(negativoDeEstilo(), NEGATIVO_DE_GENTE),
+    negativo: unir(negativoDeEstilo(), NEGATIVO_DE_GENTE, NEGATIVO_DE_ESCALA),
     referencias: []
   };
 }
@@ -642,7 +671,15 @@ export function promptKeyframe(idPieza, idToma, piezaAlternativa = null, referen
 
   // El fotograma que se edita llega primero, antes de cualquier apoyo.
   if (referenciaBase) referencias.unshift(...referencias.splice(referencias.findIndex(r=>r.uso==='base_escena'),1));
-  return { texto: sellar(unir(cuerpo,!referenciaBase && laToma.escenario ? GEOMETRIA_DEL_ESCENARIO : '')), negativo: negativoDeEstilo(), referencias };
+  // La geometría solo se repite cuando no hay base de escena: con base, la
+  // base ES la autoridad espacial y repetir la del escenario sería darle al
+  // modelo dos autoridades que se contradicen. La ESCALA, en cambio, viaja
+  // siempre que el plano ocurre en un sitio: con base se mide contra el
+  // decorado ocupado de la base, y sin base contra la imagen del lugar.
+  return { texto: sellar(unir(cuerpo,
+    !referenciaBase && laToma.escenario ? GEOMETRIA_DEL_ESCENARIO : '',
+    laToma.escenario || referenciaBase ? ESCALA_DEL_ESCENARIO : '')),
+    negativo: unir(negativoDeEstilo(), NEGATIVO_DE_ESCALA), referencias };
 }
 
 // ---------------------------------------------------------------------------
