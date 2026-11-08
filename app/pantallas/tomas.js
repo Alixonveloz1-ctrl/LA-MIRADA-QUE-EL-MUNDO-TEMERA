@@ -112,7 +112,7 @@ const BLOQUES_SIN_PLEGAR = 8;
 const FILTROS = {
   todo: 'Todo',
   'sin-keyframe': 'Sin keyframe',
-  'keyframe-por-aprobar': 'Keyframe por aprobar',
+  'keyframe-por-revisar': 'Keyframe por revisar',
   'listo-para-video': 'Listo para vídeo',
   'video-en-curso': 'Vídeo en curso',
   'sin-elegir': 'Intentos sin elegir',
@@ -129,7 +129,7 @@ const NIVELES_DE_VEO = {
 /** Cómo se pinta el punto de estado de cada tarjeta. */
 const PUNTOS = {
   'sin-keyframe': { tipo: 'sin-keyframe', texto: 'Sin keyframe' },
-  'keyframe-por-aprobar': { tipo: 'por-aprobar', texto: 'Keyframe por aprobar' },
+  'keyframe-por-revisar': { tipo: 'por-aprobar', texto: 'Keyframe por revisar' },
   'listo-para-video': { tipo: 'pendiente', texto: 'Listo para vídeo' },
   'video-en-curso': { tipo: 'generando', texto: 'Vídeo en curso' },
   'sin-elegir': { tipo: 'por-aprobar', texto: 'Intentos sin elegir' },
@@ -414,7 +414,7 @@ async function bajarLaSerie() {
 /**
  * Ordena lo que esta pantalla necesita de la serie: las piezas con sus tomas en
  * orden, agrupadas en bloques, y los ids del banco y de los escenarios para
- * poder decir qué falta por aprobar antes de gastar un keyframe.
+ * poder decir qué falta por revisar antes de gastar un keyframe.
  *
  * @param {object} datos `datos/serie.json` entero
  * @returns {object}
@@ -695,7 +695,7 @@ function estadoDeToma(guardado, enLaCola) {
   if (guardado.clip) return 'listo';
   if (guardado.intentosClip.length) return 'sin-elegir';
   if (guardado.keyframe && !guardado.revisionPendiente) return 'listo-para-video';
-  if (guardado.intentosKeyframe.length) return 'keyframe-por-aprobar';
+  if (guardado.intentosKeyframe.length) return 'keyframe-por-revisar';
   return 'sin-keyframe';
 }
 
