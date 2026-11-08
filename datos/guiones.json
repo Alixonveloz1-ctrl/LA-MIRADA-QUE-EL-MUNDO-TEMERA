@@ -6,7 +6,7 @@
   "escenas": 289,
   "escenarios": 27,
   "nota_escenarios": "Cada escena trae ya su escenario canonico y su esquema de luz. Derivado de los guiones, no escrito a mano.",
-  "lineas": 446,
+  "lineas": 486,
   "nota_intencion": "Cada línea lleva su intención: cómo se dice, no solo qué se dice. Las marcadas con riesgo 'alto' son gritos o llanto sostenido, donde ningún TTS llega: se resuelven fuera de cuadro, tapadas, cortadas sobre quien escucha, o como grito sin palabras generado aparte."
  },
  "guiones": [
@@ -990,7 +990,7 @@
       "saharis"
      ],
      "dialogo": [],
-     "accion": "Saharis frente a la puerta de piedra del final del episodio anterior. No la abre. Se sienta en el suelo, apoyado en el muro de enfrente, y saca un trozo de papel. Pasan las horas. La puerta se abre cuatro veces. Él anota cada una. Al amanecer se levanta, se sacude el abrigo y se va sin haber entrado.",
+     "accion": "La misma noche, sin corte. Saharis está otra vez frente a la puerta de piedra del final del capítulo anterior: una sola, medio hundida, a ras de suelo, con el símbolo gastado en el dintel. Sabe cómo se llama a ella —golpe, golpe, pausa, golpe— y lo sabe porque lo guardó. No llama. Se sienta en el suelo, apoyado en el muro de enfrente, y saca un trozo de papel y el carboncillo. Pasan las horas. El callejón se vacía de los últimos ruidos de la calle. La puerta se abre cuatro veces. Él anota cada una: cuenta despacio lo que dura abierta y hace una marca en el papel. No come, no se levanta, no cambia de postura. Al amanecer se levanta, se sacude el abrigo y se va sin haber entrado.",
      "escenario": "casa-renn",
      "luz": "BARRIO"
     },
@@ -1010,7 +1010,7 @@
        "intencion": "ternura agotada, casi sin voz"
       }
      ],
-     "accion": "Cinco años. El NIÑO come pan duro sentado en el suelo. Su MADRE le pone la mano en la nuca. Despacio. Él come despacio. Ella empieza a cantar. Bajo. La misma melodía que gira y no termina. El niño la mira mientras mastica. No entiende ni una palabra. Entiende que ella está triste y que la canción no es de aquí.",
+     "accion": "Cinco años. El NIÑO come pan duro sentado en el suelo, contra la pared. Come deprisa, como come lo que puede acabarse. Su MADRE está sentada junto a él, muy cerca, con las piernas recogidas. Le pone la mano en la nuca. Despacio. La mano es delgada y pesa poco y se queda ahí. Él come despacio. Ella empieza a cantar. Bajo. La misma melodía que gira y no termina. El niño la mira mientras mastica. No entiende ni una palabra. Entiende que ella está triste y que la canción no es de aquí. Mastica más despacio todavía, para que dure. La melodía da otra vuelta y no llega a ningún final.",
      "escenario": "cripta-celda",
      "luz": "BARRIO"
     },
@@ -1023,7 +1023,7 @@
       "saharis"
      ],
      "dialogo": [],
-     "accion": "Saharis frente a la pared, con una lista nueva. Números. Deudas de la Casa Elserath. Fechas de vencimiento. La suma al final está subrayada dos veces. Debajo escribe: *deben más de lo que tienen. Eso es una puerta, no un problema.*",
+     "accion": "De día, en el refugio. La pared está como quedó: los trescientos papeles, el dibujo del anillo en su hueco, SIETE arriba del todo con letra de niño. Saharis frente a la pared, sentado en la única silla, con una lista nueva sobre la mesa. Números. Deudas de la Casa Elserath, copiadas de memoria partida a partida, con las fechas de vencimiento ordenadas de la más cercana a la más lejana. Al final hace la suma. La mira. La suma al final está subrayada dos veces. Debajo escribe: *deben más de lo que tienen. Eso es una puerta, no un problema.* Se queda mirando la frase un momento y deja la lista sobre la mesa, a la vista de la pared.",
      "escenario": "tuneles",
      "luz": "BARRIO"
     },
@@ -1037,8 +1037,51 @@
       "rothar",
       "saharis"
      ],
-     "dialogo": [],
-     "accion": "Humo, ruido, mesas. ROTHAR pierde. Vuelve a pedir crédito. El PRESTAMISTA niega con la cabeza. Desde el otro lado de la sala, Saharis —vestido de noble— hace un gesto mínimo a un CAMARERO. El camarero cruza, habla al oído del prestamista. El prestamista le da a Rothar la bolsa que le acababa de negar. Rothar no mira atrás. Nunca sabrá quién pagó.",
+     "dialogo": [
+      {
+       "quien": "rothar",
+       "etiqueta": "ROTHAR",
+       "texto": "Apúnteme otra.",
+       "intencion": "bajo, de jugador, sin levantarse"
+      },
+      {
+       "quien": "prestamista",
+       "etiqueta": "PRESTAMISTA",
+       "texto": "Su hoja ya no admite más, señor.",
+       "intencion": "neutro, sin mirar la hoja; la conoce de memoria"
+      },
+      {
+       "quien": "rothar",
+       "etiqueta": "ROTHAR",
+       "texto": "Media bolsa. Hasta el mes que viene.",
+       "intencion": "apretando un poco más, todavía sin levantarse"
+      },
+      {
+       "quien": "prestamista",
+       "etiqueta": "PRESTAMISTA",
+       "texto": "El mes que viene lleva tres meses llegando, señor.",
+       "intencion": "sin crueldad; un dato, no una burla"
+      },
+      {
+       "quien": "rothar",
+       "etiqueta": "ROTHAR",
+       "texto": "Soy un Elserath.",
+       "intencion": "con el apellido por delante, como una moneda"
+      },
+      {
+       "quien": "prestamista",
+       "etiqueta": "PRESTAMISTA",
+       "texto": "Esta noche no.",
+       "intencion": "negando con la cabeza, sin crueldad y sin prisa"
+      },
+      {
+       "quien": "prestamista",
+       "etiqueta": "PRESTAMISTA",
+       "texto": "La casa ha cambiado de opinión.",
+       "intencion": "funcionario; no explica nada porque no hay nada que explicar"
+      }
+     ],
+     "accion": "Humo, ruido, mesas. La sala está llena y nadie mira a nadie más de lo que dura una partida. ROTHAR pierde. Vuelve a pedir crédito. Insiste una vez más. El PRESTAMISTA niega con la cabeza. Rothar se queda con la palabra a medio camino. Desde el otro lado de la sala, Saharis —vestido de noble— hace un gesto mínimo a un CAMARERO. El camarero cruza, habla al oído del prestamista. Lo que le dice no se oye desde ninguna mesa. El prestamista le da a Rothar la bolsa que le acababa de negar. Rothar no mira atrás. Nunca sabrá quién pagó.",
      "escenario": "casa-juego",
      "luz": "BARRIO"
     },
@@ -1052,6 +1095,24 @@
       "iven"
      ],
      "dialogo": [
+      {
+       "quien": "administrador",
+       "etiqueta": "ADMINISTRADOR",
+       "texto": "Lo del grano del mes. Lo de las velas de la casa. Lo del muelle.",
+       "intencion": "leyendo, neutro, funcionario"
+      },
+      {
+       "quien": "iven",
+       "etiqueta": "LORD IVEN",
+       "texto": "Siga.",
+       "intencion": "sin levantar la vista, por costumbre"
+      },
+      {
+       "quien": "administrador",
+       "etiqueta": "ADMINISTRADOR",
+       "texto": "Y esta partida, señor... está saldada.",
+       "intencion": "leyendo; se detiene antes de decirlo, porque ya lo ha visto"
+      },
       {
        "quien": "iven",
        "etiqueta": "LORD IVEN",
@@ -1075,9 +1136,15 @@
        "etiqueta": "ADMINISTRADOR",
        "texto": "No lo pone.",
        "intencion": "neutro"
+      },
+      {
+       "quien": "administrador",
+       "etiqueta": "ADMINISTRADOR",
+       "texto": "El asiento está completo, señor. La cantidad, la fecha. Solo falta el nombre.",
+       "intencion": "con cuidado, de funcionario que no quiere inventar"
       }
      ],
-     "accion": "LORD IVEN revisa cuentas. Se detiene. ¿Esto está pagado? Sí, señor. ¿Por quién? No lo pone. Lord Iven se queda mirando la línea.",
+     "accion": "El despacho de día: el escritorio pesado, los libros de cuentas, la lámpara apagada. LORD IVEN revisa cuentas con el ADMINISTRADOR de pie junto al escritorio, que lee el libro mayor en voz alta, partida a partida. Al llegar a una partida se detiene: está saldada. LORD IVEN revisa cuentas. Se detiene. ¿Esto está pagado? Sí, señor. ¿Por quién? No lo pone. El administrador busca en el libro y encuentra solo lo que hay: la cantidad y la fecha; solo falta el nombre. Iven le hace un gesto mínimo y el administrador cierra el libro, lo deja sobre el escritorio y sale. Lord Iven se queda mirando la línea.",
      "escenario": "elserath-despacho",
      "luz": "NOBLE"
     },
@@ -1100,6 +1167,18 @@
       {
        "quien": "saharis",
        "etiqueta": "SAHARIS",
+       "texto": "¿Y la primera?",
+       "intencion": "mirando el libro, no a ella"
+      },
+      {
+       "quien": "livia",
+       "etiqueta": "LIVIA",
+       "texto": "La primera ya la he hecho yo. No cuenta.",
+       "intencion": "ligera; ya ha hecho su parte"
+      },
+      {
+       "quien": "saharis",
+       "etiqueta": "SAHARIS",
        "texto": "¿Y la segunda de quién es?",
        "intencion": "devolviendo el juego"
       },
@@ -1108,9 +1187,33 @@
        "etiqueta": "LIVIA",
        "texto": "Escríbamelo y lo sabremos.",
        "intencion": "reto ligero"
+      },
+      {
+       "quien": "saharis",
+       "etiqueta": "SAHARIS",
+       "texto": "¿De qué trata?",
+       "intencion": "preguntando de verdad, sin juego esta vez"
+      },
+      {
+       "quien": "livia",
+       "etiqueta": "LIVIA",
+       "texto": "De una casa. Léalo y verá si se parece a alguna.",
+       "intencion": "desde la puerta, ya saliendo; lo dice como lo menos importante"
+      },
+      {
+       "quien": "saharis",
+       "etiqueta": "SAHARIS",
+       "texto": "¿Y se cae?",
+       "intencion": "sin levantar la vista del libro"
+      },
+      {
+       "quien": "livia",
+       "etiqueta": "LIVIA",
+       "texto": "Todavía no. Por eso hay que leerlo dos veces.",
+       "intencion": "una pausa; el juego y otra cosa, mezclados"
       }
      ],
-     "accion": "Livia deja un libro sobre la mesa, delante de Saharis. Este es de los que hay que leer dos veces. ¿Y la segunda de quién es? Escríbamelo y lo sabremos. Sale. Saharis mira el libro. Lo abre. Empieza a leer de verdad.",
+     "accion": "La biblioteca de la casa, de día. LIVIA entra con un libro y lo deja sobre la mesa, delante de Saharis. Este es de los que hay que leer dos veces. ¿Y la segunda de quién es? Escríbamelo y lo sabremos. Sale. Saharis mira el libro. Lo abre. Empieza a leer de verdad, despacio, pasando la primera página dos veces antes de seguir.",
      "escenario": "elserath-despacho",
      "luz": "NOBLE"
     },
@@ -1132,11 +1235,17 @@
       {
        "quien": "madre",
        "etiqueta": "MADRE",
+       "texto": "¿De dónde lo has sacado?",
+       "intencion": "muy bajo, sin quitarle los ojos de las manos"
+      },
+      {
+       "quien": "madre",
+       "etiqueta": "MADRE",
        "texto": "¿Tú... entiendes esas cosas?",
        "intencion": "miedo y asombro a la vez"
       }
      ],
-     "accion": "El niño, cinco años, con un trozo de pergamino robado entre las manos. Símbolos trazados en sangre seca. Su madre lo sorprende desde la puerta. ¿Qué haces con eso? Él no contesta. Ella se agacha a su altura. Le quita el pergamino y lo mira. Luego lo mira a él. ¿Tú... entiendes esas cosas? El niño asiente. Una vez.",
+     "accion": "El niño, cinco años, está sentado en el suelo de la celda con un trozo de pergamino robado entre las manos, extendido sobre las rodillas. Símbolos trazados en sangre seca. Recorre los trazos con un dedo sin tocarlos, como quien lee. Su madre entra y se detiene en la puerta: primero mira el pergamino, después mira hacia fuera, al corredor, y solo entonces habla, en voz baja para que no se oiga fuera. ¿Qué haces con eso? Él no contesta. No esconde el pergamino ni lo suelta. Ella se agacha a su altura. ¿De dónde lo has sacado? Tampoco contesta. Ella le quita el pergamino despacio y lo mira: conoce esos trazos de verlos, sin necesidad de leerlos. Luego lo mira a él. ¿Tú... entiendes esas cosas? El niño asiente. Una vez.",
      "escenario": "cripta-celda",
      "luz": "BARRIO"
     },
@@ -1162,7 +1271,7 @@
        "intencion": "se le quiebra la voz al final"
       }
      ],
-     "accion": "Ella lo abraza de golpe. Con demasiada fuerza. Le tiembla el cuerpo entero. No dejes que te vean. El niño no se mueve. No dejes que sepan lo que eres. Este lugar destruye lo que brilla.",
+     "accion": "Ella lo abraza de golpe. Con demasiada fuerza. El pergamino queda apretado en su puño, contra la espalda del niño, donde nadie puede verlo. Le tiembla el cuerpo entero y el temblor le pasa a él. No dejes que te vean. El niño no se mueve. No levanta los brazos: se deja tener. No dejes que sepan lo que eres. Este lugar destruye lo que brilla. El abrazo dura más que las frases: dura hasta que el temblor se le va gastando, y aun así ella tarda un momento más en abrir los brazos. Cuando lo suelta no se levanta enseguida: se queda agachada a su altura, mirándolo, como si quisiera guardarse la cara. El niño sigue sin moverse.",
      "escenario": "cripta-celda",
      "luz": "BARRIO"
     },
@@ -1182,7 +1291,7 @@
        "intencion": "para sí, sin darse cuenta, muy bajo"
       }
      ],
-     "accion": "Saharis escribe en la pared. Se detiene. Sin darse cuenta, dice en voz baja: Este lugar destruye lo que brilla. Levanta la vista. Se ha oído a sí mismo. Sigue escribiendo.",
+     "accion": "De noche, en el refugio. El farol sobre la mesa. Saharis trabaja de pie junto a la pared: una cifra junto a un nombre, un cordel tensado entre dos papeles, la letra de siempre sobre los datos de siempre. Se detiene, con el carboncillo a un dedo del papel. Sin darse cuenta, dice en voz baja: Este lugar destruye lo que brilla. Levanta la vista. Se ha oído a sí mismo. Se queda un momento escuchando el silencio seco de la sala. No escribe la frase: la pared sigue siendo solo datos. Baja la mano, la vuelve a subir, y sigue escribiendo lo que estaba escribiendo.",
      "escenario": "tuneles",
      "luz": "BARRIO"
     },
@@ -1215,10 +1324,52 @@
        "intencion": "claro"
       },
       {
+       "quien": "iven",
+       "etiqueta": "LORD IVEN",
+       "texto": "En mis libros hay una partida pagada sin nombre. El administrador no sabe quién la pagó.",
+       "intencion": "despacio; lo dice mirándolo de otro modo, como una prueba"
+      },
+      {
        "quien": "saharis",
        "etiqueta": "SAHARIS",
-       "texto": "Su apellido todavía abre puertas. Lo que ya no hace es abrirlas para usted,",
+       "texto": "Sé que está pagada.",
+       "intencion": "sin confirmar nada; un dato y nada más"
+      },
+      {
+       "quien": "iven",
+       "etiqueta": "LORD IVEN",
+       "texto": "¿De dónde lo sacas tú?",
+       "intencion": "la pregunta práctica de un hombre arruinado"
+      },
+      {
+       "quien": "saharis",
+       "etiqueta": "SAHARIS",
+       "texto": "El dinero es lo de menos. Por eso lo pongo yo.",
+       "intencion": "sin darle importancia: el dinero no es la mercancía escasa de esta conversación"
+      },
+      {
+       "quien": "saharis",
+       "etiqueta": "SAHARIS",
+       "texto": "Su apellido todavía abre puertas. Lo que ya no hace es abrirlas para usted, porque hace ocho años que no se sienta en ninguna mesa que importe. Yo me siento en todas y no tengo apellido.",
        "intencion": "sin crueldad, y por eso duele"
+      },
+      {
+       "quien": "iven",
+       "etiqueta": "LORD IVEN",
+       "texto": "Es lo último que me queda que todavía vale algo.",
+       "intencion": "bajo, para sí más que para él; un inventario"
+      },
+      {
+       "quien": "iven",
+       "etiqueta": "LORD IVEN",
+       "texto": "¿Y Rothar?",
+       "intencion": "lo que de verdad le cuesta preguntar"
+      },
+      {
+       "quien": "saharis",
+       "etiqueta": "SAHARIS",
+       "texto": "Rothar seguirá siendo su hijo. Yo no le pido su sitio. Le pido su nombre.",
+       "intencion": "plano, como una cláusula más del trato"
       },
       {
        "quien": "saharis",
@@ -1227,7 +1378,7 @@
        "intencion": "cerrando, tranquilo"
       }
      ],
-     "accion": "Saharis y Lord Iven, solos, con papeles extendidos. No le pido dinero. Todo el mundo pide dinero. Yo le pido que ponga su nombre. El dinero lo pongo yo. Lord Iven levanta la cabeza. Su apellido todavía abre puertas. Lo que ya no hace es abrirlas para usted, porque hace ocho años que no se sienta en ninguna mesa que importe. Yo me siento en todas y no tengo apellido. Silencio. Es un buen trato para los dos y usted lo sabe. Por eso no me ha echado.",
+     "accion": "El salón de día, sin invitados: la mesa larga vacía, a plena luz. Lord Iven está sentado con papeles extendidos delante. Saharis, de pie al otro lado de la mesa, hace su petición. No le pido dinero. Todo el mundo pide dinero. Yo le pido que ponga su nombre. El dinero lo pongo yo. Iven lo pone a prueba con la partida pagada sin nombre que apareció en sus libros; Saharis no confirma ni niega: solo dice que sabe que está pagada. Lord Iven levanta la cabeza. Su apellido todavía abre puertas. Lo que ya no hace es abrirlas para usted, porque hace ocho años que no se sienta en ninguna mesa que importe. Yo me siento en todas y no tengo apellido. Silencio. Iven mira la mesa vacía y admite que el apellido es lo último que le queda que todavía vale algo; pregunta por Rothar, y Saharis le asegura que Rothar seguirá siendo su hijo: no le pide su sitio, le pide su nombre. Es un buen trato para los dos y usted lo sabe. Por eso no me ha echado. Iven no contesta. No dice que sí y tampoco lo echa: se queda mirando los papeles.",
      "escenario": "elserath-salon",
      "luz": "NOBLE"
     },
@@ -1241,7 +1392,7 @@
       "saharis"
      ],
      "dialogo": [],
-     "accion": "Rothar sigue a Saharis a distancia. Saharis dobla una esquina. Rothar aprieta el paso. Dobla la esquina. La calle está vacía.",
+     "accion": "Rothar sigue a Saharis a distancia, a plena luz del día, con su corpulencia y su ropa buena mal llevada, procurando no parecer lo que es. Saharis camina delante con su paso de siempre, sin mirar atrás ni una vez, sin apretar el paso. Si sabe que lo siguen, no lo demuestra. Dobla una esquina. Rothar aprieta el paso. Dobla la esquina. La calle está vacía: ni un portal abierto, ni un carro, ni una sombra que se mueva. Rothar se queda en mitad de la calle, respirando, mirando a un lado y a otro. Ha perdido a un muchacho que caminaba despacio, a plena luz, sin correr.",
      "escenario": "calle",
      "luz": "BARRIO"
     },
@@ -1275,10 +1426,58 @@
        "intencion": "simple"
       },
       {
+       "quien": "escribano",
+       "etiqueta": "ESCRIBANO",
+       "texto": "¿Lo dejo escrito en alguna parte?",
+       "intencion": "de oficio: todo lo suyo vive escrito"
+      },
+      {
        "quien": "saharis",
        "etiqueta": "SAHARIS",
-       "texto": "Y que eso pasa con todas las casas del este que se arruinaron después de la",
+       "texto": "En ninguna.",
+       "intencion": "seco"
+      },
+      {
+       "quien": "escribano",
+       "etiqueta": "ESCRIBANO",
+       "texto": "¿Y si pregunta de dónde era la casa?",
+       "intencion": "probando la versión como se prueba una cerradura"
+      },
+      {
+       "quien": "saharis",
+       "etiqueta": "SAHARIS",
+       "texto": "Del este. Como todas las que se arruinaron.",
+       "intencion": "sin adornar"
+      },
+      {
+       "quien": "escribano",
+       "etiqueta": "ESCRIBANO",
+       "texto": "¿Y si quiere ver los libros del este?",
+       "intencion": "señalando los estantes sin moverse"
+      },
+      {
+       "quien": "saharis",
+       "etiqueta": "SAHARIS",
+       "texto": "Que los vea. En los que quedan, no está.",
+       "intencion": "tranquilo; es la parte verdadera"
+      },
+      {
+       "quien": "escribano",
+       "etiqueta": "ESCRIBANO",
+       "texto": "¿Y si no se lo cree?",
+       "intencion": "la última duda, ya casi convencido"
+      },
+      {
+       "quien": "saharis",
+       "etiqueta": "SAHARIS",
+       "texto": "Y que eso pasa con todas las casas del este que se arruinaron después de la peste. Que se perdieron los libros.",
        "intencion": "igual de neutro"
+      },
+      {
+       "quien": "escribano",
+       "etiqueta": "ESCRIBANO",
+       "texto": "Que no hay ningún registro. Que los libros se perdieron con la peste.",
+       "intencion": "recitando, aprendiéndose la versión a media voz"
       },
       {
        "quien": "escribano",
@@ -1293,7 +1492,7 @@
        "intencion": "corte seco, sin subir la voz"
       }
      ],
-     "accion": "Un cuartucho con papeles hasta el techo. Un ESCRIBANO viejo. Saharis deja una bolsa sobre la mesa. Un hombre va a venir a preguntar por un nombre. Levalen. ¿Y qué le digo? La verdad. Que no hay ningún registro. El escribano lo mira sin entender. Y que eso pasa con todas las casas del este que se arruinaron después de la peste. Que se perdieron los libros. Eso último no es verdad. Es verdad de otras. Basta.",
+     "accion": "Un cuartucho con papeles hasta el techo: legajos, libros cosidos, polvo de papel. Un escribano viejo detrás de una mesa que es más papel que madera. Saharis deja una bolsa sobre la mesa; el escribano la mira y no la toca. Un hombre va a venir a preguntar por un nombre. Levalen. El escribano va probando la versión con las preguntas de su oficio —si hay que dejarlo escrito, de dónde era la casa, si el hombre querrá ver los libros, si no se lo cree— y Saharis se las va cerrando una a una: en ninguna parte; del este, como todas las que se arruinaron; que los vea, que en los que quedan no está; y si no se lo cree, que eso pasa con todas las casas del este que se arruinaron después de la peste, que se perdieron los libros. El escribano se lo repite a media voz para aprendérselo y se detiene a mitad: eso último no es verdad. Es verdad de otras. Basta. Al cabo de un momento, el escribano retira la bolsa de la mesa y la guarda fuera de la vista, entre sus papeles. En el cuartucho no queda escrito el nombre en ninguna parte.",
      "escenario": "barrio-humo",
      "luz": "BARRIO"
     },
@@ -1310,6 +1509,12 @@
       {
        "quien": "iven",
        "etiqueta": "LORD IVEN",
+       "texto": "Siéntate, siéntate. De pie pareces un acreedor.",
+       "intencion": "bebido, haciendo sitio con la mano"
+      },
+      {
+       "quien": "iven",
+       "etiqueta": "LORD IVEN",
        "texto": "Mi hijo dice que eres una serpiente.",
        "intencion": "bebido, medio en broma"
       },
@@ -1322,8 +1527,32 @@
       {
        "quien": "iven",
        "etiqueta": "LORD IVEN",
+       "texto": "Rothar ve serpientes en todas partes. Es su manera de no verse a sí mismo.",
+       "intencion": "bebido, riéndose de su propio hijo"
+      },
+      {
+       "quien": "iven",
+       "etiqueta": "LORD IVEN",
+       "texto": "Esta casa se me cae a pedazos, y yo sigo brindando entre los escombros.",
+       "intencion": "bebido, sentimental, para la copa"
+      },
+      {
+       "quien": "saharis",
+       "etiqueta": "SAHARIS",
+       "texto": "No se le está cayendo, señor. La están dejando caer entre todos.",
+       "intencion": "directo, sin crueldad"
+      },
+      {
+       "quien": "iven",
+       "etiqueta": "LORD IVEN",
        "texto": "Tú me recuerdas a mí cuando era joven.",
        "intencion": "sentimental, emocionado"
+      },
+      {
+       "quien": "iven",
+       "etiqueta": "LORD IVEN",
+       "texto": "La misma manera de callar.",
+       "intencion": "bebido, señalándolo con la copa"
       },
       {
        "quien": "iven",
@@ -1338,7 +1567,7 @@
        "intencion": "cálido y medido. Llega tres segundos tarde a propósito"
       }
      ],
-     "accion": "Lord Iven, bebido. Saharis de pie. Mi hijo dice que eres una serpiente. Su hijo tiene razón en muchas cosas. Lord Iven se ríe. Se le va la risa a medio camino. Tú me recuerdas a mí cuando era joven. Saharis no dice nada. ¿Aceptarías el apellido? Saharis deja pasar tres segundos exactos. Sería un honor, señor.",
+     "accion": "El despacho de noche. Lord Iven, bebido, con la copa en la mano y la mancha de vino de siempre un poco más grande. Saharis de pie junto al escritorio, como en la petición, hasta que Iven le hace sentarse: de pie parece un acreedor. Mi hijo dice que eres una serpiente. Su hijo tiene razón en muchas cosas. Lord Iven se ríe: Rothar ve serpientes en todas partes, es su manera de no verse a sí mismo. Se le va la risa a medio camino. Mira la copa y dice, para ella más que para el muchacho, que esta casa se le cae a pedazos y él sigue brindando entre los escombros. Saharis contesta que no se le está cayendo: la están dejando caer entre todos. Silencio. Tú me recuerdas a mí cuando era joven. La misma manera de callar. Saharis no dice nada. ¿Aceptarías el apellido? Saharis deja pasar tres segundos exactos. Sería un honor, señor. Iven se queda con la copa a medio camino de la boca, mirándolo, como si acabara de firmar algo sin papel.",
      "escenario": "elserath-despacho",
      "luz": "NOBLE"
     },
@@ -1351,7 +1580,7 @@
       "madre"
      ],
      "dialogo": [],
-     "accion": "La madre canta. Esta vez entera, de principio a fin. El niño tiene los ojos cerrados. No los cierra para dormir. Los cierra para grabarla.",
+     "accion": "La madre canta en la celda, de noche, junto al jergón. El niño está sentado contra la pared, muy quieto. A mitad de la primera vuelta cierra los ojos. No los cierra para dormir: los cierra para grabarla. La melodía va dando sus vueltas en la lengua que él no entiende, y él la sigue por dentro, trozo a trozo, guardando cada trozo donde guardará después los nombres, las cifras y las deudas: en el sitio de lo que no se puede perder. La escena se queda con los dos —ella cantando con los ojos entreabiertos, él con los cerrados— y se corta sobre la canción abierta: lo que el niño se lleva de esta noche es lo que alcanzó a guardar, y la nana, como siempre, no se cierra.",
      "escenario": "cripta-celda",
      "luz": "BARRIO"
     },
@@ -1365,7 +1594,7 @@
       "saharis"
      ],
      "dialogo": [],
-     "accion": "La pluma sobre el papel. *Saharis Elserath.* Lord Iven aprieta el sello sobre la cera.",
+     "accion": "El despacho de noche, otra vez, con el papel ya extendido sobre el escritorio y la cera preparada junto a la lámpara. Nadie habla: lo que se hace en esta escena no necesita testigos de más. La pluma sobre el papel. Saharis escribe su nombre nuevo completo, con la letra pequeña y segura de la pared y de las listas: Saharis Elserath. Es la primera vez que ese nombre existe en alguna parte fuera de su cabeza, y existe en papel, que es donde las cosas existen en Feyrond. Lord Iven acerca la cera a la llama, deja caer el lacre y aprieta el sello sobre la cera. El sello sube despacio. Debajo queda la marca de la casa, entera. Saharis mira el papel un momento más que a ninguna otra cosa en toda la escena, y luego aparta la mano.",
      "escenario": "elserath-despacho",
      "luz": "NOBLE"
     },
@@ -1380,6 +1609,18 @@
       "saharis"
      ],
      "dialogo": [
+      {
+       "quien": "livia",
+       "etiqueta": "LIVIA",
+       "texto": "Ya estás en el libro de la casa. Con cera y todo.",
+       "intencion": "divertida, trayendo la noticia del despacho"
+      },
+      {
+       "quien": "saharis",
+       "etiqueta": "SAHARIS",
+       "texto": "Un papel aguanta cualquier nombre.",
+       "intencion": "seco, sin darle importancia"
+      },
       {
        "quien": "livia",
        "etiqueta": "LIVIA",
@@ -1423,7 +1664,7 @@
        "intencion": "la verdad, dicha sin peso. Ella no lo nota; el espectador sí"
       }
      ],
-     "accion": "Livia lo encuentra fuera. Ahora eres mi hermano. Legalmente. Legalmente. Pausa. Saharis. ¿De dónde viene ese nombre? No es de aquí. De mi madre. ¿Y qué significa? Saharis mira las luces de la ciudad. No lo sé. Es lo más sincero que ha dicho en toda la noche y ella no lo nota.",
+     "accion": "Livia lo encuentra fuera, en el jardín amurallado, mirando las luces de la ciudad por encima del muro. Trae la noticia del despacho como quien trae un juego: ya estás en el libro de la casa, con cera y todo. Un papel aguanta cualquier nombre. Ahora eres mi hermano. Legalmente. Legalmente. Pausa. Saharis. ¿De dónde viene ese nombre? No es de aquí. De mi madre. ¿Y qué significa? Saharis mira las luces de la ciudad. No lo sé. Es lo más sincero que ha dicho en toda la noche y ella no lo nota. La madre no está en este jardín: está en la respuesta, que es el único sitio de la casa donde existe.",
      "escenario": "elserath-jardin",
      "luz": "BARRIO"
     },
@@ -1436,7 +1677,7 @@
       "saharis"
      ],
      "dialogo": [],
-     "accion": "Saharis tacha una línea de la pared: *conseguir un apellido.* Debajo hay doce líneas más sin tachar.",
+     "accion": "De noche, en el refugio. La pared como siempre: los trescientos papeles, el dibujo del anillo en su hueco, SIETE arriba del todo. Saharis está sentado en la única silla, con el carboncillo, frente a la lista de trabajo que cuelga entre los datos. Lee la primera línea de esa lista —conseguir un apellido— y la tacha. Una sola raya, firme, sin detenerse a celebrarla: en esta habitación las cosas no se celebran, se tachan. Debajo de la línea tachada hay doce líneas más sin tachar, escritas con la misma letra pequeña y segura. Las mira una a una, despacio, como quien pasa lista a lo que falta. Apaga el farol desde la silla, sin levantarse, y la pared queda en la oscuridad con su primera línea muerta y las otras doce vivas.",
      "escenario": "tuneles",
      "luz": "BARRIO"
     },
@@ -1447,7 +1688,7 @@
      "flashback": false,
      "personajes": [],
      "dialogo": [],
-     "accion": "Sube por la parte de atrás. Sin ruido. Lo ha hecho antes.",
+     "accion": "La parte de atrás de la casa Renn, de noche. Una figura sube por donde la pared ofrece sus apoyos —el canalón, la repisa, el saliente que ya conoce— y llega al tejado sin que suene una sola teja fuera de su sitio. Sin ruido. Lo ha hecho antes: cada apoyo está donde su mano lo espera, sin buscarlo. Arriba, se queda agachado junto a la chimenea, inmóvil, dejando que la noche vuelva a cerrarse detrás de su subida. Debajo de él, la casa sigue con su vida pequeña y su sótano en uso, sin saber que tiene a alguien en el tejado. La escena no baja todavía: se queda en la altura, en la espera, en el oído puesto en lo que la casa haga debajo.",
      "escenario": "casa-renn",
      "luz": "BARRIO"
     },
@@ -1458,7 +1699,7 @@
      "flashback": false,
      "personajes": [],
      "dialogo": [],
-     "accion": "Una sala pequeña bajo la casa. En el muro, el símbolo. Delante, un pequeño altar con ofrendas frescas: fruta, un cuenco de sangre todavía líquida, velas negras a medio consumir. Está todo limpio. Barrido. En uso. No hay nadie.",
+     "accion": "Una sala pequeña bajo la casa Renn. La escena llega a ella antes que nadie: está vacía, y lo primero que dice la sala es que no está abandonada. En el muro, el símbolo: un círculo, un ojo, cuatro dientes, tallado en la piedra y gastado como el del dintel de la puerta bajo la ciudad, como el del anillo del invitado de la cena, como el que Saharis dibujó de memoria y clavó en su pared. Delante, un pequeño altar con ofrendas frescas: fruta que todavía tiene el color de hoy, un cuenco de sangre todavía líquida, velas negras a medio consumir, cada una a una altura distinta, como las deja un uso de todos los días. Está todo limpio. Barrido. En uso. No hay nadie. Y entonces, sin que se vea por dónde ha entrado, la sala ya no está vacía del todo: hay una sombra más junto a la columna, inmóvil. Saharis no se acerca al altar. No toca nada. Se queda donde está, a esperar lo que la casa haga con su sótano cuando cree que nadie mira.",
      "escenario": "casa-renn",
      "luz": "BARRIO"
     },
@@ -1472,7 +1713,7 @@
       "saharis"
      ],
      "dialogo": [],
-     "accion": "Pasos. Saharis se mete detrás de una columna. Entra un CRIADO de unos cincuenta años. Bosteza. Cambia las velas. Recoge la fruta pasada y la echa en un cubo. Rellena el cuenco de una jarra. Se marcha silbando. Ha hecho la misma tarea que hace todos los días.",
+     "accion": "Pasos. Antes de que la puerta termine de abrirse, Saharis se mete detrás de una columna, sin ruido. Entra un CRIADO de unos cincuenta años. Bosteza. Trae lo que trae todos los días. Cambia las velas: retira las más gastadas y pone otras. Recoge la fruta pasada y la echa en un cubo, sin asco y sin respeto. Rellena el cuenco de una jarra, hasta donde lo rellena siempre. No reza. No mira el símbolo de la pared ni una sola vez. La tarea está hecha y se marcha silbando, un silbido sin melodía que importe. Detrás de la columna, Saharis no se ha movido. Espera a que el silbido se apague arriba y el silencio vuelva a ser completo. Solo entonces sale, sin tocar nada tampoco al salir: la sala queda como el criado la dejó y nadie sabe que ha tenido un testigo. Ha hecho la misma tarea que hace todos los días.",
      "escenario": "casa-renn",
      "luz": "BARRIO"
     },
@@ -1485,7 +1726,7 @@
       "saharis"
      ],
      "dialogo": [],
-     "accion": "Saharis sentado en el borde, con las piernas colgando. Delante, Feyrond entera iluminada. Cientos de ventanas. Mira las ventanas mucho rato.",
+     "accion": "Saharis sentado en el borde de un tejado, con las piernas colgando sobre la calle: la única postura desarmada de todo el capítulo. Delante, Feyrond entera iluminada. Cientos de ventanas. Las de las casas grandes, altas y pocas; las del barrio, bajas y juntas; las que se apagan mientras mira y las que se encienden. Mira las ventanas mucho rato. No cuenta: ya las tiene contadas de otras noches. No busca ninguna en concreto: mira el conjunto, la ciudad entera encendida como una pared demasiado grande. Su nombre ya está escrito y sellado dentro de una de las casas grandes, y ninguna ventana de la ciudad lo sabe. El viento le mueve el borde del abrigo. No se levanta. La noche sigue.",
      "escenario": "calle",
      "luz": "BARRIO"
     },
@@ -1513,11 +1754,11 @@
       {
        "quien": "madre",
        "etiqueta": "MADRE",
-       "texto": "Si algún día sales de este infierno... no olvides quién te vio antes de que",
+       "texto": "Si algún día sales de este infierno... no olvides quién te vio antes de que fueras dios.",
        "intencion": "la frase de la serie. Voz rota, casi susurrada, con lágrimas. NO gritada"
       }
      ],
-     "accion": "La madre, muy delgada, lo abraza como si fuera la última vez. No sé quién eres. El niño la mira. Pero no eres de aquí. Tus ojos no son de aquí. Le tiembla la voz. Si algún día sales de este infierno... no olvides quién te vio antes de que fueras dios. El niño no contesta. Una lágrima le baja por la cara. Una sola. Se la limpia antes de que ella la vea.",
+     "accion": "La madre, muy delgada, más que en ningún otro recuerdo, abraza al niño como si fuera la última vez. No sé quién eres. El niño la mira. No contesta. Pero no eres de aquí. Tus ojos no son de aquí. Le tiembla la voz, sin que se le quiebre en grito ni en sollozo: en susurro. Si algún día sales de este infierno... no olvides quién te vio antes de que fueras dios. El niño no contesta. Una lágrima le baja por la cara. Una sola. Se la limpia antes de que ella la vea, y ella no la ve. Ella sigue abrazándolo un rato más, sin saber que la escena ya ha pasado. Es recuerdo, no presente: en el presente de este capítulo Saharis no llora.",
      "escenario": "cripta-celda",
      "luz": "BARRIO"
     },
@@ -1530,7 +1771,7 @@
       "saharis"
      ],
      "dialogo": [],
-     "accion": "Saharis con el carboncillo en la mano frente a la pared. Durante toda la serie, esa pared solo ha tenido datos. Escribe, despacio: *¿de dónde era ella?*",
+     "accion": "Madrugada. Saharis con el carboncillo en la mano frente a la pared. La pared está como el capítulo la ha ido dejando: los trescientos papeles, el dibujo del anillo en su hueco centro-izquierda, SIETE arriba del todo con letra de niño, y la lista de trabajo con su primera línea tachada y las doce líneas vivas debajo. Ha vuelto de los tejados con un dato nuevo y grande, el sótano de los Renn en uso, y ese dato tiene su sitio en esta pared. No lo escribe. Todavía no, o no primero. Durante toda la serie, esa pared solo ha tenido datos. Escribe, despacio: ¿de dónde era ella? Es la primera pregunta de la pared y la primera frase suya que la pared guarda. Debajo no hay respuesta, ni flecha, ni cordel que la ate a ningún papel. Baja la mano y se queda mirándola.",
      "escenario": "tuneles",
      "luz": "BARRIO"
     },
@@ -1541,7 +1782,7 @@
      "flashback": false,
      "personajes": [],
      "dialogo": [],
-     "accion": "Se sienta enfrente. La mira. El farol se va apagando y él no lo recoge. Negro.",
+     "accion": "Se sienta enfrente. La mira. La pared, con su pregunta nueva todavía sin atar a nada, le queda delante en la luz del farol, que esta noche no va a durar lo que dura siempre: la llama se va haciendo pequeña, despacio. El farol se va apagando y él no lo recoge: no se levanta, no alarga la mano, no aviva la mecha. Sigue sentado enfrente cuando la luz ya no está, mirando lo que ya no se ve. Negro.",
      "escenario": "tuneles",
      "luz": "BARRIO"
     }

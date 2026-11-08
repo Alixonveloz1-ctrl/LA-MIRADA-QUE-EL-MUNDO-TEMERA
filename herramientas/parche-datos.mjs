@@ -292,6 +292,23 @@ if (!serie.piezas.ep01) {
   anota(`pieza «ep01» añadida (${ep01Archivo.ep01.tomas.length} planos, ${ep01Archivo.ep01.duracion_s} s)`);
 }
 
+// ---------------------------------------------------------------------------
+// 4c. El episodio 2, escrito a mano desde el guion expandido.
+//
+// Igual que el episodio 1: se escribió plano a plano en el código (364
+// planos, 1153 s) y vive en datos/episodio-02.json. La copia del estado
+// (el desglose automático parcial, 13 de las 24 escenas), si existe,
+// SIGUE MANDANDO en las pantallas (de sus ids cuelga el material ya
+// generado); esta es la fuente.
+// ---------------------------------------------------------------------------
+
+const ep02Archivo = JSON.parse(readFileSync(join(raiz, 'datos/episodio-02.json'), 'utf8'));
+
+if (!serie.piezas.ep02) {
+  serie.piezas.ep02 = ep02Archivo.ep02;
+  anota(`pieza «ep02» añadida (${ep02Archivo.ep02.tomas.length} planos, ${ep02Archivo.ep02.duracion_s} s)`);
+}
+
 const yaSuena = new Set(serie.musica.piezas.map((m) => m.id));
 for (const tema of opEd.musica) {
   if (yaSuena.has(tema.id)) continue;
