@@ -723,18 +723,43 @@ bloque('Datos · duraciones y línea de tiempo');
 
 {
   const quejas = [];
+  const excepciones = [];
   for (const { idPieza, toma } of todasLasTomas) {
     if (!toma.boca_visible) continue;
     const dur = Number(toma.dur);
     if (dur < 2 - CASI || dur > 4 + CASI) {
-      quejas.push(
-        `${nombreDeToma(idPieza, toma)} enseña la boca de «${toma.boca_visible}» ` +
-          `durante ${toma.dur} s. Un plano con boca visible dura entre 2 y 4 s: ` +
-          'más tiempo y se ve que no está sincronizada.'
-      );
+      // Excepción del dueño, permanente: un plano de boca visible puede pasar
+      // de 4 s cuando la historia lo amerita, SOLO si el propio plano trae la
+      // justificación escrita (una frase indivisible que no cabe en 4 s). La
+      // excepción no se esconde: se cuenta aquí como nota, con su motivo. Un
+      // plano largo SIN justificación sigue tumbando esta comprobación, y un
+      // plano demasiado corto no lo excusa ninguna justificación.
+      const justificada =
+        dur > 4 + CASI &&
+        typeof toma.justificacion_duracion === 'string' &&
+        toma.justificacion_duracion.trim().length > 0;
+      if (justificada) {
+        excepciones.push(
+          `${nombreDeToma(idPieza, toma)} dura ${toma.dur} s con la boca de ` +
+            `«${toma.boca_visible}» visible, excepción justificada en el propio plano: ` +
+            toma.justificacion_duracion.trim()
+        );
+      } else {
+        quejas.push(
+          `${nombreDeToma(idPieza, toma)} enseña la boca de «${toma.boca_visible}» ` +
+            `durante ${toma.dur} s. Un plano con boca visible dura entre 2 y 4 s: ` +
+            'más tiempo y se ve que no está sincronizada.'
+        );
+      }
     }
   }
-  comprobar('Un plano con boca visible dura entre 2 y 4 s', quejas);
+  comprobar(
+    'Un plano con boca visible dura entre 2 y 4 s',
+    quejas,
+    excepciones.length
+      ? [`${excepciones.length} excepción(es) con justificación escrita en el plano:`, ...excepciones]
+      : []
+  );
 }
 
 {

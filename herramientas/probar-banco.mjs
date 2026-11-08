@@ -156,6 +156,18 @@ di(coladas === 0, 'El banco no se cuela en la lista de ninguna pieza', `coladas:
 for (const idPieza of piezas) {
   if (serie.piezas[idPieza].archivo === true) continue;
   const suya = aud.musicaDeLaPieza(serie, idPieza, piezas.length);
+  // Un episodio NO tiene música propia, por diseño: lo que suena dentro de
+  // los episodios es el banco de la temporada, que no pertenece a ninguna
+  // pieza (ver bancoDeLaTemporada en app/pantallas/audio.js). Exigirle a un
+  // episodio una pista «por campo» sería pedirle que se cuelgue el banco,
+  // que es justo lo que la comprobación de arriba prohíbe. De un episodio se
+  // comprueba lo contrario: que no se empareja con NINGUNA pista como suya.
+  if (Number.isFinite(Number(serie.piezas[idPieza].episodio))) {
+    di(suya.como === 'ninguna' && suya.lista.length === 0,
+      `«${idPieza}» es un episodio: no tiene música propia, suena el banco de la temporada`,
+      `emparejada por ${suya.como}`);
+    continue;
+  }
   di(suya.como === 'campo',
     `«${idPieza}» dice de quién es su música con todas las letras, no por el id`,
     `emparejada por ${suya.como}`);

@@ -112,7 +112,7 @@ planos, al volver a entrar se reanuda sola.
 |---|---|
 | `app/` | La aplicación del navegador: cola, estado, progreso y las ocho pantallas, en módulos ES nativos sin build ni framework. |
 | `api/` | La puerta única `POST /api/g` y su `_lib/`: firma el token, compone los prompts, habla con Vertex y con el bucket, y censura toda respuesta. |
-| `datos/` | `guiones.json` (la serie), `serie.base.json` (cómo se produce, tal y como llegó), `opening-ending.json` (las dos piezas fijas y sus canciones), `voces-gemini.json` (las treinta voces de Gemini, sin Chirp) y `serie.json` (el que lee la herramienta, generado por el parche). |
+| `datos/` | `guiones.json` (la serie), `serie.base.json` (cómo se produce, tal y como llegó), `opening-ending.json` (las dos piezas fijas y sus canciones), `episodio-01.json` (el capítulo 1 escrito plano a plano desde el guion expandido, 363 planos), `voces-gemini.json` (las treinta voces de Gemini, sin Chirp) y `serie.json` (el que lee la herramienta, generado por el parche). |
 | `docs/` | El contrato interno, el plan de construcción, las decisiones, la guía de despliegue y la explicación del parche de datos. |
 | `herramientas/` | Lo que se ejecuta sin red: el parche de datos, los invariantes y el pesaje de las respuestas. |
 | `montador/` | El contenedor de ffmpeg que corre como Job de Cloud Run: recorta, concatena, aplica el acabado, mezcla el audio y quema los subtítulos. |
@@ -136,6 +136,7 @@ distingue entre un teaser de 24 planos y un episodio de 400.
 | `opening` | 27 | 90 s | **Una vez para toda la serie.** Se pega como capa en los doce episodios. |
 | `ending` | 15 | 90 s | **Una vez para toda la serie.** Igual. |
 | `archivo` | 56 | — | **Una vez para toda la serie.** No es una película: es una biblioteca. |
+| `ep01` | 363 | 1160 s | El capítulo 1 escrito a mano desde el guion expandido, en `datos/episodio-01.json`. Mientras la pieza del desglose viva en el estado, esa manda en pantalla. |
 | `epNN` | ~400 | 22 min | Por episodio, con el desglose. Se añaden al lado. |
 
 El montaje de un episodio queda `opening + actos + ending`, todo pegado como capa

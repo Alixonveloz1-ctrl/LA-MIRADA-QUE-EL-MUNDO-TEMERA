@@ -6,7 +6,7 @@
   "escenas": 289,
   "escenarios": 27,
   "nota_escenarios": "Cada escena trae ya su escenario canonico y su esquema de luz. Derivado de los guiones, no escrito a mano.",
-  "lineas": 395,
+  "lineas": 446,
   "nota_intencion": "Cada línea lleva su intención: cómo se dice, no solo qué se dice. Las marcadas con riesgo 'alto' son gritos o llanto sostenido, donde ningún TTS llega: se resuelven fuera de cuadro, tapadas, cortadas sobre quien escucha, o como grito sin palabras generado aparte."
  },
  "guiones": [
@@ -22,14 +22,52 @@
      "flashback": true,
      "personajes": [
       "celebrante",
-      "madre"
+      "madre",
+      "acolita",
+      "escribano"
      ],
      "dialogo": [
+      {
+       "quien": "escribano",
+       "etiqueta": "ESCRIBANO",
+       "texto": "¿Nombre para el registro, padre?",
+       "intencion": "bajo, administrativo, sin mirar al altar"
+      },
+      {
+       "quien": "celebrante",
+       "etiqueta": "CELEBRANTE",
+       "texto": "Ninguno. Las de abajo no tienen nombre en el libro. Solo un número.",
+       "intencion": "rutinario, como quien dicta una ficha"
+      },
+      {
+       "quien": "madre",
+       "etiqueta": "MADRE",
+       "texto": "Por favor... agua.",
+       "intencion": "sin fuerza, entre contracciones"
+      },
+      {
+       "quien": "celebrante",
+       "etiqueta": "CELEBRANTE",
+       "texto": "Después.",
+       "intencion": "sin mirarla, distraído"
+      },
       {
        "quien": "celebrante",
        "etiqueta": "CELEBRANTE",
        "texto": "Ha nacido el hijo de la oscuridad.",
        "intencion": "proclamación ritual, voz alzada pero controlada, satisfecha; no es un grito"
+      },
+      {
+       "quien": "acolita",
+       "etiqueta": "ACÓLITA",
+       "texto": "¿Lo anoto, padre?",
+       "intencion": "bajo, esperando la orden de siempre"
+      },
+      {
+       "quien": "celebrante",
+       "etiqueta": "CELEBRANTE",
+       "texto": "Anota: un varón. Y nada más.",
+       "intencion": "despacio; ha visto los ojos del niño y ha decidido que el libro no lo sepa"
       },
       {
        "quien": "madre",
@@ -51,7 +89,7 @@
        "riesgo": "alto"
       }
      ],
-     "accion": "Negro. Un goteo. Agua sobre piedra. Luego otro sonido debajo, más grave y más lento: un cántico, muchas gargantas, sin melodía. La luz llega tarde y llega mal. Antorchas. Un techo abovedado. Sombras de figuras encapuchadas arrastrándose por la piedra húmeda. En el centro, un altar de piedra oscura. Sobre él, una MUJER JOVEN, empapada, las piernas atadas, la cabeza girada hacia un lado. Está pariendo y ya no grita. Alrededor, seis o siete FIGURAS con túnica negra. No se mueven. Un último esfuerzo. Un llanto agudo corta el cántico. El CELEBRANTE —máscara de cuero, túnica salpicada— levanta al recién nacido con las dos manos. Ha nacido el hijo de la oscuridad. El cántico se rompe en gemidos, risas, rezos. Alguien se arrodilla. La mujer intenta incorporarse. No puede. Solo estira una mano. Mi bebé... por favor... El Celebrante se gira hacia ella. Casi con cariño. Tu servicio ha concluido, hermana. En su mano hay un cuchillo curvo, negro, dentado. ¡No! Encuentra los ojos del niño. Un segundo. El corte es limpio. La sangre sale caliente. Unas gotas alcanzan la cara del recién nacido. El llanto se detiene.",
+     "accion": "Negro. Un goteo. Agua sobre piedra. Junto a la pared, en un atril bajo, hay un libro grande de piel con las páginas llenas de números. El ESCRIBANO está sentado ante él con la pluma preparada, como un contable cualquiera en una noche cualquiera. A su lado, una ACÓLITA espera con un cubo de agua que no es para beber. El escribano pregunta el nombre para el registro. Ninguno. Las de abajo no tienen nombre en el libro. Solo un número. Debajo del cántico que empieza a subir —muchas gargantas, sin melodía—, la mujer del altar pide agua con un hilo de voz. Después. La luz llega tarde y llega mal. Antorchas. Un techo abovedado. Sombras de figuras encapuchadas arrastrándose por la piedra húmeda. En el centro, un altar de piedra oscura. Sobre él, una MUJER JOVEN, empapada, las piernas atadas, la cabeza girada hacia un lado. Está pariendo y ya no grita. Alrededor, seis o siete FIGURAS con túnica negra. No se mueven. Un último esfuerzo. Un llanto agudo corta el cántico. El CELEBRANTE —máscara de cuero, túnica salpicada— levanta al recién nacido con las dos manos. Ha nacido el hijo de la oscuridad. El cántico se rompe en gemidos, risas, rezos. Alguien se arrodilla. La acólita se acerca un paso, mirando al niño. ¿Lo anoto, padre? El Celebrante no contesta enseguida. Está mirando los ojos del niño. Anota: un varón. Y nada más. La mujer intenta incorporarse. No puede. Solo estira una mano. Mi bebé... por favor... El Celebrante se gira hacia ella. Casi con cariño. Tu servicio ha concluido, hermana. En su mano hay un cuchillo curvo, negro, dentado. ¡No! Encuentra los ojos del niño. Un segundo. El corte es limpio. La sangre sale caliente. Unas gotas alcanzan la cara del recién nacido. El llanto se detiene. En el atril, sin que nadie se lo pida otra vez, el escribano moja la pluma y tacha un número del libro. El rasguño de la pluma es lo último que se oye.",
      "escenario": "cripta",
      "luz": "CRIPTA"
     },
@@ -62,9 +100,39 @@
      "flashback": true,
      "personajes": [
       "celebrante",
-      "título: la mirada que el mundo temerá"
+      "acolita"
      ],
      "dialogo": [
+      {
+       "quien": "acolita",
+       "etiqueta": "ACÓLITA",
+       "texto": "¿Y ella, padre?",
+       "intencion": "bajo, práctica"
+      },
+      {
+       "quien": "celebrante",
+       "etiqueta": "CELEBRANTE",
+       "texto": "Abajo. Con las demás.",
+       "intencion": "sin dejar de mirar al niño"
+      },
+      {
+       "quien": "acolita",
+       "etiqueta": "ACÓLITA",
+       "texto": "¿Y el niño?",
+       "intencion": "bajo, práctica"
+      },
+      {
+       "quien": "celebrante",
+       "etiqueta": "CELEBRANTE",
+       "texto": "El niño se queda arriba. Conmigo.",
+       "intencion": "sin dejar de mirar al niño"
+      },
+      {
+       "quien": "acolita",
+       "etiqueta": "ACÓLITA",
+       "texto": "Padre... no llora.",
+       "intencion": "muy bajo, para sí, con miedo"
+      },
       {
        "quien": "celebrante",
        "etiqueta": "CELEBRANTE",
@@ -72,7 +140,7 @@
        "intencion": "para sí, muy bajo, curiosidad casi científica"
       }
      ],
-     "accion": "El culto celebra. Ruido, movimiento, cuerpos. En medio de todo, el Celebrante sostiene al bebé en alto y lo mira. Solo él está quieto. El bebé tiene los ojos abiertos. Rojos. No parpadea. No llora. El Celebrante inclina un poco la cabeza, como quien encuentra algo que no esperaba. Tiene el olor del miedo... y de la vida. Negro.",
+     "accion": "El culto celebra. Ruido, movimiento, cuerpos. Al fondo, sin ceremonia, dos figuras se acercan al altar y empiezan a soltar las ataduras, como quien desmonta un puesto cuando cierra el mercado. La acólita mira hacia allí y luego al Celebrante, que no se ha movido. ¿Y ella, padre? Abajo. Con las demás. ¿Y el niño? El niño se queda arriba. Conmigo. En medio de todo, el Celebrante sostiene al bebé en alto y lo mira. Solo él está quieto. El bebé tiene los ojos abiertos. Rojos. No parpadea. No llora. La acólita da medio paso atrás sin darse cuenta. Padre... no llora. El Celebrante inclina un poco la cabeza, como quien encuentra algo que no esperaba. Tiene el olor del miedo... y de la vida. Negro.",
      "escenario": "cripta",
      "luz": "CRIPTA"
     },
@@ -84,9 +152,46 @@
      "personajes": [
       "invitada",
       "invitado",
-      "saharis"
+      "saharis",
+      "iven"
      ],
      "dialogo": [
+      {
+       "quien": "invitado",
+       "etiqueta": "INVITADO",
+       "texto": "Por la casa Elserath. Cuarenta años abriendo su mesa a media ciudad.",
+       "intencion": "de brindis, cómodo, en su casa en casa ajena"
+      },
+      {
+       "quien": "iven",
+       "etiqueta": "IVEN",
+       "texto": "Y media ciudad comiendo de ella. Que nunca se acabe.",
+       "intencion": "desde la cabecera, grande, complacido"
+      },
+      {
+       "quien": "invitada",
+       "etiqueta": "INVITADA",
+       "texto": "El grano ha vuelto a subir. En mi casa dicen que habrá casas que no pasen el invierno.",
+       "intencion": "de sobremesa seria, medio en confidencia"
+      },
+      {
+       "quien": "invitado",
+       "etiqueta": "INVITADO",
+       "texto": "Las casas que no pasan el invierno pasan a deber. Así ha funcionado siempre Feyrond.",
+       "intencion": "encogiéndose de hombros, como quien recita el tiempo"
+      },
+      {
+       "quien": "invitado",
+       "etiqueta": "INVITADO",
+       "texto": "¿Se ha fijado? Cada copa de esta mesa es de una casa distinta.",
+       "intencion": "divertido, girando la copa entre los dedos"
+      },
+      {
+       "quien": "iven",
+       "etiqueta": "IVEN",
+       "texto": "De casas que ya no cenan. Nosotros les guardamos las copas.",
+       "intencion": "orgulloso, sin escuchar el filo"
+      },
       {
        "quien": "invitada",
        "etiqueta": "INVITADA",
@@ -100,7 +205,7 @@
        "intencion": "modesto, cálido, sin esfuerzo; devuelve el foco"
       }
      ],
-     "accion": "Dieciséis años después. Una mesa larga bajo lámparas de aceite. Veinte invitados. Oro, madera oscura, polvo en suspensión. Todo es hermoso y todo está un poco gastado: los manteles tienen zurcidos, las copas no hacen juego. En un extremo, SAHARIS, diecisiete años, ropa impecable. Escucha. A su alrededor tres conversaciones distintas. Cada cierto tiempo alguien se gira hacia él para confirmar algo. ...y usted qué dice, joven Saharis. Que la señora ya lo ha dicho mejor que yo. Risas. La invitada se crece. Saharis vuelve a su copa. No ha bebido en toda la noche.",
+     "accion": "Dieciséis años después. Una mesa larga bajo lámparas de aceite. Veinte invitados. Oro, madera oscura, polvo en suspensión. Todo es hermoso y todo está un poco gastado: los manteles tienen zurcidos, las copas no hacen juego. En un extremo, SAHARIS, dieciséis años, ropa impecable. Escucha. A mitad de la mesa, el INVITADO levanta su copa hacia la cabecera. Por la casa Elserath. Cuarenta años abriendo su mesa a media ciudad. Desde la cabecera, Iven se complace. Y media ciudad comiendo de ella. Que nunca se acabe. Se bebe. Las conversaciones se reordenan. Cerca de Saharis, la INVITADA baja la voz con su vecino, pero no tanto como cree: el grano ha vuelto a subir, habrá casas que no pasen el invierno. El invitado se encoge de hombros: las casas que no pasan el invierno pasan a deber; así ha funcionado siempre Feyrond. Y sigue bebiendo. Es entonces cuando se fija en su propia copa y la gira entre los dedos. ¿Se ha fijado? Cada copa de esta mesa es de una casa distinta. Iven lo ha oído y se crece, sin escuchar el filo: de casas que ya no cenan; nosotros les guardamos las copas. Risas corteses. A su alrededor tres conversaciones distintas. Cada cierto tiempo alguien se gira hacia Saharis para confirmar algo. La invitada, frente a él, se decide por fin a meterlo en la suya. ...y usted qué dice, joven Saharis. Que la señora ya lo ha dicho mejor que yo. Risas. La invitada se crece. Saharis vuelve a su copa. No ha bebido en toda la noche.",
      "escenario": "elserath-salon",
      "luz": "NOBLE"
     },
@@ -112,13 +217,20 @@
      "personajes": [
       "iven",
       "rothar",
-      "saharis"
+      "saharis",
+      "livia"
      ],
      "dialogo": [
       {
+       "quien": "livia",
+       "etiqueta": "LIVIA",
+       "texto": "Rothar. La mesa.",
+       "intencion": "muy bajo, de hermana, casi sin mover los labios"
+      },
+      {
        "quien": "rothar",
        "etiqueta": "ROTHAR",
-       "texto": "Lo que yo digo es que nadie sabe de dónde salió. Nadie. Un día no estaba y al día",
+       "texto": "Lo que yo digo es que nadie sabe de dónde salió. Nadie. Un día no estaba y al día siguiente cenaba aquí.",
        "intencion": "alto, bebido, agresivo delante de toda la mesa"
       },
       {
@@ -130,7 +242,7 @@
       {
        "quien": "saharis",
        "etiqueta": "SAHARIS",
-       "texto": "Yo tampoco me sentaría a mi mesa sin preguntarme quién soy. Es su casa. Es su",
+       "texto": "Yo tampoco me sentaría a mi mesa sin preguntarme quién soy. Es su casa. Es su obligación.",
        "intencion": "razonable, generoso en apariencia"
       },
       {
@@ -138,9 +250,21 @@
        "etiqueta": "SAHARIS",
        "texto": "Y es la única persona aquí que ha tenido el valor de decirlo en voz alta.",
        "intencion": "cálido. Es el golpe, y suena a elogio"
+      },
+      {
+       "quien": "iven",
+       "etiqueta": "IVEN",
+       "texto": "Más vino. En esta casa no se discute con la copa vacía.",
+       "intencion": "alto, jovial, dando la escena por cerrada"
+      },
+      {
+       "quien": "rothar",
+       "etiqueta": "ROTHAR",
+       "texto": "Yo solo he dicho lo que todos...",
+       "intencion": "para sí, espeso, sin terminar la frase; ya nadie lo oye"
       }
      ],
-     "accion": "ROTHAR ELSERATH, veinticinco años, tres copas por delante de todos, golpea la mesa con el dedo. Lo que yo digo es que nadie sabe de dónde salió. Nadie. Un día no estaba y al día siguiente cenaba aquí. Silencio incómodo. LORD IVEN, en la cabecera, cierra los ojos. Saharis deja la copa. Rothar tiene razón. Todos lo miran. Yo tampoco me sentaría a mi mesa sin preguntarme quién soy. Es su casa. Es su obligación. Pausa. Y es la única persona aquí que ha tenido el valor de decirlo en voz alta. Alguien murmura *bien dicho*. Otro asiente. La mesa vuelve a hablar. Rothar se queda con la boca abierta y la mano en el aire. Acaba de ganar y ha perdido.",
+     "accion": "ROTHAR ELSERATH, veinticinco años, tres copas por delante de todos, lleva un rato mirando el extremo de la mesa. A su lado, LIVIA lo ve venir antes que nadie. Rothar. La mesa. Rothar no la oye. O sí. Golpea la mesa con el dedo. Lo que yo digo es que nadie sabe de dónde salió. Nadie. Un día no estaba y al día siguiente cenaba aquí. Silencio incómodo. LORD IVEN, en la cabecera, cierra los ojos. Saharis deja la copa. Rothar tiene razón. Todos lo miran. Yo tampoco me sentaría a mi mesa sin preguntarme quién soy. Es su casa. Es su obligación. Pausa. Y es la única persona aquí que ha tenido el valor de decirlo en voz alta. Alguien murmura *bien dicho*. Otro asiente. Iven abre los ojos y hace lo que la casa lleva cuarenta años haciendo con cada grieta: la tapa con hospitalidad. Más vino. En esta casa no se discute con la copa vacía. Los criados se mueven. La mesa vuelve a hablar. Rothar se queda con la boca abierta y la mano en el aire. Acaba de ganar y ha perdido. Baja la mano despacio y le habla a su copa, ya para nadie. Yo solo he dicho lo que todos...",
      "escenario": "elserath-salon",
      "luz": "NOBLE"
     },
@@ -178,9 +302,33 @@
        "etiqueta": "SAHARIS",
        "texto": "La primera vez es del autor. La segunda ya es de uno.",
        "intencion": "como una observación, sin presumir"
+      },
+      {
+       "quien": "livia",
+       "etiqueta": "LIVIA",
+       "texto": "¿Y qué sacó en claro la segunda vez?",
+       "intencion": "ya sin reír del todo, interesada de verdad"
+      },
+      {
+       "quien": "saharis",
+       "etiqueta": "SAHARIS",
+       "texto": "Que el autor también tenía miedo. La primera vez casi no se le nota.",
+       "intencion": "como una observación, sin presumir"
+      },
+      {
+       "quien": "livia",
+       "etiqueta": "LIVIA",
+       "texto": "Usted lee a las personas igual que a los libros, ¿verdad?",
+       "intencion": "despacio, medio en broma y medio no"
+      },
+      {
+       "quien": "saharis",
+       "etiqueta": "SAHARIS",
+       "texto": "A las personas las leo una vez. No siempre hay una segunda.",
+       "intencion": "sin ofenderse, sin negarlo"
       }
      ],
-     "accion": "Junto a una ventana, apartados. LIVIA ELSERATH, veinte años, con un libro pequeño contra el pecho. ¿Lo ha leído? Dos veces. Nadie lo lee dos veces. La primera vez es del autor. La segunda ya es de uno. Livia lo mira. Se ríe —de verdad, corto, sin permiso. Detrás de ella, un criado pasa con una bandeja. Saharis registra la risa igual que registró el zurcido del mantel.",
+     "accion": "Junto a una ventana, apartados. LIVIA ELSERATH, veinte años, con un libro pequeño contra el pecho. ¿Lo ha leído? Dos veces. Nadie lo lee dos veces. La primera vez es del autor. La segunda ya es de uno. Detrás de ella, un criado pasa con una bandeja. Livia se ríe —de verdad, corto, sin permiso. Pero no lo deja ahí: lo mira con la risa todavía en la cara y aprieta un poco más, como quien ha encontrado la única conversación de la noche que no es de sobremesa. ¿Y qué sacó en claro la segunda vez? Que el autor también tenía miedo. La primera vez casi no se le nota. Livia inclina la cabeza. Lo está releyendo a él. Usted lee a las personas igual que a los libros, ¿verdad? A las personas las leo una vez. No siempre hay una segunda. La sonrisa de Livia se queda un segundo de más y luego se apaga poco a poco. Saharis registra ese cambio igual que registró el zurcido del mantel. Ella vuelve hacia la cena con el libro contra el pecho. Él se queda un momento junto a la ventana, mirando el salón entero.",
      "escenario": "elserath-salon",
      "luz": "NOBLE"
     },
@@ -197,8 +345,8 @@
      "dialogo": [
       {
        "quien": "iven",
-       "etiqueta": "LORD IVEN",
-       "texto": "...trescientos carros. Trescientos. Con la nieve hasta la rodilla y sin un solo",
+       "etiqueta": "IVEN",
+       "texto": "...trescientos carros. Trescientos. Con la nieve hasta la rodilla y sin un solo hombre perdido.",
        "intencion": "alto y nostálgico, hablando ya para nadie"
       },
       {
@@ -209,7 +357,7 @@
       },
       {
        "quien": "iven",
-       "etiqueta": "LORD IVEN",
+       "etiqueta": "IVEN",
        "texto": "¿Cómo?",
        "intencion": "desconcertado; no esperaba que alguien escuchara"
       },
@@ -221,9 +369,15 @@
       },
       {
        "quien": "iven",
-       "etiqueta": "LORD IVEN",
+       "etiqueta": "IVEN",
        "texto": "Veintiséis.",
        "intencion": "recuperando la dignidad"
+      },
+      {
+       "quien": "iven",
+       "etiqueta": "IVEN",
+       "texto": "Salimos con luna y volvimos con luna. En medio, solo blanco.",
+       "intencion": "para el Saharis que escucha y para el joven que fue"
       },
       {
        "quien": "saharis",
@@ -233,7 +387,7 @@
       },
       {
        "quien": "iven",
-       "etiqueta": "LORD IVEN",
+       "etiqueta": "IVEN",
        "texto": "Veintiséis. Y con nieve.",
        "intencion": "creciéndose"
       },
@@ -242,9 +396,15 @@
        "etiqueta": "SAHARIS",
        "texto": "Con nieve.",
        "intencion": "confirmando; le está regalando el momento"
+      },
+      {
+       "quien": "iven",
+       "etiqueta": "IVEN",
+       "texto": "El mapa está en mi despacho, en el segundo cajón. Un día os lo enseño a todos.",
+       "intencion": "alto, anunciándolo como un regalo"
       }
      ],
-     "accion": "Lord Iven, sesenta años, la copa siempre llena, habla alto. ...trescientos carros. Trescientos. Con la nieve hasta la rodilla y sin un solo hombre perdido. Nadie escucha. Saharis sí. ¿Cuántos días? ¿Cómo? De Kadre a la ciudad, con nieve. ¿Cuántos días tardaron? Veintiséis. Hoy se tarda diecinueve, con la mitad de carga. Lord Iven se endereza en la silla. Por primera vez en toda la noche, alguien le ha hecho grande. Veintiséis. Y con nieve. Con nieve.",
+     "accion": "Lord Iven, sesenta años, la copa siempre llena, habla alto desde su cabecera, para el extremo lejano de su propia mesa. ...trescientos carros. Trescientos. Con la nieve hasta la rodilla y sin un solo hombre perdido. Nadie escucha. Saharis sí. ¿Cuántos días? ¿Cómo? De Kadre a la ciudad, con nieve. ¿Cuántos días tardaron? Veintiséis. El viejo se endereza en la silla y el relato le crece en la boca. Salimos con luna y volvimos con luna. En medio, solo blanco. Hoy se tarda diecinueve, con la mitad de carga. Lord Iven se endereza en la silla. Por primera vez en toda la noche, alguien le ha hecho grande. Veintiséis. Y con nieve. Con nieve. Iven, envalentonado, se dirige por fin a la mesa entera, que sigue sin escucharle. El mapa está en mi despacho, en el segundo cajón. Un día os lo enseño a todos. Nadie se mueve. Un criado duda junto a la pared y se queda donde estaba. Iven ya lo ha olvidado y vuelve a su copa. En el extremo cercano, Saharis no ha cambiado de postura, pero algo ha quedado guardado: segundo cajón, despacho. Vuelve a su copa intacta.",
      "escenario": "elserath-salon",
      "luz": "NOBLE"
     },
@@ -257,8 +417,15 @@
       "invitado",
       "saharis"
      ],
-     "dialogo": [],
-     "accion": "Un INVITADO se quita el guante para servirse vino. En el dedo, un anillo. Un círculo. Un ojo. Cuatro dientes. Saharis lo ve. La cara no le cambia. La mano tampoco. Nada.",
+     "dialogo": [
+      {
+       "quien": "invitado",
+       "etiqueta": "INVITADO",
+       "texto": "En mi casa no se sirve uno mismo. Aquí, en confianza, sí.",
+       "intencion": "cómodo, en voz baja, mientras se quita el guante"
+      }
+     ],
+     "accion": "La cena continúa. Las copas vacías del golpe de Rothar ya no están: un criado ha pasado con la jarra, como Iven mandó, y la mesa ha vuelto a su murmullo como si nada hubiera pasado. En el lado este, a dos asientos del extremo de Saharis, el INVITADO —un comerciante de unos cincuenta años, el mismo que habló del grano y de las copas de las casas caídas— quiere servirse vino y la jarra está lejos. Se la acerca un vecino. El invitado se mira la mano derecha, la del guante, y se lo quita despacio, dedo a dedo. En mi casa no se sirve uno mismo. Aquí, en confianza, sí. Deja el guante junto al plato y toma la jarra con la mano desnuda. En el dedo hay un anillo. Un círculo. Un ojo. Cuatro dientes. El metal recoge la luz de las lámparas una sola vez. Saharis lo ve. La cara no le cambia. La mano tampoco. Sus dos manos siguen planas sobre la mesa, junto a su copa llena. Nada.",
      "escenario": "elserath-salon",
      "luz": "NOBLE"
     },
@@ -272,6 +439,12 @@
       "saharis"
      ],
      "dialogo": [
+      {
+       "quien": "invitado",
+       "etiqueta": "INVITADO",
+       "texto": "Siéntese, hombre. Al que sirve bien se le habla mejor.",
+       "intencion": "complacido, acogiendo al joven callado que por fin se ha sentado a su lado"
+      },
       {
        "quien": "saharis",
        "etiqueta": "SAHARIS",
@@ -297,6 +470,12 @@
        "intencion": "soltándose, ya cómodo"
       },
       {
+       "quien": "invitado",
+       "etiqueta": "INVITADO",
+       "texto": "El paso bajo es para los carros y va con luz, como Dios manda. Lo serio baja por el vado.",
+       "intencion": "explicando su mundo, orgulloso de oficio"
+      },
+      {
        "quien": "saharis",
        "etiqueta": "SAHARIS",
        "texto": "¿Y en invierno?",
@@ -309,13 +488,19 @@
        "intencion": "confiado, hablando de más"
       },
       {
+       "quien": "invitado",
+       "etiqueta": "INVITADO",
+       "texto": "En el muelle se anota todo: cada piel, cada barril, cada saca. Lo del vado no pasa por el muelle.",
+       "intencion": "más bajo, sin darse cuenta de que ha bajado la voz"
+      },
+      {
        "quien": "saharis",
        "etiqueta": "SAHARIS",
        "texto": "Fascinante.",
        "intencion": "cortés y vacío. Ya tiene lo que quería"
       }
      ],
-     "accion": "Saharis se ha sentado junto al invitado. Le está sirviendo él el vino. Perdone la ignorancia. ¿Los Renn son los del aceite o los de la sal? Ninguna de las dos. Curtidos. Ah. Entonces el olor no era del río. El invitado se ríe. Se relaja. Del río y de nosotros. Traemos por el paso bajo y por el vado, según el mes. ¿Y en invierno? En invierno solo por el vado. Y de noche, que hay menos inspección. Saharis asiente, como quien no ha entendido del todo, y le rellena la copa. Fascinante.",
+     "accion": "Entre plato y plato, cuando los criados retiran y la mesa se mueve, Saharis ya no está en su extremo: se ha sentado junto al invitado, en el asiento inmediato hacia el centro. Su copa llena se ha quedado atrás, marcando su sitio vacío. Delante de los dos, el decantador de plata. Saharis lo toma y sirve en la copa del invitado, nunca en la suya. El invitado lo mira de reojo, complacido de tener por fin a ese joven callado para él solo. Siéntese, hombre. Al que sirve bien se le habla mejor. Perdone la ignorancia. ¿Los Renn son los del aceite o los de la sal? Ninguna de las dos. Curtidos. Ah. Entonces el olor no era del río. El invitado se ríe. Se relaja. Del río y de nosotros. Traemos por el paso bajo y por el vado, según el mes. El paso bajo es para los carros y va con luz, como Dios manda. Lo serio baja por el vado. ¿Y en invierno? En invierno solo por el vado. Y de noche, que hay menos inspección. El invitado baja la voz sin darse cuenta de que la ha bajado. En el muelle se anota todo: cada piel, cada barril, cada saca. Lo del vado no pasa por el muelle. Saharis asiente, como quien no ha entendido del todo, y le rellena la copa. Las dos manos —la suya, limpia; la del invitado, con el anillo— comparten un instante el mismo aire sobre la mesa. Fascinante. El invitado bebe, contento de su propia conversación, y al dejar la copa se vuelve a poner el guante, dedo a dedo. El anillo desaparece bajo el cuero. La cena sigue.",
      "escenario": "elserath-salon",
      "luz": "NOBLE"
     },
@@ -345,14 +530,20 @@
       {
        "quien": "saharis",
        "etiqueta": "SAHARIS",
-       "texto": "Porque el mayordomo de los Verrin bebe. Y porque usted lleva dos semanas",
-       "intencion": "explicando, casi amable"
+       "texto": "Porque el mayordomo de los Verrin bebe. Y porque usted lleva dos semanas contento.",
+       "intencion": "explicando, casi amable; línea completada desde la prosa de la escena, en el guion guardado viene cortada"
       },
       {
        "quien": "saharis",
        "etiqueta": "SAHARIS",
-       "texto": "Los Verrin pagan tarde. Siempre. No es maldad, es desorden. Si quiere, hablo con",
-       "intencion": "ofrecimiento que en la superficie es sincero"
+       "texto": "Los Verrin pagan tarde. Siempre. No es maldad, es desorden. Si quiere, hablo con el administrador y le adelanta el primer trimestre.",
+       "intencion": "ofrecimiento que en la superficie es sincero; línea completada desde la prosa de la escena, en el guion guardado viene cortada"
+      },
+      {
+       "quien": "cocinero",
+       "etiqueta": "COCINERO",
+       "texto": "El administrador no adelanta ni el carbón de su propia cocina.",
+       "intencion": "escéptico, con el conocimiento de quien lleva años en la casa"
       },
       {
        "quien": "cocinero",
@@ -367,13 +558,37 @@
        "intencion": "ligero. La palabra que pesa es «hoy»"
       },
       {
+       "quien": "cocinero",
+       "etiqueta": "COCINERO",
+       "texto": "Los señores no regalan nada, joven.",
+       "intencion": "bajo, de hombre que ha servido a señores toda la vida"
+      },
+      {
        "quien": "saharis",
        "etiqueta": "SAHARIS",
-       "texto": "Algún día le preguntaré quién entra en esta casa por la puerta de servicio. Y",
-       "intencion": "tranquilo, sin presión; deja la puerta abierta"
+       "texto": "No soy un señor. Y esto no es un regalo: es un aviso.",
+       "intencion": "simple, sin solemnidad"
+      },
+      {
+       "quien": "cocinero",
+       "etiqueta": "COCINERO",
+       "texto": "¿Y si el administrador pregunta quién me lo ha dicho?",
+       "intencion": "bajando la voz por primera vez; el miedo concreto de un criado"
+      },
+      {
+       "quien": "saharis",
+       "etiqueta": "SAHARIS",
+       "texto": "Diga que lo ha oído en la cocina. En esta cocina se oye toda la casa y nadie lo encuentra raro.",
+       "intencion": "práctico; le está entregando la versión que puede contar"
+      },
+      {
+       "quien": "saharis",
+       "etiqueta": "SAHARIS",
+       "texto": "Algún día le preguntaré quién entra en esta casa por la puerta de servicio. Y usted me lo dirá, o no me lo dirá. Como prefiera.",
+       "intencion": "tranquilo, sin presión; deja la puerta abierta; línea completada desde la prosa de la escena, en el guion guardado viene cortada"
       }
      ],
-     "accion": "Vapor, ruido de platos. El COCINERO, cincuenta años, cargando una olla. Saharis está apoyado en el marco, sin entrar. Su hija empieza en la casa de los Verrin el mes que viene. El cocinero se detiene. ¿Cómo sabe eso? Porque el mayordomo de los Verrin bebe. Y porque usted lleva dos semanas contento. Silencio. El cocinero deja la olla. Los Verrin pagan tarde. Siempre. No es maldad, es desorden. Si quiere, hablo con el administrador y le adelanta el primer trimestre. ¿Y qué quiere usted? Nada, hoy. Saharis se aparta del marco. Algún día le preguntaré quién entra en esta casa por la puerta de servicio. Y usted me lo dirá, o no me lo dirá. Como prefiera. Sale. El cocinero se queda mirando la puerta vacía.",
+     "accion": "Vapor, ruido de platos. La cocina trabaja la cena desde dentro: cobre, fuentes, órdenes cortas que no necesitan levantar la voz. El COCINERO, cincuenta años, cargando una olla grande con las dos manos, cruza hacia la mesa de trabajo. Saharis está apoyado en el marco de la puerta, sin entrar. Su hija empieza en la casa de los Verrin el mes que viene. El cocinero se detiene. ¿Cómo sabe eso? Porque el mayordomo de los Verrin bebe. Y porque usted lleva dos semanas contento. Silencio. El cocinero deja la olla sobre la mesa. Cruza un ayudante con una fuente y, sin mirar a la puerta, el cocinero vuelve a ser solo el cocinero hasta que pasa de largo. Los Verrin pagan tarde. Siempre. No es maldad, es desorden. Si quiere, hablo con el administrador y le adelanta el primer trimestre. El administrador no adelanta ni el carbón de su propia cocina. ¿Y qué quiere usted? Nada, hoy. Los señores no regalan nada, joven. No soy un señor. Y esto no es un regalo: es un aviso. El cocinero mira hacia el interior de la cocina, donde nadie parece escuchar, y baja la voz por primera vez. ¿Y si el administrador pregunta quién me lo ha dicho? Diga que lo ha oído en la cocina. En esta cocina se oye toda la casa y nadie lo encuentra raro. Saharis se aparta del marco. Algún día le preguntaré quién entra en esta casa por la puerta de servicio. Y usted me lo dirá, o no me lo dirá. Como prefiera. Sale. El cocinero se queda mirando la puerta vacía. La cocina entera vuelve poco a poco a su ruido.",
      "escenario": "elserath-cocina",
      "luz": "NOBLE"
     },
@@ -388,6 +603,12 @@
       "saharis"
      ],
      "dialogo": [
+      {
+       "quien": "rothar",
+       "etiqueta": "ROTHAR",
+       "texto": "En la mesa has tenido la bondad de no hundirme del todo.",
+       "intencion": "dolido, conteniendo; todavía con la humillación de la cena encima"
+      },
       {
        "quien": "rothar",
        "etiqueta": "ROTHAR",
@@ -421,8 +642,20 @@
       {
        "quien": "saharis",
        "etiqueta": "SAHARIS",
-       "texto": "Cuatrocientos con Merek. Doscientos con la casa del puente. Y algo con un hombre",
-       "intencion": "recita cifras sin énfasis. Eso es lo que asusta"
+       "texto": "Cuatrocientos con Merek. Doscientos con la casa del puente. Y algo con un hombre del que no me has dicho el nombre porque te da miedo decirlo en voz alta.",
+       "intencion": "recita cifras sin énfasis. Eso es lo que asusta; línea completada desde la prosa de la escena, en el guion guardado viene cortada"
+      },
+      {
+       "quien": "rothar",
+       "etiqueta": "ROTHAR",
+       "texto": "¿Quién te lo ha contado?",
+       "intencion": "muy bajo; la pregunta de un hombre que se descubre transparente"
+      },
+      {
+       "quien": "saharis",
+       "etiqueta": "SAHARIS",
+       "texto": "Nadie. Pides prestado en voz alta.",
+       "intencion": "un dato, sin crueldad"
       },
       {
        "quien": "saharis",
@@ -455,7 +688,7 @@
        "intencion": "sincero, y por eso peor"
       }
      ],
-     "accion": "Frío. Rothar espera entre los setos, sin abrigo. No me has humillado. Me has usado. Las dos cosas. Rothar da un paso adelante. Es más grande que él. Voy a averiguar quién eres. Bien. Eso lo descoloca. Deberías. Alguien en esta casa tiene que hacerlo y tu padre no va a ser. Pausa. Cuatrocientos con Merek. Doscientos con la casa del puente. Y algo con un hombre del que no me has dicho el nombre porque te da miedo decirlo en voz alta. Rothar no responde. Mañana estará pagado. No quiero tu dinero. No es mío. Es de tu padre. Y él no se va a enterar. Rothar respira. Le tiembla la mandíbula. ...Se llama Osk. Gracias. Saharis se va. Rothar se queda solo en el jardín. Se pasa la mano por la cara.",
+     "accion": "Frío. Un claro pequeño entre los setos, grava, luna. Rothar espera entre los setos, sin abrigo, con el frío subiéndole por la camisa de la cena. Saharis llega por el sendero y se detiene a dos pasos. En la mesa has tenido la bondad de no hundirme del todo. No me has humillado. Me has usado. Las dos cosas. Rothar da un paso adelante. Es más grande que él. Voy a averiguar quién eres. Bien. Eso lo descoloca. Deberías. Alguien en esta casa tiene que hacerlo y tu padre no va a ser. Pausa. Cuatrocientos con Merek. Doscientos con la casa del puente. Y algo con un hombre del que no me has dicho el nombre porque te da miedo decirlo en voz alta. Rothar no responde. ¿Quién te lo ha contado? Nadie. Pides prestado en voz alta. Mañana estará pagado. No quiero tu dinero. No es mío. Es de tu padre. Y él no se va a enterar. Rothar respira. Le tiembla la mandíbula. ...Se llama Osk. Gracias. Saharis se va. Rothar se queda solo en el jardín. Se pasa la mano por la cara.",
      "escenario": "elserath-jardin",
      "luz": "BARRIO"
     },
@@ -468,7 +701,7 @@
       "saharis"
      ],
      "dialogo": [],
-     "accion": "Saharis camina solo. Sin carruaje. Las casas se van estrechando. Las farolas se van espaciando. El empedrado se rompe. Un perro lo mira pasar y no ladra.",
+     "accion": "Saharis camina solo. Sin carruaje. Sale de la Calle Alta con las casas nobles todavía dormidas a los dos lados y baja sin prisa, con el mismo paso con el que cenó, con el mismo paso con el que escuchó. La ciudad va cambiando debajo de sus botas antes de cambiar ante sus ojos: primero se apaga el sonido —ya no hay carruajes, ni portales con luz—, después el suelo. Las casas se van estrechando. Las farolas se van espaciando, hasta que entre una y otra cabe un tramo entero de sombra. El empedrado se rompe. Y llega un olor nuevo, bajo y agrio, que sube de la parte baja de la ciudad: cuero, agua quieta, trabajo de noche. El olor llega antes que las casas. Un perro lo mira pasar y no ladra. Saharis no lo mira. No se detiene en ningún momento: cruza la frontera entre los dos mundos de Feyrond como quien cruza una habitación de su propia casa.",
      "escenario": "calle",
      "luz": "BARRIO"
     },
@@ -482,7 +715,7 @@
       "saharis"
      ],
      "dialogo": [],
-     "accion": "Un portal negro, sin puerta. Saharis entra vestido de noble. Sale a los pocos segundos con un abrigo basto y el pelo revuelto. La ropa buena va enrollada bajo el brazo. Pasa un grupo de tres hombres. Ninguno lo mira.",
+     "accion": "Barrio de Humo. Callejón de barro y empedrado roto, chabolas inclinadas que se apoyan unas en otras para no caer. Un portal negro, sin puerta: un vano en la pared del que no sale luz ni ruido. Saharis entra vestido de noble, con las manos vacías. El portal se lo traga sin un sonido. Pasan unos segundos de nada: el callejón vacío, un goteo lejano, el frío. Sale a los pocos segundos con un abrigo basto y el pelo revuelto. La ropa buena va enrollada bajo el brazo. Se queda junto a la pared, en la sombra que queda. Pasa un grupo de tres hombres, ropa de trabajo, camino de alguna primera tarea del día. Ninguno lo mira. No bajan la voz, no cambian el paso: para ellos no hay nadie en el callejón. El joven que cenaba en la mesa de los Elserath ya no está en ninguna parte.",
      "escenario": "barrio-humo",
      "luz": "BARRIO"
     },
@@ -495,7 +728,7 @@
       "saharis"
      ],
      "dialogo": [],
-     "accion": "Bajo la ciudad. Piedra húmeda. Un solo farol. Una sala pequeña, seca, ordenada. Un jergón. Una mesa. Y una pared. La pared está cubierta de papel: planos de la ciudad, listas de nombres, cifras, fechas, hilos de cordel de un papel a otro. Años de trabajo. Saharis se sienta delante de ella.",
+     "accion": "Bajo la ciudad. La sala es pequeña y seca: un jergón pegado a la pared oeste, una mesa de madera junto a la pared del fondo, un farol sobre la mesa y la pared. Saharis entra con el abrigo basto y el pelo revuelto del cambio de ropa, la ropa buena enrollada bajo el brazo. Deja el bulto sobre el jergón —la única superficie que no usa para nada más— y se queda un momento mirando la pared antes de sentarse. La pared es años de trabajo: unos trescientos papeles clavados unos sobre otros —planos de la ciudad, listas de nombres, cifras, fechas— unidos por cordeles que van de un papel a otro. No está ordenada como un archivo; está ordenada como la cabeza de quien la hizo: un nombre atado a una fecha, una fecha a una cifra, una cifra a un mapa. Hay papeles amarillentos de años y papeles nuevos; la letra cambia con los años, pero es la misma mano. Saharis se sienta en la única silla, de espaldas a la sala, frente a la pared. El farol le queda a la derecha, sobre la mesa. No enciende nada más. No se quita el abrigo. Se queda quieto, mirando.",
      "escenario": "tuneles",
      "luz": "BARRIO"
     },
@@ -506,7 +739,7 @@
      "flashback": false,
      "personajes": [],
      "dialogo": [],
-     "accion": "Dibuja el anillo a carboncillo. Un círculo. Un ojo. Cuatro dientes. Lo clava en un hueco de la pared. La cámara se va abriendo. El anillo es un papel entre trescientos. Escrito grande, arriba del todo, con letra de niño: **SIETE**.",
+     "accion": "Encima de la mesa, sobre un papel basto, Saharis dibuja a carboncillo. No duda ni corrige: un círculo, un ojo, cuatro dientes. Lo vio una sola vez, en la cena, y una vez basta. Entre un plano de la ciudad y una lista de nombres hay un hueco del tamaño de una mano, vacío entre los trescientos papeles. Se levanta de la silla, clava el papel en el hueco y se retira. Vuelve a sentarse. La cámara se abre. El dibujo queda entre los demás, un papel entre trescientos, y solo se distingue en que es el más nuevo. Y arriba del todo, en la piedra, con letra de niño, la palabra que preside la pared entera: SIETE.",
      "escenario": "tuneles",
      "luz": "BARRIO"
     },
@@ -533,7 +766,7 @@
        "intencion": "bajo, interesado"
       }
      ],
-     "accion": "La ceremonia ha terminado. Una ACÓLITA de cara demacrada mece al recién nacido, sentada en el suelo, tarareando. El Celebrante se agacha a su lado. Mira al niño. Está dormido. No. Los ojos rojos están abiertos, fijos en él. El Celebrante sonríe debajo de la máscara. Se levanta y se va.",
+     "accion": "La ceremonia ha terminado. El altar está vacío; las antorchas arden bajas y el humo se queda en el aire. En el suelo, junto al lado sur del altar, con la espalda en su base, una ACÓLITA —la misma de la noche del nacimiento— mece al recién nacido envuelto en tela oscura. Está agotada. Tararea muy bajo, sin palabras: la única ternura corriente de toda la cripta. El CELEBRANTE entra en la luz de las antorchas y se agacha junto a ella, a menos de un brazo del bebé. La máscara le cubre la cara entera, como siempre. Está dormido. El Celebrante mira al bulto. Los ojos rojos del bebé están abiertos, fijos en él. No parpadea. No. La sonrisa se le lee solo en el gesto de la cabeza y en la postura, debajo de la máscara. Se levanta despacio y se marcha hacia la oscuridad. La acólita se queda en el suelo con el bebé, y el tarareo vuelve, ya solo.",
      "escenario": "cripta",
      "luz": "CRIPTA"
     },
@@ -546,7 +779,7 @@
       "saharis"
      ],
      "dialogo": [],
-     "accion": "Saharis sigue sentado frente a la pared. No se ha movido. Una gota cae del techo sobre el suelo, a un ritmo lento y constante. Él la escucha.",
+     "accion": "Amanece. Saharis sigue sentado en la silla, exactamente donde quedó: no se ha movido. El papel del anillo sigue en su hueco de la pared, como lo dejó. Una claridad gris azulada se mezcla con la luz del farol, que sigue encendido sobre la mesa. Del techo cae una gota sobre un punto húmedo del suelo, junto a la silla. Una sola. A un ritmo lento y constante. La sala es seca; la mancha es pequeña y está siempre en el mismo sitio. Él la escucha. En todo el rato, un solo parpadeo. No duerme, no come, no se levanta. La pared delante, la gota cayendo a su lado, y el tiempo que pasa sin que nada pase.",
      "escenario": "tuneles",
      "luz": "BARRIO"
     },
@@ -559,7 +792,7 @@
       "madre"
      ],
      "dialogo": [],
-     "accion": "Muy poca luz. Una celda de piedra. Una MUJER lo sostiene contra el pecho. No le vemos la cara. Está cantando. Bajo, casi sin voz. Una melodía sencilla que gira sobre sí misma y no termina. El niño —tres, cuatro años— no entiende las palabras. No son de aquí. Escucha el tono.",
+     "accion": "Muy poca luz. Una celda de piedra. Un jergón de paja en el suelo, contra la pared del fondo; una abertura alta con barrotes; la puerta pesada, entreabierta. Una MUJER está sentada en el suelo, sobre el jergón, con un niño de tres o cuatro años contra el pecho. No le vemos la cara: el pelo largo y sucio se la cubre, o la sombra, o el encuadre de espaldas. Sus manos, delgadas y gastadas, con las marcas de las ataduras en las muñecas, le acarician la espalda al niño al ritmo de la canción. Está cantando. Bajo, casi sin voz. Una melodía sencilla que gira sobre sí misma y no termina. Las palabras no son de aquí; el niño no las entiende. Escucha el tono. La melodía se repite y se corta y vuelve a empezar, y nunca llega al final. El corte llega sobre la canción abierta.",
      "escenario": "cripta-celda",
      "luz": "BARRIO"
     },
@@ -572,7 +805,7 @@
       "saharis"
      ],
      "dialogo": [],
-     "accion": "Saharis quema una nota en el farol. La ve arder hasta el final. Se levanta.",
+     "accion": "De día. El refugio está como quedó: la pared con el papel del anillo en su hueco, el farol sobre la mesa, en su extremo este. Saharis está en la silla. En la mano lleva un papel doblado. Uno solo. Lo mete en el farol abierto y la llama prende dentro. Se queda sentado, mirándolo arder hasta el final: el resplandor cálido mengua sobre su cara hasta apagarse del todo y lo devuelve a la luz fría de la sala. Se frota las yemas de los dedos. Se levanta de la mesa y sale por arriba del encuadre. Quedan la silla vacía y el farol apagado.",
      "escenario": "tuneles",
      "luz": "BARRIO"
     },
@@ -583,10 +816,91 @@
      "flashback": false,
      "personajes": [
       "saharis",
-      "vendedora"
+      "vendedora",
+      "mozo",
+      "nino"
      ],
-     "dialogo": [],
-     "accion": "Ruido, gente, barro. Saharis, vestido de pobre, pregunta a una VENDEDORA por el precio del cuero. Luego a un MOZO por qué carro llega antes. Luego a un NIÑO, y le da una moneda. Tres preguntas. Tres personas que no se conocen entre sí. Ninguna sabe que le ha dado nada. Se aparta y escribe en un papel: **RENN**.",
+     "dialogo": [
+      {
+       "quien": "vendedora",
+       "etiqueta": "VENDEDORA",
+       "texto": "¿Compra o pregunta, hijo?",
+       "intencion": "práctica, sin levantar la vista de los rollos"
+      },
+      {
+       "quien": "saharis",
+       "etiqueta": "SAHARIS",
+       "texto": "Pregunta primero. ¿A cómo sale el cuero bueno?",
+       "intencion": "de pobre, sin prisa"
+      },
+      {
+       "quien": "vendedora",
+       "etiqueta": "VENDEDORA",
+       "texto": "El bueno no se regatea. Viene de casa de los Renn y cuesta lo que cuesta.",
+       "intencion": "cerrada, de oficio"
+      },
+      {
+       "quien": "saharis",
+       "etiqueta": "SAHARIS",
+       "texto": "¿Y hasta qué hora tiene el puesto?",
+       "intencion": "casual"
+      },
+      {
+       "quien": "vendedora",
+       "etiqueta": "VENDEDORA",
+       "texto": "Hasta que se va la luz. En este barrio nadie cierra tarde.",
+       "intencion": "de oficio"
+      },
+      {
+       "quien": "saharis",
+       "etiqueta": "SAHARIS",
+       "texto": "¿Qué carro llega antes a la parte baja?",
+       "intencion": "casual, de paso"
+      },
+      {
+       "quien": "mozo",
+       "etiqueta": "MOZO",
+       "texto": "El de los Renn. Sale con luz y entra por el paso bajo, el primero.",
+       "intencion": "seguro, señalando con la barbilla"
+      },
+      {
+       "quien": "saharis",
+       "etiqueta": "SAHARIS",
+       "texto": "¿Siempre el primero?",
+       "intencion": "casual"
+      },
+      {
+       "quien": "mozo",
+       "etiqueta": "MOZO",
+       "texto": "Cuando es de día. Lo de la noche no se pregunta.",
+       "intencion": "encogiéndose de hombros; la segunda parte, sin darle importancia"
+      },
+      {
+       "quien": "saharis",
+       "etiqueta": "SAHARIS",
+       "texto": "¿Son tuyos todos esos cuencos?",
+       "intencion": "agachándose un poco, a su altura"
+      },
+      {
+       "quien": "nino",
+       "etiqueta": "NIÑO",
+       "texto": "Los recojo por las casas y los devuelvo.",
+       "intencion": "sin detenerse del todo, de memoria"
+      },
+      {
+       "quien": "saharis",
+       "etiqueta": "SAHARIS",
+       "texto": "¿También en la calle de los curtidores?",
+       "intencion": "casual"
+      },
+      {
+       "quien": "nino",
+       "etiqueta": "NIÑO",
+       "texto": "También. En la casa Renn siempre hay cuencos por recoger.",
+       "intencion": "de memoria, sin saber lo que dice"
+      }
+     ],
+     "accion": "Ruido, gente, barro. Saharis, vestido de pobre —el abrigo basto y el pelo revuelto del cambio de ropa—, se detiene delante del puesto de la vendedora de cuero, en el lado este: una mesa baja con rollos de cuero, y ella detrás. Pregunta primero: a cómo sale el cuero bueno. El bueno no se regatea: viene de casa de los Renn y cuesta lo que cuesta. El puesto está hasta que se va la luz; en este barrio nadie cierra tarde. Luego, al fondo norte, junto a los carros, pregunta a un MOZO qué carro llega antes a la parte baja. El de los Renn: sale con luz y entra por el paso bajo, el primero. Cuando es de día; lo de la noche no se pregunta. Luego se cruza con un NIÑO que recoge cuencos por las casas y los devuelve: también en la calle de los curtidores; en la casa Renn siempre hay cuencos por recoger. Y le da una moneda, en un gesto escondido: le pone la moneda en la mano y se la cierra, y el niño sigue andando como si nada. Tres preguntas. Tres personas que no se conocen entre sí. Ninguna sabe que le ha dado nada. Se aparta a la sombra del cobertizo del lado oeste y escribe en un papel: RENN.",
      "escenario": "barrio-humo",
      "luz": "BARRIO"
     },
@@ -599,7 +913,7 @@
       "saharis"
      ],
      "dialogo": [],
-     "accion": "Una casa mediana en un barrio decente. Nada llamativo. Saharis, sentado en un escalón al otro lado de la calle, con un cuenco delante. Pasan las horas. La luz cambia. No entra nadie. No sale nadie.",
+     "accion": "Una casa mediana en un barrio decente. Dos plantas, la puerta centrada, nada llamativo. Saharis, sentado en un escalón al otro lado de la calle, con un cuenco delante de los pies. Pasan las horas. La luz cambia sobre la fachada: primero plana, después larga, al final pesada y baja. La calle tiene su vida pequeña y la casa Renn no participa de nada de eso. No entra nadie. No sale nadie. Una casa de curtidores en pleno día, sin un solo carro, sin un solo criado en la puerta, sin una sola entrega por la puerta que se ve. Saharis sigue en la misma postura del principio; en todo el día, un solo parpadeo que se le note. El cuenco sigue vacío: tampoco a él le ha dado nadie nada.",
      "escenario": "casa-renn",
      "luz": "BARRIO"
     },
@@ -614,7 +928,7 @@
       "saharis"
      ],
      "dialogo": [],
-     "accion": "Llega un carro. No descargan fardos: descargan barriles. Seis. Baja un HOMBRE con delantal de cuero. Habla poco. Los criados no lo miran a la cara. Los barriles no entran por la puerta principal. Rodean la casa. Saharis se levanta y deja el cuenco donde está.",
+     "accion": "La misma calle, de noche. Saharis sigue en su escalón, con el cuenco delante. Llega un carro pesado y se detiene frente a la casa, con la trasera hacia el este. No descargan fardos: descargan barriles. Seis. Baja un HOMBRE con delantal de cuero. Habla poco: dos o tres palabras cortas, sin levantar la voz, que la noche se traga antes de que se entiendan. Los criados descargan con la cabeza baja y no lo miran a la cara, ni una sola vez. Los barriles no entran por la puerta principal, que sigue cerrada y a oscuras: rodean la casa por el lateral este, pegados a la pared, hacia atrás. Saharis se levanta y deja el cuenco donde está.",
      "escenario": "casa-renn",
      "luz": "BARRIO"
     },
@@ -628,7 +942,7 @@
       "saharis"
      ],
      "dialogo": [],
-     "accion": "El carro vacío se va. El hombre del delantal sigue a pie. Saharis lo sigue a media calle de distancia. Cada esquina baja un poco más. El aire se vuelve más denso. Las farolas desaparecen.",
+     "accion": "El carro vacío se va calle arriba. El hombre del delantal sigue a pie, hacia abajo, con el paso tranquilo de quien conoce el camino de memoria. Saharis lo sigue a media calle de distancia: ni un paso más cerca, ni un paso más lejos, en todo el recorrido. Cada esquina baja un poco más. Las calles se estrechan, las casas se inclinan, el suelo se rompe. Las farolas se van espaciando hasta desaparecer: al final no hay ni una en un tramo entero. El aire se vuelve más denso, con olor a agua quieta y a desagüe abierto. El hombre no se gira ni una vez.",
      "escenario": "barrio-humo",
      "luz": "BARRIO"
     },
@@ -642,7 +956,7 @@
       "saharis"
      ],
      "dialogo": [],
-     "accion": "Un final de callejón sin salida. En el muro, una puerta de piedra a ras de suelo, medio hundida. El hombre del delantal llama de una forma concreta. Golpe, golpe, pausa, golpe. La puerta se abre. Entra. Se cierra. Saharis sale de la sombra. Se acerca al dintel. Tallado en la piedra, gastado por generaciones de manos, hay un símbolo. Un círculo. Un ojo. Cuatro dientes.",
+     "accion": "Un final de callejón sin salida. En el muro, una puerta de piedra a ras de suelo, medio hundida, con un escalón gastado que baja hasta ella. No hay farolas: desaparecieron calles atrás. El hombre del delantal llama contra el marco de piedra de una forma concreta. Golpe, golpe, pausa, golpe. La puerta se abre hacia dentro. Entra. Se cierra a ras del muro, con un golpe sordo de piedra contra piedra. Saharis sale de la sombra del lateral oeste. Se acerca al dintel. Tallado en la piedra, gastado por generaciones de manos, hay un símbolo. Un círculo. Un ojo. Cuatro dientes. El mismo del anillo del invitado. El mismo que él dibujó de memoria y clavó en su pared.",
      "escenario": "calle",
      "luz": "BARRIO"
     },
@@ -655,7 +969,7 @@
       "saharis"
      ],
      "dialogo": [],
-     "accion": "Saharis levanta la mano. La apoya sobre el símbolo. La deja ahí. Detrás de la puerta, muy lejos, se oye un cántico. Negro.",
+     "accion": "Saharis levanta la mano. La apoya sobre el símbolo. La deja ahí. No llama: la señal la ha oído y la guarda, y no la gasta. Detrás de la puerta, muy lejos, se oye un cántico. Sin palabras que se entiendan. No se acerca. No crece. Negro: el negro lo corta a la mitad, y después no queda nada. Saharis no entra.",
      "escenario": "calle",
      "luz": "BARRIO"
     }

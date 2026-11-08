@@ -274,6 +274,24 @@ for (const pieza of ['opening', 'ending']) {
   anota(`pieza «${pieza}» añadida (${opEd[pieza].tomas.length} planos, ${opEd[pieza].duracion_s} s)`);
 }
 
+// ---------------------------------------------------------------------------
+// 4b. El episodio 1, escrito a mano desde el guion expandido.
+//
+// Los demás episodios viven en el estado como piezas del desglose automático.
+// Este no: se escribió plano a plano en el código (363 planos, 1160 s), como
+// mandan las reglas de la casa para esta serie, y vive en
+// datos/episodio-01.json para que se pueda leer y corregir sin bucear en
+// este script. La copia del estado, si existe, SIGUE MANDANDO en las
+// pantallas (de sus ids cuelga el material ya generado); esta es la fuente.
+// ---------------------------------------------------------------------------
+
+const ep01Archivo = JSON.parse(readFileSync(join(raiz, 'datos/episodio-01.json'), 'utf8'));
+
+if (!serie.piezas.ep01) {
+  serie.piezas.ep01 = ep01Archivo.ep01;
+  anota(`pieza «ep01» añadida (${ep01Archivo.ep01.tomas.length} planos, ${ep01Archivo.ep01.duracion_s} s)`);
+}
+
 const yaSuena = new Set(serie.musica.piezas.map((m) => m.id));
 for (const tema of opEd.musica) {
   if (yaSuena.has(tema.id)) continue;
