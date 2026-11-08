@@ -54,15 +54,33 @@
 //      a vertical dejaría media cara fuera de cuadro en casi todos los planos.
 //      Se escala el plano entero y lo que sobra se rellena de negro.
 //
+//   6. EL MATERIAL PARA MONTAR A MANO NO PASA POR EL MONTADOR. El paquete de
+//      arriba lleva el vídeo YA MONTADO por el estudio. Quien prefiera montar
+//      el capítulo en su editor —que es lo que se hace con los capítulos— no
+//      necesita ese vídeo: necesita las piezas sueltas. Así que hay un segundo
+//      paquete, el de material, que lleva TODO lo generado de la pieza en sus
+//      carpetas: las imágenes clave en uso, los clips en uso con el mismo
+//      nombre que su imagen, los bloques de voz, los efectos, la música, los
+//      subtítulos en un .srt, una guía que dice en qué orden va cada plano,
+//      cuánto dura y qué frase entra en él, y el guion de la pieza.
+//
+//      Y no pide nada a cambio: ni que la pieza esté montada, ni que tenga
+//      ficha, ni que esté completa. Si falta material, el zip sale con lo que
+//      hay y la guía dice lo que falta, plano a plano. Un zip a medias que se
+//      puede abrir vale más que un botón apagado.
+//
 // EL ORDEN DE LA PANTALLA no es casual: primero el paquete de descarga, que es
 // lo primero que hace falta —en cuanto haya un teaser montado ya se puede
-// subir—, luego los reels, que salen de ese mismo material, y al final los
-// pósters, que son lo único de aquí que sí cuesta dinero.
+// subir—, luego el material para montar a mano, luego los reels, que salen de
+// ese mismo material, y al final los pósters, que son lo único de aquí que sí
+// cuesta dinero.
 
 import { ErrorDeCara, llamar } from '../api.js';
 import { actual, alCambiar, cambiar } from '../estado.js';
 import { crearActualizador } from '../ui.js';
 import { encolar } from '../cola.js';
+import { rutaClipEnUso, rutaKeyframeEnUso } from '../continuidad.js';
+import { bloquesDeVoz, lineasDeVoz } from './audio.js';
 import { ajustesDelReel, manifiestoDelReel, nombreDelReel, esReelDe, CAPA_DEL_REEL } from '../reel.js';
 import {
   aviso,
@@ -288,6 +306,7 @@ function construir(serie, repintar) {
     serie,
     estado,
     piezas,
+    piezasMaterial: piezasDelMaterial(serie, estado),
     montajes,
     repintar,
     trabajos: indexarCola(estado),
@@ -301,6 +320,10 @@ function construir(serie, repintar) {
     if (suyo) rutas.push(suyo.ruta);
     const paquete = elPaqueteDe(montajes, una.id);
     if (paquete) rutas.push(paquete.ruta);
+  }
+  for (const una of ctx.piezasMaterial) {
+    const material = elMaterialDe(montajes, una.id);
+    if (material) rutas.push(material.ruta);
   }
   // Los pósters: el intento que se esté mirando de cada uno, en el formato
   // elegido. Solo esos: pedir enlace de los veintitantos intentos viejos sería
@@ -324,6 +347,7 @@ function construir(serie, repintar) {
     'Difusión',
     seccionCabecera(ctx),
     seccionPiezas(ctx),
+    seccionMaterial(ctx),
     seccionReels(ctx),
     seccionPosters(ctx)
   );
@@ -454,6 +478,54 @@ function elPaqueteDe(montajes, idPieza) {
 /** El nombre del trabajo del paquete de una pieza. */
 function paqueteDe(idPieza) {
   return `difusion-${idPieza}`;
+}
+
+/** El paquete de material de una pieza, si ya se ha hecho: el último. */
+function elMaterialDe(montajes, idPieza) {
+  const suyos = montajes.filter(
+    (uno) =>
+      esObjeto(uno) &&
+      soloTexto(uno.ruta) &&
+      esArchivoDeSalida(uno.ruta) &&
+      uno.capa === CAPA_DEL_PAQUETE &&
+      soloTexto(uno.id) === materialDe(idPieza)
+  );
+  return suyos.length ? suyos[suyos.length - 1] : null;
+}
+
+/** El nombre del trabajo del paquete de material de una pieza. */
+function materialDe(idPieza) {
+  return `material-${idPieza}`;
+}
+
+/**
+ * Las piezas de las que se puede bajar el material, que son TODAS, no solo las
+ * que se publican: también el archivo —es una biblioteca de planos, y su
+ * material es material— y también los capítulos que solo viven en el estado
+ * porque salieron del desglose y todavía no están escritos en los datos. Una
+ * pieza del estado manda sobre la de los datos con el mismo id, como en el
+ * resto de pantallas.
+ * @param {object} serie
+ * @param {object} estado
+ * @returns {{id:string, titulo:string, datos:object}[]}
+ */
+function piezasDelMaterial(serie, estado) {
+  const delEstado = esObjeto(estado.piezas) ? estado.piezas : {};
+  const deLaSerie = esObjeto(serie.piezas) ? serie.piezas : {};
+  const lista = [];
+  const vistos = new Set();
+
+  for (const id of Object.keys(deLaSerie)) {
+    if (!esObjeto(deLaSerie[id])) continue;
+    vistos.add(id);
+    const datos = esObjeto(delEstado[id]) ? delEstado[id] : deLaSerie[id];
+    lista.push({ id, titulo: soloTexto(datos.titulo) || soloTexto(deLaSerie[id].titulo) || id, datos });
+  }
+  for (const id of Object.keys(delEstado)) {
+    if (vistos.has(id) || !esObjeto(delEstado[id])) continue;
+    lista.push({ id, titulo: soloTexto(delEstado[id].titulo) || id, datos: delEstado[id] });
+  }
+  return lista;
 }
 
 // ---------------------------------------------------------------------------
@@ -1428,6 +1500,669 @@ function fichaEnTexto(laPieza, ficha) {
     'propia de esta serie, porque una etiqueta propia solo la busca quien ya la conoce.',
     ''
   ].join('\n');
+}
+
+// ---------------------------------------------------------------------------
+// El material para montar a mano
+// ---------------------------------------------------------------------------
+
+function seccionMaterial(ctx) {
+  const { piezasMaterial } = ctx;
+
+  const partes = [
+    h(
+      'p',
+      { clase: 'tarjeta-texto suave' },
+      'Un zip por pieza con TODO lo generado, suelto y en sus carpetas, para montar el capítulo ' +
+        'en tu editor: las imágenes clave, los clips, las voces, los efectos, la música, los ' +
+        'subtítulos, una guía con el orden y los tiempos, y el guion. No hace falta que la pieza ' +
+        'esté montada por el estudio, ni que tenga ficha, ni que esté completa: si falta ' +
+        'material, el zip sale con lo que hay y la guía dice lo que falta.'
+    ),
+    h(
+      'p',
+      { clase: 'tenue' },
+      'Lo que va dentro es siempre el material EN USO: la última imagen, el último clip y la ' +
+        'última grabación de cada cosa. Si regeneras algo, rehaces el zip y sale lo nuevo.'
+    )
+  ];
+
+  if (!piezasMaterial.length) {
+    partes.push(aviso('No hay ninguna pieza, así que no hay material que bajar.', { tono: 'error' }));
+    return seccion('Para montar a mano', partes);
+  }
+
+  for (const una of piezasMaterial) partes.push(tarjetaDeMaterial(ctx, una));
+
+  return seccion('Para montar a mano', partes);
+}
+
+/**
+ * Una pieza y su zip de material: cuánto hay, cuánto falta y el botón.
+ * @param {object} ctx
+ * @param {{id:string, titulo:string, datos:object}} laPieza
+ * @returns {HTMLElement}
+ */
+function tarjetaDeMaterial(ctx, laPieza) {
+  const { serie, estado, montajes, trabajos, repintar } = ctx;
+
+  const plan = planDelMaterial(serie, estado, laPieza);
+  const hecho = elMaterialDe(montajes, laPieza.id);
+  const enLaCola = trabajos.get(`montaje:${materialDe(laPieza.id)}`) || null;
+  const enMarcha = Boolean(enLaCola && estaEnMarcha(enLaCola));
+  const { conteos } = plan;
+
+  const pie = h('div', null);
+
+  pie.appendChild(
+    h(
+      'p',
+      { clase: 'tarjeta-texto' },
+      `${plural(conteos.tomas, 'plano', 'planos')} · ${conteos.imagenes} con imagen · ` +
+        `${conteos.clips} con clip · ${conteos.efectos} con efecto · ` +
+        `${plural(conteos.bloquesVoz, 'bloque', 'bloques')} de voz de ${conteos.bloquesTotal} · ` +
+        `${conteos.musica} de ${plural(conteos.musicaTotal, 'pista', 'pistas')} de música · ` +
+        `${plural(conteos.lineas, 'frase', 'frases')} de diálogo.`
+    )
+  );
+
+  // Lo que falta se dice aquí en corto y en la guía entero, plano a plano. Y no
+  // apaga el botón: el zip sale con lo que hay.
+  if (plan.faltas.length) {
+    const unas = plan.faltas.slice(0, 3).join(' ');
+    pie.appendChild(
+      h(
+        'p',
+        { clase: 'tarjeta-texto' },
+        `Falta material, y el zip sale igual: ${unas}` +
+          (plan.faltas.length > 3
+            ? ` Y ${plan.faltas.length - 3} cosas más, todas escritas en la guía del zip.`
+            : '')
+      )
+    );
+  }
+
+  if (hecho) {
+    pie.appendChild(
+      h(
+        'p',
+        { clase: 'tarjeta-texto' },
+        `Zip hecho el ${fecha(hecho.cuando)}` +
+          `${pesoDe(hecho.ruta) ? `, ${bytes(pesoDe(hecho.ruta))}` : ''}. Si has regenerado algo ` +
+          'desde entonces, rehacerlo trae lo nuevo.'
+      )
+    );
+    if (enlaceDe(hecho.ruta)) {
+      pie.appendChild(
+        h('p', { clase: 'tarjeta-texto' }, enlaceParaGuardar(hecho.ruta, 'Descargar el material'))
+      );
+    }
+  }
+
+  if (enMarcha) {
+    pie.appendChild(espera('Preparando el zip en la nube. Tarda, y no hace falta tener esto abierto.'));
+  }
+  if (enLaCola && enLaCola.error) {
+    pie.appendChild(aviso(enLaCola.error, { tono: 'error', detalle: enLaCola.detalle }));
+  }
+
+  const acciones = h('div', { clase: 'tarjeta-acciones' });
+  acciones.appendChild(
+    boton(
+      hecho ? 'Rehacer el zip del material' : 'Descargar todo el material en un zip',
+      () => empaquetarMaterial(ctx, laPieza),
+      {
+        tono: hecho ? 'suave' : 'principal',
+        desactivado: enMarcha ? 'Ya se está preparando.' : null
+      }
+    )
+  );
+
+  return tarjeta({
+    titulo: laPieza.titulo,
+    estado: enMarcha
+      ? { tipo: 'en_curso', texto: 'Preparándose' }
+      : hecho
+        ? { tipo: 'listo', texto: 'Zip hecho' }
+        : { tipo: 'pendiente', texto: 'Sin hacer' },
+    pie,
+    acciones
+  });
+}
+
+/** Encola el zip de material de una pieza: todo lo generado, en sus carpetas. */
+async function empaquetarMaterial(ctx, laPieza) {
+  const plan = planDelMaterial(ctx.serie, ctx.estado, laPieza);
+  const { conteos } = plan;
+
+  const pregunta =
+    `¿Preparo el zip con todo el material de «${laPieza.titulo}»? Dentro van ` +
+    `${plural(conteos.imagenes + conteos.clips + conteos.efectos + conteos.bloquesVoz + conteos.musica, 'archivo', 'archivos')} ` +
+    'de imagen, vídeo y sonido, más los subtítulos, la guía y el guion. Lleva lo que haya: si ' +
+    'falta material, sale igual y la guía lo dice. Puede pesar mucho: descárgalo con wifi y deja ' +
+    'el mismo espacio libre otra vez para abrirlo.';
+
+  if (!(await confirmar(pregunta))) return;
+
+  const archivos = [
+    ...plan.archivos,
+    { nombre: 'guia-de-montaje.md', texto: guiaDelMaterial(ctx.serie, ctx.estado, laPieza, plan) }
+  ];
+
+  const manifiesto = {
+    trabajo: materialDe(laPieza.id),
+    salida: `${CARPETA}/${laPieza.id}/${laPieza.id}-material.zip`,
+    empaquetar: { tipo: 'material', archivos }
+  };
+
+  try {
+    encolar('montaje', {
+      trabajo: manifiesto.trabajo,
+      capa: CAPA_DEL_PAQUETE,
+      id: manifiesto.trabajo,
+      manifiesto
+    });
+    queja = null;
+  } catch (fallo) {
+    queja = comoErrorDeCara(fallo);
+  }
+  ctx.repintar();
+}
+
+/**
+ * El plan del zip de material de una pieza: qué archivos van, qué falta y el
+ * detalle plano a plano del que sale la guía.
+ *
+ * Es una función de datos, sin pantalla: se comprueba ejecutándola
+ * (herramientas/probar-difusion.mjs).
+ *
+ * @param {object} serie
+ * @param {object} estado
+ * @param {{id:string, titulo:string, datos:object}} laPieza
+ */
+function planDelMaterial(serie, estado, laPieza) {
+  const datos = esObjeto(laPieza.datos) ? laPieza.datos : {};
+  const tomas = (Array.isArray(datos.tomas) ? datos.tomas : []).filter(esObjeto);
+  const inicios = iniciosDe(tomas);
+  const lineas = lineasDeVoz(datos);
+  const tomasDelEstado = esObjeto(estado.tomas) ? estado.tomas : {};
+
+  const archivos = [];
+  const faltas = [];
+  const detalle = [];
+  const conteos = {
+    tomas: tomas.length,
+    imagenes: 0,
+    clips: 0,
+    efectos: 0,
+    bloquesVoz: 0,
+    bloquesTotal: 0,
+    musica: 0,
+    musicaTotal: 0,
+    lineas: lineas.length
+  };
+
+  tomas.forEach((toma, i) => {
+    const id = soloTexto(toma.id) || `plano-${i + 1}`;
+    const base = nombreSano(id);
+    const entrada = esObjeto(tomasDelEstado[`${laPieza.id}/${id}`])
+      ? tomasDelEstado[`${laPieza.id}/${id}`]
+      : {};
+    const inicio = inicios[i];
+    const dur = Number(toma.dur) || 0;
+    const suyo = {
+      id,
+      escena: toma.escena === undefined || toma.escena === null ? null : String(toma.escena),
+      inicio,
+      dur,
+      recorte: Array.isArray(toma.recorte) && toma.recorte.length === 2
+        ? [Number(toma.recorte[0]) || 0, Number(toma.recorte[1]) || 0]
+        : null,
+      imagen: null,
+      video: null,
+      efecto: null,
+      efectoTexto: '',
+      frases: lineas.filter((linea) => linea.t >= inicio && linea.t < inicio + dur)
+    };
+
+    const keyframe = rutaKeyframeEnUso(entrada);
+    if (keyframe) {
+      suyo.imagen = `imagenes/${base}${extensionDeArchivo(keyframe, '.png')}`;
+      archivos.push({ nombre: suyo.imagen, origen: keyframe });
+      conteos.imagenes += 1;
+    } else {
+      faltas.push(`El plano ${id} no tiene imagen.`);
+    }
+
+    const clip = rutaClipEnUso(entrada);
+    if (clip) {
+      suyo.video = `videos/${base}${extensionDeArchivo(clip, '.mp4')}`;
+      archivos.push({ nombre: suyo.video, origen: clip });
+      conteos.clips += 1;
+    } else if (soloTexto(toma.tipo) === 'cobertura') {
+      // Un plano de cobertura ES una imagen quieta con la cámara moviéndose en
+      // el editor: que no tenga clip no es una falta, es su forma.
+      suyo.cobertura = true;
+    } else {
+      faltas.push(`El plano ${id} no tiene clip.`);
+    }
+
+    const efecto = esObjeto(entrada.efecto) ? entrada.efecto : {};
+    const rutaEfecto = soloTexto(efecto.ruta);
+    if (rutaEfecto) {
+      suyo.efecto = `efectos/${base}${extensionDeArchivo(rutaEfecto, '.mp3')}`;
+      suyo.efectoTexto = soloTexto(efecto.texto);
+      archivos.push({ nombre: suyo.efecto, origen: rutaEfecto });
+      conteos.efectos += 1;
+    } else if (soloTexto(toma.efecto)) {
+      faltas.push(`El plano ${id} pide un efecto —«${soloTexto(toma.efecto)}»— y no está generado.`);
+    }
+
+    detalle.push(suyo);
+  });
+
+  // LAS VOCES, POR BLOQUES. No hay un archivo continuo de diálogos: la voz se
+  // graba por bloques, y el continuo lo arma el montaje. Para montar a mano,
+  // los bloques y la guía —que dice en qué segundo de cada bloque está cada
+  // frase— hacen el mismo papel y además dejan recolocar una frase suelta.
+  const bloques = [];
+  for (const bloque of bloquesDeVoz(datos)) {
+    conteos.bloquesTotal += 1;
+    const guardado = guardadoDeVoz(estado, `${laPieza.id}/${bloque.id}`);
+    const suyo = {
+      id: bloque.id,
+      personajes: bloque.personajes,
+      archivo: null,
+      durS: guardado.durS,
+      lineas: bloque.lineas.map((linea, j) => {
+        const tramo = guardado.lineas[j];
+        return {
+          ...linea,
+          tramo:
+            tramo && tramo.fin > tramo.inicio
+              ? { inicio: tramo.inicio, fin: tramo.fin }
+              : null
+        };
+      })
+    };
+    if (guardado.ruta) {
+      suyo.archivo = `voces/${nombreSano(bloque.id)}${extensionDeArchivo(guardado.ruta, '.wav')}`;
+      archivos.push({ nombre: suyo.archivo, origen: guardado.ruta });
+      conteos.bloquesVoz += 1;
+    } else {
+      faltas.push(
+        `El bloque de voz «${bloque.id}» no está grabado: ${plural(bloque.lineas.length, 'frase', 'frases')} sin voz.`
+      );
+    }
+    bloques.push(suyo);
+  }
+
+  // LA MÚSICA DE LA PIEZA. Las pistas se emparejan como en Audio y en Montaje:
+  // por el campo «pieza» o por el prefijo del id, porque en musica.piezas no
+  // siempre viene escrito a qué pieza pertenece cada una.
+  const pistas = [];
+  const cuantasPiezas = piezasDelMaterial(serie, estado).length;
+  for (const pista of musicaDelMaterial(serie, laPieza.id, cuantasPiezas)) {
+    conteos.musicaTotal += 1;
+    const guardado = guardadoDeMusica(estado, pista.id);
+    const suya = { id: pista.id, archivo: null, durS: guardado.durS };
+    if (guardado.ruta) {
+      suya.archivo = `musica/${nombreSano(pista.id)}${extensionDeArchivo(guardado.ruta, '.wav')}`;
+      archivos.push({ nombre: suya.archivo, origen: guardado.ruta });
+      conteos.musica += 1;
+    } else {
+      faltas.push(`La pista «${pista.id}» no está generada.`);
+    }
+    pistas.push(suya);
+  }
+
+  // LOS TEXTOS. Los subtítulos salen de las mismas líneas que oye el montaje,
+  // con sus segundos escritos en la pieza; el guion se compone de los planos y
+  // las líneas, que es lo que hay escrito de la pieza.
+  if (lineas.length) {
+    archivos.push({ nombre: 'subtitulos.srt', texto: subtitulosEnSrt(lineas) });
+  } else {
+    faltas.push('La pieza no tiene diálogo escrito, así que no hay subtítulos.');
+  }
+  archivos.push({ nombre: 'guion.txt', texto: guionEnTexto(laPieza) });
+
+  const ficha = difusionDe(estado, laPieza.id).ficha;
+  if (ficha) archivos.push({ nombre: 'ficha.txt', texto: fichaEnTexto(laPieza, ficha) });
+
+  return {
+    archivos,
+    faltas,
+    conteos,
+    detalle,
+    bloques,
+    pistas,
+    duracionS: detalle.reduce((suma, una) => Math.max(suma, una.inicio + una.dur), 0)
+  };
+}
+
+/** Lo guardado de un bloque de voz: su archivo en uso y los tiempos de línea. */
+function guardadoDeVoz(estado, clave) {
+  const audio = esObjeto(estado.audio) ? estado.audio : {};
+  const mapa = esObjeto(audio.voz) ? audio.voz : {};
+  const entrada = esObjeto(mapa[clave]) ? mapa[clave] : {};
+  const lineas = Array.isArray(entrada.lineas) ? entrada.lineas : [];
+  return {
+    ruta: soloTexto(entrada.ruta) || null,
+    durS: Number(entrada.dur_s) || 0,
+    lineas: lineas.map((tramo) => ({
+      inicio: Number(tramo && tramo.inicio) || 0,
+      fin: Number(tramo && tramo.fin) || 0
+    }))
+  };
+}
+
+/** Lo guardado de una pista de música: su archivo en uso. */
+function guardadoDeMusica(estado, idMusica) {
+  const audio = esObjeto(estado.audio) ? estado.audio : {};
+  const mapa = esObjeto(audio.musica) ? audio.musica : {};
+  const entrada = esObjeto(mapa[idMusica]) ? mapa[idMusica] : {};
+  return { ruta: soloTexto(entrada.ruta) || null, durS: Number(entrada.dur_s) || 0 };
+}
+
+/**
+ * Las pistas de música de una pieza: las que dicen ser suyas en su campo
+ * «pieza» y las que se llaman como ella, que es como se emparejan en Audio y
+ * en Montaje. Si la serie tuviera una sola pieza con material, serían todas:
+ * no habría otra a la que pertenecer.
+ */
+function musicaDelMaterial(serie, idPieza, cuantasPiezas) {
+  const musica = esObjeto(serie.musica) ? serie.musica : {};
+  const todas = (Array.isArray(musica.piezas) ? musica.piezas : []).filter(
+    (una) => esObjeto(una) && soloTexto(una.id)
+  );
+  const suyas = todas.filter(
+    (una) =>
+      soloTexto(una.pieza) === idPieza ||
+      una.id === idPieza ||
+      String(una.id).startsWith(`${idPieza}-`)
+  );
+  if (suyas.length) return suyas;
+  if (cuantasPiezas === 1) return todas;
+  return [];
+}
+
+/** El segundo en que empieza cada toma: el escrito, o la suma de las de antes. */
+function iniciosDe(tomas) {
+  let cursor = 0;
+  return tomas.map((toma) => {
+    const escrito = Number(toma.inicio);
+    const inicio = Number.isFinite(escrito) ? escrito : cursor;
+    cursor = inicio + (Number(toma.dur) || 0);
+    return inicio;
+  });
+}
+
+/** Las tomas agrupadas por escena consecutiva, con su segundo de inicio. */
+function gruposPorEscena(tomas, inicios) {
+  const grupos = [];
+  tomas.forEach((toma, i) => {
+    const escena = toma.escena === undefined || toma.escena === null ? null : String(toma.escena);
+    const ultimo = grupos[grupos.length - 1];
+    if (!ultimo || ultimo.escena !== escena) grupos.push({ escena, tomas: [] });
+    grupos[grupos.length - 1].tomas.push({ toma, inicio: inicios[i] });
+  });
+  return grupos;
+}
+
+/** Los tramos de silencio absoluto de una pieza, como pares de segundos. */
+function silenciosDelMaterial(datos) {
+  const audio = esObjeto(datos.audio) ? datos.audio : {};
+  const crudo = audio.silencio_absoluto_s;
+  if (!Array.isArray(crudo) || !crudo.length) return [];
+  const pares = Array.isArray(crudo[0]) ? crudo : [crudo];
+  return pares
+    .filter((par) => Array.isArray(par) && par.length === 2)
+    .map((par) => [Number(par[0]), Number(par[1])])
+    .filter((par) => Number.isFinite(par[0]) && Number.isFinite(par[1]) && par[1] > par[0]);
+}
+
+/**
+ * Los subtítulos de una pieza en formato .srt, que es el que abre cualquier
+ * editor. Salen de las líneas de voz con sus segundos escritos en la pieza:
+ * el mismo texto que se oye, en español, que es el que se quema en pantalla.
+ */
+function subtitulosEnSrt(lineas) {
+  const cues = lineas.map((linea, i) => {
+    const desde = Math.max(0, linea.t);
+    const hasta = linea.hasta > linea.t ? linea.hasta : linea.t + 1;
+    return `${i + 1}\n${enTiempoSrt(desde)} --> ${enTiempoSrt(hasta)}\n${linea.es}\n`;
+  });
+  return cues.join('\n');
+}
+
+/** «1:09», como se leen los tiempos en la guía. */
+function enTiempo(segundos) {
+  const total = Math.max(0, Math.round(Number(segundos) || 0));
+  return `${Math.floor(total / 60)}:${String(total % 60).padStart(2, '0')}`;
+}
+
+/** «00:01:09,500», como lo pide un .srt. */
+function enTiempoSrt(segundos) {
+  let ms = Math.round(Math.max(0, Number(segundos) || 0) * 1000);
+  const horas = Math.floor(ms / 3600000);
+  ms -= horas * 3600000;
+  const minutos = Math.floor(ms / 60000);
+  ms -= minutos * 60000;
+  const segs = Math.floor(ms / 1000);
+  ms -= segs * 1000;
+  const dos = (n) => String(n).padStart(2, '0');
+  return `${dos(horas)}:${dos(minutos)}:${dos(segs)},${String(ms).padStart(3, '0')}`;
+}
+
+/** Un id convertido en nombre de archivo: lo que no vale en un nombre, fuera. */
+function nombreSano(valor) {
+  const limpio = String(valor || '')
+    .trim()
+    .replace(/[^A-Za-z0-9._-]+/g, '-')
+    .replace(/^-+|-+$/g, '');
+  return limpio || 'sin-nombre';
+}
+
+/** La extensión de una ruta —«.png», «.mp4»—, o la dada si no se entiende. */
+function extensionDeArchivo(ruta, porDefecto) {
+  const punto = String(ruta || '').lastIndexOf('.');
+  const barra = String(ruta || '').lastIndexOf('/');
+  if (punto > barra && punto >= 0) return String(ruta).slice(punto);
+  return porDefecto;
+}
+
+/**
+ * El guion de la pieza en texto plano: lo que se ve y lo que se dice, plano a
+ * plano y en orden. Se compone de lo que la pieza trae escrito —sus planos y
+ * sus líneas—, que es el guion con el que se ha producido.
+ */
+function guionEnTexto(laPieza) {
+  const datos = esObjeto(laPieza.datos) ? laPieza.datos : {};
+  const tomas = (Array.isArray(datos.tomas) ? datos.tomas : []).filter(esObjeto);
+  const inicios = iniciosDe(tomas);
+  const lineas = lineasDeVoz(datos);
+
+  const partes = [
+    `GUION — ${laPieza.titulo}`,
+    `Pieza: ${laPieza.id}`,
+    '',
+    'Lo que se ve y lo que se dice, en el orden en que va montado.',
+    ''
+  ];
+
+  const dichas = new Set();
+  for (const grupo of gruposPorEscena(tomas, inicios)) {
+    if (grupo.escena !== null) partes.push(`ESCENA ${grupo.escena}`, '');
+    const desde = grupo.tomas.length ? grupo.tomas[0].inicio : 0;
+    const ultima = grupo.tomas[grupo.tomas.length - 1];
+    const hasta = ultima ? ultima.inicio + (Number(ultima.toma.dur) || 0) : desde;
+
+    for (const { toma } of grupo.tomas) {
+      partes.push(`[${soloTexto(toma.id) || 'plano'}] ${soloTexto(toma.imagen)}`);
+      if (soloTexto(toma.video)) partes.push(`  Vídeo: ${soloTexto(toma.video)}`);
+    }
+    for (const linea of lineas) {
+      if (linea.t < desde || linea.t >= hasta) continue;
+      dichas.add(linea);
+      partes.push(`  ${linea.quien} (${enTiempo(linea.t)}): ${linea.es}`);
+      if (linea.ja) partes.push(`    En japonés: ${linea.ja}`);
+    }
+    partes.push('');
+  }
+
+  const sueltas = lineas.filter((linea) => !dichas.has(linea));
+  if (sueltas.length) {
+    partes.push('DIÁLOGO SIN PLANO ASIGNADO', '');
+    for (const linea of sueltas) {
+      partes.push(`  ${linea.quien} (${enTiempo(linea.t)}): ${linea.es}`);
+      if (linea.ja) partes.push(`    En japonés: ${linea.ja}`);
+    }
+    partes.push('');
+  }
+
+  return partes.join('\n');
+}
+
+/**
+ * La guía de montaje del zip: cómo se monta esta pieza a mano con lo que el
+ * zip trae. El orden de los planos, cuánto dura cada uno, qué frase entra en
+ * él y dónde está dentro de su bloque de voz, la música, los efectos, y lo
+ * que falta —escrito aquí para no tener que volver a abrir el estudio.
+ */
+function guiaDelMaterial(serie, estado, laPieza, plan) {
+  const datos = esObjeto(laPieza.datos) ? laPieza.datos : {};
+  const audio = esObjeto(datos.audio) ? datos.audio : {};
+  const { conteos, detalle } = plan;
+  const partes = [];
+
+  partes.push(`# Guía de montaje — ${laPieza.titulo}`, '');
+  partes.push(
+    'Todo lo de este zip es el material EN USO de la pieza: la última imagen, el último clip y ' +
+      'la última grabación de cada cosa. Los clips y sus imágenes se llaman igual —el id del ' +
+      'plano— para emparejarlos sin pensar.',
+    ''
+  );
+
+  partes.push('## La pieza en números', '');
+  partes.push(
+    `- Dura unos ${enTiempo(plan.duracionS)} (${plural(conteos.tomas, 'plano', 'planos')}).`,
+    `- Van ${conteos.imagenes} imágenes, ${conteos.clips} clips y ${conteos.efectos} efectos.`,
+    `- La voz va en ${plural(conteos.bloquesVoz, 'bloque', 'bloques')} de ${conteos.bloquesTotal}, ` +
+      `con ${plural(conteos.lineas, 'frase', 'frases')} de diálogo.`,
+    `- La música: ${conteos.musica} de ${plural(conteos.musicaTotal, 'pista', 'pistas')}.`,
+    ''
+  );
+
+  if (plan.pistas.length) {
+    partes.push('## Música', '');
+    for (const pista of plan.pistas) {
+      partes.push(
+        pista.archivo
+          ? `- \`${pista.archivo}\` — la pista «${pista.id}»${pista.durS ? `, ${segundosCortos(pista.durS)}` : ''}.`
+          : `- La pista «${pista.id}» no está generada: no va en el zip.`
+      );
+    }
+    if (Number.isFinite(Number(audio.cancion_entra_s)) && audio.cancion_entra_s !== null) {
+      partes.push(`- La canción entra en ${enTiempo(Number(audio.cancion_entra_s))}.`);
+    }
+    if (Number.isFinite(Number(audio.percusion_entra_s)) && audio.percusion_entra_s !== null) {
+      partes.push(`- La percusión entra en ${enTiempo(Number(audio.percusion_entra_s))}.`);
+    }
+    for (const par of silenciosDelMaterial(datos)) {
+      partes.push(`- Silencio absoluto de ${enTiempo(par[0])} a ${enTiempo(par[1])}: ahí no suena nada.`);
+    }
+    partes.push('');
+  }
+
+  if (plan.bloques.length) {
+    partes.push('## Voces', '');
+    partes.push(
+      'La voz se graba por bloques, no frase a frase: cada archivo trae sus frases dentro, en ' +
+        'orden. Debajo de cada bloque van sus frases con el segundo en que entran en la pieza y, ' +
+        'si se midió, el tramo que ocupan dentro del archivo, para cortar una suelta si hace falta.',
+      ''
+    );
+    for (const bloque of plan.bloques) {
+      partes.push(
+        bloque.archivo
+          ? `### \`${bloque.archivo}\` — bloque «${bloque.id}» (${bloque.personajes.join(', ')})`
+          : `### Bloque «${bloque.id}» (${bloque.personajes.join(', ')}) — NO GRABADO`,
+        ''
+      );
+      for (const linea of bloque.lineas) {
+        partes.push(
+          `- ${enTiempo(linea.t)} · ${linea.quien}: «${linea.es}»` +
+            (linea.tramo
+              ? ` — en el archivo, de ${enTiempo(linea.tramo.inicio)} a ${enTiempo(linea.tramo.fin)}.`
+              : '')
+        );
+      }
+      partes.push('');
+    }
+  }
+
+  partes.push('## Orden de montaje', '');
+  const grupos = [];
+  {
+    let actual = null;
+    for (const suyo of detalle) {
+      if (!actual || actual.escena !== suyo.escena) {
+        actual = { escena: suyo.escena, planos: [] };
+        grupos.push(actual);
+      }
+      actual.planos.push(suyo);
+    }
+  }
+  for (const grupo of grupos) {
+    if (grupo.escena !== null) partes.push(`### Escena ${grupo.escena}`, '');
+    for (const suyo of grupo.planos) {
+      partes.push(
+        `${detalle.indexOf(suyo) + 1}. **${suyo.id}** — entra en ${enTiempo(suyo.inicio)}, dura ${segundosCortos(suyo.dur)}`
+      );
+      partes.push(
+        `   - Imagen: ${suyo.imagen ? `\`${suyo.imagen}\`` : 'NO HAY'} · Clip: ${
+          suyo.video
+            ? `\`${suyo.video}\``
+            : suyo.cobertura
+              ? 'es un plano de cobertura: va la imagen, con la cámara moviéndose en el editor'
+              : 'NO HAY'
+        }`
+      );
+      if (suyo.recorte && (suyo.recorte[0] > 0 || suyo.recorte[1] > suyo.dur)) {
+        partes.push(
+          `   - Del clip se monta el tramo de ${segundosCortos(suyo.recorte[0])} a ${segundosCortos(suyo.recorte[1])}.`
+        );
+      }
+      if (suyo.efecto) {
+        partes.push(
+          `   - Efecto: \`${suyo.efecto}\`${suyo.efectoTexto ? ` — ${suyo.efectoTexto}` : ''}`
+        );
+      }
+      for (const linea of suyo.frases) {
+        partes.push(`   - Dice ${linea.quien}: «${linea.es}»`);
+      }
+    }
+    partes.push('');
+  }
+
+  partes.push('## Subtítulos', '');
+  partes.push(
+    conteos.lineas
+      ? 'El archivo `subtitulos.srt` trae las frases en español con sus tiempos de la pieza: se ' +
+        'importa en el editor y queda colocado solo.'
+      : 'La pieza no tiene diálogo escrito, así que no hay subtítulos.',
+    ''
+  );
+
+  partes.push('## Lo que falta', '');
+  if (plan.faltas.length) {
+    for (const falta of plan.faltas) partes.push(`- ${falta}`);
+  } else {
+    partes.push('No falta nada: está todo el material de la pieza.');
+  }
+  partes.push('');
+
+  return partes.join('\n');
 }
 
 /** `.mp4` de una ruta, o `.mp4` si no se entiende. */

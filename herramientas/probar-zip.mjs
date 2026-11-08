@@ -154,5 +154,118 @@ di(/0x06064b50/.test(fuente) && /0x07064b50/.test(fuente),
 di(/grande = entrada\.bytes >= 0xffffffff/.test(fuente),
   'Y sabe a partir de cuándo hacen falta');
 
+// ── EL PAQUETE DE MATERIAL, ENTENDIDO POR EL MONTADOR ─────────────────────
+//
+// El zip de difusión lleva dos archivos con nombre plano, como siempre. El de
+// material lleva todo lo generado de una pieza, cada archivo en su carpeta:
+// el montador tiene que aceptar esos nombres SIN aplanarlos —aplanar
+// «imagenes/A1.png» lo dejaría irreconocible— y tiene que dejar pasar cientos
+// de archivos, que es lo que pesa un capítulo. Y lo que no puede pasar, ni en
+// un paquete ni en el otro, es un nombre que escriba fuera de su carpeta.
+
+/** `montador.mjs` sin su arranque: aquí solo se quiere el que entiende paquetes. */
+async function traerElQueEmpaqueta() {
+  const codigo = readFileSync(`${RAIZ}montador/montador.mjs`, 'utf8')
+    .replace(/^try \{\n\s*await principal\(\);[\s\S]*$/m, '')
+    .replace(/^process\.on\([\s\S]*?\);$/gm, '')
+    .replace(/^for \(const senal of \[[\s\S]*?^\}$/m, '');
+
+  const carpeta = mkdtempSync(join(tmpdir(), 'mirada-paquete-'));
+  const archivo = join(carpeta, 'montador-suelto.mjs');
+  writeFileSync(archivo, `${codigo}\nexport { entenderElPaquete };\n`);
+  return import(pathToFileURL(archivo).href);
+}
+
+const { entenderElPaquete } = await traerElQueEmpaqueta();
+
+console.log('\nEL PAQUETE DE MATERIAL\n');
+
+const deMaterial = (archivos) => ({
+  trabajo: 'material-teaser',
+  salida: 'difusion/teaser/teaser-material.zip',
+  empaquetar: { tipo: 'material', archivos }
+});
+
+const veinticinco = Array.from({ length: 25 }, (_, i) => ({
+  nombre: `imagenes/A${i + 1}.png`,
+  origen: `keyframes/teaser/A${i + 1}/1.png`
+}));
+
+try {
+  const plan = entenderElPaquete(deMaterial(veinticinco), {});
+  di(plan.paquete.archivos.length === 25,
+    'Un paquete de material con más de veinte archivos se acepta: un capítulo son cientos');
+  di(plan.paquete.archivos[0].nombre === 'imagenes/A1.png',
+    'Y los nombres conservan su carpeta: no se aplanan');
+} catch (fallo) {
+  di(false, 'Un paquete de material bien escrito se acepta', fallo.message || String(fallo));
+}
+
+try {
+  entenderElPaquete(deMaterial([{ nombre: 'imagenes/../fuera.png', origen: 'keyframes/x.png' }]), {});
+  di(false, 'Un «..» en un paquete de material se rechaza');
+} catch {
+  di(true, 'Un «..» en un paquete de material se rechaza: escribiría fuera de su carpeta');
+}
+
+try {
+  entenderElPaquete(deMaterial([{ nombre: 'imagenes\\A1.png', origen: 'keyframes/x.png' }]), {});
+  di(false, 'Una barra invertida en un paquete de material se rechaza');
+} catch {
+  di(true, 'Una barra invertida en un paquete de material se rechaza');
+}
+
+try {
+  entenderElPaquete({
+    trabajo: 'difusion-teaser',
+    salida: 'difusion/teaser/teaser.zip',
+    empaquetar: {
+      archivos: Array.from({ length: 21 }, (_, i) => ({ nombre: `f${i}.txt`, texto: 'x' }))
+    }
+  }, {});
+  di(false, 'El paquete de difusión sigue con su tope de veinte');
+} catch {
+  di(true, 'El paquete de difusión sigue con su tope de veinte: no ha cambiado');
+}
+
+try {
+  const plan = entenderElPaquete({
+    trabajo: 'difusion-teaser',
+    salida: 'difusion/teaser/teaser.zip',
+    empaquetar: { archivos: [{ nombre: 'imagenes/A1.png', origen: 'keyframes/teaser/A1/1.png' }] }
+  }, {});
+  di(plan.paquete.archivos[0].nombre === 'imagenes-A1.png',
+    'Y en el de difusión un nombre con barra se sigue aplanando, como hasta hoy',
+    plan.paquete.archivos[0].nombre);
+} catch (fallo) {
+  di(false, 'El paquete de difusión se comporta como hasta hoy', fallo.message || String(fallo));
+}
+
+// Y UN ZIP CON CARPETAS DE VERDAD: lo que el montador escribe cuando el
+// paquete es de material. Un «unzip» ajeno tiene que abrirlo y dejar cada
+// archivo en su carpeta, byte a byte.
+const conCarpetas = join(taller, 'material.zip');
+await escribirZip(
+  [{ nombre: 'imagenes/A1.png', ruta: rutaFicha, bytes: Buffer.byteLength(LA_FICHA, 'utf8') }],
+  conCarpetas
+);
+if (hayUnzip) {
+  let listado2 = '';
+  try {
+    listado2 = execFileSync('unzip', ['-l', conCarpetas], { encoding: 'utf8' });
+    di(/imagenes\/A1\.png/.test(listado2), 'Un zip con una carpeta dentro se lista con su ruta entera');
+  } catch (fallo) {
+    di(false, 'Un zip con una carpeta dentro se abre', String(fallo.message || fallo));
+  }
+  const fuera2 = mkdtempSync(join(tmpdir(), 'mirada-zip-fuera2-'));
+  try {
+    execFileSync('unzip', ['-q', conCarpetas, '-d', fuera2], { stdio: 'ignore' });
+    di(readFileSync(join(fuera2, 'imagenes', 'A1.png'), 'utf8') === LA_FICHA,
+      'Y al abrirlo, el archivo queda EN su carpeta y con su contenido intacto');
+  } catch (fallo) {
+    di(false, 'El archivo de dentro de la carpeta sale intacto', String(fallo.message || fallo));
+  }
+}
+
 console.log(mal === 0 ? '\nTodo bien.\n' : `\n${mal} MAL.\n`);
 process.exit(mal ? 1 : 0);

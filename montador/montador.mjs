@@ -668,6 +668,30 @@ async function leerManifiesto(ent) {
 // archivos ahí dentro significan que alguien está usando esto para otra cosa.
 const MAXIMO_EN_UN_PAQUETE = 20;
 
+// Cuántos archivos caben en un paquete DE MATERIAL —el que lleva todo lo
+// generado de una pieza para montarla a mano fuera del estudio—. Un capítulo
+// son ciento cincuenta y pico planos con su imagen, su clip y su efecto, más
+// voces y música: ronda los quinientos archivos. Es el mismo número que
+// comprueba la función antes de encargar el trabajo: si discreparan, se
+// encargaría un paquete que aquí se rechazaría.
+const MAXIMO_EN_PAQUETE_MATERIAL = 2000;
+
+/**
+ * Si un nombre dentro de un zip de material es una ruta segura: carpetas y
+ * archivo, sin salir nunca de la carpeta donde se descomprima. Es la misma
+ * regla que comprueba la función al encargar el paquete: nada de barras
+ * invertidas, nada de tramos vacíos, y nada de «.» o «..».
+ *
+ * @param {string} nombre
+ * @returns {boolean}
+ */
+function esRutaDePaqueteSegura(nombre) {
+  if (!nombre || /\\/.test(nombre) || nombre.startsWith('/') || nombre.endsWith('/')) return false;
+  return nombre
+    .split('/')
+    .every((tramo) => /^[A-Za-z0-9][A-Za-z0-9._-]*$/.test(tramo) && tramo !== '.' && tramo !== '..');
+}
+
 // Lo que puede pesar un texto escrito dentro del manifiesto. Una ficha son unos
 // cientos de bytes; medio mega ya es que alguien intenta meter un vídeo en
 // base64, que es exactamente lo que este camino existe para no hacer.
@@ -703,6 +727,21 @@ function entenderElPaquete(manifiesto, ent) {
     ? pedido.archivos
     : null;
 
+  // DOS PAQUETES, COMO EN LA FUNCIÓN. El de difusión —sin tipo— lleva el vídeo
+  // y su ficha con nombres planos, como hasta hoy. El de material
+  // («tipo»: «material») lleva todo lo generado de una pieza, cada archivo en
+  // su carpeta: sus nombres se comprueban como rutas seguras y NO se aplanan,
+  // porque aplanar «imagenes/A1.png» y «videos/A1.mp4» los dejaría
+  // irreconocibles.
+  const tipoDePaquete = pedido && typeof pedido === 'object' ? texto(pedido.tipo) : '';
+  const esMaterial = tipoDePaquete === 'material';
+  if (tipoDePaquete && !esMaterial) {
+    quejas.push(
+      `«${tipoDePaquete}» no es un tipo de paquete. Los paquetes son el de difusión —sin tipo— y ` +
+        'el de material («tipo»: «material»).',
+    );
+  }
+
   if (!lista) {
     quejas.push(
       'El encargo de empaquetar no trae su lista de archivos («empaquetar.archivos»). Cada uno es ' +
@@ -722,9 +761,20 @@ function entenderElPaquete(manifiesto, ent) {
       continue;
     }
 
-    // El nombre de dentro del zip. Se limpia entero: una barra o un «..» ahí
-    // convierten un paquete en algo que escribe fuera de su carpeta al abrirlo.
-    const nombre = limpiarNombre(texto(entrada.nombre));
+    // El nombre de dentro del zip. En el paquete de difusión se limpia entero:
+    // una barra o un «..» ahí convierten un paquete en algo que escribe fuera
+    // de su carpeta al abrirlo. En el de material el nombre ES una ruta —su
+    // carpeta y su archivo—, así que no se limpia: se comprueba tramo a tramo
+    // y lo que no sea seguro se rechaza entero.
+    const nombre = esMaterial ? texto(entrada.nombre) : limpiarNombre(texto(entrada.nombre));
+    if (esMaterial && nombre && !esRutaDePaqueteSegura(nombre)) {
+      quejas.push(
+        `${mayuscula(cual)} se llamaría «${nombre}» dentro del zip, y eso no es una ruta segura: ` +
+          'cada tramo —carpeta o archivo— va con letras, números, punto, guion o guion bajo, sin ' +
+          'barras invertidas y sin «.» ni «..», que al abrirlo escribiría fuera de su carpeta.',
+      );
+      continue;
+    }
     if (!nombre) {
       quejas.push(
         `${mayuscula(cual)} no dice cómo se va a llamar dentro del zip, o su nombre se queda en ` +
@@ -787,11 +837,18 @@ function entenderElPaquete(manifiesto, ent) {
     quejas.push('El paquete no lleva ni un archivo dentro, así que no hay nada que empaquetar.');
   }
 
-  if (archivos.length > MAXIMO_EN_UN_PAQUETE) {
+  if (!esMaterial && archivos.length > MAXIMO_EN_UN_PAQUETE) {
     quejas.push(
       `El paquete lleva ${archivos.length} archivos y el tope son ${MAXIMO_EN_UN_PAQUETE}. Un ` +
         'paquete de difusión son el vídeo y su ficha; si hacen falta veinte, lo que hace falta es ' +
         'otra cosa.',
+    );
+  }
+
+  if (esMaterial && archivos.length > MAXIMO_EN_PAQUETE_MATERIAL) {
+    quejas.push(
+      `El paquete de material lleva ${archivos.length} archivos y el tope son ` +
+        `${MAXIMO_EN_PAQUETE_MATERIAL}. Eso ya no es el material de una pieza.`,
     );
   }
 

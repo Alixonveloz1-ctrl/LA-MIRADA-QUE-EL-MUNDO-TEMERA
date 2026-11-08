@@ -526,5 +526,167 @@ di(/function esArchivoDeSalida/.test(codigoDelMontajeApi),
 di(/CARPETA_DE_EJECUCIONES}\/por-trabajo/.test(codigoDelMontajeApi),
   'Y lo interno vive FUERA de la carpeta de las salidas');
 
+// ── EL PAQUETE DE MATERIAL: TODO LO GENERADO, PARA MONTAR A MANO ──────────
+//
+// El segundo paquete de esta pantalla. No lleva el vídeo montado por el
+// estudio: lleva las piezas sueltas —imágenes, clips, voces, efectos, música,
+// subtítulos, guía y guion— para montar el capítulo en un editor. Son cientos
+// de archivos en carpetas, así que sus reglas no son las del paquete de
+// difusión: las carpetas valen, los «..» no, y el tope es otro.
+console.log('\n  EL PAQUETE DE MATERIAL\n');
+
+const materialBueno = {
+  trabajo: 'material-teaser',
+  salida: 'difusion/teaser/teaser-material.zip',
+  empaquetar: {
+    tipo: 'material',
+    archivos: [
+      { nombre: 'imagenes/A1.png', origen: 'keyframes/teaser/A1/1.png' },
+      { nombre: 'videos/A1.mp4', origen: 'veo/teaser/A1/1/clip.mp4' },
+      { nombre: 'guia-de-montaje.md', texto: '# Guía\n' }
+    ]
+  }
+};
+
+try {
+  di(mnt.validarManifiesto(materialBueno) === 'material-teaser',
+    'Un paquete de material bien escrito se acepta: con carpetas y todo');
+} catch (fallo) {
+  di(false, 'Un paquete de material bien escrito se acepta: con carpetas y todo', fallo.mensaje);
+}
+
+const rechazaMaterial = (que, cambio) => {
+  const roto = JSON.parse(JSON.stringify(materialBueno));
+  cambio(roto);
+  try {
+    mnt.validarManifiesto(roto);
+    di(false, que);
+  } catch (fallo) {
+    di(true, que, (fallo.mensaje || '').split('\n').slice(1, 2).join('').trim().slice(0, 70));
+  }
+};
+
+rechazaMaterial('Un «..» dentro de una carpeta se rechaza igual: escribiría fuera de su sitio',
+  (m) => { m.empaquetar.archivos[0].nombre = 'imagenes/../fuera.png'; });
+rechazaMaterial('Una barra invertida se rechaza: en Windows es una barra y vale lo mismo',
+  (m) => { m.empaquetar.archivos[0].nombre = 'imagenes\\A1.png'; });
+rechazaMaterial('Una carpeta vacía en medio se rechaza',
+  (m) => { m.empaquetar.archivos[0].nombre = 'imagenes//A1.png'; });
+rechazaMaterial('Un tipo de paquete que no existe se rechaza',
+  (m) => { m.empaquetar.tipo = 'otro'; });
+rechaza('Y sin «tipo», una carpeta sigue sin valer: el de difusión va plano, como siempre',
+  (m) => { m.empaquetar.archivos[0].nombre = 'imagenes/A1.png'; });
+
+// El plan que compone el navegador: qué archivos van y qué falta. Se ejecuta
+// con el material en uso de mentira, como se ejecuta todo lo de esta prueba.
+const mat = await suelto(
+  'app/pantallas/difusion.js',
+  `
+const ErrorDeCara = class extends Error {}, llamar = async () => ({});
+const actual = () => ({}), alCambiar = () => {}, cambiar = async () => {};
+const encolar = () => {};
+const aviso = () => null, boton = () => null, confirmar = async () => true;
+const espera = () => null, h = () => null, pantalla = () => null, seccion = () => null;
+const tarjeta = () => null, vaciar = () => {};
+const bytes = () => '', fecha = () => '', plural = (n, uno, varios) => (n === 1 ? uno : varios);
+const rutaKeyframeEnUso = (e) => {
+  const l = (e && e.intentos_keyframe) || [];
+  return l.length ? l[l.length - 1] : (e && e.keyframe_aprobado) || null;
+};
+const rutaClipEnUso = (e) => {
+  const l = (e && e.intentos_clip) || [];
+  return l.length ? l[l.length - 1] : (e && e.clip_elegido) || null;
+};
+const lineasDeVoz = (pieza) => ((pieza.audio && pieza.audio.voz) || [])
+  .map((l) => ({ quien: l.quien, ja: l.ja || '', es: l.es || '', t: Number(l.t), hasta: Number(l.hasta), escena: l.escena ?? null, intencion: null }))
+  .sort((a, b) => a.t - b.t);
+const bloquesDeVoz = (pieza) => {
+  const porQuien = new Map();
+  for (const l of lineasDeVoz(pieza)) {
+    if (!porQuien.has(l.quien)) porQuien.set(l.quien, []);
+    porQuien.get(l.quien).push(l);
+  }
+  return [...porQuien.entries()].map(([quien, lineas]) => ({ id: quien, personajes: [quien], lineas, escena: null }));
+};
+`,
+  'planDelMaterial, subtitulosEnSrt, guiaDelMaterial, piezasDelMaterial, materialDe'
+);
+
+const datosFalsos = {
+  titulo: 'Teaser',
+  tomas: [
+    { id: 'A1', inicio: 0, dur: 4, imagen: 'Una gota cae.', video: 'La gota cae.' },
+    { id: 'A2', inicio: 4, dur: 4, imagen: 'Un pasillo.', video: 'Sin movimiento.', tipo: 'cobertura' },
+    { id: 'A3', inicio: 8, dur: 4, imagen: 'Una puerta.', video: 'Se abre.', efecto: 'un golpe seco' }
+  ],
+  audio: { voz: [{ t: 1, quien: 'madre', ja: '見つからないで。', es: 'No dejes que te vean.', hasta: 3 }] }
+};
+const estadoFalso = {
+  piezas: {},
+  tomas: {
+    'teaser/A1': {
+      intentos_keyframe: ['keyframes/teaser/A1/1.png'],
+      intentos_clip: ['veo/teaser/A1/1/clip.mp4'],
+      efecto: { ruta: 'audio/efectos/teaser/A1.mp3', texto: 'una gota que cae' }
+    },
+    'teaser/A2': { intentos_keyframe: ['keyframes/teaser/A2/1.png'], intentos_clip: [] },
+    'teaser/A3': { intentos_keyframe: [], intentos_clip: [] }
+  },
+  audio: {
+    voz: { 'teaser/madre': { ruta: 'audio/voz/teaser/madre.wav', dur_s: 10, lineas: [{ inicio: 1, fin: 3 }] } },
+    musica: { 'teaser-lecho': { ruta: 'audio/musica/teaser-lecho.wav', dur_s: 78 } }
+  },
+  difusion: {}
+};
+const serieFalsa = {
+  piezas: { teaser: datosFalsos },
+  musica: { piezas: [{ id: 'teaser-lecho', pieza: 'teaser' }, { id: 'bso-de-otra' }] }
+};
+
+const plan = mat.planDelMaterial(serieFalsa, estadoFalso, { id: 'teaser', titulo: 'Teaser', datos: datosFalsos });
+const nombres = plan.archivos.map((uno) => uno.nombre);
+
+di(nombres.includes('imagenes/A1.png') && nombres.includes('videos/A1.mp4'),
+  'La imagen y el clip de un plano se llaman igual, en sus carpetas: se emparejan solos');
+di(plan.archivos.find((uno) => uno.nombre === 'imagenes/A1.png').origen === 'keyframes/teaser/A1/1.png',
+  'Y cada nombre apunta al material EN USO de su plano');
+di(nombres.includes('efectos/A1.mp3') && nombres.includes('voces/madre.wav') && nombres.includes('musica/teaser-lecho.wav'),
+  'Van el efecto generado, el bloque de voz grabado y la pista de la pieza');
+di(!nombres.some((uno) => uno.includes('bso-de-otra')),
+  'Y la música de otra pieza no se cuela');
+di(nombres.includes('subtitulos.srt') && nombres.includes('guion.txt'),
+  'Van los subtítulos y el guion, escritos desde las líneas y los planos de la pieza');
+di(plan.conteos.imagenes === 2 && plan.conteos.clips === 1 && plan.conteos.efectos === 1 &&
+  plan.conteos.bloquesVoz === 1 && plan.conteos.musica === 1 && plan.conteos.lineas === 1,
+  'Los conteos cuentan lo que hay, ni uno más',
+  JSON.stringify(plan.conteos));
+di(plan.faltas.some((una) => /A3 no tiene imagen/.test(una)) &&
+  plan.faltas.some((una) => /A3 no tiene clip/.test(una)) &&
+  plan.faltas.some((una) => /A3 pide un efecto/.test(una)),
+  'Lo que falta se dice plano a plano, y no impide el paquete');
+di(!plan.faltas.some((una) => /A2/.test(una)),
+  'Y un plano de cobertura sin clip NO es una falta: es su forma');
+
+const srt = mat.subtitulosEnSrt([{ t: 1, hasta: 3, es: 'No dejes que te vean.' }]);
+di(/^1\n00:00:01,000 --> 00:00:03,000\nNo dejes que te vean\./.test(srt),
+  'El .srt sale con su numeración y sus tiempos, listo para importar', srt.split('\n')[1]);
+
+const guia = mat.guiaDelMaterial(serieFalsa, estadoFalso, { id: 'teaser', titulo: 'Teaser', datos: datosFalsos }, plan);
+di(/## Orden de montaje/.test(guia) && /\*\*A1\*\*/.test(guia) && /imagenes\/A1\.png/.test(guia),
+  'La guía trae el orden de los planos con el archivo de cada uno');
+di(/de 0:01 a 0:03/.test(guia),
+  'Y dice en qué tramo del bloque de voz está cada frase, para poder cortarla suelta');
+di(/## Lo que falta/.test(guia) && /A3 no tiene clip/.test(guia),
+  'Y lo que falta va escrito en la guía, no hay que volver a abrir el estudio para saberlo');
+
+const delMaterial = mat.piezasDelMaterial(
+  { piezas: { teaser: datosFalsos, archivo: { titulo: 'Archivo', archivo: true, tomas: [] } } },
+  { piezas: { ep01: { titulo: 'El que no llora', tomas: [] } } }
+);
+di(delMaterial.map((una) => una.id).join(',') === 'teaser,archivo,ep01',
+  'El material se puede bajar de TODAS las piezas: también del archivo y de un capítulo que solo vive en el estado',
+  delMaterial.map((una) => una.id).join(', '));
+di(mat.materialDe('ep01') === 'material-ep01', 'Y su trabajo se llama como el de un paquete, sin pisar al de difusión');
+
 console.log(mal === 0 ? '\nTodo bien.\n' : `\n${mal} MAL.\n`);
 process.exit(mal ? 1 : 0);

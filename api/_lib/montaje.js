@@ -955,12 +955,48 @@ function quejaDelManifiesto(quejas) {
 }
 
 /**
+ * Cuántos archivos caben en un paquete DE MATERIAL. Un capítulo son ciento
+ * cincuenta y pico planos, y cada plano puede llevar su imagen, su clip y su
+ * efecto, más las voces y la música: el paquete entero de un episodio ronda
+ * los quinientos archivos. El tope no es técnico —es el mismo criterio que el
+ * del montador—: por encima de esto, lo que se está pidiendo ya no es el
+ * material de una pieza.
+ */
+const MAXIMO_EN_PAQUETE_MATERIAL = 2000;
+
+/**
+ * Si un nombre dentro de un zip de material es una ruta segura: carpetas y
+ * archivo, sin salir nunca de la carpeta donde se descomprima.
+ *
+ * El paquete de difusión prohíbe las barras porque son dos archivos y no
+ * hacen falta carpetas. El de material son cientos, y sin carpetas sería una
+ * lista ilegible. Lo que no se negocia es la seguridad: nada de barras
+ * invertidas, nada de segmentos vacíos, y nada de «.» o «..», que son los que
+ * escriben fuera de su sitio al descomprimir.
+ *
+ * @param {string} nombre
+ * @returns {boolean}
+ */
+function esRutaDePaqueteSegura(nombre) {
+  if (!nombre || /\\/.test(nombre) || nombre.startsWith('/') || nombre.endsWith('/')) return false;
+  return nombre
+    .split('/')
+    .every((tramo) => /^[A-Za-z0-9][A-Za-z0-9._-]*$/.test(tramo) && tramo !== '.' && tramo !== '..');
+}
+
+/**
  * El encargo de empaquetar: los archivos que van dentro del zip.
  *
  * Cada uno es un nombre y, o bien la ruta de algo que ya está en el bucket, o
  * bien el texto que hay que escribir. Se comprueba aquí Y en el montador: aquí
  * para no encargar un trabajo que va a fallar, y allí porque el montador se
  * puede lanzar a mano.
+ *
+ * HAY DOS PAQUETES Y NO SE CONFUNDEN. El de difusión —sin «tipo», como hasta
+ * hoy— lleva el vídeo montado y su ficha: dos archivos con nombre plano. El de
+ * material («tipo»: «material») lleva TODO lo generado de una pieza —imágenes,
+ * clips, voces, efectos, música, subtítulos, guía y guion— para montarla a
+ * mano fuera del estudio: cientos de archivos, cada uno en su carpeta.
  */
 function comprobarElPaquete(pedido, salida, quejas) {
   if (!pedido || typeof pedido !== 'object' || Array.isArray(pedido) || !Array.isArray(pedido.archivos)) {
@@ -976,9 +1012,26 @@ function comprobarElPaquete(pedido, salida, quejas) {
     quejas.push(`«${salida}» es la salida de un paquete y no acaba en «.zip».`);
   }
 
+  const tipo = String(pedido.tipo ?? '').trim();
+  const esMaterial = tipo === 'material';
+  if (tipo && !esMaterial) {
+    quejas.push(
+      `«${tipo}» no es un tipo de paquete. Los paquetes son el de difusión —sin tipo— y el de ` +
+        'material («tipo»: «material»), que lleva todo lo generado de una pieza para montarla a mano.',
+    );
+  }
+
   if (!pedido.archivos.length) {
     quejas.push('El paquete no lleva ni un archivo dentro, así que no hay nada que empaquetar.');
     return;
+  }
+
+  if (esMaterial && pedido.archivos.length > MAXIMO_EN_PAQUETE_MATERIAL) {
+    quejas.push(
+      `El paquete de material lleva ${pedido.archivos.length} archivos y el tope son ` +
+        `${MAXIMO_EN_PAQUETE_MATERIAL}. Eso ya no es el material de una pieza: un capítulo entero ` +
+        'ronda los quinientos.',
+    );
   }
 
   const vistos = new Set();
@@ -993,10 +1046,14 @@ function comprobarElPaquete(pedido, salida, quejas) {
     const nombre = String(entrada.nombre ?? '').trim();
     if (!nombre) {
       quejas.push(`${cual} no dice cómo se va a llamar dentro del zip.`);
-    } else if (/[\/\\]/.test(nombre) || nombre === '.' || nombre === '..') {
+    } else if (esMaterial ? !esRutaDePaqueteSegura(nombre) : /[\/\\]/.test(nombre) || nombre === '.' || nombre === '..') {
       quejas.push(
-        `«${nombre}» no sirve como nombre dentro del zip: lleva barras o sube de carpeta, y eso al ` +
-          'descomprimirlo escribiría fuera de su sitio.',
+        esMaterial
+          ? `«${nombre}» no sirve como ruta dentro del zip: cada tramo —carpeta o archivo— va con ` +
+            'letras, números, punto, guion o guion bajo, sin barras invertidas y sin «.» ni «..», ' +
+            'que al descomprimirlo escribiría fuera de su sitio.'
+          : `«${nombre}» no sirve como nombre dentro del zip: lleva barras o sube de carpeta, y eso al ` +
+            'descomprimirlo escribiría fuera de su sitio.',
       );
     } else if (vistos.has(nombre.toLowerCase())) {
       quejas.push(`Hay dos archivos que se llaman «${nombre}» dentro del zip.`);
