@@ -1813,7 +1813,7 @@ function miniaturaDeReferencia(ruta,nombre,detalle) {
   return h('figure',null,
     url ? h('a',{href:url,target:'_blank',rel:'noopener','aria-label':`Ver referencia de ${nombre}`},
       h('img',{src:url,alt:`${nombre}: ${detalle}`,loading:'lazy',width:240,height:135})) :
-      h('div',{clase:'toma-referencia-hueco'},ruta?'Cargando imagen…':'Pendiente de aprobación'),
+      h('div',{clase:'toma-referencia-hueco'},ruta?'Cargando imagen…':'Sin imagen'),
     h('figcaption',null,nombre));
 }
 

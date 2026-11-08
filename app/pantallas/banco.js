@@ -1334,7 +1334,7 @@ function tarjetaDePlaca(laPlaca, ctx) {
 
   const datos = [];
   if (laPlaca.luz) datos.push(`Luz ${laPlaca.luz}`);
-  datos.push(rutaQueSeMira(clave,entrada) === entrada.aprobada && entrada.aprobada ? 'Imagen aprobada' : 'Imagen pendiente de aprobación');
+  datos.push(rutaQueSeMira(clave,entrada) === entrada.aprobada && entrada.aprobada ? 'Imagen en uso' : 'Imagen por revisar');
 
   const pie = [
     h('p', { clase: 'tarjeta-texto' }, datos.join(' · ')),
@@ -1405,7 +1405,7 @@ function tarjetaDeEscenario(elEscenario, ctx) {
 
   const datos = [];
   if (elEscenario.luz) datos.push(`Luz ${elEscenario.luz}`);
-  datos.push(rutaQueSeMira(clave,entrada) === entrada.aprobada && entrada.aprobada ? 'Imagen aprobada' : 'Imagen pendiente de aprobación');
+  datos.push(rutaQueSeMira(clave,entrada) === entrada.aprobada && entrada.aprobada ? 'Imagen en uso' : 'Imagen por revisar');
 
   const pie = [
     h(
