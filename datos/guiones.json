@@ -6,7 +6,7 @@
   "escenas": 289,
   "escenarios": 27,
   "nota_escenarios": "Cada escena trae ya su escenario canonico y su esquema de luz. Derivado de los guiones, no escrito a mano.",
-  "lineas": 486,
+  "lineas": 507,
   "nota_intencion": "Cada línea lleva su intención: cómo se dice, no solo qué se dice. Las marcadas con riesgo 'alto' son gritos o llanto sostenido, donde ningún TTS llega: se resuelven fuera de cuadro, tapadas, cortadas sobre quien escucha, o como grito sin palabras generado aparte."
  },
  "guiones": [
@@ -1807,7 +1807,7 @@
       "secretario"
      ],
      "dialogo": [],
-     "accion": "Una sala en anfiteatro. Cuarenta hombres y mujeres. Un secretario leyendo cifras que nadie escucha. Lord Iven en la tercera fila, medio dormido. Detrás de él, de pie, Saharis. No mira al que habla. Mira quién mira a quién.",
+     "accion": "Una sala en anfiteatro. Bancos oscuros en gradas, ventanales altos, luz dorada con polvo. Cuarenta hombres y mujeres de las casas, sentados por filas, cada fila en su sitio de siempre. En una mesa baja, el SECRETARIO lee las cifras de la sesión con la voz plana de los que leen para el acta: partida tras partida, la misma cantinela administrativa que nadie escucha y que lo sostiene todo. La sala no desaparece cuando la mirada se acerca: cuarenta personas siguen ahí, respirando, aburridas. En la tercera fila, LORD IVEN está medio dormido, con la copa olvidada en la mano y la cabeza cayendo a ratos. Detrás de él, de pie —los que acompañan no se sientan—, SAHARIS, dieciséis años, impecable, quieto como un mueble más de la fila. No mira al que habla. Nunca mira al que habla. Mira quién mira a quién. Cada vez que el secretario pasa de una partida a otra, alguien en alguna fila busca a alguien en otra bancada —una cabeza que se gira un instante, una mirada que cruza el anfiteatro y vuelve—, y en esos cruces la sala entera confiesa su mapa: quién depende de quién, quién teme a quién, quién espera que otro pague. Los demás oyen números. Saharis está viendo el organigrama de Feyrond respirar, y lo guarda donde guarda todo. El secretario sigue leyendo. Iven cabecea.",
      "escenario": "consejo",
      "luz": "NOBLE"
     },
@@ -1818,7 +1818,7 @@
      "flashback": false,
      "personajes": [],
      "dialogo": [],
-     "accion": "Primer plano de manos sobre los reposabrazos. Un anillo. Círculo, ojo, cuatro dientes. Otra mano, otra fila. El mismo anillo. Una tercera, en la bancada de arriba. Ninguno de los tres es de Casa Renn.",
+     "accion": "La mirada baja a las manos. Sobre los reposabrazos de los bancos, entre papeles y copas, las manos de los que escuchan sin escuchar. Una mano en la fila de abajo. En el dedo, un anillo: un círculo, un ojo, cuatro dientes. Otra mano, en otra fila, más arriba. El mismo anillo. Una tercera, en la bancada de arriba, junto a una manga de casa buena. El mismo anillo. Tres manos de tres filas distintas. Tres casas distintas. Ninguna de las tres es de Casa Renn: son manos limpias, de consejo y de sobremesa, sin una sola mancha de curtidor. Ninguna de las manos se mueve hacia otra. Ninguno de los tres saluda a los otros ni los mira: el signo se repite en la sala como se repite una cifra en el acta, sin que sus dueños parezcan saber que lo comparten. Arriba, detrás de Iven, Saharis lo ha visto las tres veces. Su cara no cambia. Es la quinta vez que el símbolo le sale al paso —un anillo en una cena, un dibujo en su pared, una talla en un dintel, una pared en un sótano— y esta es la primera vez que no está solo: está sentado en el Consejo, en plural, a plena luz del día.",
      "escenario": "consejo",
      "luz": "NOBLE"
     },
@@ -1829,7 +1829,7 @@
      "flashback": true,
      "personajes": [],
      "dialogo": [],
-     "accion": "Seis años. Una fila de niños empujados por sus padres. Lloran casi todos. Al final de la fila, uno solo. Sin nadie detrás. Ha venido por su cuenta.",
+     "accion": "El patio de la academia, con su luz de cripta en pleno día: piedra, sombra, un altar al fondo que todavía no toca mirar. Hay una fila de niños. Seis años. Niños empujados por sus padres, cada uno con una mano adulta en la espalda que lo va metiendo en la fila a empujones cortos, como se ordena una mercancía que se resiste. Lloran casi todos. Lloran en voz baja y lloran en voz alta, lloran mirando atrás, lloran con la cara escondida en la ropa de quien los empuja. Los padres no miran al altar más de lo necesario: miran a su niño, lo empujan dos pasos más, y se van quedando en el borde del patio, donde termina lo que un padre puede hacer. La fila avanza así, por empujones y por llantos, niño tras niño con su mano detrás. Al final de la fila, uno solo. Sin nadie detrás. Sin mano en la espalda. Sin llanto. Un niño flaco, de pie en su sitio de la fila como se está en un asiento asignado, esperando su turno con la misma paciencia con la que de adulto esperará en las salas de los otros. Ha venido por su cuenta: nadie lo ha traído, nadie lo ha empujado, nadie se ha quedado en el borde del patio a ver cómo la fila se lo traga. La fila avanza otro paso. Él avanza con ella, solo, el paso exacto de los demás.",
      "escenario": "academia",
      "luz": "CRIPTA"
     },
@@ -1858,6 +1858,12 @@
       {
        "quien": "anciano-academia",
        "etiqueta": "ANCIANO",
+       "texto": "¿Quién te trae?",
+       "intencion": "la siguiente casilla del formulario"
+      },
+      {
+       "quien": "anciano-academia",
+       "etiqueta": "ANCIANO",
        "texto": "Ojos rojos... como aquel día.",
        "intencion": "atención repentina; baja la voz"
       },
@@ -1876,8 +1882,26 @@
       {
        "quien": "sacerdote",
        "etiqueta": "SACERDOTE 2",
+       "texto": "¿Cuántos años tiene?",
+       "intencion": "haciendo sus cuentas"
+      },
+      {
+       "quien": "anciano-academia",
+       "etiqueta": "ANCIANO",
+       "texto": "Seis. Y ha venido solo.",
+       "intencion": "un dato del registro"
+      },
+      {
+       "quien": "sacerdote",
+       "etiqueta": "SACERDOTE 2",
        "texto": "Interesante.",
        "intencion": "apetito"
+      },
+      {
+       "quien": "anciano-academia",
+       "etiqueta": "ANCIANO",
+       "texto": "Que lo apunten.",
+       "intencion": "orden administrativa, sin énfasis"
       },
       {
        "quien": "anciano-academia",
@@ -1892,7 +1916,7 @@
        "intencion": "más bajo"
       }
      ],
-     "accion": "Un ANCIANO SACERDOTE, sentado. El niño delante, desnudo, flaco, lleno de cicatrices. Nombre. El niño no contesta. ¿Mudo, eh? Lo mira mejor. Le levanta la barbilla con dos dedos. Ojos rojos... como aquel día. Se acercan otros dos sacerdotes. ¿Sobrevivió? Sí. Jamás lloró. Ni una sola vez. Interesante. El anciano hace una señal. Un ACÓLITO trae un cuchillo ritual. ¿Sabes lo que es el dolor, niño? El niño asiente. ¿Lo temes? El niño niega.",
+     "accion": "El altar. Sentado junto a él, el ANCIANO SACERDOTE de la academia —un ojo nublado, los dientes podridos, la autoridad tranquila de un funcionario viejo— con el niño delante: desnudo, flaco, lleno de cicatrices que no son de hoy ni de ayer. El procedimiento empieza como empiezan todos los procedimientos de Feyrond: con un asiento que hay que rellenar. Pide el nombre. El niño no contesta. Lo mira por encima, como se mira un papel mal cumplimentado, y hace la siguiente pregunta del formulario: quién lo trae. El niño no contesta. Nadie contesta por él: detrás de él no hay nadie, y el anciano lo comprueba con una mirada al vacío que el niño deja a su espalda. Entonces le levanta la barbilla con dos dedos y lo mira mejor. Y lo que ve le cambia la cara antes que la voz: los ojos rojos, como aquel día. Se acercan otros dos sacerdotes, despacio, con la curiosidad de los que huelen un caso. Hablan del niño como se habla de un asiento de un libro viejo, de los que se creían cerrados: sobrevivió; jamás lloró, ni una sola vez. El sacerdote hace sus cuentas en voz alta —la edad, el haber venido solo— y sentencia su interés. El anciano ordena que lo apunten, y hace una señal. Un ACÓLITO trae un cuchillo ritual y lo deja donde se dejan estas cosas, sin ceremonia. El anciano mira al niño otra vez, y la última parte del procedimiento la hace casi con amabilidad: le pregunta si sabe lo que es el dolor. El niño asiente. Si lo teme. El niño niega.",
      "escenario": "academia",
      "luz": "CRIPTA"
     },
@@ -1912,7 +1936,7 @@
        "intencion": "satisfecho, casi cariñoso"
       }
      ],
-     "accion": "El cuchillo baja. Corta la palma. Limpio. La sangre cae al suelo. El niño no cambia la cara. El anciano sonríe. Bienvenido a la academia, pequeño monstruo.",
+     "accion": "El cuchillo baja. Corta la palma —la izquierda— limpio, de un solo trazo, como se abre una carta. La sangre cae al suelo de piedra, en gotas contables. El niño no cambia la cara. No retira la mano. No mira la sangre: sigue mirando al anciano, con los ojos rojos abiertos y la mano abierta bajo el corte, como si la mano no fuera suya todavía y hubiera que ganársela. El anciano mira la sangre, mira la cara, y sonríe: ha obtenido exactamente la respuesta que su procedimiento venía a medir. Le da la bienvenida a la academia. El niño baja la vista entonces a su mano, y la mira como se mira una cosa nueva que ya es de uno. La línea que el cuchillo ha dejado en la palma izquierda no se va a cerrar del todo nunca: quedará pálida, y diez años después seguirá ahí, bajo la manga de un joven impecable que sirve el té en una casa noble.",
      "escenario": "academia",
      "luz": "CRIPTA"
     },
@@ -1939,10 +1963,22 @@
        "intencion": "pánico"
       },
       {
+       "quien": "criado",
+       "etiqueta": "CRIADO",
+       "texto": "Yo solo bajo y subo, señor. A mí no me cuentan nada.",
+       "intencion": "defendiéndose con lo único que tiene: su tamaño en la casa"
+      },
+      {
        "quien": "saharis",
        "etiqueta": "SAHARIS",
        "texto": "No me interesa usted. Me interesa cuándo baja gente.",
        "intencion": "tranquilizador"
+      },
+      {
+       "quien": "criado",
+       "etiqueta": "CRIADO",
+       "texto": "No me haga perder el sitio, por favor.",
+       "intencion": "súplica, muy bajo"
       },
       {
        "quien": "criado",
@@ -1957,7 +1993,7 @@
        "intencion": "cortés"
       }
      ],
-     "accion": "Saharis y el CRIADO del sótano, acorralado contra la pared. No hay violencia: hay un papel en la mano de Saharis. Usted rellena el cuenco los martes y los viernes. Yo no... No me interesa usted. Me interesa cuándo baja gente. El criado traga. Luna nueva. Gracias. Le devuelve el papel sin leerlo y se va. El criado se queda con el papel en la mano. Estaba en blanco.",
+     "accion": "El callejón junto a la casa Renn, de noche. El CRIADO del sótano —el mismo hombre de la tarea de todos los días, el que baja a cambiar las velas y a rellenar el cuenco sin rezar ni mirar el símbolo— está acorralado contra la pared, con SAHARIS delante. No hay violencia: no hay una mano encima, no hay un arma, no hay un grito. Hay un papel en la mano de Saharis, y es suficiente. Saharis abre con un dato: los días en que el criado rellena el cuenco. El criado intenta negarlo y se defiende con su tamaño en la casa: él solo baja y sube, a él no le cuentan nada. Saharis lo tranquiliza: no le interesa él, le interesa cuándo baja gente. El criado traga. Mira el papel una vez, como si el papel pudiera leerle a él. Suplica que no le hagan perder el sitio, y suelta lo que sabe de golpe: luna nueva. Saharis se lo agradece, cortés. Le devuelve el papel sin leerlo y se va, callejón arriba, sin prisa, con el mismo paso con el que ha llegado. El criado se queda contra la pared, con el papel en la mano y el corazón todavía en la garganta. Al cabo de un momento lo mira. Lo desdobla del todo, buscando la letra, la lista, el nombre, lo que sea que ha estado a punto de firmarle la vida. Estaba en blanco. Todo lo que ha dicho, lo ha dicho delante de un papel vacío y de un muchacho que no necesitaba el papel para nada: necesitaba que el criado creyera que existía un registro.",
      "escenario": "casa-renn",
      "luz": "BARRIO"
     },
@@ -1970,7 +2006,7 @@
       "saharis"
      ],
      "dialogo": [],
-     "accion": "Saharis se quita la camisa. Su torso está cruzado de líneas finas, algunas antiguas, algunas rojas. Prepara una aguja, tinta y un cuenco. Traza el circuito sobre la piel con carboncillo primero, midiendo. Luego empieza a grabar. No hay música. No hay épica. Aprieta un trapo entre los dientes y se le saltan las lágrimas del dolor físico. Tarda toda la noche.",
+     "accion": "El refugio, de noche. El farol único sobre la mesa, en su extremo este. La pared delante, como quedó: los trescientos papeles, el dibujo del anillo en su hueco, SIETE arriba del todo con letra de niño, la lista con su primera línea tachada y las doce vivas debajo, y la pregunta —¿de dónde era ella?— todavía sola, sin respuesta, sin flecha y sin cordel. Saharis se quita la camisa y la deja doblada sobre la única silla —doblada: ni siquiera esto es un desorden—. Su torso está cruzado de líneas finas: algunas antiguas, pálidas, cerradas hace años; algunas rojas, más recientes. Nadie se las ha visto nunca. Prepara las cosas con el orden de la pared: una aguja, la tinta, un cuenco, un trapo. Todo en fila sobre la mesa, junto al farol, como se alinean los datos antes de escribirlos. Primero el trazado, con el carboncillo sobre la piel, midiendo: distancias tomadas con los dedos, ángulos comprobados dos veces, cada tramo corregido antes de ser tramo. No hay en la sala ningún papel con este diseño a la vista: sale medido, como sale todo lo suyo. Luego la aguja. Se aprieta el trapo entre los dientes. No hay música. No hay épica. Hay una mano que no tiembla y un cuerpo que sí paga: el sudor que baja por la espalda, la respiración contenida tramo a tramo y, en los tramos largos, las lágrimas que se le saltan solas, de dolor físico —lágrimas del cuerpo, sin sollozo y sin gesto: el niño de la fila no está llorando; el cuerpo está haciendo lo que hacen los cuerpos—. No se las limpia. Tiene las dos manos ocupadas en no fallar. La noche se mide en el farol: la llama baja, el aceite baja, y el trazo avanza línea a línea, uniendo las antiguas con las rojas como se une un nombre a una fecha en la pared de enfrente. Cuando termina, el farol está en las últimas. Se quita el trapo de la boca. Se mira el torso una sola vez, sin admiración, como se mira una página terminada. Se pone la camisa. La sala queda como estaba: sus cosas en fila sobre la mesa y la pared delante, con su pregunta. Nadie sabrá nunca que esto ha pasado aquí abajo. Ha tardado toda la noche.",
      "escenario": "tuneles",
      "luz": "BARRIO"
     },
@@ -1981,7 +2017,7 @@
      "flashback": true,
      "personajes": [],
      "dialogo": [],
-     "accion": "Diez o doce niños repitiendo fórmulas de memoria. El niño las repite con ellos. Al mismo ritmo. Ni antes ni después. Bajo el pupitre, con el dedo, dibuja en el polvo la fórmula corregida.",
+     "accion": "Un aula de la academia, de noche, con la luz de la cripta. Diez o doce niños en sus pupitres repiten las fórmulas de memoria, en coro: la misma cantinela, al mismo ritmo, las voces pequeñas sonando a una. Es sonido de procedimiento, como la lectura de las cifras en el Consejo: nadie escucha lo que dice, porque decirlo es el trámite. El niño repite con ellos. Con la boca, con el ritmo, con el error incluido: la fórmula que el coro repite lleva su forma de siempre, la aprendida, y él la dice exactamente como la dicen todos. Ni antes ni después. Ni más alto ni más bajo. Una voz más dentro del coro, que es el sitio donde nadie mira. Bajo el pupitre, fuera de toda vista, su dedo se mueve sobre el polvo del suelo. Dibuja sin mirar: la misma fórmula, corrida despacio, trazo a trazo —y en el punto por donde el coro lleva años pasando de largo, el dedo se detiene, borra con la yema lo que no es y escribe lo que sí es—. La fórmula corregida. Entera. En el polvo, debajo de un pupitre, donde no la lee nadie. El coro termina. Los niños se levantan entre el ruido de los pupitres y de los pies pequeños, y cuando el aula se vacía el polvo ya no guarda nada.",
      "escenario": "academia",
      "luz": "CRIPTA"
     },
@@ -1994,7 +2030,7 @@
       "maestro"
      ],
      "dialogo": [],
-     "accion": "Un MAESTRO escribe un sello en la pizarra. El niño lo mira. El sello tiene un símbolo de más. Levanta un poco la mano. La baja.",
+     "accion": "La misma aula, a continuación. El MAESTRO está a la pizarra, de espaldas a la clase, y escribe un sello: lo traza grande, con la tiza, para que se copie —un círculo, sus ángulos, sus signos, en el orden en que se escriben estas cosas—. El niño lo mira desde su pupitre. Mira el trazado entero una sola vez, como mira todo: una vez y para siempre. Y ve que el sello lleva un símbolo de más. No un trazo torcido ni una mancha de tiza: un signo entero donde no va ningún signo, sentado en la fórmula como un nombre de más en un registro. Levanta un poco la mano. Un poco: los dedos apenas por encima del pupitre, el gesto a medio hacer, el de un niño que va a corregir a su maestro delante de toda el aula. La baja. Despacio, sin que nadie lo haya visto —el maestro sigue a su pizarra y la clase sigue a su copia—. La mano vuelve al pupitre y se queda plana y quieta, como si nunca se hubiera movido. El sello queda escrito en la pizarra con su símbolo de más, grande y oficial, y la clase lo copiará mal con la mejor letra que tenga. El niño también. Lo que él sabe se queda donde se queda todo lo que sabe: debajo del pupitre, en el polvo, donde no lo lee nadie.",
      "escenario": "academia",
      "luz": "CRIPTA"
     },
@@ -2031,9 +2067,15 @@
        "etiqueta": "SAHARIS",
        "texto": "Con un cuchillo.",
        "intencion": "plano, cerrando el tema"
+      },
+      {
+       "quien": "livia",
+       "etiqueta": "LIVIA",
+       "texto": "El pan está recién hecho. Come.",
+       "intencion": "cambiando de tema a propósito; la misericordia de no preguntar"
       }
      ],
-     "accion": "Desayuno. Saharis alcanza el pan y la manga se le sube. Livia le ve el brazo. Sangre seca y una línea hinchada. ¿Qué es eso? Me corté. Con qué. Saharis se baja la manga. Con un cuchillo. Livia lo mira. No pregunta más. Le pasa la mantequilla. Se ha dado cuenta de que no le va a decir la verdad y ha decidido no obligarlo.",
+     "accion": "El salón de día, en su versión de desayuno: la mesa larga puesta solo en un tramo, la luz entrando alta y limpia, el servicio haciendo su ruido pequeño de siempre. LIVIA ya está a la mesa. SAHARIS alcanza el pan y la manga se le sube: solo un tramo de antebrazo, un instante —sangre seca en la piel y una línea hinchada, reciente, que no es un corte de cocina ni de jardín—. Livia lo ve y deja lo que estaba haciendo. Pregunta qué es eso. Él contesta que se cortó. Ella no se lo cree y pregunta con qué. Saharis se baja la manga con la otra mano, sin mirar el gesto, como se cierra una puerta que no debió abrirse, y cierra el tema: con un cuchillo. Es verdad y no es verdad —hubo un filo, y no dice cuál, ni dónde, ni por qué— y los dos lo saben. Livia lo mira un momento más. Ha entendido dos cosas a la vez: que no le va a decir la verdad, y que obligarlo sería la manera de no saber nunca nada de él. Decide. No pregunta más. Le pasa la mantequilla, con la normalidad deliberada de quien cierra una puerta por el otro lado, y cambia de tema hacia lo único inocente que hay en la mesa: el pan, recién hecho, y que coma. Saharis come. El desayuno sigue, ordinario y entero, por encima de la línea que ninguno de los dos vuelve a mirar. En esa mesa ha pasado lo de siempre en esta casa: alguien ha visto algo, y ha decidido qué hacer con haberlo visto.",
      "escenario": "elserath-salon",
      "luz": "NOBLE"
     },
@@ -2058,11 +2100,41 @@
       {
        "quien": "osk",
        "etiqueta": "OSK",
+       "texto": "¿El nombre o la casa?",
+       "intencion": "profesional; probando el encargo por los bordes"
+      },
+      {
+       "quien": "rothar",
+       "etiqueta": "ROTHAR",
+       "texto": "Las dos cosas. Si existe, dónde está. Y quién queda de ella.",
+       "intencion": "sobrio, preciso"
+      },
+      {
+       "quien": "osk",
+       "etiqueta": "OSK",
        "texto": "Existir es caro.",
        "intencion": "profesional"
+      },
+      {
+       "quien": "osk",
+       "etiqueta": "OSK",
+       "texto": "¿Y si no existe?",
+       "intencion": "profesional"
+      },
+      {
+       "quien": "rothar",
+       "etiqueta": "ROTHAR",
+       "texto": "Entonces quiero la certeza de que no existe.",
+       "intencion": "decidido"
+      },
+      {
+       "quien": "osk",
+       "etiqueta": "OSK",
+       "texto": "Lo sabrá.",
+       "intencion": "cerrando el trato"
       }
      ],
-     "accion": "Rothar, sobrio por una vez, pagando a un hombre delgado. OSK. Saharis de Levalen. Quiero saber si existe esa casa. Existir es caro. Rothar le da más.",
+     "accion": "La taberna de día —la misma casa de juego del capítulo 2, en su hora pobre: menos humo, las mesas vacías en su mayoría, la luz entrando sucia por los cristales—. ROTHAR está sentado con un hombre delgado: OSK. Rothar está sobrio —sobrio por una vez, y se le nota el esfuerzo en la postura—: la ropa buena mal llevada de siempre, pero la mandíbula firme y la bolsa ya sobre la mesa, pagando por adelantado lo que ha venido a comprar, que no es vino. Pone el encargo con precisión de hombre que lo ha ensayado: Saharis de Levalen; quiere saber si existe esa casa. Osk prueba el encargo por los bordes: si es el nombre o la casa. Rothar quiere las dos cosas: si existe, dónde está, y quién queda de ella. Osk pone la ley de su oficio: existir es caro. Rothar no discute el precio: le da más —más dinero sobre la mesa, sin regateo y sin dignidad que defender—. Osk hace la última pregunta del procedimiento: qué pasa si no existe. Rothar quiere entonces la certeza de que no existe. Osk recoge el dinero con la economía de los profesionales y cierra con lo único que promete: lo sabrá. Rothar no sabe —no puede saber— que la casa que busca se fabricó en un cuartucho del Barrio de Humo con una bolsa y una versión: que no hay ningún registro y que los libros del este se perdieron con la peste. Está pagando por encontrar la verdad de una cosa que se hizo para no tenerla. Se queda un momento mirando la mesa vacía entre los dos, como si la respuesta ya estuviera en camino y solo hubiera que sobrevivir hasta que llegue.",
      "escenario": "casa-juego",
      "luz": "BARRIO"
     },
@@ -2076,7 +2148,7 @@
       "saharis"
      ],
      "dialogo": [],
-     "accion": "Saharis pasa por delante de la taberna sin detenerse. A través del cristal, un segundo: Rothar y Osk. Sigue andando.",
+     "accion": "La calle, el mismo día. Saharis pasa por delante de la taberna sin detenerse. A través del cristal sucio, un segundo: la mesa, la bolsa ya recogida, Rothar todavía sentado con la postura del que ha pagado y espera, y Osk de pie, a punto de salir a preguntar por una casa que no existe. La caza entera, en un solo encuadre, a través de un cristal. Saharis no aminora el paso. No mira dos veces: él mira una. Sigue andando con su paso de siempre, el de las cenas y el de los callejones, y la taberna queda detrás con su comprador dentro. Rothar está gastando dinero y sobriedad en averiguar quién es, y el investigado acaba de pasar por delante de la ventana sin que ninguno de los dos hombres de dentro levante la vista. La calle sigue. Él también.",
      "escenario": "calle",
      "luz": "BARRIO"
     },
@@ -2103,6 +2175,12 @@
        "intencion": "sin ofenderse"
       },
       {
+       "quien": "osk",
+       "etiqueta": "OSK",
+       "texto": "¿Y cuánto paga usted por un hombre ya comprado?",
+       "intencion": "profesional; probando el encargo por los bordes"
+      },
+      {
        "quien": "saharis",
        "etiqueta": "SAHARIS",
        "texto": "No quiero que mienta. Quiero que encuentre esto.",
@@ -2115,13 +2193,31 @@
        "intencion": "sorprendido"
       },
       {
+       "quien": "osk",
+       "etiqueta": "OSK",
+       "texto": "Si se lo encuentra entero, huele a puesto.",
+       "intencion": "profesional; la objeción de oficio"
+      },
+      {
+       "quien": "saharis",
+       "etiqueta": "SAHARIS",
+       "texto": "Por eso no se lo va a encontrar entero. Se lo va a encontrar por partes.",
+       "intencion": "dándole el método como se da un dato"
+      },
+      {
+       "quien": "saharis",
+       "etiqueta": "SAHARIS",
+       "texto": "La última parte se la encuentra él.",
+       "intencion": "la última parte del método"
+      },
+      {
        "quien": "saharis",
        "etiqueta": "SAHARIS",
        "texto": "Por eso se lo va a creer.",
        "intencion": "tranquilo"
       }
      ],
-     "accion": "El mismo sitio. Ahora Osk está sentado con Saharis. Su hermano me paga por hundirle. No es mi hermano y no le paga bastante. Empuja una bolsa. Es visiblemente más grande. No quiero que mienta. Quiero que encuentre esto. Le pasa un papel doblado. Osk lo abre. Lee. Levanta la vista. Esto es mejor de lo que él busca. Por eso se lo va a creer.",
+     "accion": "La taberna de noche —la misma casa de juego, en su hora de verdad: el humo ya sentado, las mesas con su gente, la penumbra amarilla—. OSK está en la mesa del fondo, la de las conversaciones que se pagan, con la postura del que lleva un rato esperando sin parecer que espera: ni bebe ni mira la puerta. SAHARIS se sienta frente a él sin pedir permiso, con la ropa buena de la casa y la calma de las cenas. Osk lo mira una vez, entero, como se mira un encargo que ha cambiado de manos delante de uno, y empieza él: su hermano le paga por hundirle. Saharis no contesta a eso todavía. Empuja una bolsa sobre la mesa, hacia Osk. Es visiblemente más grande que la que Rothar dejó por la mañana sobre esta misma mesa, y el peso se le nota al asentarse contra la madera. Osk no la toca. La mira, y mira al joven, y hace la cuenta que hace su oficio. Saharis dice que no es su hermano y que no le paga bastante. Osk prueba el encargo por los bordes: cuánto paga él por un hombre ya comprado. Saharis se saca del bolsillo interior un papel doblado y lo deja sobre la mesa, entre los dos, sin empujarlo todavía: no quiere que mienta; quiere que encuentre esto. Osk lo abre. Lee despacio, con la economía de los que leen para otros: una pasada, y otra más corta. Levanta la vista: esto es mejor de lo que él busca. Y hace su objeción de oficio: si se lo encuentra entero, huele a puesto. Saharis le da el método como se da un dato: por eso no se lo va a encontrar entero; se lo va a encontrar por partes, y la última parte se la encuentra él. Empuja el papel el último tramo, hasta dejárselo bajo la mano: por eso se lo va a creer. Osk se guarda el papel sin doblarlo otra vez, tal como venía, y entonces sí recoge la bolsa, con la misma economía con la que por la mañana recogió la pequeña. El trato no necesita más palabras y no las tiene: Rothar amaneció comprando la verdad de Levalen y la verdad de Levalen se ha vendido dos veces en el mismo día, sobre la misma mesa, a dos precios distintos. Lo que el papel dice no lo sabe nadie más en la sala —y no se dice aquí: se dice solo que Osk lo ha leído y que es mejor de lo que Rothar busca—.",
      "escenario": "casa-juego",
      "luz": "BARRIO"
     },
@@ -2134,7 +2230,7 @@
       "saharis"
      ],
      "dialogo": [],
-     "accion": "Saharis, encajado en un hueco sobre las vigas. Debajo, la sala llena. Doce personas. Ninguna lleva túnica. Van vestidos de calle, de comerciante, de casa buena. Hay una mesa. Hay papeles. Hay una jarra de vino y alguien se sirve. Es una reunión de negocios.",
+     "accion": "El sótano de la casa Renn, la noche de luna nueva —la noche sin luna que el criado nombró sin saber lo que nombraba—. La sala es la que Saharis ya conoce de otra noche: el símbolo tallado en el muro, el altar pequeño delante con sus velas negras a medio consumir, cada una a su altura de todos los días, las ofrendas en su sitio. Solo que esta noche la sala tiene otro mueble en el centro: una mesa. Y sobre la mesa, papeles. Y una jarra de vino. Saharis ya está dentro cuando la escena empieza, encajado en un hueco sobre las vigas, en la sombra que la luz de abajo no visita. Llegó antes que todos, por donde esta casa lo deja llegar, y se acomodó en su hueco con el orden de siempre: el cuerpo repartido para durar, la respiración contada, ninguna postura que haya que corregir a mitad de noche. Desde ahí arriba la sala se lee como se lee su pared: entera, de una vez, y por capas. Van bajando. De uno en uno, de dos en dos, por la escalera de la casa, sin prisa y sin disfraz: doce personas. Ninguna lleva túnica. Van vestidos de calle, de comerciante, de casa buena —ropa de día en una sala de noche, abrigos que se quitan y se dejan en cualquier parte, manos limpias—. Saludan con la cabeza. Alguien se sirve vino de la jarra antes de sentarse, como se sirve uno en una casa que conoce. Se sientan alrededor de la mesa donde les toca, que se nota que es donde les toca siempre, y los papeles empiezan a pasar de mano en mano con el ruido pequeño del papel que ya se ha pasado muchas veces. Debajo del altar, con sus velas gastadas a distintas alturas, doce personas de la superficie se disponen a despachar sus asuntos. Arriba, en las vigas, el único que no tiene silla ni papel ni vino no se mueve: ha venido a ver exactamente esto —no un rito: una reunión— y la reunión, puntual como un criado con su jarra, empieza. Abajo se habla en voz baja durante toda la escena, pero la fuente no fija ni una palabra de lo que se dice hasta la escena 16, y no se le ha escrito ninguna aquí.",
      "escenario": "casa-renn",
      "luz": "BARRIO"
     },
@@ -2147,7 +2243,7 @@
       "saharis"
      ],
      "dialogo": [],
-     "accion": "Saharis reconoce dos caras de la escena 1. Consejo de Comercio. Se le tensa la mandíbula.",
+     "accion": "La reunión sigue debajo, con su murmullo y su papel. Saharis la recorre desde arriba como recorrió el Consejo de Comercio: no escucha lo que se dice —todavía no le importa lo que se dice—; mira quién está. Cara a cara, despacio, con la misma paciencia con la que en la sesión contó miradas cruzadas cuando cambiaban las partidas. Un hombre se gira hacia la lámpara para leer un asiento y la luz le da de lleno un instante: Saharis lo coloca sin esfuerzo donde lo vio la primera vez —una de las filas del anfiteatro, en la sesión de día, entre los cuarenta que escuchaban sin escuchar—. Otro, el que se sirvió el vino al llegar, levanta la copa hacia alguien al otro lado de la mesa y la cara queda entera a la luz de las velas: también estaba. También de día. También en una bancada. Dos caras de la escena del Consejo. Dos hombres de la superficie, de las filas de las casas, sentados ahora a la mesa de un sótano de curtidores, en luna nueva, con el símbolo a la espalda y un papel delante. A Saharis se le tensa la mandíbula. Es todo: un músculo, una vez. La cara no cambia en nada que desde abajo se pudiera leer, las manos no se mueven en su hueco, la respiración sigue contada. Pero el cuerpo ha contestado antes que el mapa, y ha contestado en el único idioma que el cuerpo tiene en esta historia: apretando. Abajo nadie levanta la vista. La reunión sigue, con sus dos consejeros dentro, como si el sótano fuera una sala más de la casa de arriba y la casa de arriba una planta más de este sótano.",
      "escenario": "casa-renn",
      "luz": "BARRIO"
     },
@@ -2161,6 +2257,12 @@
       "saharis"
      ],
      "dialogo": [
+      {
+       "quien": "hombre",
+       "etiqueta": "HOMBRE",
+       "texto": "¿Alguien más?",
+       "intencion": "sirviendo vino, sin levantarse, a nadie en concreto"
+      },
       {
        "quien": "hombre",
        "etiqueta": "HOMBRE 1",
@@ -2178,9 +2280,15 @@
        "etiqueta": "HOMBRE 1",
        "texto": "Ah, los de abajo.",
        "intencion": "con una risa pequeña, desdén"
+      },
+      {
+       "quien": "hombre",
+       "etiqueta": "HOMBRE 2",
+       "texto": "Lo siguiente.",
+       "intencion": "pasando la hoja, ya en el siguiente apunte"
       }
      ],
-     "accion": "¿Y lo del vado? Lo lleva la rama de abajo. Como siempre. Risas cortas. Alguien hace un gesto con la mano, como quien habla de un almacén lejano y sucio. Ah, los de abajo. Más risas. Arriba, en las vigas, Saharis deja de respirar.",
+     "accion": "La reunión llega, papel a papel, a uno de sus asuntos. Un hombre repasa su hoja con el dedo, deteniéndose en cada apunte lo que dura un sorbo de los otros, y la mesa hace su ruido pequeño de siempre: la jarra que se mueve, una copa que se deja, el papel que espera. Un hombre sirve vino, sin levantarse, a nadie en concreto: ¿alguien más? Nadie contesta; alguien acerca una copa y la jarra se mueve sola hacia ella. El de la hoja sigue con el dedo hasta el apunte que buscaba y lo despacha como se despachan todos: ¿y lo del vado? Lo lleva la rama de abajo. Como siempre. Ah, los de abajo. Risas cortas. Alguien hace un gesto con la mano, un gesto vago y hacia abajo, como quien habla de un almacén lejano y sucio que no hay que visitar nunca. Más risas, más cortas todavía. No es una burla con destinatario: es el desprecio de oficio, el que se gasta en lo que funciona solo y huele mal, y dura lo que dura un apunte antes de pasar al siguiente papel. El que contestó pasa la hoja, ya en el siguiente apunte: lo siguiente. Arriba, en las vigas, Saharis deja de respirar. No se mueve. No se agarra a nada. Deja de respirar como se deja de hacer cualquier cosa en su hueco: por decisión, a mitad de una respiración contada que no termina. Abajo, la reunión ya está en el apunte siguiente, con su papel y su vino, y nadie sabe que sobre sus cabezas hay un muchacho conteniendo el aire por una frase de trámite y una risa pequeña. Lo que la frase ha hecho no se ve desde abajo: el vado que el invitado de la cena le explicó como un atajo de curtidores —lo que no pasa por el muelle, lo de la noche— no lo lleva una casa: lo lleva una rama, la de abajo, la que se nombra con un gesto hacia el suelo y una risa. La respiración vuelve cuando vuelve, sola, sin ruido, y la reunión sigue sin él y sin saber de él, que era el plan, hasta que deja de serlo.",
      "escenario": "casa-renn",
      "luz": "BARRIO"
     },
@@ -2193,7 +2301,7 @@
       "saharis"
      ],
      "dialogo": [],
-     "accion": "Saharis corre. No huye de nadie. Corre. Es la primera vez en tres episodios que lo vemos perder la compostura.",
+     "accion": "Saharis corre. No huye de nadie: nadie lo ha visto, nadie lo sigue, la casa Renn queda atrás con su reunión todavía en el primer vino. Corre. Sale a los tejados por donde los tejados lo dejan salir y no baja la velocidad al llegar arriba: cruza las tejas con el paso largo, salta el hueco entre dos casas sin mirar el hueco, se apoya en una chimenea para girar y sigue. Los tejados que otra noche lo tuvieron sentado en un borde, con las piernas colgando y todo el tiempo del mundo, esta noche lo tienen así: de pie, en movimiento, con la respiración fuera de su cuenta por primera vez que se le recuerda. Una mano calcula mal un saliente —una vez, solo una— y se corrige en el aire, sin detenerse. El abrigo basto le pesa y le vuela. La ciudad iluminada pasa por debajo sin que la mire: ni las ventanas contadas de otras noches, ni la casa grande con su nombre sellado dentro, ni la puerta de piedra a la que ya no necesita volver. Esta noche no hay nada que contar desde arriba. Hay una sola cosa que hacer con lo que ha oído, y no se hace en un tejado. Es la primera vez en tres episodios que lo vemos perder la compostura. No la pierde en la cara —la cara no le cambia ni corriendo—: la pierde en el paso, en la respiración, en la prisa. Lo que baja del sótano con él no es miedo ni es triunfo: es un mapa que se ha roto, y un hombre cuyo instrumento es el mapa no camina despacio cuando el mapa se rompe: corre hacia el único sitio donde puede rehacerlo. Baja por donde baja siempre y la noche se lo traga hacia los túneles.",
      "escenario": "calle",
      "luz": "BARRIO"
     },
@@ -2204,7 +2312,7 @@
      "flashback": false,
      "personajes": [],
      "dialogo": [],
-     "accion": "Entra. Se queda frente a la pared. La mira. Arranca un papel. Luego otro. Luego una fila entera. Cae de rodillas entre los papeles. Su mapa estaba mal. Creía que el culto estaba debajo de la ciudad. Es la ciudad.",
+     "accion": "El refugio. El farol único sobre la mesa, en su extremo este. Saharis entra con el abrigo todavía desordenado de la carrera y no se lo arregla: cruza la sala seca y se queda frente a la pared. La pared está como este capítulo la ha ido dejando: los trescientos papeles unidos por cordeles, el dibujo del anillo en su hueco centro-izquierda, SIETE arriba del todo con letra de niño, la lista de trabajo con su primera línea tachada —«conseguir un apellido»— y las doce líneas vivas debajo, la lista de las deudas como papel de trabajo, y la pregunta —¿de dónde era ella?— todavía sola, sin respuesta, sin flecha y sin cordel. Todo en su sitio. Todo ordenado como su cabeza: un nombre atado a una fecha, una fecha a una cifra, una cifra a un mapa. Se queda mirándola. Un rato largo, en silencio, con la respiración ya otra vez contada. Y entonces alarga la mano y arranca un papel. Uno de los del mapa: uno de los que ataban un sitio de debajo a un sitio de arriba. Luego otro. Luego agarra la fila entera del mapa —la fila que dibujaba el mundo en dos pisos: el culto escondido abajo, la ciudad inocente encima— y tira, y la fila viene entera con sus cordeles, papel tras papel, soltándose de la pared con el ruido seco de lo que llevaba años clavado en su sitio. Cae de rodillas entre los papeles. La pared queda con su hueco: un tramo desnudo de piedra donde el mapa estaba, los cordeles colgando cortados, y alrededor —intactos porque no eran el mapa— el dibujo del anillo en su hueco, SIETE en lo alto, la lista con su línea muerta y sus doce vivas, y la pregunta sola, mirando la sala como la sala lo mira a él. En el suelo, a su alrededor, el mundo en dos pisos, deshecho en papeles que ya no atan nada con nada. Su mapa estaba mal. Creía que el culto estaba debajo de la ciudad. Es la ciudad. No se levanta enseguida. No recoge nada. Está de rodillas en el suelo de su propia habitación, entre el papel caído, sin llorar —esto tampoco es llanto: es la postura de un hombre al que se le ha venido abajo el instrumento— y la escena se queda ahí, con el farol bajo y la pared con su hueco, hasta que corta.",
      "escenario": "tuneles",
      "luz": "BARRIO"
     },
@@ -2220,12 +2328,24 @@
      "dialogo": [
       {
        "quien": "sacerdote",
+       "etiqueta": "SACERDOTE 2",
+       "texto": "¿Y la de la celda, sigue en los gastos?",
+       "intencion": "de pasada, repasando las partidas de la ronda"
+      },
+      {
+       "quien": "sacerdote",
        "etiqueta": "SACERDOTE",
        "texto": "...y la esclava del demonio mayor sigue comiendo de balde.",
        "intencion": "de pasada, sin malicia"
+      },
+      {
+       "quien": "sacerdote",
+       "etiqueta": "SACERDOTE 2",
+       "texto": "Que siga, entonces.",
+       "intencion": "plano, ya alejándose"
       }
      ],
-     "accion": "El niño, seis años, con la mano vendada. Dos SACERDOTES pasan hablando. Uno señala hacia la celda de su madre. ...y la esclava del demonio mayor sigue comiendo de balde. Siguen andando. El niño se queda quieto en el pasillo. Ha oído *esclava*. Pero también ha oído que eso era un cargo.",
+     "accion": "El pasillo de la cripta, con su luz de cripta en pleno día: piedra, sombra corrida, las puertas de las celdas en fila. El NIÑO está en el pasillo, quieto junto a la pared, donde lo dejan estar los que pasan. Seis años. La mano izquierda vendada —una venda basta, ya sucia, sobre la palma de la prueba— le cuelga al costado, sin usarla, como se lleva una cosa que todavía está aprendiendo a ser suya. Pasan dos SACERDOTES. No bajan la voz al pasar junto a él porque no hay nada que bajar: vienen hablando de las partidas de la ronda, con la voz plana de los que repasan un gasto —el aceite de las lámparas, lo de las celdas, lo de siempre—, y su conversación es un trámite que se hace andando. El segundo repasa las partidas en voz baja: ¿y la de la celda, sigue en los gastos? Uno de ellos señala hacia la puerta de la celda de su madre. No se detiene. Ni siquiera mira la puerta al señalarla: la señala como se señala una línea en una página que ya se ha leído muchas veces. Y dice, de pasada, sin malicia: ...y la esclava del demonio mayor sigue comiendo de balde. El otro contesta, plano, ya alejándose: que siga, entonces. Siguen andando. Los pasos se van gastando pasillo abajo y el trámite con ellos. El niño se queda quieto en el pasillo. Ha oído esclava. La palabra le queda entera, con su peso de palabra que se dice de una persona y no de una cosa. Pero también ha oído otra cosa, y es lo que se le queda mirando: ha oído que eso era un cargo. No ha sonado a sentencia ni a insulto ni a secreto: ha sonado a partida —una línea más entre el aceite y las lámparas, un gasto que alguien lleva apuntado en alguna parte y que sigue corriendo, mes a mes, mientras ella siga comiendo—. Su madre, en los libros de los que la tienen, no es una historia: es un coste que se sigue pagando. No se mueve. No mira la puerta. La venda de la mano izquierda no se tensa ni se afloja. El pasillo vuelve a quedarse vacío con él dentro, que es como se quedan los pasillos de la cripta siempre.",
      "escenario": "cripta",
      "luz": "CRIPTA"
     },
@@ -2238,7 +2358,7 @@
       "saharis"
      ],
      "dialogo": [],
-     "accion": "Saharis, en el suelo, escribe en la pared una segunda pregunta debajo de la primera: *¿quién la compró?*",
+     "accion": "Madrugada. El refugio, con el farol bajo sobre la mesa, en su extremo este. Saharis sigue en el suelo, donde la noche lo dejó: sentado entre los papeles caídos, con la fila del mapa deshecha alrededor —los papeles que ya no atan nada con nada esparcidos por la piedra, los cordeles cortados colgando todavía de la pared—. No ha recogido ni uno. La pared, delante de él, está como la caída la dejó: los trescientos papeles en pie y, en el tramo del mapa, el hueco de piedra desnuda, largo y limpio, con los cordeles colgando. Alrededor del hueco, intactos porque no eran el mapa: el dibujo del anillo en su hueco centro-izquierda, SIETE arriba del todo con letra de niño, la lista de trabajo con su primera línea tachada y las doce vivas debajo, la lista de las deudas como papel de trabajo. Y la primera pregunta —¿de dónde era ella?— sola, sin respuesta, sin flecha y sin cordel, donde lleva desde el capítulo pasado. Saharis se incorpora lo justo desde el suelo —no se levanta: se acerca a la pared sentado, como está— y toma el carboncillo. Y escribe en la pared, debajo de la primera pregunta, despacio, con la misma letra pequeña y segura de todo lo demás, la segunda: ¿quién la compró? No es un dato tampoco: es otra cosa que no se sabe. Pero esta ya no mira al pasado de ella —de dónde era—: mira a los libros de los demás. Si lo que oyó de niño en un pasillo era verdad —si su madre iba en una partida, como un cargo que se sigue pagando—, entonces en alguna parte hay un asiento con su nombre de cosa: alguien la compró, alguien pagó, y el pago estará escrito donde se escriben los pagos. Las dos preguntas quedan una debajo de otra en la pared con el hueco, sin respuesta ninguna de las dos, separadas por todo lo que ha pasado entre el capítulo en que se escribió la primera y esta madrugada: una firma, un apellido, un sótano, una reunión, una carrera. Baja la mano. No recoge los papeles. La madrugada sigue, y la pared nueva —la de las dos preguntas y el hueco— lo mira desde arriba como él la mira desde el suelo.",
      "escenario": "tuneles",
      "luz": "BARRIO"
     },
@@ -2252,7 +2372,7 @@
       "saharis"
      ],
      "dialogo": [],
-     "accion": "Desayuno. Saharis impecable. Afeitado. Sirviendo el té a Lord Iven. Nadie nota nada.",
+     "accion": "La mañana siguiente. El salón en su versión de desayuno: la mesa puesta en un tramo, la luz alta y limpia, el ruido pequeño del servicio. LORD IVEN está a la mesa, con su mañana de siempre. SAHARIS sirve el té. Impecable. Afeitado. La ropa en su sitio, la postura en su sitio, la mano firme al verter —la misma mano que unas horas antes bajaba de unos tejados con el mapa roto y escribía de rodillas en un suelo de piedra—. Las mangas cubren lo que tienen que cubrir: la palma, el brazo, todo. No hay en él ni un resto de la noche que esta casa pudiera leer aunque quisiera, y esta casa no quiere: esta casa desayuna. El té se sirve con la medida de siempre, a la hora de siempre, en la taza de siempre. Iven lo recibe como se recibe lo que nunca ha fallado. Nadie nota nada. No hay nada que notar: eso es exactamente lo que la escena está enseñando —que el hombre que anoche oyó romperse su mundo y lo escribió en una pared puede estar esta mañana aquí, entero y correcto, vertiendo té con la mano que no tiembla, y que la superficie de una casa grande está hecha para que eso sea posible todos los días—. El desayuno sigue, ordinario y entero. Fuera de esta habitación, en una sala seca bajo la ciudad, hay una pared con un hueco y un suelo sin recoger. Aquí dentro no llega ni el polvo de aquello.",
      "escenario": "elserath-salon",
      "luz": "NOBLE"
     },
@@ -2276,9 +2396,15 @@
        "etiqueta": "LORD IVEN",
        "texto": "Los libros viejos están abajo. Están hechos un desastre.",
        "intencion": "quejándose"
+      },
+      {
+       "quien": "iven",
+       "etiqueta": "LORD IVEN",
+       "texto": "Mi padre los dejó así. Y el suyo, antes.",
+       "intencion": "volviéndose ya a sus papeles; la casa entera en la queja"
       }
      ],
-     "accion": "Si vas a llevar las cuentas, llévalas todas. Le da una llave. Los libros viejos están abajo. Están hechos un desastre.",
+     "accion": "El despacho de día: el escritorio pesado, los libros de cuentas corrientes en su sitio, la lámpara apagada. LORD IVEN está entre sus papeles de la mañana, cansado antes de empezar, con ese cansancio de los que administran una casa que se les va de las manos a base de partidas pequeñas. SAHARIS está en el sitio de los que sirven en esta habitación, junto al escritorio, esperando lo que haya que esperar. Iven lo mira un momento, como se mira una decisión que ya se tomó en otra parte —en una petición de día, en una oferta de noche, en una firma con cera— y que hoy solo hay que ejecutar en su parte pequeña. Y dice, cansado y generoso: si vas a llevar las cuentas, llévalas todas. Busca entre las llaves que guarda en el cajón del escritorio —llaves de la casa, de varias edades y tamaños, con el desorden de lo que nadie ha ordenado en años— y saca una: vieja, pesada, de las que abren lo que ya casi no se abre. Se la tiende por encima del escritorio. Saharis la toma con las dos manos, sin prisa, como se toma lo que se va a guardar mucho tiempo, y la cierra en la suya. Iven se queja: los libros viejos están abajo; están hechos un desastre. Y añade, volviéndose ya a sus papeles, con la casa entera en la queja: mi padre los dejó así. Y el suyo, antes. Iven vuelve a lo suyo —el papel de hoy, la partida de hoy— y la escena se queda un instante más en la llave cerrada en la mano de Saharis: la casa que lo acogió sin saber quién era acaba de darle, por cansancio y por generosidad, la puerta de su propio pasado en papel. Él no dice nada. No hay nada que decir que no estropee lo que la llave ya ha dicho.",
      "escenario": "elserath-despacho",
      "luz": "NOBLE"
     },
@@ -2291,7 +2417,7 @@
       "saharis"
      ],
      "dialogo": [],
-     "accion": "Estanterías polvorientas. Saharis con un farol. Abre libros al azar. Cifras, rutas, cosechas. Coge uno de hace dieciséis años. Pasa páginas. Se detiene.",
+     "accion": "Abajo. El archivo de la casa Elserath: estanterías del suelo al techo en una sala sin ventanas que valgan, libros y legajos de cuatro generaciones apretados unos contra otros, y sobre todo ello el polvo fino y antiguo de lo que nadie abre —el desastre que Iven anunció, en su forma verdadera: no desorden de papeles tirados, sino de papeles olvidados en su sitio—. Es de día, pero aquí abajo el día no llega: Saharis baja con un farol, y el farol va abriendo la sala por tramos, estante a estante. Trabaja como trabaja en su pared: sin prisa y sin sistema aparente que no sea el suyo. Abre libros al azar —al azar de los que saben dónde mirar—. Cifras: columnas de números con su letra de otros siglos. Rutas: carros, pasos, el norte y la nieve de los relatos de Iven, convertidos en asientos. Cosechas: años buenos y años malos de unas tierras que la casa ya ni tiene. Pasa de largo por casi todo, con la economía de siempre: esto no, esto tampoco, esto es la casa contándose a sí misma sus días ordinarios. Y coge uno de hace dieciséis años. Dieciséis años: el año en que él nació, dicho como se dice una fecha en un lomo. El libro pesa lo que pesan los años enteros. Lo abre sobre el atril bajo el farol y pasa páginas: asientos, partidas, la administración de una casa grande en el año en que en una cripta, debajo de otra parte de la ciudad, nacía un niño que no salía en ningún libro. Pasa páginas. Pasa páginas. Y se detiene.",
      "escenario": "elserath-despacho",
      "luz": "NOBLE"
     },
@@ -2304,7 +2430,7 @@
       "saharis"
      ],
      "dialogo": [],
-     "accion": "Primer plano de la página. Una línea entre otras cien: un pago de la Casa Elserath a Casa Vharn. La columna de concepto está vacía. Saharis pone el dedo encima. Cierra el libro. Despacio. Negro.",
+     "accion": "Primer plano de la página. La página es una página cualquiera del libro de aquel año: asiento tras asiento, la letra segura de un administrador de otro tiempo, cada partida con su cantidad, su fecha y su concepto, en el orden en que se escriben estas cosas para que una casa pueda acordarse de sí misma. Una línea, entre otras cien: un pago. De la Casa Elserath. A la Casa Vharn. La cantidad está. La fecha está. Y la columna de concepto —la columna donde cada línea de esta página y de este libro dice para qué salió el dinero: el grano, las velas, lo del muelle— está vacía. En blanco. Una sola línea sin su razón en medio de cien líneas que la tienen todas. Saharis pone el dedo encima. Sobre la columna vacía, donde debería estar escrito lo que ese dinero compró y no hay nada escrito. El dedo no se mueve. El farol no se mueve. En la habitación de abajo de la casa que le dio su nombre, con la llave de esa casa todavía tibia de su mano, el muchacho que anoche escribió ¿quién la compró? en una pared tiene el dedo puesto en el primer asiento de su vida que le contesta sin contestarle: alguien pagó, las dos casas más grandes de su mundo estuvieron en el asiento, y lo que el pago era se quedó fuera del papel. No lo escribe en ninguna parte. No lo copia. No arranca la página. Cierra el libro. Despacio. Negro.",
      "escenario": "elserath-despacho",
      "luz": "NOBLE"
     }
