@@ -475,6 +475,32 @@ if (!serie.piezas.ep10) {
   anota(`pieza «ep10» añadida (${ep10Archivo.ep10.tomas.length} planos, ${ep10Archivo.ep10.duracion_s} s)`);
 }
 
+// ---------------------------------------------------------------------------
+// 4l. El episodio 11, escrito a mano desde el guion expandido.
+//
+// Igual que los episodios 1 a 10: se escribió plano a plano en el código
+// (266 planos, 800 s) y vive en datos/episodio-11.json. Este episodio no
+// tiene pieza en el estado (el desglose automático nunca llegó a él), así
+// que no hay copia viva que mande sobre esta: es la que se ve en las
+// pantallas desde el primer momento. Su duración (13 minutos y 20
+// segundos) queda por debajo de los ~20 pedidos y se declara tal cual,
+// sin rellenar, como los capítulos 4, 7, 8, 9 y 10: es un capítulo de
+// hechos casi mudos que crece hacia el ajuste de cuentas de la cripta.
+// Es el capítulo de la vuelta por la puerta norte, de la pared que deja
+// de preguntar y clava la hoja de los cinco pasos, de la despedida final
+// de Eira («No nos busques» / «Sí. Ya no.»), del testamento que desplaza
+// a Rothar sin una conversación y de la confesión del Celebrante: «Nunca
+// he creído en nada. Yo administro.» Lleva dos excepciones de duración
+// contadas, con su justificación escrita en el plano: E08-08 y E23-05.
+// ---------------------------------------------------------------------------
+
+const ep11Archivo = JSON.parse(readFileSync(join(raiz, 'datos/episodio-11.json'), 'utf8'));
+
+if (!serie.piezas.ep11) {
+  serie.piezas.ep11 = ep11Archivo.ep11;
+  anota(`pieza «ep11» añadida (${ep11Archivo.ep11.tomas.length} planos, ${ep11Archivo.ep11.duracion_s} s)`);
+}
+
 const yaSuena = new Set(serie.musica.piezas.map((m) => m.id));
 for (const tema of opEd.musica) {
   if (yaSuena.has(tema.id)) continue;

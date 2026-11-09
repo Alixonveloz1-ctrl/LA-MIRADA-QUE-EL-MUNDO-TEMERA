@@ -6422,7 +6422,7 @@
       "saharis"
      ],
      "dialogo": [],
-     "accion": "Saharis entra por donde salió. Los guardias no lo reconocen. La cola avanza. La ciudad no ha notado su ausencia.",
+     "accion": "Entra por donde salió\n\nSaharis entra por donde salió.\n\nLa puerta norte, la misma del amanecer en que se fue: el arco, la fila de carros esperando a que abran, la cola de los que entran con sus bultos y sus papeles. Entonces cruzó hacia fuera entre los carros, a pie y sin equipaje, y nadie lo miró. Ahora cruza hacia dentro en la misma cola, un hombre más con el polvo y el frío del camino encima, y tampoco lo mira nadie.\n\nLos guardias no lo reconocen.\n\nNo es un disfraz ni un truco: es la puerta de una ciudad, que ve pasar a cientos de hombres al día y no guarda la cara de ninguno. Le echan la mirada que se le echa a un viajero —el bulto, las manos, el paso— y la cola avanza. Sus manos van vacías: la bolsa entera del dinero se quedó en Kadre, abierta sobre la mesa de una cocina, y lo que se trae de vuelta no pesa en ninguna parte que un guardia pueda registrar: un nombre.\n\nLa ciudad no ha notado su ausencia.\n\nLas calles están donde estaban. El humo sube de las mismas chimeneas. En su ciudad —la ciudad que lee en las miradas, la que mueve con una frase en una cocina— nadie ha contado los días que faltó, porque para la ciudad no ha faltado: no hubo anuncio, ni despedida, ni hueco en ninguna mesa. Se fue sin ser visto y vuelve sin ser visto, y entre las dos invisibilidades la ciudad ha seguido entera sin él, que es la primera cosa que la ciudad le enseña al volver: no lo necesita para existir.\n\nÉl sí la necesita a ella. Y eso, que en el camino no era nada, aquí vuelve a serlo todo.\n\nEntra. La cola avanza detrás de él y la puerta se queda con su ir y venir de siempre.",
      "escenario": "puerta-ciudad",
      "luz": "BARRIO"
     },
@@ -6440,22 +6440,22 @@
        "quien": "celebrante",
        "etiqueta": "CELEBRANTE",
        "texto": "¿Frío, el norte?",
-       "intencion": "como quien retoma una charla de ayer"
+       "intencion": "como quien retoma una charla de ayer (original)"
       },
       {
        "quien": "saharis",
        "etiqueta": "SAHARIS",
        "texto": "Mucho.",
-       "intencion": "una palabra"
+       "intencion": "una palabra (original)"
       },
       {
        "quien": "celebrante",
        "etiqueta": "CELEBRANTE",
        "texto": "Ya. Kadre es duro.",
-       "intencion": "cordial. Y le está diciendo que sabe dónde estuvo"
+       "intencion": "cordial. Y le está diciendo que sabe dónde estuvo (original)"
       }
      ],
-     "accion": "El Celebrante lo recibe como si se hubieran visto ayer. ¿Frío, el norte? Mucho. Ya. Kadre es duro. No ha preguntado dónde estuvo. Ya lo sabía.",
+     "accion": "¿Frío, el norte?\n\nCasa Vharn, de día. El CELEBRANTE lo recibe como si se hubieran visto ayer.\n\nSin máscara: fuera de los ritos de la cripta es un anciano de rostro amable y ordinario, con las manos manchadas y la conversación de un hombre que recibe visitas. No hay sorpresa en su cara, ni la cortesía de fingirla. Hay una silla dispuesta, una hora que parece prevista, y la tranquilidad de quien no necesita preguntar porque ya ha sido informado por los cauces de siempre: los que no se ven y lo saben todo.\n\n**CELEBRANTE** *(como quien retoma una charla de ayer (original))*: ¿Frío, el norte?\n\nLa pregunta es pequeña y es enorme: trae el viaje entero —tres semanas de camino, un pueblo sin nombre en su boca hasta hoy— reducido a una cosa de clima, de conversación de antesala. Y trae su filo sin enseñar el filo: le está diciendo que sabe dónde estuvo.\n\n**SAHARIS** *(una palabra (original))*: Mucho.\n\nUna palabra. La que le da a un hombre que ya lo sabe todo es la más corta: ni confirma el lugar, ni lo niega, ni le regala el asombro de haber sido descubierto. Si el anciano esperaba verle la cara cambiar, la cara no cambia.\n\n**CELEBRANTE** *(cordial. Y le está diciendo que sabe dónde estuvo (original))*: Ya. Kadre es duro.\n\nYa. Kadre es duro. Lo dice como se dice el tiempo de un sitio al que se ha estado, o del que se ha oído hablar toda la vida, y se queda ahí, cordial, sin añadir nada: no ha preguntado dónde estuvo. Ya lo sabía.\n\nY en esa cordialidad está la medida entera del sistema al que Saharis vuelve: su marcha más callada —sin equipaje, sin destino dicho, sin una palabra a nadie— la ha leído alguien sin esfuerzo, como se lee el parte de un almacén. El viaje que para él fue lo único que no se negociaba, para la casa de enfrente fue un dato que llegó solo.\n\nSaharis no pregunta cómo lo sabe. Preguntarlo sería admitir que hubo algo que esconder, y en esta sala no se admite nada: se conversa del frío, del norte, de lo duro que es Kadre, como dos hombres que se vieron ayer.",
      "escenario": "casa-vharn",
      "luz": "NOBLE"
     },
@@ -6468,7 +6468,7 @@
       "saharis"
      ],
      "dialogo": [],
-     "accion": "La pared. Saharis arranca las tres preguntas y las tira. En su lugar clava una hoja limpia con una lista de cinco líneas. No son preguntas. Son pasos.",
+     "accion": "Pasos, no preguntas\n\nLa pared.\n\nEstá como quedó: el organigrama de las siete casas arriba, el mecanismo abajo, sus dos frases enteras y la pequeña sin tachar, la línea del tiempo con su cordel —la compra, el traslado, el hueco de un año, el nacimiento— y, en su sitio de siempre, las tres preguntas. Dos respondidas. Una no.\n\nSaharis arranca las tres preguntas y las tira.\n\nLas tres. También la respondida de Kadre, también la respondida de Vharn, también la que nadie contestó —«¿de quién era?»—: esa se va al suelo sin respuesta, y no la escribe otra vez. No es que haya dejado de importarle: es que ha dejado de ser el instrumento. Las preguntas le han dado todo lo que las preguntas dan —un lugar, un comprador, un nombre dicho en una cocina— y lo que queda por hacer ya no se pregunta: se hace.\n\nEn su lugar clava una hoja limpia con una lista de cinco líneas.\n\nNo son preguntas. Son pasos.\n\nCinco líneas con su letra pequeña y segura, en el sitio exacto donde durante años estuvieron las preguntas. La hoja no se enseña: ninguna escena la lee en voz alta y esta tampoco la transcribe —es una lista de trabajo, no una proclama, y su contenido lo irá diciendo lo que la ciudad vea hacerse, paso a paso, en el orden en que está escrito—.\n\nEl refugio queda así: la pared de un hombre que ya no investiga. El organigrama sigue arriba y el mecanismo sigue abajo, porque el sistema no ha cambiado; lo que ha cambiado es la hoja del centro, que ya no pregunta quién era su madre, ni de quién era, ni quién la compró. Ahora dice qué se hace el lunes.\n\nSaharis se queda un momento mirando la hoja limpia entre todo lo viejo. Después apaga el farol y sale: el primer paso no se da en esta habitación.",
      "escenario": "tuneles",
      "luz": "BARRIO"
     },
@@ -6486,22 +6486,22 @@
        "quien": "saharis",
        "etiqueta": "SAHARIS",
        "texto": "Propongo que la reserva de grano del invierno se centralice.",
-       "intencion": "propuesta técnica"
+       "intencion": "propuesta técnica (original)"
       },
       {
        "quien": "concejal",
        "etiqueta": "CONCEJAL",
        "texto": "¿Y quién la administra?",
-       "intencion": "cauto"
+       "intencion": "cauto (original)"
       },
       {
        "quien": "saharis",
        "etiqueta": "SAHARIS",
-       "texto": "Quien tenga los almacenes del sur, los carros del este y crédito en el banco del",
-       "intencion": "enumerando. Todos saben de quién habla"
+       "texto": "Quien tenga los almacenes del sur, los carros del este y crédito en el banco del puente.",
+       "intencion": "enumerando. Todos saben de quién habla (original — completada desde la prosa de la escena; en el guion guardado viene cortada)"
       }
      ],
-     "accion": "Propongo que la reserva de grano del invierno se centralice. ¿Y quién la administra? Quien tenga los almacenes del sur, los carros del este y crédito en el banco del puente. Silencio. Todos saben quién es.",
+     "accion": "La reserva de grano\n\nEl Consejo, de día: el anfiteatro de bancos oscuros, los ventanales altos, el polvo en la luz dorada. Las casas sentadas en su orden de siempre, con sus partidas y sus miradas cruzadas. Y en el turno de palabra, una propuesta que suena a papeleo de invierno.\n\n**SAHARIS** *(propuesta técnica (original))*: Propongo que la reserva de grano del invierno se centralice.\n\nDicha así, es una frase de funcionario: la reserva de grano, el invierno, centralizar. No trae nombre, ni casa, ni amenaza. Trae una medida de buen gobierno en una ciudad que pasa hambre por turnos, y media sala asiente antes de pensarla, porque el invierno es el argumento que nadie discute en voz alta.\n\nEl CONCEJAL que pregunta lo hace con la cautela de quien ha oído la trampa sin verla todavía.\n\n**CONCEJAL** *(cauto (original))*: ¿Y quién la administra?\n\nPorque ahí está la propuesta entera: no en el grano, sino en las manos. Y Saharis contesta sin nombrar a nadie, enumerando, como se enumera un inventario.\n\n**SAHARIS** *(enumerando. Todos saben de quién habla (original — completada desde la prosa de la escena; en el guion guardado viene cortada))*: Quien tenga los almacenes del sur, los carros del este y crédito en el banco del puente.\n\nSilencio.\n\nTodos saben quién es. Los almacenes del sur, los carros del este, el crédito en el banco del puente: en la sala hay un solo hombre que reúne las tres cosas, y está de pie en el turno de palabra, describiéndose a sí mismo en tercera persona como se describe una cláusula —sin decir su nombre, porque su nombre no hace falta: la enumeración lo ha dicho sin gastarlo—.\n\nNadie objeta en esta escena. La cautela del concejal se queda sin segunda pregunta, porque la segunda pregunta sería decir en voz alta lo que todos acaban de entender, y en el Consejo lo que se entiende no se dice: se deja pasar, que es la manera que tiene el Consejo de firmar.",
      "escenario": "consejo",
      "luz": "NOBLE"
     },
@@ -6515,7 +6515,7 @@
       "saharis"
      ],
      "dialogo": [],
-     "accion": "Guardias de la ciudad forzando la puerta. Bajan al sótano. Sacan el altar, las velas, los cuencos, los libros. Sacan al criado que silbaba, esposado, sin entender nada. Desde la esquina, Saharis mira.",
+     "accion": "El sótano de los Renn\n\nCasa Renn, de noche. Guardias de la ciudad forzando la puerta.\n\nLa casa modesta de los curtidores no tiene puerta para eso: la madera cede con el ruido que hace una casa pequeña cuando la abre el poder, y los guardias bajan al sótano en fila, con faroles, como quien baja a un almacén. Y lo que sube del sótano, pieza a pieza, a la vista de la calle, es la otra casa que vivía dentro de esta: el altar. Las velas. Los cuencos. Los libros. El santuario en uso de los capítulos de atrás —el símbolo tallado, las ofrendas frescas— desmontado por manos con guanteletes y dejado en la calle como género incautado.\n\nSacan al criado que silbaba, esposado, sin entender nada.\n\nEl criado del sótano: el mismo que en las vigilias de otro capítulo bajaba y subía con su silbido de hombre solo —un silbido sin melodía que importe, que no es la nana ni se le parece: el ruido de trabajo de un sirviente—. Ahora sube esposado entre dos guardias, mirando el altar en la calle como si fuera de otra casa, sin entender qué hace su sótano en mitad de la noche ni qué ha hecho él, que no ha hecho nada que él sepa: ha abierto, ha cerrado, ha silbado y ha servido, que es todo lo que un criado de sótano hace, y esta noche eso basta para subir esposado.\n\nDesde la esquina, Saharis mira.\n\nNo se acerca. No da una orden que se oiga, ni una seña, ni un nombre. Mira cómo se desmonta la primera casa de su lista con las manos de la ciudad —con guardias, con faroles, con procedimiento— y su parte en la escena es exactamente esa: estar en la esquina, mirando, sin que ninguna de las manos que cargan el altar sea la suya.\n\nCuando el criado pasa por su lado de la calle, esposado, no lo mira. El criado tampoco sabe a quién mirar.",
      "escenario": "casa-renn",
      "luz": "BARRIO"
     },
@@ -6533,22 +6533,22 @@
        "quien": "vharn",
        "etiqueta": "LORD VHARN",
        "texto": "¿Renn? ¿Cómo han llegado a Renn?",
-       "intencion": "alarmado"
+       "intencion": "alarmado (original)"
       },
       {
        "quien": "saharis",
        "etiqueta": "SAHARIS",
        "texto": "Alguien habló.",
-       "intencion": "dos palabras"
+       "intencion": "dos palabras (original)"
       },
       {
        "quien": "vharn",
        "etiqueta": "LORD VHARN",
        "texto": "Mi hijo.",
-       "intencion": "hundido, sacando su propia conclusión"
+       "intencion": "hundido, sacando su propia conclusión (original)"
       }
      ],
-     "accion": "¿Renn? ¿Cómo han llegado a Renn? Alguien habló. Deja unos papeles sobre la mesa. Lord Vharn los lee. Levanta la cabeza despacio. Mi hijo. Saharis no dice nada.",
+     "accion": "Mi hijo\n\nEl despacho de Lord Vharn, de día: mármol, plata, ni una mota de polvo. Y por primera vez en la serie, el dueño de la casa fría entra en su propio despacho sin la frialdad puesta: la noticia ha llegado antes que la visita.\n\n**LORD VHARN** *(alarmado (original))*: ¿Renn? ¿Cómo han llegado a Renn?\n\nEs la pregunta de un hombre que conocía el sótano de los Renn como se conocen las cosas que no se nombran: llegar a Renn no se llega por una inspección de rutina. Se llega porque alguien, desde dentro del círculo que lo sabía, ha hablado. Y Vharn lo sabe en el mismo momento en que lo pregunta.\n\n**SAHARIS** *(dos palabras (original))*: Alguien habló.\n\nDos palabras. Ni un nombre, ni una acusación, ni una versión: la forma vacía del hecho, entregada sin rellenarla. Saharis deja unos papeles sobre la mesa —esta escena no dice qué papeles son ni qué prueban, y la expansión no lo dice tampoco: dicen lo que su lector quiera leer en ellos— y se queda en silencio, que es su manera de dejar que la mesa trabaje sola.\n\nLord Vharn los lee.\n\nLevanta la cabeza despacio. Y lo que dice no es un nombre completo, ni una orden, ni una defensa: es lo que un padre dice cuando la conclusión le llega a la boca antes de poder pararla.\n\n**LORD VHARN** *(hundido, sacando su propia conclusión (original))*: Mi hijo.\n\nSaharis no dice nada.\n\nNo lo ha dicho él: lo ha dicho Vharn. El desplazamiento de Deras —el plazo de los quince días, la generosidad pública, los errores administrativos— se cierra en esta mesa sin que Saharis haya acusado a nadie delante de nadie: el padre ha mirado unos papeles, ha juntado su propia casa por dentro y ha pronunciado él mismo la sentencia sobre su heredero. Si Deras habló o no habló, esta escena no lo establece y Saharis no lo afirma: lo que queda establecido es lo único que hará falta en adelante —su padre lo cree—.\n\nVharn sigue mirando los papeles un momento más, como si en la segunda lectura pudieran decir otra cosa. No dicen otra cosa.",
      "escenario": "casa-vharn",
      "luz": "NOBLE"
     },
@@ -6567,23 +6567,22 @@
        "quien": "deras",
        "etiqueta": "DERAS",
        "texto": "Yo no dije nada.",
-       "intencion": "desesperado, sin fuerza"
+       "intencion": "desesperado, sin fuerza (original)"
       },
       {
        "quien": "saharis",
        "etiqueta": "SAHARIS",
        "texto": "Lo sé.",
-       "intencion": "dos palabras. Y son lo peor que podía decirle"
+       "intencion": "dos palabras. Y son lo peor que podía decirle (original)"
       },
       {
        "quien": "deras",
        "etiqueta": "DERAS",
        "texto": "Voy a matarte.",
-       "intencion": "rabia sin control",
-       "riesgo": "alto"
+       "intencion": "rabia sin control (original)"
       }
      ],
-     "accion": "Deras Vharn le corta el paso con dos hombres. Ya no está guapo. Lleva tres días sin afeitarse. Yo no dije nada. Lo sé. Eso es lo peor que podía decirle. Voy a matarte.",
+     "accion": "Lo sé\n\nCalle, de noche. Deras Vharn le corta el paso con dos hombres.\n\nYa no está guapo. Esa es la primera cosa que la calle enseña de él, antes que ninguna palabra: el muchacho impecable de las bancadas, el de la plata y el gris de su casa llevados como una armadura, lleva tres días sin afeitarse. Tres días: los que han pasado desde que su padre levantó la cabeza de unos papeles y dijo dos palabras. La ruina de Deras no viene con un juicio ni con una orden: viene con barba de tres días y con dos hombres buscados deprisa, que es todo el ejército que le queda.\n\nY lo primero que dice no es una amenaza. Es una defensa.\n\n**DERAS** *(desesperado, sin fuerza (original))*: Yo no dije nada.\n\nSe lo dice a Saharis, en mitad de una calle vacía, a un hombre que no lo ha acusado de nada delante de nadie. Pero Deras ya sabe a quién hay que decírselo: las salas donde se le juzga no existen, no hay acta ni testigos, hay una mesa en un despacho frío y la cabeza de su padre levantándose despacio. De todo eso, el único hombre al que puede salirle al paso de noche es este. Y le sale al paso para decirle la verdad, que es lo único que le queda y lo que menos vale en esta ciudad.\n\n**SAHARIS** *(dos palabras. Y son lo peor que podía decirle (original))*: Lo sé.\n\nDos palabras. Y son lo peor que podía decirle.\n\nPorque si Saharis lo creyera culpable, habría un sitio al que ir: una culpa se discute, se prueba, se deshace. Si Saharis no supiera nada, habría una esperanza: la de ser creído algún día por alguien. Pero «Lo sé» cierra las dos puertas a la vez. Su inocencia está a salvo en la única cabeza donde no sirve de nada: su padre lo cree culpable, y el hombre que lo sabe inocente es el mismo que ha dejado que lo crea. Deras no está ante su acusador. Está ante el autor de un mundo en el que la verdad sobre él ya no cambia nada.\n\nDeras se queda un momento sin nada en las manos. Ni la verdad, que acaba de gastar. Ni la mentira, que nunca tuvo. Y entonces llega lo único que le queda por gastar.\n\n**DERAS** *(rabia sin control (original))*: Voy a matarte.\n\nRabia sin control: la frase sale como salen las cosas que ya no se gobiernan. No es un plan —un plan no se anuncia en la calle, delante del otro—: es lo que dice un hombre cuando todas las frases ordenadas se le han acabado y solo le queda una que se dice con las manos. Los dos hombres que trae se mueven con la frase, como se mueven los hombres que han venido a eso y esperaban su señal.\n\nSaharis no se mueve todavía. La calle, la noche y los tres quedan así un instante: el heredero caído, su rabia, y el hombre al que la rabia no le llega.",
      "escenario": "calle",
      "luz": "BARRIO"
     },
@@ -6597,7 +6596,7 @@
       "saharis"
      ],
      "dialogo": [],
-     "accion": "Los dos hombres se echan encima. Saharis se abre el abrigo. Los circuitos se encienden por primera vez en años, y esta vez a plena potencia. Once segundos. El primero cae con las dos rodillas rotas desde dentro. El segundo se queda de pie, muy quieto, y luego se derrumba. Ni un grito de Saharis. Ni una palabra. Cuando se apagan las líneas, está sudando y le tiemblan las manos. No hay placer en su cara. Solo esfuerzo.",
+     "accion": "Once segundos\n\nEl callejón. *Continuo.*\n\nLos dos hombres se echan encima.\n\nNo hay aviso, ni palabra, ni el gesto de cortesía de las peleas contadas: vienen de la frase de Deras como se viene de una orden, los dos a la vez, por los dos lados que un callejón deja. Y Saharis hace la única cosa que hace en la escena antes de que todo pase: se abre el abrigo.\n\nLos circuitos se encienden por primera vez en años, y esta vez a plena potencia.\n\nPor primera vez en años: no porque las líneas lleven años dormidas del todo —han ardido bajo, en la intimidad de una cama prestada, en las cuentas de una pared—, sino porque esto, usarlas contra hombres, a plena potencia, es lo que Saharis no hace. Su manera de tomar la ciudad ha sido siempre otra: papel, deuda, silencio, la frase exacta en la cocina exacta. Los circuitos eran el fondo de su cuerpo, no su herramienta. Esta noche, en un callejón, con dos hombres encima, son la herramienta.\n\nOnce segundos.\n\nLa fuente los cuenta, y esta expansión no los estira: once segundos es todo lo que la plena potencia dura y todo lo que la escena necesita. El primero cae con las dos rodillas rotas desde dentro: las piernas le dejan de sostener como se rompe una cosa por su interior, sin golpe que se vea llegar, y el hombre está en el suelo antes de entender qué parte de él se ha acabado. El segundo se queda de pie, muy quieto, y luego se derrumba: la escena no enseña qué se le ha roto ni dónde, y no lo dice —se queda de pie un instante, entero por fuera, y después cae, y eso es todo lo que el callejón cuenta de él—.\n\nNi un grito de Saharis. Ni una palabra.\n\nCuando se apagan las líneas, está sudando y le tiemblan las manos.\n\nEso también lo cuenta la fuente, y es la mitad de la escena: el poder a plena potencia se paga en el cuerpo que lo gasta. El abrigo abierto, la respiración corta, las manos que no se quedan quietas. No hay placer en su cara. Solo esfuerzo. La cara ilegible de siempre, atravesada por una cosa que no es expresión: el coste. Los dos hombres están en el suelo del callejón y el hombre que los ha puesto ahí respira como si hubiera subido una cuesta con peso, que es la verdad administrativa de su milagro: once segundos, y el cuerpo pasa la factura.\n\nDeras sigue contra la pared. La escena de los circuitos no lo ha tocado a él. Todavía.",
      "escenario": "barrio-humo",
      "luz": "BARRIO"
     },
@@ -6615,22 +6614,22 @@
        "quien": "deras",
        "etiqueta": "DERAS",
        "texto": "Hazlo.",
-       "intencion": "suplicando"
+       "intencion": "suplicando (original)"
       },
       {
        "quien": "saharis",
        "etiqueta": "SAHARIS",
        "texto": "No.",
-       "intencion": "una palabra"
+       "intencion": "una palabra (original)"
       },
       {
        "quien": "saharis",
        "etiqueta": "SAHARIS",
-       "texto": "Vas a vivir mucho tiempo, Deras. Y todos los días vas a saber que tu padre creyó",
-       "intencion": "tranquilo. Es la peor cosa que dice en la serie"
+       "texto": "Vas a vivir mucho tiempo, Deras. Y todos los días vas a saber que tu padre creyó que fuiste tú.",
+       "intencion": "tranquilo. Es la peor cosa que dice en la serie (original — completada desde la prosa de la escena; en el guion guardado viene cortada)"
       }
      ],
-     "accion": "Deras, contra la pared, con un cuchillo que no ha llegado a usar. Saharis se acerca. Le quita el cuchillo de la mano sin violencia. Hazlo. No. Tira el cuchillo a un charco. Vas a vivir mucho tiempo, Deras. Y todos los días vas a saber que tu padre creyó que fuiste tú. Se va.",
+     "accion": "Vas a vivir mucho tiempo\n\nEl callejón. *Continuo.*\n\nDeras, contra la pared, con un cuchillo que no ha llegado a usar.\n\nEl cuchillo ha estado en su mano durante los once segundos y no ha hecho nada con él: ni avanzar, ni huir, ni siquiera levantarlo del todo. Es el arma de un hombre que anunció una muerte en la calle y descubrió, con dos cuerpos en el suelo, que anunciar era todo lo que sabía hacer. Saharis se acerca. Sin prisa, con las manos todavía temblándole un poco, y le quita el cuchillo de la mano sin violencia: se lo quita como se le quita una cosa a un niño, sin forcejeo, porque la mano que lo sostiene ya no sostiene nada.\n\n**DERAS** *(suplicando (original))*: Hazlo.\n\nSuplicando. El heredero de Casa Vharn, contra la pared de un callejón, le pide al hombre que lo ha arruinado que lo mate. Y se entiende la súplica si se mira lo que le queda fuera de este callejón: un padre que lo cree traidor, una casa que ya no es su sitio, una ciudad entera que irá sabiendo, sala a sala, que el hijo de Vharn habló. Morir aquí, a manos de Saharis, sería casi una salida limpia: una muerte con culpable ajeno. Lo que Deras pide, sin saber ponerle estas palabras, es que la historia termine esta noche.\n\n**SAHARIS** *(una palabra (original))*: No.\n\nUna palabra. Y tira el cuchillo a un charco.\n\nEl cuchillo cae en el agua sucia del callejón y se queda ahí, brillando bajo, inútil, devuelto a la basura de la calle. No hay desarme solemne ni gesto de perdón: hay un arma menos en el mundo y un hombre vivo contra una pared, que es exactamente lo contrario de lo que ese hombre ha venido a pedir.\n\n**SAHARIS** *(tranquilo. Es la peor cosa que dice en la serie (original — completada desde la prosa de la escena; en el guion guardado viene cortada))*: Vas a vivir mucho tiempo, Deras. Y todos los días vas a saber que tu padre creyó que fuiste tú.\n\nTranquilo. Es la peor cosa que dice en la serie, y se dice sin levantar la voz, en el tono de sus enumeraciones de Consejo, como quien lee el plazo de una deuda. No le deja una herida: le deja un calendario. Vas a vivir mucho tiempo —cada día de ese tiempo, su padre en la misma casa o en la misma ciudad, creyendo lo que cree—; todos los días vas a saberlo. La sentencia no necesita carcelero porque se cumple sola, en la mesa de los Vharn, cada vez que el padre mire al hijo y el hijo lo sepa.\n\nSe va.\n\nSaharis se va del callejón con el abrigo cerrado y las manos quietas otra vez, y Deras se queda contra la pared, vivo, con dos hombres en el suelo y un cuchillo en un charco. De todo lo que Saharis ha hecho en la temporada —casas movidas, rutas cortadas, plazos cobrados sin una gota de sangre—, esto es lo más parecido a una venganza que se ha permitido, y no tiene sangre: tiene años.",
      "escenario": "barrio-humo",
      "luz": "BARRIO"
     },
@@ -6641,7 +6640,7 @@
      "flashback": false,
      "personajes": [],
      "dialogo": [],
-     "accion": "Eira lo está esperando a la entrada. Con un fardo a la espalda. Detrás, un grupo pequeño. Kael entre ellos.",
+     "accion": "El fardo\n\nEl campamento, de día.\n\nEira lo está esperando a la entrada.\n\nNo lo espera como se espera a una visita: lo espera con un fardo a la espalda. El fardo ya está hecho cuando Saharis llega —las correas pasadas, el peso acomodado, la forma terminada de lo que se lleva una vida cuando una vida se recoge— y eso convierte la escena entera en otra cosa: no viene a hablar de si se van. Ya se han ido por dentro; lo que queda es el momento en que él lo sepa.\n\nDetrás, un grupo pequeño.\n\nUn grupo pequeño: no el campamento entero de las cientos de tiendas, sino los suyos, los que se mueven con ella, reunidos sin ceremonia a la distancia de los que esperan a que una conversación corta termine para echar a andar. Kael entre ellos: el cojo de la muleta, el de la marca en la mejilla, de pie entre la gente de Eira como ha estado siempre, en el sitio que le queda al lado de ella. No se acerca. Esta conversación no es suya, y su estar es el de siempre: cerca de Eira, lejos de Saharis.\n\nEl campamento sigue detrás, con sus fuegos y su barro y sus tiendas, en su día de siempre, sin saber —o sabiéndolo sin decirlo— que la mujer que les leyó el bando en voz alta está en la entrada con el fardo hecho. Nada en la escena es un anuncio: nadie junta a la gente, nadie lee nada, nadie llora en corro. La partida de Eira tiene la forma de su vida: práctica, pequeña, a pie.\n\nSaharis llega hasta la entrada y se para donde se paran los que llegan. Entre él y ella queda la distancia exacta de la escena: la de una mujer que ya está de camino y un hombre que acaba de entenderlo.\n\n*(Sin diálogo, como en el guion guardado: la espera y el fardo son la escena; la palabra empieza en la orilla.)*",
      "escenario": "campamento",
      "luz": "BARRIO"
     },
@@ -6659,28 +6658,28 @@
        "quien": "eira",
        "etiqueta": "EIRA",
        "texto": "Nos vamos.",
-       "intencion": "serena, decidida"
+       "intencion": "serena, decidida (original)"
       },
       {
        "quien": "saharis",
        "etiqueta": "SAHARIS",
        "texto": "¿A dónde?",
-       "intencion": "dos palabras"
+       "intencion": "dos palabras (original)"
       },
       {
        "quien": "eira",
        "etiqueta": "EIRA",
        "texto": "Al norte. Hay valles donde no llega nadie.",
-       "intencion": "práctica"
+       "intencion": "práctica (original)"
       },
       {
        "quien": "eira",
        "etiqueta": "EIRA",
        "texto": "No nos busques.",
-       "intencion": "sin rabia. Como quien da una dirección"
+       "intencion": "sin rabia. Como quien da una dirección (original)"
       }
      ],
-     "accion": "Nos vamos. ¿A dónde? Al norte. Hay valles donde no llega nadie. Pausa. No nos busques. Lo dice sin rabia. Como quien da una dirección.",
+     "accion": "No nos busques\n\nLa orilla, de día: las piedras planas junto al río, el agua baja, el campamento quedando atrás como queda atrás un sitio del que ya se ha salido por dentro. Eira y Saharis, a la distancia de la escena anterior, que aquí se acorta lo justo para hablar y nada más.\n\n**EIRA** *(serena, decidida (original))*: Nos vamos.\n\nSerena, decidida. Dos palabras con el fardo ya a la espalda: no son una noticia que se somete a nadie, son el parte de una decisión tomada antes de que él llegara al campamento. Eira no ha venido a pedir permiso, ni a avisar por cortesía, ni a dejar una puerta abierta: ha venido a que lo sepa de su boca, que es la última forma de respeto que esta escena maneja.\n\n**SAHARIS** *(dos palabras (original))*: ¿A dónde?\n\nDos palabras también. Es la única pregunta que hace en toda la despedida, y es la pregunta de su oficio: el dato, el destino, el sitio al que se podría llegar. Toda su vida ha consistido en saber dónde está cada cosa —cada deuda, cada ruta, cada persona— y su pregunta a Eira es esa misma, desnuda: dame el lugar.\n\n**EIRA** *(práctica (original))*: Al norte. Hay valles donde no llega nadie.\n\nPráctica: le contesta como se contesta a una pregunta de camino. Al norte —la dirección enorme, la de los valles sin nombre— y la razón entera de la marcha en una frase: hay valles donde no llega nadie. No llega el Consejo, no llegan los bandos, no llegan las casas. Y no llega él: la frase lo incluye sin nombrarlo, porque él es, entre todas las cosas que no llegan a esos valles, la única que está de pie en esta orilla oyéndola.\n\nPausa.\n\n**EIRA** *(sin rabia. Como quien da una dirección (original))*: No nos busques.\n\nLo dice sin rabia. Como quien da una dirección. La fuente lo fija así, con esa comparación exacta, y la escena vive de ella: Eira le acaba de dar una dirección —al norte, valles donde no llega nadie— y acto seguido da la otra, la verdadera, que es una dirección al revés: no nos busques. No es un rencor ni una amenaza ni una herida que se enseña: es información práctica entre dos personas que se conocen, dicha en el tono en que se dice dónde está el vado o a cuántos días queda un pueblo. Búscanos sería posible —él encuentra todo lo que busca, es su don y su oficio— y por eso hay que decirlo: para que no encontrarlas sea, por una vez, una cosa que él haga a propósito, respetando una frase.\n\nSaharis no contesta en esta escena. La orilla se queda con el río, la pausa y las dos direcciones: la de ella, que se va, y la suya, que es quedarse quieto.",
      "escenario": "orilla",
      "luz": "BARRIO"
     },
@@ -6698,22 +6697,22 @@
        "quien": "saharis",
        "etiqueta": "SAHARIS",
        "texto": "¿Alguna vez pensaste que yo podía ser otra cosa?",
-       "intencion": "la pregunta que lleva años sin hacer"
+       "intencion": "la pregunta que lleva años sin hacer (original)"
       },
       {
        "quien": "eira",
        "etiqueta": "EIRA",
        "texto": "Sí.",
-       "intencion": "una palabra, sincera, después de pensarlo de verdad"
+       "intencion": "una palabra, sincera, después de pensarlo de verdad (original)"
       },
       {
        "quien": "eira",
        "etiqueta": "EIRA",
        "texto": "Ya no.",
-       "intencion": "y esta la dice mientras se echa el fardo al hombro"
+       "intencion": "y esta la dice mientras se echa el fardo al hombro (original)"
       }
      ],
-     "accion": "¿Alguna vez pensaste que yo podía ser otra cosa? Eira lo piensa de verdad. Se toma su tiempo. Sí. Se echa el fardo al hombro. Ya no. Se va. Él se queda en la orilla.",
+     "accion": "Sí. Ya no.\n\nLa orilla. *Continuo.*\n\nLa despedida ya está dicha —el destino, la prohibición, la pausa— y lo que queda entre los dos es una sola cosa, que no es práctica. Saharis la dice por fin, la que lleva años sin hacer.\n\n**SAHARIS** *(la pregunta que lleva años sin hacer (original))*: ¿Alguna vez pensaste que yo podía ser otra cosa?\n\nLa pregunta que lleva años sin hacer. No pregunta qué piensa de él ahora —eso lo sabe—, ni qué hizo mal —eso también—: pregunta por el pasado de ella, por si hubo un tiempo en que en la cabeza de Eira existió otro Saharis posible. Otra cosa: no este hombre de los plazos y los callejones, no el heredero que deja vivir a sus enemigos dentro de su castigo, no el niño del lago con la mano encendida. Otra cosa que él pudiera haber sido, si alguien lo vio alguna vez capaz de serlo. Es la única pregunta de la temporada que hace sobre sí mismo, y se la hace a la única persona que lo vio antes de que fuera nadie: la que lo curó, la que lo tendió, la que sabe cómo era su cara antes de que aprendiera a no tener ninguna.\n\nEira lo piensa de verdad.\n\nSe toma su tiempo. La fuente lo fija dos veces, el pensar y el tiempo, y esta expansión los deja enteros en el centro de la escena: Eira no contesta con la frase preparada de las despedidas ni con la crueldad fácil de los cierres. Busca dentro, delante de él, con el fardo a la espalda y el grupo esperando, y se toma el tiempo que la verdad necesita. Ese tiempo es lo último que le da: no una esperanza —lo que va a decir no la trae—, sino el respeto de que la respuesta sea verdadera.\n\n**EIRA** *(una palabra, sincera, después de pensarlo de verdad (original))*: Sí.\n\nSí. Una palabra, sincera. Lo pensó: hubo años —el bosque, la cabaña, el muchacho al que se le curaban las manos— en que Eira creyó que él podía ser otra cosa. La palabra no le devuelve nada: es pasado dicho en pasado, y los dos lo saben mientras suena.\n\nSe echa el fardo al hombro.\n\n**EIRA** *(y esta la dice mientras se echa el fardo al hombro (original))*: Ya no.\n\nY esta la dice mientras se echa el fardo al hombro: el gesto y la frase en el mismo movimiento, para que ninguna de las dos cosas tenga que esperar a la otra. Ya no. El presente, cerrado con la economía de quien carga su peso y echa a andar. No hay rabia en la escena, como no la hubo en el «No nos busques»: hay una mujer que contestó dos veces la verdad —sí, ya no— y un hombre que por fin hizo su pregunta con años de retraso, cuando la respuesta ya solo podía ser un cierre.\n\nSe va.\n\nEira se va con su grupo, hacia el norte, a los valles donde no llega nadie, y no nos busques queda dicho y queda en pie: no es una frase que él pueda desobedecer sin convertirla en otra cosa.\n\nÉl se queda en la orilla.\n\nSaharis, en las piedras planas, mirando el agua o mirando la espalda que se aleja —la escena no necesita elegir—: el hombre que lo encuentra todo, parado en el sitio exacto donde acaba de prometer sin palabras no buscar lo único que le quedaba por encontrar.",
      "escenario": "orilla",
      "luz": "BARRIO"
     },
@@ -6726,7 +6725,7 @@
       "iven"
      ],
      "dialogo": [],
-     "accion": "Lord Iven en su sillón, junto al fuego, con la copa en la mano. Se ha quedado dormido. La copa se le vuelca despacio sobre la alfombra. No se despierta.",
+     "accion": "La copa se vuelca\n\nSalón Elserath, de noche. Lord Iven en su sillón, junto al fuego, con la copa en la mano.\n\nEs su sitio de siempre y su hora de siempre: el sillón junto al fuego del salón grande, la copa en la mano, la casa en su silencio de noche alrededor. La cabeza decadente de los Elserath cierra el día como ha cerrado todos los días de la temporada que se le conocen: sentado, con vino, sin que nadie le pida cuentas de nada, porque en esta casa hace ya mucho que nadie le pide cuentas al señor de la casa.\n\nSe ha quedado dormido.\n\nLa escena no trae anuncio ni sobresalto: trae una cabezada de viejo después de cenar, el fuego bajo, la respiración de un hombre de sesenta años que se ha dormido en su sillón con la copa todavía en la mano. Todo lo que la casa Elserath ha sido —la decadencia, el vino, la dejadez de un apellido que se sostiene por costumbre— está en esa imagen y en ninguna otra: su cabeza no cae en un Consejo, ni en una calle, ni ante testigos. Cae aquí, en su sillón, a la hora en que la casa ya no mira.\n\nLa copa se le vuelca despacio sobre la alfombra.\n\nDespacio: la mano dormida cede sin despertarse, la copa se inclina en los dedos que ya no aprietan y el vino sale sin ruido sobre la alfombra del salón. No hay golpe, ni cristal, ni sobresalto en la casa. Hay una mancha que se abre despacio junto al sillón de Lord Iven, en la alfombra de su propio salón, y un hombre dormido que no se entera de haberla hecho: la última cosa que la mano del señor de Elserath hace en el mundo es soltar su copa sin darse cuenta.\n\nNo se despierta.\n\nLa fuente lo deja exactamente ahí, y esta expansión también: la escena no pronuncia ninguna palabra más grande que esa. No se despierta con la copa volcada, no se despierta con el vino en la alfombra, no se despierta en el tiempo que la escena lo mira. El fuego sigue en su sitio, la casa sigue en su noche y nadie entra en el salón en esta escena —en su lista no hay nadie más—: lo que la casa entenderá mañana de este sillón y de esta mancha lo dirá el velatorio, que es la escena siguiente y tiene su propio tramo de hechos. Aquí hay solo un viejo dormido junto a un fuego, una copa suelta y el silencio entero de la casa Elserath alrededor.\n\nY Saharis no está. La escena de la sucesión —porque eso es lo que esta noche empieza— ocurre sin él en la habitación, sin su mano, sin su palabra y sin su presencia: la fuente no lo pone aquí, y lo que mañana pase con los papeles de esta casa no necesitará que él haya estado en este salón para pasar.",
      "escenario": "elserath-salon",
      "luz": "NOBLE"
     },
@@ -6740,7 +6739,7 @@
       "saharis"
      ],
      "dialogo": [],
-     "accion": "La casa llena de gente. Saharis recibiendo condolencias. Se lee el testamento. Rothar queda fuera. Todo va a Saharis.",
+     "accion": "Se lee el testamento\n\nEl velatorio, de día. La casa llena de gente.\n\nEl salón de ayer es hoy otra habitación con la misma forma: donde anoche había un sillón junto al fuego y un hombre solo, hoy hay una casa entera en pie, con sus visitas, sus ropas de duelo y su murmullo ordenado. La casa Elserath, que en vida de su señor se iba vaciando de todo —de dinero, de peso, de futuro—, se llena para despedirlo: la muerte de una cabeza de casa es el último acto social que la casa da, y Feyrond acude a verlo como acude a todos los actos en que un apellido cambia de manos.\n\nSaharis recibiendo condolencias.\n\nEsa es su parte en la escena, y la fuente la fija con esa precisión: no preside, no llora, no hace discurso. Recibe. Uno a uno, los que entran le dan el pésame al hijo que la casa adoptó en los papeles —al de la identidad preparada, al del apellido ganado con deudas ajenas—, y él recibe cada condolencia con la cara ilegible de siempre, con la frase breve que el rito pide y que la escena no necesita transcribir, porque aquí el duelo es un procedimiento y él lo está cumpliendo entero, en su sitio, como se cumple un inventario. Nadie en la sala sabe —y la escena no lo dice— qué está recibiendo en realidad junto con cada pésame: la casa misma, por escrito, está a punto de cambiar de nombre delante de todos.\n\nSe lee el testamento.\n\nSe lee: la fuente no nombra a quien lee, ni esta expansión le pone nombre ni oficio. Hay un papel, una voz que lo recorre delante de la casa llena y una sala que escucha lo que los papeles de los Elserath disponen cuando su cabeza muere. El contenido no se transcribe en la escena más allá de su resultado, porque el resultado es la escena: lo demás —cláusulas, condiciones, cantidades— no lo trae el archivo y no lo inventa esta tanda.\n\nRothar queda fuera.\n\nTodo va a Saharis.\n\nDicho así, en dos frases cortas, como la fuente lo dice: el heredero legítimo, el hijo de la sangre, el que creció en esta casa, queda fuera del testamento de su padre. Y todo —la casa, el nombre, el asiento, lo que quede de la fortuna y de la deuda— va al otro: al que llegó sin apellido y lo ganó, al que está de pie recibiendo condolencias a unos pasos de distancia. El desplazamiento de Rothar no llega por una conversación, ni por una acusación, ni por una frase de Saharis delante de nadie: llega por este cauce, el del papel leído en voz alta en un salón lleno, que es el cauce que la fuente eligió y el único que esta escena usa. La sala lo oye entero. Y la escena se cierra sobre ese oír: sobre lo que cada presente hace con lo que acaba de escuchar, que es todavía nada —nada visible—, porque la reacción tiene su propio momento y es la escena siguiente.",
      "escenario": "elserath-salon",
      "luz": "NOBLE"
     },
@@ -6759,24 +6758,24 @@
        "quien": "rothar",
        "etiqueta": "ROTHAR",
        "texto": "¡Esto es de mi padre! ¡Esto lo hizo mi abuelo!",
-       "intencion": "grito de dolor y de humillación delante de todos",
+       "intencion": "grito de dolor y de humillación delante de todos (original)",
        "riesgo": "alto"
       },
       {
        "quien": "rothar",
        "etiqueta": "ROTHAR",
        "texto": "¡Miradle! ¡Miradle bien! ¡No sabéis lo que es!",
-       "intencion": "gritando, ya sin que nadie lo mire",
+       "intencion": "gritando, ya sin que nadie lo mire (original)",
        "riesgo": "alto"
       },
       {
        "quien": "rothar",
        "etiqueta": "ROTHAR",
        "texto": "Yo lo dije el primer día.",
-       "intencion": "y esto baja de golpe: derrota, casi para sí"
+       "intencion": "y esto baja de golpe: derrota, casi para sí (original)"
       }
      ],
-     "accion": "¡Esto es de mi padre! ¡Esto lo hizo mi abuelo! Nadie lo mira. ¡Miradle! ¡Miradle bien! ¡No sabéis lo que es! Un par de invitados apartan la vista, incómodos por él. Saharis lo mira sin decir nada. Yo lo dije el primer día. Nadie le da la razón.",
+     "accion": "Delante de todos\n\nEl velatorio. *Continuo.*\n\nLa lectura ha terminado y la sala todavía está entera cuando Rothar hace lo que la escena anterior no hizo: ponerle voz a su desplazamiento. Y la voz que le pone es un grito, delante de todos, en el salón de su padre muerto.\n\n**ROTHAR** *(grito de dolor y de humillación delante de todos (original))*: ¡Esto es de mi padre! ¡Esto lo hizo mi abuelo!\n\nGrita de dolor y de humillación, y lo que grita es una genealogía: esto es de mi padre, esto lo hizo mi abuelo. Contra el papel que se acaba de leer, Rothar opone la única escritura que él tiene: la sangre contada en voz alta, dos generaciones en una frase. La casa, el salón, el apellido: de mi padre, de mi abuelo. Lo que el testamento acaba de decir —que todo va a otro— él lo contesta con el argumento que en su mundo debería bastar, y lo contesta gritando, que es como se contestan las cosas cuando ya no hay sala que las escuche en voz baja.\n\nNadie lo mira.\n\nLa fuente lo fija en tres palabras y esta expansión las deja en el centro de la escena: nadie lo mira. La sala llena que ha oído el testamento entero no le sostiene la mirada al hijo desheredado. No hay escándalo, ni murmullo que lo ampare, ni un solo presente que convierta su grito en un hecho de la casa: su grito ocurre delante de todos y no ocurre para ninguno.\n\n**ROTHAR** *(gritando, ya sin que nadie lo mire (original))*: ¡Miradle! ¡Miradle bien! ¡No sabéis lo que es!\n\nYa sin que nadie lo mire, pide que miren a otro: miradle. Miradle bien. Señala a Saharis —el que recibe condolencias, el que hereda, el que está en su sitio— y pide a la sala que haga lo que la sala no ha hecho con él: mirar. Y añade la frase que no explica: no sabéis lo que es. Qué es, la escena no lo dice y esta expansión no lo glosa: es la frase de un hombre que cree saber una cosa de otro hombre y descubre, al decirla, que ni siquiera esa frase encuentra oídos.\n\nUn par de invitados apartan la vista, incómodos por él.\n\nIncómodos por él: ni siquiera la incomodidad es sobre Saharis. Es por Rothar —por el espectáculo de un heredero gritando en el velatorio de su padre—, y apartan la vista como se aparta la vista de una vergüenza ajena, que es la última forma de abandono que la sala tiene para darle.\n\nSaharis lo mira sin decir nada.\n\nEl único que lo mira en toda la sala es el hombre al que señala. Lo mira sin decir nada: sin defenderse, sin negarlo, sin concederle ni siquiera la dignidad de una respuesta. Y en esa mirada sin palabras se cierra la escena de su poder mejor que en ningún papel: Rothar puede gritar su genealogía delante de todos y el único par de ojos que consigue son los del hombre que se lo ha quedado todo, que no le dan nada.\n\n**ROTHAR** *(y esto baja de golpe: derrota, casi para sí (original))*: Yo lo dije el primer día.\n\nY esto baja de golpe. Después de los gritos, la derrota, casi para sí: yo lo dije el primer día. El primer día —el de la llegada del desconocido a la casa, el del muchacho sin apellido que se sentó a la mesa de los Elserath— Rothar lo vio o creyó verlo, y lo dijo. Es su última frase de la escena y es una frase sin destinatario: la dice para el suelo del salón de su padre, porque la sala ya no está escuchando.\n\nNadie le da la razón.\n\nNi siquiera eso: nadie recoge su frase, nadie asiente, nadie deja constancia de que el hijo desheredado tuviera razón alguna vez en algo. La escena se cierra con Rothar de pie entre la gente que fue de su casa, con su grito gastado y su razón sin testigos, y con Saharis en su sitio, recibiendo todavía, como si entre las condolencias y este grito no hubiera pasado nada que el rito no pudiera seguir cubriendo.",
      "escenario": "elserath-salon",
      "luz": "NOBLE"
     },
@@ -6789,7 +6788,7 @@
       "rothar"
      ],
      "dialogo": [],
-     "accion": "Rothar sale de Feyrond con una bolsa. No mira atrás.",
+     "accion": "No mira atrás\n\nLa puerta de la ciudad, de noche.\n\nRothar sale de Feyrond con una bolsa.\n\nUna bolsa: eso es lo que la fuente le deja sacar de la ciudad en la que nació heredero. No un séquito, ni un coche, ni un cargamento de despedida: una bolsa, la que un hombre se echa encima cuando su vida entera tiene que caber en lo que puede cargar él solo. Qué lleva dentro, la escena no lo dice y esta expansión no lo abre: lleva lo que un desheredado se lleva, que la fuente resume dejándolo en esa sola palabra.\n\nSale de noche. La salida de Rothar no tiene la luz de la ceremonia ni testigos con nombre: tiene la hora en que salen los que no quieren ser vistos saliendo, o los que ya no le importan a nadie lo bastante para que importe la hora. La casa llena del velatorio está a sus espaldas, con su duelo terminado y su heredero nuevo en su sitio, y la puerta de la ciudad está delante, con lo que haya fuera para un hombre sin casa: la fuente no le da destino, ni dirección, ni un nombre de lugar al que ir, y esta expansión tampoco —su norte o su sur no se escriben, porque el archivo no los escribe—.\n\nNo mira atrás.\n\nEs el único gesto de la escena y es un gesto en negativo: lo que Rothar no hace. No se detiene en la puerta, no busca con la vista la casa, el salón, una ventana, una cara. Sale de Feyrond como se sale de un sitio que ya ha terminado de expulsarte por dentro mucho antes de que cruces su puerta: sin concederle a la ciudad ni siquiera la escena de una última mirada. Y con eso se cierra su desplazamiento entero, el que empezó en un papel leído en voz alta: el heredero de Elserath cruza la puerta de noche, con una bolsa, y la ciudad se queda detrás de él sin que él la mire, que es la única despedida que le queda entera: la suya.",
      "escenario": "puerta-ciudad",
      "luz": "BARRIO"
     },
@@ -6808,10 +6807,10 @@
        "quien": "celebrante",
        "etiqueta": "CELEBRANTE",
        "texto": "Qué sitio para citar a un anciano.",
-       "intencion": "con humor de viejo, sin miedo ninguno"
+       "intencion": "con humor de viejo, sin miedo ninguno (original)"
       }
      ],
-     "accion": "El Celebrante baja los escalones apoyándose en la pared. Está viejo. Saharis lo espera junto al altar. Qué sitio para citar a un anciano.",
+     "accion": "Qué sitio para citar a un anciano\n\nLa cripta, de noche. El Celebrante baja los escalones apoyándose en la pared.\n\nEstá viejo.\n\nEsa es la primera cosa que la cripta enseña de él en esta escena, antes que su voz: los escalones bajados uno a uno, la mano en la pared húmeda buscando el apoyo, el cuerpo de un hombre de unos setenta años descendiendo al santuario que ha administrado toda la vida y que esta noche lo recibe como se recibe a un anciano: sin prisa y sin ayuda. Abajo, entre los nichos y la piedra negra, está el altar. Y junto al altar, esperando, está Saharis.\n\nSaharis lo espera junto al altar.\n\nLo ha citado él: la escena que viene la ha convocado el heredero, en su cripta —la de abajo, la que administra desde que pidió la rama de abajo y recibió las llaves, la que pisa como quien entra en lo suyo sin necesitar señal ni permiso de nadie— y el anciano ha bajado a la cita apoyándose en la pared, que es también una medida de cómo han cambiado las manos en esta casa de abajo: antes era el muchacho el que era traído a esta piedra; ahora es el viejo el que baja, citado, y el muchacho el que espera de pie junto al altar. La escena no subraya nada de eso: lo dispone, que es su manera.\n\nEl Celebrante llega abajo, se compone como se compone un hombre que ha bajado unos escalones que ya le cuestan, mira el sitio —el altar, la piedra, la noche de la cripta— y dice su única frase de la escena con el humor entero de un viejo que no tiene miedo de nada de lo que pueda pasarle en su propio santuario.\n\n**CELEBRANTE** *(con humor de viejo, sin miedo ninguno (original))*: Qué sitio para citar a un anciano.\n\nCon humor de viejo, sin miedo ninguno. La frase es pequeña y lo dice todo de él en este tramo: sabe dónde está, sabe quién lo ha citado y a qué clase de conversación desciende un hombre a una cripta de noche, y su respuesta a todo eso es una broma de viejo sobre los escalones. Ni la solemnidad del oficiante, ni el recelo del consejero: un anciano citado por la noche en su cripta, quejándose con gracia de la escalera. La escena se cierra con los dos en su sitio —el viejo abajo por fin, el heredero junto al altar— y con la conversación todavía sin empezar: lo que Saharis ha venido a poner sobre esta piedra es de la escena siguiente, y aquí no se adelanta ni una palabra de ello.",
      "escenario": "cripta",
      "luz": "CRIPTA"
     },
@@ -6828,23 +6827,23 @@
       {
        "quien": "saharis",
        "etiqueta": "SAHARIS",
-       "texto": "El grano. Las rutas del este. El banco del puente. Renn está desmantelada. Vharn",
-       "intencion": "enumerando, sin triunfo"
+       "texto": "El grano. Las rutas del este. El banco del puente. Renn está desmantelada. Vharn está en mi mano por las deudas.",
+       "intencion": "enumerando, sin triunfo (original — completada desde la prosa de la escena; en el guion guardado viene cortada)"
       },
       {
        "quien": "saharis",
        "etiqueta": "SAHARIS",
        "texto": "Y esto es la rama de abajo, que ya era mía.",
-       "intencion": "cerrando"
+       "intencion": "cerrando (original)"
       },
       {
        "quien": "celebrante",
        "etiqueta": "CELEBRANTE",
        "texto": "Sí.",
-       "intencion": "una palabra. Ni sorpresa ni resistencia"
+       "intencion": "una palabra. Ni sorpresa ni resistencia (original)"
       }
      ],
-     "accion": "Saharis pone sobre el altar cinco documentos. El grano. Las rutas del este. El banco del puente. Renn está desmantelada. Vharn está en mi mano por las deudas. Añade uno más. Y esto es la rama de abajo, que ya era mía. El Celebrante los mira sin tocarlos. Sí.",
+     "accion": "Cinco documentos\n\nLa cripta. *Continuo.*\n\nSaharis pone sobre el altar cinco documentos.\n\nCinco documentos, sobre el altar: el papel de su poder, puesto pieza a pieza sobre la piedra de los ritos, en el santuario donde esta serie empezó con un niño puesto sobre esa misma piedra. No hay ceremonia en el gesto ni la escena la convierte en una: hay un hombre que ha citado a otro a su cripta y le enseña, en el orden en que se enseña un inventario, el estado entero de su dominio. Y lo enumera, sin triunfo, con la voz de sus enumeraciones de Consejo.\n\n**SAHARIS** *(enumerando, sin triunfo (original — completada desde la prosa de la escena; en el guion guardado viene cortada))*: El grano. Las rutas del este. El banco del puente. Renn está desmantelada. Vharn está en mi mano por las deudas.\n\nEl grano —la reserva del invierno centralizada en la sesión del Consejo de este mismo capítulo—. Las rutas del este. El banco del puente —las tres cosas con las que se describió a sí mismo en tercera persona delante de las casas, sin nombrarse, y que aquí se dicen ya en primera persona y sobre su altar—. Renn está desmantelada —la casa caída con las manos de la ciudad mientras él miraba desde una esquina—. Vharn está en mi mano por las deudas —la casa fría, la del padre que pronunció él solo la sentencia sobre su hijo, cogida por el cauce de siempre de esta serie: el papel y lo que se debe—. La enumeración es la hoja de ruta del capítulo entero dicho en una respiración, y se dice sin triunfo: no es un brindis ni una amenaza; es un parte.\n\nAñade uno más.\n\nSobre los cinco, un documento más, que no pertenece a la misma serie que los otros porque no es una conquista de esta temporada de papeles: es lo de abajo, lo que pidió como informe de gestión con su frase más desnuda y recibió con un manojo de llaves viejas.\n\n**SAHARIS** *(cerrando (original))*: Y esto es la rama de abajo, que ya era mía.\n\nCerrando: la rama de abajo, la red baja que administra desde el capítulo en que se la dieron —los doce al año y no cuarenta, elegidos por él, la cripta en uso inspeccionada como heredero—, puesta al final de la enumeración no como una pieza más del botín sino como su fundamento: esto ya era mío. Todo lo demás —el grano, las rutas, el banco, Renn, Vharn— se ha ido sumando encima de eso.\n\nEl Celebrante los mira sin tocarlos.\n\nSin tocarlos: el anciano mira los documentos sobre su altar —sobre el altar de su culto, el de su administración de toda la vida— y no alarga la mano, ni lee uno solo de cerca, ni pide ver una firma. No le hace falta: él sabe leer un inventario con mirarlo, que es lo que ha hecho siempre en esta casa de abajo, llevar las cuentas de lo que otros creen. Mira los seis papeles sobre la piedra, mira al hombre que los ha puesto, y su respuesta a la enumeración entera del dominio de Saharis es una palabra.\n\n**CELEBRANTE** *(una palabra. Ni sorpresa ni resistencia (original))*: Sí.\n\nSí. Una palabra. Ni sorpresa ni resistencia. El hombre que administró la cripta cuando Saharis era mercancía de su altar recibe el parte completo de su herencia —porque eso es lo que la enumeración es: el inventario de una herencia ya tomada— y lo firma con un sí sin énfasis, como se firma lo que ya se sabía. La escena se cierra ahí, sobre esa palabra y sobre los documentos sin tocar en la piedra: lo que el anciano tenga que decir después de ese sí —su orgullo, su verdad, su cuenta de sí mismo— es de las escenas siguientes, y esta no adelanta ni una palabra de ello.",
      "escenario": "cripta",
      "luz": "CRIPTA"
     },
@@ -6862,34 +6861,34 @@
        "quien": "celebrante",
        "etiqueta": "CELEBRANTE",
        "texto": "Estoy orgulloso.",
-       "intencion": "y lo dice de verdad"
+       "intencion": "y lo dice de verdad (original)"
       },
       {
        "quien": "saharis",
        "etiqueta": "SAHARIS",
        "texto": "No he venido a eso.",
-       "intencion": "cortante"
+       "intencion": "cortante (original)"
       },
       {
        "quien": "celebrante",
        "etiqueta": "CELEBRANTE",
        "texto": "Ya lo sé. Pero lo estoy.",
-       "intencion": "suave, insistiendo"
+       "intencion": "suave, insistiendo (original)"
       },
       {
        "quien": "celebrante",
        "etiqueta": "CELEBRANTE",
        "texto": "Esto es lo que el Descarnado pedía. Exactamente esto. Uno que lo tomara todo.",
-       "intencion": "como quien recita una doctrina que no siente"
+       "intencion": "como quien recita una doctrina que no siente (original)"
       },
       {
        "quien": "celebrante",
        "etiqueta": "CELEBRANTE",
        "texto": "Has cumplido, muchacho.",
-       "intencion": "con afecto. Es lo que más le duele a Saharis"
+       "intencion": "con afecto. Es lo que más le duele a Saharis (original)"
       }
      ],
-     "accion": "Estoy orgulloso. No he venido a eso. Ya lo sé. Pero lo estoy. Se sienta en el escalón del altar, con esfuerzo. Esto es lo que el Descarnado pedía. Exactamente esto. Uno que lo tomara todo. Levanta la vista. Has cumplido, muchacho.",
+     "accion": "Estoy orgulloso\n\nLa cripta. *Continuo.*\n\nLos documentos siguen sobre el altar, sin tocar, donde la palabra anterior los dejó. Y el Celebrante, antes de ninguna otra cosa, dice lo que no se le ha pedido.\n\n**CELEBRANTE** *(y lo dice de verdad (original))*: Estoy orgulloso.\n\nY lo dice de verdad. No es la frase de un hombre que negocia su sitio en el orden nuevo, ni la cortesía de un consejero cambiando de amo: es un viejo mirando la obra entera de otro —el grano, las rutas, el banco, Renn, Vharn, la rama de abajo— y reconociéndola como suya en lo único en que puede serlo: en haberla estado esperando. Su orgullo no pide nada. Se ofrece.\n\n**SAHARIS** *(cortante (original))*: No he venido a eso.\n\nCortante. La frase más seca que Saharis le da en la cripta: no ha bajado a esta piedra a recoger el orgullo de nadie. Ha venido a otra cosa, que todavía no ha dicho, y el orgullo del anciano se interpone en el camino de esa cosa como se interpone todo lo que no es la cosa: ocupando su sitio.\n\n**CELEBRANTE** *(suave, insistiendo (original))*: Ya lo sé. Pero lo estoy.\n\nSuave, insistiendo. El anciano sabe que no ha venido a eso —lo sabe como ha sabido siempre dónde estuvo, qué hizo, qué se trae— y no retira la frase por saberlo: la deja puesta sobre la piedra, al lado de los documentos, como un papel más que el otro no ha pedido y tendrá que apartar para seguir.\n\nSe sienta en el escalón del altar, con esfuerzo.\n\nCon esfuerzo: el cuerpo de la escena anterior, el que bajó los escalones apoyándose en la pared, se sienta ahora en el escalón de su propio altar como se sienta un hombre en el banco de su casa. Y desde ahí, ya sentado, ya en su sitio de siempre, dice la doctrina entera de su culto con la voz de quien recita una cosa aprendida que no siente.\n\n**CELEBRANTE** *(como quien recita una doctrina que no siente (original))*: Esto es lo que el Descarnado pedía. Exactamente esto. Uno que lo tomara todo.\n\nEsto es lo que el Descarnado pedía. Exactamente esto. Uno que lo tomara todo. La frase pone a Saharis dentro de la escritura del culto como su cumplimiento: el niño puesto sobre esta piedra, el heredero sentado junto a ella, el sistema entero en una mano —todo eso, leído en la gramática del anciano, es lo que el dios quería desde el principio—. La expansión no decide si el anciano lo cree al decirlo —eso es de la escena siguiente, y aquí no se adelanta ni una palabra de ella—: lo que aquí se fija es la forma de la frase, una doctrina recitada, dicha sin calor de fe por la boca que la ha administrado toda la vida.\n\nLevanta la vista.\n\nDesde el escalón, levanta la vista hacia el hombre de pie junto al altar, y cierra con la frase que la fuente marca como la que más le duele a Saharis —no una enumeración, no una doctrina: una frase de afecto—.\n\n**CELEBRANTE** *(con afecto. Es lo que más le duele a Saharis (original))*: Has cumplido, muchacho.\n\nHas cumplido, muchacho. El orgullo podía apartarse; la doctrina podía no creerse; esto no: un viejo llamándolo muchacho y dándole la enhorabuena por haberse convertido exactamente en lo que la piedra pedía. La escena se cierra sobre esa frase sin respuesta: lo que Saharis ha venido a hacer a esta cripta sigue sin decirse, y el dolor que la fuente registra en su intención queda entero, sin gesto añadido que lo enseñe.",
      "escenario": "cripta",
      "luz": "CRIPTA"
     },
@@ -6907,28 +6906,28 @@
        "quien": "saharis",
        "etiqueta": "SAHARIS",
        "texto": "¿Usted se lo cree?",
-       "intencion": "bajo, agachado a su altura"
+       "intencion": "bajo, agachado a su altura (original)"
       },
       {
        "quien": "celebrante",
        "etiqueta": "CELEBRANTE",
        "texto": "No.",
-       "intencion": "una palabra, tranquila"
+       "intencion": "una palabra, tranquila (original)"
       },
       {
        "quien": "celebrante",
        "etiqueta": "CELEBRANTE",
        "texto": "Nunca he creído en nada. Yo administro.",
-       "intencion": "sin dramatismo. Es una confesión administrativa"
+       "intencion": "sin dramatismo. Es una confesión administrativa (original)"
       },
       {
        "quien": "celebrante",
        "etiqueta": "CELEBRANTE",
        "texto": "Alguien tiene que llevar las cuentas de lo que la gente necesita creer.",
-       "intencion": "encogiéndose de hombros. Y ahí se acaba todo"
+       "intencion": "encogiéndose de hombros. Y ahí se acaba todo (original)"
       }
      ],
-     "accion": "Saharis se agacha para quedar a su altura. ¿Usted se lo cree? El Celebrante lo mira. No. Pausa. Nunca he creído en nada. Yo administro. Se encoge de hombros. Alguien tiene que llevar las cuentas de lo que la gente necesita creer.",
+     "accion": "Yo administro\n\nLa cripta. *Continuo.*\n\nSaharis se agacha para quedar a su altura.\n\nEse es el primer hecho de la escena y es un hecho del cuerpo: el heredero, el hombre de pie junto al altar, se agacha ante el anciano sentado en el escalón hasta quedar a su altura, cara a cara, para hacerle la única pregunta que ha bajado a hacer. No la hace desde arriba, como se hacen las de los inventarios. La hace bajo, agachado, en el sitio exacto donde un niño de diez años se ponía delante de otra cosa con miedo: a la altura de los ojos del otro.\n\n**SAHARIS** *(bajo, agachado a su altura (original))*: ¿Usted se lo cree?\n\n¿Usted se lo cree? Cuatro palabras para dieciocho años: todo lo que el culto le hizo —el altar, la madre, la celda, el libro, los circuitos, el sistema que acaba de heredar entero— descansa sobre si el hombre que lo administró creía alguna vez lo que decía al administrarlo. Es la pregunta del capítulo y se hace en voz baja.\n\nEl Celebrante lo mira.\n\n**CELEBRANTE** *(una palabra, tranquila (original))*: No.\n\nNo. Una palabra, tranquila. Sin bajar la vista, sin preparar el terreno, sin la pausa de los que confiesan una cosa que les cuesta: la respuesta llega como llegan en esta cripta las cosas del anciano, administradas.\n\nPausa.\n\n**CELEBRANTE** *(sin dramatismo. Es una confesión administrativa (original))*: Nunca he creído en nada. Yo administro.\n\nNunca he creído en nada. Yo administro. Sin dramatismo: es una confesión administrativa, dicha en el tono de los libros de cuentas. El Descarnado, los ritos, la sonrisa de la máscara, los niños comprados como lotes, la doctrina recitada hace un momento —exactamente esto, uno que lo tomara todo—: nada de eso fue fe en la boca de este hombre. Fue trabajo. Fue llevar los libros de una cosa que otros necesitaban que existiera.\n\nSe encoge de hombros.\n\n**CELEBRANTE** *(encogiéndose de hombros. Y ahí se acaba todo (original))*: Alguien tiene que llevar las cuentas de lo que la gente necesita creer.\n\nAlguien tiene que llevar las cuentas de lo que la gente necesita creer. El encogimiento de hombros es la última teología de la serie: la gente necesita creer, alguien lleva las cuentas de esa necesidad, y ese alguien ha sido él, sin creer una sola de las partidas que apuntaba. Y ahí se acaba todo: se acaba la doctrina de la escena anterior, se acaba la pregunta de los dieciocho años, se acaba el monstruo que la pregunta venía buscando. Lo que la escena siguiente haga con este hombre sin fe es de la escena siguiente: aquí la confesión queda entera, tranquila, y sin que nadie la conteste.",
      "escenario": "cripta",
      "luz": "CRIPTA"
     },
@@ -6942,7 +6941,7 @@
       "saharis"
      ],
      "dialogo": [],
-     "accion": "Saharis se queda mirándolo. Está buscando algo en esa cara. Un fanático. Un monstruo. Algo que justifique dieciocho años. Solo hay un anciano cansado. Se pone de pie. Le rompe el cuello con las dos manos. Sin magia. Rápido. El cuerpo se dobla sobre el escalón.",
+     "accion": "Sin magia\n\nLa cripta. *Continuo.*\n\nSaharis se queda mirándolo.\n\nEstá buscando algo en esa cara.\n\nUn fanático. Un monstruo. Algo que justifique dieciocho años.\n\nLa búsqueda es la escena antes que su final: dieciocho años de una vida —el altar, la celda, la madre muerta, el bosque, la pared, los nombres, el sistema heredado— piden que esta cara tenga algo dentro que esté a la altura de todo eso: un fanático con la fe ardiendo, un monstruo con la crueldad escrita. Lo busca en la cara del anciano sentado en el escalón de su altar, en la cara amable y ordinaria que acaba de decirle que nunca creyó en nada.\n\nSolo hay un anciano cansado.\n\nEso es todo lo que hay. Un hombre de unos setenta años, cansado, que bajó unos escalones apoyándose en la pared y lleva las cuentas de lo que la gente necesita creer. Nada en esa cara justifica dieciocho años, y esa nada es exactamente lo que la escena ha estado construyendo desde la primera broma en la escalera: el administrador no era el dios, ni su profeta, ni su verdugo creyente. Era el contable.\n\nSe pone de pie.\n\nLe rompe el cuello con las dos manos. Sin magia. Rápido.\n\nLa fuente lo trae en tres frases cortas y esta expansión las deja en su orden y con su sequedad, sin convertirlas en otra cosa: con las dos manos —las suyas, las de la línea pálida y los circuitos apagados—, sin magia —los circuitos no se encienden: lo que mata al Celebrante no es el poder que el culto le puso bajo la piel, es un hombre de pie delante de otro hombre sentado—, rápido. El daño no se describe más que en esa forma seca que la fuente eligió: una muerte de administración también, ejecutada con las manos y sin ceremonia, en el santuario donde el muerto administró toda su vida.\n\nEl cuerpo se dobla sobre el escalón.\n\nEl cuerpo se dobla sobre el escalón del altar y la escena se acaba ahí: no trae palabra después, ni la trae esta expansión. La lista de la fuente para esta escena trae a «anciano-academia» junto a Saharis y no trae al Celebrante —que es quien muere en ella—: la lista se conserva intacta en los datos, como en todos los capítulos, y la escena se escribe con quienes la acción trae. Lo que la cripta hace con este silencio —quién entra, quién aplaude, qué pasa— no es de esta escena: la fuente le da su propio momento, y es el siguiente.",
      "escenario": "cripta",
      "luz": "CRIPTA"
     },
@@ -6953,7 +6952,7 @@
      "flashback": false,
      "personajes": [],
      "dialogo": [],
-     "accion": "Silencio. La estatua sigue ahí, con su sonrisa de cabra. Nadie aplaude. Nadie entra. No pasa nada. Solo gotea agua en algún sitio.",
+     "accion": "No pasa nada\n\nLa cripta. *Continuo.*\n\nSilencio.\n\nLa estatua sigue ahí, con su sonrisa de cabra.\n\nEl ídolo colosal del santuario, el de los muchos brazos y la cabeza de cráneo de cabra, sigue en su sitio después de la muerte de su administrador, con la sonrisa que tenía cuando la cripta compraba niños y la misma que tendrá cuando la administre otro: la piedra no registra la muerte porque la piedra nunca estuvo viva y nunca fue un dios al que la muerte le importe. Era una cuenta más, llevada por el hombre que ya no la lleva.\n\nNadie aplaude. Nadie entra. No pasa nada.\n\nLa escena es esta triple negativa y nada más: nadie aplaude la muerte del Celebrante, nadie entra a impedirla ni a vengarla, no pasa nada en el santuario donde un niño fue proclamado hijo de la oscuridad y un anciano acaba de morir con el cuello roto en su escalón. El mundo de abajo, que tanto parecía pesar en la vida de todos, recibe la muerte de su administrador con la única respuesta que su doctrina merecía: ninguna.\n\nSolo gotea agua en algún sitio.\n\nY el único sonido que la fuente deja en la cripta es ese: agua goteando en algún sitio, sin decir dónde, el sonido administrativo de una cueva húmeda siguiendo con su noche. La lista de personajes de la escena viene vacía en la fuente —nadie— y la escena se escribe así, sin nadie: ni Saharis, que la acción no pone aquí, ni testigo alguno sobre el cuerpo. El capítulo no vuelve la vista atrás sobre el escalón en esta escena: deja la estatua sonriendo, el agua goteando y el silencio entero, que es la forma exacta de su respuesta.",
      "escenario": "cripta",
      "luz": "CRIPTA"
     },
@@ -6966,7 +6965,7 @@
       "saharis"
      ],
      "dialogo": [],
-     "accion": "Saharis se sienta en el altar donde nació. La piedra está fría. Se queda ahí sentado, con las manos en las rodillas, mirando al frente. Plano largo. Muy largo.",
+     "accion": "El altar donde nació\n\nLa cripta. *Continuo.*\n\nSaharis se sienta en el altar donde nació.\n\nEn el altar: la piedra oscura del santuario, la misma sobre la que el Celebrante que acaba de morir puso a un bebé delante de una sala en el primer acto de esta historia. El heredero de todo el sistema se sienta en esa piedra no como oficiante, ni como víctima, ni como dios nuevo de la cripta: se sienta como se sienta un hombre en el único sitio de la ciudad que es suyo por el principio y por el final a la vez. Este es el altar vacío del título, y quien se sienta en él no lo llena: lo ocupa un momento.\n\nLa piedra está fría.\n\nEse es el dato del cuerpo que la escena registra: la piedra está fría bajo el hombre que la heredó. Ni calor de rito, ni fiebre de los circuitos —que no se encienden—, ni consuelo de piedra santa: frío, el de una cueva y el de un altar que nadie ha calentado nunca para él.\n\nSe queda ahí sentado, con las manos en las rodillas, mirando al frente.\n\nCon las manos en las rodillas: las manos que acaban de hacer lo que han hecho, quietas, puestas en su sitio, sin sangre que la escena enseñe —la sangre en el puño es del salón, de la escena que viene, y aquí no se adelanta—. Mirando al frente: a la estatua, a la cripta, a nada con nombre. La escena no le da palabra, ni gesto, ni llanto —ningún llanto se numera en este capítulo y en esta escena no hay ninguno—: le da tiempo.\n\nPlano largo. Muy largo.\n\nLa fuente lo pide así, con esa insistencia —plano largo, muy largo— y la expansión lo sostiene como la forma de la escena: la duración misma es lo que ocurre. Un hombre de dieciocho años sentado en la piedra donde nació, en la cripta que ya es suya, con su administrador muerto a unos pasos y todo el sistema del mundo encima en los papeles que dejó sobre ese mismo altar. No pasa nada más, y ese no pasar nada, sostenido, es la escena entera: el capítulo se detiene aquí el tiempo que la fuente dice, antes de dejarlo salir a la noche de arriba.",
      "escenario": "cripta",
      "luz": "CRIPTA"
     },
@@ -6980,7 +6979,7 @@
       "saharis"
      ],
      "dialogo": [],
-     "accion": "Livia, despierta, en un sillón. Oye la puerta. No se levanta. Saharis entra. Tiene sangre en el puño. Livia lo mira. Sabe lo que ha hecho, o lo bastante. Se levanta, coge la botella y sirve dos copas. Le tiende una. Negro.",
+     "accion": "Dos copas\n\nSalón Elserath, de noche. Livia, despierta, en un sillón.\n\nDespierta: la casa heredada duerme o finge dormir, y Livia Elserath está despierta en un sillón del salón, a la hora en que su marido vuelve de la cripta. No se ha acostado, no ha llamado a nadie, no ha preguntado a ningún criado dónde está el señor de la casa: está sentada, esperando, que es su manera de estar en esta casa desde que decidió no preguntar más —y esta noche la espera tiene su propio peso, porque lo que él ha ido a hacer abajo ella lo sabe, o lo bastante—.\n\nOye la puerta.\n\nNo se levanta.\n\nOye la puerta de la casa y no se levanta: no sale a su encuentro, no corre, no hace la escena de la vuelta. Se queda en el sillón y deja que sea él quien cruce el salón entero hasta donde ella está, que es también una medida de esta casa nueva: en la casa que el testamento le ha dado a él, la que espera sentada es ella, y el que entra es él.\n\nSaharis entra. Tiene sangre en el puño.\n\nTiene sangre en el puño: la fuente lo fija así, en esa mano y con esa palabra, y la expansión no dice de quién es la sangre —la cripta de esta noche ha dejado su cuerpo en un escalón, y qué parte de esa muerte le quedó a él en el puño, la escena no lo desglosa—. Entra con eso visible, a la luz del salón, sin esconder la mano ni limpiarla antes de cruzar.\n\nLivia lo mira. Sabe lo que ha hecho, o lo bastante.\n\nLo mira y sabe. Sabe lo que ha hecho, o lo bastante: lo bastante para no preguntar, que es la forma que tiene su saber en esta casa desde su segunda decisión —ella ya no pregunta, y él ya no necesita que esta sangre tenga explicación delante de ella—.\n\nSe levanta, coge la botella y sirve dos copas. Le tiende una.\n\nSe levanta por fin, coge la botella y sirve dos copas: dos, no una —una para el hombre que vuelve con sangre en el puño y una para la mujer que lo esperaba despierta— y le tiende una sin una palabra, porque la escena no trae diálogo y la expansión no se lo da: el capítulo entero se cierra en este gesto, el matrimonio en pie con su corrección mandando —no lo he dicho como un premio— recibiendo a su heredero de vuelta de la cripta con una copa tendida y ninguna pregunta.\n\nNegro.",
      "escenario": "elserath-salon",
      "luz": "NOBLE"
     }
