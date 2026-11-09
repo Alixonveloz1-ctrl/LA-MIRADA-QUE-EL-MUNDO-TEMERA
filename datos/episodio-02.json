@@ -1038,7 +1038,7 @@
         "imagen": "Close-up of his right hand holding the charcoal above a blank scrap of paper resting on his knees; the hand does not rise toward the door; it waits over the empty paper",
         "video": "The hand stays poised and motionless; the paper remains blank. Camera locked.",
         "voz": null,
-        "efecto": null,
+        "efecto": "El carboncillo queda suspendido sobre el papel en blanco; la puerta, delante, no hace ni un sonido en toda la noche",
         "puestos": "Detalle de sus rodillas y el papel, en el puesto de la vigilia.",
         "continuidad": "Sabe cómo se llama a la puerta y no llama: la mano que podría tocar queda empleada en anotar.",
         "escena": "1"
@@ -1635,7 +1635,7 @@
         "imagen": "Close-up of one section of the investigation wall: the charcoal drawing of a ring — a circle, an eye, four teeth — pinned in its gap among lists of names and dates, with threads running from paper to paper",
         "video": "Nothing moves; the wall is the movement. Camera locked.",
         "voz": null,
-        "efecto": null,
+        "efecto": "Silencio de la sala sobre la pared: el dibujo del anillo entre las listas, a la luz del día",
         "puestos": "Detalle de la pared: el dibujo del anillo en su hueco centro-izquierda, como quedó en el capítulo 1.",
         "continuidad": "La pared no se reinicia: es el mismo muro acumulado, y esta escena trabaja sobre la mesa, no sobre él.",
         "escena": "3"
@@ -1865,7 +1865,7 @@
         "imagen": "Close-up of the written sentence at the foot of the list, in charcoal, in his own hand: a line of plain words under the twice-underlined sum",
         "video": "The written words hold in frame. Camera locked.",
         "voz": null,
-        "efecto": null,
+        "efecto": "La frase escrita queda en cuadro a carboncillo; en la sala no suena nada más",
         "puestos": "Detalle de la frase escrita: «deben más de lo que tienen. Eso es una puerta, no un problema.»",
         "continuidad": "El plan del capítulo en una línea: no es un dato para la pared ni para nadie; es su manera de leer una casa.",
         "escena": "3"
@@ -1998,7 +1998,7 @@
           "en_cuadro": true,
           "parte": "completa"
         },
-        "efecto": null,
+        "efecto": "Su petición por encima del hombro, baja, de jugador; el humo y el ruido de las mesas alrededor",
         "puestos": "Rothar sentado en su mesa, girado hacia el pasillo; el prestamista, de pie a un paso.",
         "continuidad": "Primera petición de la escena: todavía es rutina, casi sin vergüenza.",
         "escena": "4"
@@ -2031,7 +2031,7 @@
           "en_cuadro": true,
           "parte": "completa"
         },
-        "efecto": null,
+        "efecto": "Su negativa plana sin mirar la hoja; la sala de juego sigue su ruido detrás",
         "puestos": "El prestamista de pie junto a la mesa, a la derecha de Rothar, con su hoja en la mano.",
         "continuidad": "La hoja no admite más: el crédito de Rothar está agotado en papel antes de que el apellido entre en juego.",
         "escena": "4"
@@ -2064,7 +2064,7 @@
           "en_cuadro": true,
           "parte": "frase 1 de 2 de su línea"
         },
-        "efecto": null,
+        "efecto": "Rothar se inclina y aprieta su caso: media bolsa, dicho como quien regatea su última moneda",
         "puestos": "Rothar inclinado sobre el borde de su mesa, en su puesto.",
         "continuidad": "Segunda petición: baja la cantidad y ofrece un plazo. La línea se parte por frases, como manda la casa.",
         "escena": "4"
@@ -2097,7 +2097,7 @@
           "en_cuadro": false,
           "parte": "frase 2 de 2 de su línea (la voz sigue sobre el prestamista)"
         },
-        "efecto": null,
+        "efecto": "Rothar termina su plazo en voz baja; el prestamista lo escucha sin expresión y sin ruido",
         "puestos": "El prestamista en su puesto junto a la mesa, escuchando.",
         "continuidad": "«Hasta el mes que viene»: la frase cae sobre quien tiene que creérsela, y no se la cree.",
         "escena": "4"
@@ -2130,7 +2130,7 @@
           "en_cuadro": true,
           "parte": "completa"
         },
-        "efecto": null,
+        "efecto": "Su veredicto dicho casi con amabilidad; las partidas de alrededor ni se enteran",
         "puestos": "El prestamista junto a la mesa, con Rothar fuera de cuadro a un paso.",
         "continuidad": "La frase más larga de la escena va entera en un plano de 4 s de boca visible: es un dato, no una burla, y su calma es el golpe.",
         "escena": "4"
@@ -2163,7 +2163,7 @@
           "en_cuadro": true,
           "parte": "completa"
         },
-        "efecto": null,
+        "efecto": "Rothar pone su apellido sobre la mesa como una moneda; el ruido de la sala le pasa por encima",
         "puestos": "Rothar en su asiento, en primer término; la mesa, debajo.",
         "continuidad": "El tema del capítulo en tres palabras: el apellido gastado en voz alta, como una moneda. La respuesta mide su valor real esta noche.",
         "escena": "4"
@@ -2196,7 +2196,7 @@
           "en_cuadro": true,
           "parte": "completa"
         },
-        "efecto": null,
+        "efecto": "La cabeza del prestamista niega despacio, sin crueldad y sin prisa; esta noche no",
         "puestos": "El prestamista en su puesto: niega sin mirar la hoja ni la mesa.",
         "continuidad": "«Esta noche no»: el apellido no compra crédito hoy. La escena entera es la cotización del apellido, y ha salido a cero.",
         "escena": "4"
@@ -2274,7 +2274,7 @@
         "imagen": "Closer shot of the young man at the back: a minimal gesture, almost nothing — a slight movement of two fingers toward a passing waiter with a tray",
         "video": "The gesture is tiny and instantly over; he returns to watching the games. Camera locked.",
         "voz": null,
-        "efecto": null,
+        "efecto": "El gesto mínimo de dos dedos hacia el camarero, casi nada, entre el ruido de las mesas",
         "puestos": "Saharis en su puesto del fondo; el camarero pasa junto a él con la bandeja.",
         "continuidad": "El gesto mínimo es su mano en esta escena: no habla, no se acerca, no paga en persona. El mecanismo se cobra tres planos después.",
         "escena": "4"
@@ -2381,7 +2381,7 @@
           "en_cuadro": true,
           "parte": "completa"
         },
-        "efecto": null,
+        "efecto": "La bolsa se posa sobre la mesa y la fórmula de la casa se dice sin explicar nada; el prestamista ya se gira",
         "puestos": "El prestamista junto a la mesa; la bolsa queda sobre el tapete, delante de Rothar.",
         "continuidad": "«La casa ha cambiado de opinión»: una fórmula sin explicación, que es como el dinero de Saharis se mueve por el mundo — sin su nombre en ninguna parte (la escena 5 lo mostrará en papel).",
         "escena": "4"
@@ -2488,7 +2488,7 @@
           "en_cuadro": true,
           "parte": "frase 1 de 3 de su línea"
         },
-        "efecto": null,
+        "efecto": "La lectura en voz alta del libro mayor, partida a partida, en el despacho de día",
         "puestos": "El administrador en su puesto: de pie junto al borde este del escritorio, inclinado sobre el libro mayor.",
         "continuidad": "La lectura del libro abre la escena como un trámite de cada día: la línea se parte por partidas, que es como se lee un libro mayor.",
         "escena": "5"
@@ -2521,7 +2521,7 @@
           "en_cuadro": false,
           "parte": "frase 2 de 3 de su línea (la voz sigue sobre Iven)"
         },
-        "efecto": null,
+        "efecto": "La lectura sigue por encima de Iven, que no levanta la vista: las partidas le pasan por costumbre",
         "puestos": "Iven sentado tras el escritorio, con los papeles delante; el administrador queda fuera de cuadro, a su este.",
         "continuidad": "Las partidas caen sobre Iven como caen siempre: grano, velas, muelle. La tercera vuelve al lector antes de que el libro se detenga.",
         "escena": "5"
@@ -2552,7 +2552,7 @@
           "en_cuadro": true,
           "parte": "frase 3 de 3 de su línea"
         },
-        "efecto": null,
+        "efecto": "Lee la última partida ordinaria y pasa a la línea siguiente; la pluma de Iven, quieta",
         "puestos": "El administrador en su puesto, sobre el libro mayor.",
         "continuidad": "La rutina se cierra con el muelle: a partir de aquí, el libro deja de ser rutina.",
         "escena": "5"
@@ -2585,7 +2585,7 @@
           "en_cuadro": true,
           "parte": "completa"
         },
-        "efecto": null,
+        "efecto": "Una sola palabra de Iven sin alzar los ojos; la lectura se detiene un instante",
         "puestos": "Iven tras el escritorio, la vista en sus papeles.",
         "continuidad": "«Siga.»: la última palabra de la rutina. Todo lo que viene después de esta línea ya no es trámite.",
         "escena": "5"
@@ -2640,7 +2640,7 @@
           "en_cuadro": true,
           "parte": "frase 1 de 2 de su línea"
         },
-        "efecto": null,
+        "efecto": "El administrador empieza la partida y la deja colgando en el aire del despacho",
         "puestos": "El administrador en su puesto, con la frase a medias sobre el libro.",
         "continuidad": "La línea se parte donde el propio lector se parte: en los puntos suspensivos que trae el guion.",
         "escena": "5"
@@ -2673,7 +2673,7 @@
           "en_cuadro": false,
           "parte": "frase 2 de 2 de su línea (la voz sigue sobre Iven)"
         },
-        "efecto": null,
+        "efecto": "La frase cae y la cabeza de Iven sube; la pluma se posa sobre el escritorio",
         "puestos": "Iven tras el escritorio, levantando la cabeza por primera vez en la escena.",
         "continuidad": "La segunda frase cae sobre Iven porque es a él a quien le cambia la cara: la cabeza levantada y la pluma en la mesa son la reacción que la frase buscaba.",
         "escena": "5"
@@ -2706,7 +2706,7 @@
           "en_cuadro": true,
           "parte": "completa"
         },
-        "efecto": null,
+        "efecto": "Su pregunta llana hacia el libro, todavía sin alarma",
         "puestos": "Iven tras el escritorio, mirando hacia el libro mayor.",
         "continuidad": "Primera de las cuatro líneas originales del guion guardado en esta escena: a partir de aquí, el interrogatorio es de Iven y el libro solo responde con lo que tiene.",
         "escena": "5"
@@ -2737,7 +2737,7 @@
           "en_cuadro": true,
           "parte": "completa"
         },
-        "efecto": null,
+        "efecto": "La confirmación plana del administrador, sin añadir nada suyo",
         "puestos": "El administrador en su puesto junto al libro.",
         "continuidad": "El libro dice que sí. Lo que el libro no dice es lo único que importa en la escena.",
         "escena": "5"
@@ -2770,7 +2770,7 @@
           "en_cuadro": true,
           "parte": "completa"
         },
-        "efecto": null,
+        "efecto": "La pregunta de la escena, dicha en voz baja: ¿por quién?",
         "puestos": "Iven tras el escritorio; la pluma sigue donde la dejó.",
         "continuidad": "«¿Por quién?»: dos palabras. La respuesta es el horror administrativo del capítulo en estado puro.",
         "escena": "5"
@@ -2801,7 +2801,7 @@
           "en_cuadro": true,
           "parte": "completa"
         },
-        "efecto": null,
+        "efecto": "Su respuesta sin adornos: en el libro no lo pone; el despacho guarda el silencio",
         "puestos": "El administrador en su puesto, con la vista en la partida.",
         "continuidad": "«No lo pone.»: la línea original que cierra el interrogatorio. El asiento está completo y falta exactamente lo que no se puede falsificar en silencio: el nombre.",
         "escena": "5"
@@ -2856,7 +2856,7 @@
           "en_cuadro": true,
           "parte": "frase 1 de 3 de su línea"
         },
-        "efecto": null,
+        "efecto": "Afirma con cuidado que el asiento está completo; solo falta lo que falta",
         "puestos": "El administrador en su puesto, sobre el libro mayor.",
         "continuidad": "Su explicación no explica: enumera. La línea se parte por frases, como su lectura del principio.",
         "escena": "5"
@@ -2918,7 +2918,7 @@
           "en_cuadro": true,
           "parte": "frase 3 de 3 de su línea"
         },
-        "efecto": null,
+        "efecto": "Entrega la carencia con la misma planicie que todo lo demás: solo falta el nombre",
         "puestos": "El administrador en su puesto; el libro, cerrado ya en su frase.",
         "continuidad": "«Solo falta el nombre.»: el dinero de Saharis no deja nombre en ningún papel — ni en la casa de juego (escena 4) ni en el libro mayor de la propia casa.",
         "escena": "5"
@@ -3055,7 +3055,7 @@
           "en_cuadro": true,
           "parte": "completa"
         },
-        "efecto": null,
+        "efecto": "El libro se posa sobre la mesa y Livia abre el juego, ligera y cómplice; la biblioteca, en su silencio de día",
         "puestos": "Livia en el extremo sur de la mesa; el libro queda sobre la mesa, delante de Saharis, más cerca de él.",
         "continuidad": "Primera línea original del guion guardado en la escena: el juego se abre con el libro ya puesto, que es su manera de jugar.",
         "escena": "6"
@@ -3088,7 +3088,7 @@
           "en_cuadro": true,
           "parte": "completa"
         },
-        "efecto": null,
+        "efecto": "Saharis mira el libro y no a ella, y devuelve el juego con su pregunta",
         "puestos": "Saharis en su extremo norte, con el libro delante sobre la mesa.",
         "continuidad": "Pregunta mirando el libro: la conversación entera ocurre a través de la mesa y del libro, casi sin mirarse.",
         "escena": "6"
@@ -3121,7 +3121,7 @@
           "en_cuadro": true,
           "parte": "frase 1 de 2 de su línea"
         },
-        "efecto": null,
+        "efecto": "Su respuesta ligera, como si la primera lectura no fuera nada",
         "puestos": "Livia en su extremo sur, frente a Saharis a través de la mesa.",
         "continuidad": "La primera lectura es de ella y no se comparte: el juego reparte las lecturas como se reparten las piezas.",
         "escena": "6"
@@ -3152,7 +3152,7 @@
           "en_cuadro": false,
           "parte": "frase 2 de 2 de su línea (la voz sigue sobre el libro)"
         },
-        "efecto": null,
+        "efecto": "El libro cerrado espera entre los dos extremos de la mesa; su voz cierra el punto desde su sitio",
         "puestos": "Detalle del libro sobre la mesa, en su sitio del mapa: entre los dos, más cerca de Saharis.",
         "continuidad": "«No cuenta.»: la frase cae sobre el objeto del juego. La fuente no da título ni tema al libro, y esta escritura tampoco (duda marcada en el .md).",
         "escena": "6"
@@ -3185,7 +3185,7 @@
           "en_cuadro": true,
           "parte": "completa"
         },
-        "efecto": null,
+        "efecto": "Su pregunta como quien devuelve una jugada, con los ojos en el libro",
         "puestos": "Saharis en su extremo, con el libro delante.",
         "continuidad": "Segunda línea original: la segunda lectura es la que está en venta, y los dos lo saben.",
         "escena": "6"
@@ -3218,7 +3218,7 @@
           "en_cuadro": true,
           "parte": "completa"
         },
-        "efecto": null,
+        "efecto": "Su reto ligero, con la barbilla un poco alta; la biblioteca no hace otro ruido",
         "puestos": "Livia en su extremo sur, frente a él.",
         "continuidad": "Tercera línea original: el precio de la segunda lectura es que él la escriba. Es el trato más limpio que nadie le ha ofrecido en dos capítulos.",
         "escena": "6"
@@ -3277,7 +3277,7 @@
           "en_cuadro": true,
           "parte": "completa"
         },
-        "efecto": null,
+        "efecto": "Esta vez su pregunta es de verdad: el juego se cae de su voz por una vez",
         "puestos": "Saharis en su extremo norte; el libro, delante de él.",
         "continuidad": "Pregunta de verdad, sin juego: es la primera vez en la escena que no devuelve una jugada, y Livia lo nota (su respuesta sale desde la puerta).",
         "escena": "6"
@@ -3336,7 +3336,7 @@
           "en_cuadro": true,
           "parte": "frase 1 de 2 de su línea"
         },
-        "efecto": null,
+        "efecto": "Lo dice desde la puerta, a la ligera: lo menos importante del mundo, dicho así",
         "puestos": "Livia en la puerta sur, ya fuera de la mesa.",
         "continuidad": "«De una casa.»: fórmula de su juego, no un dato sobre el libro — así consta en el apunte del guion y así se mantiene aquí.",
         "escena": "6"
@@ -3369,7 +3369,7 @@
           "en_cuadro": false,
           "parte": "frase 2 de 2 de su línea (la voz sigue sobre Saharis)"
         },
-        "efecto": null,
+        "efecto": "Su voz termina desde la puerta; él no levanta los ojos del libro",
         "puestos": "Saharis en su extremo, con la vista en el libro; Livia queda fuera de cuadro, en la puerta.",
         "continuidad": "La invitación a compararla con una casa que se cae cae sobre él y sobre el libro: la escena 5 acaba de mostrar una línea sin nombre en los libros de esta misma casa.",
         "escena": "6"
@@ -3402,7 +3402,7 @@
           "en_cuadro": true,
           "parte": "completa"
         },
-        "efecto": null,
+        "efecto": "Pregunta sin levantar la vista del libro: la única pregunta que sigue",
         "puestos": "Saharis en su extremo; el libro ocupa el borde inferior del encuadre.",
         "continuidad": "«¿Y se cae?»: pregunta de lector y de estratega a la vez — la casa del libro y la casa de la lista de la escena 3 son la misma pregunta.",
         "escena": "6"
@@ -3435,7 +3435,7 @@
           "en_cuadro": true,
           "parte": "frase 1 de 2 de su línea"
         },
-        "efecto": null,
+        "efecto": "Ella se detiene un latido más de lo que el juego permite, y entonces contesta",
         "puestos": "Livia en la puerta sur, a punto de salir.",
         "continuidad": "La pausa antes de «Todavía no» es el momento en que la escena deja de ser solo un juego: ella también sabe en qué casa está.",
         "escena": "6"
@@ -3598,7 +3598,7 @@
         "imagen": "Close-up of the parchment across the boy's knees: symbols traced in dried rust-dark pigment — circles, angles, signs that are letters of no surface alphabet — and the boy's small finger hovering a centimetre above the surface, following one stroke without touching it",
         "video": "The finger travels slowly along a stroke to its very end, never touching the parchment. Camera locked.",
         "voz": null,
-        "efecto": null,
+        "efecto": "El dedo recorre el trazo sin tocar el pergamino; en la celda, el silencio y la respiración del niño",
         "puestos": "Detalle: el pergamino sobre las rodillas del niño y su dedo a un centímetro de la superficie.",
         "continuidad": "Lee sin tocar: el pergamino se presenta por el recorrido de su dedo, no por ninguna explicación.",
         "escena": "7"
@@ -3737,7 +3737,7 @@
         "imagen": "Close shot of the boy: he does not hide the parchment, does not drop it, does not shrink; his hands rest open at either side of it and he stays perfectly still",
         "video": "Nothing. He does not answer. Camera locked.",
         "voz": null,
-        "efecto": null,
+        "efecto": "Ella espera en la puerta y él no contesta: el silencio de la celda es la respuesta",
         "puestos": "El niño quieto, las manos abiertas a los lados del pergamino.",
         "continuidad": "No contesta ni a esta ni a las preguntas que siguen: la quietud es su manera de responder, en esta escena y en la siguiente.",
         "escena": "7"
@@ -3851,7 +3851,7 @@
         "imagen": "Over-the-shoulder shot: the mother holds the parchment at arm's length and studies the traced symbols the way one studies something known to be dangerous without knowing how to read it",
         "video": "She turns the parchment slightly in the faint light, reading nothing, recognising everything. Camera locked.",
         "voz": null,
-        "efecto": null,
+        "efecto": "Ella gira el pergamino en la luz escasa: no lee nada y lo reconoce todo; fuera, el corredor callado",
         "puestos": "La madre agachada, con el pergamino apartado de su cuerpo, mirándolo.",
         "continuidad": "Reconoce los trazos de verlos en la piedra y en las manos de los de arriba: no necesita entenderlos para saber de quién son.",
         "escena": "7"
@@ -3911,7 +3911,7 @@
         "imagen": "Close shot of the boy's face: he looks back at his mother and nods. Once.",
         "video": "One single nod, and then stillness again. Camera locked.",
         "voz": null,
-        "efecto": null,
+        "efecto": "Un solo asentimiento, y después la quietud otra vez; la celda no hace más ruido",
         "puestos": "El niño en su puesto, frente a su madre agachada.",
         "continuidad": "Asiente una vez: la única respuesta que da en la escena, y la que dispara el abrazo de la siguiente.",
         "escena": "7"
@@ -3999,7 +3999,7 @@
         "imagen": "Close-up of the mother's fist clenched around the folded parchment against the boy's back, hidden between her hand and his body; the fist trembles",
         "video": "The fist stays clenched and trembling; the parchment is seen by no one. Camera locked.",
         "voz": null,
-        "efecto": null,
+        "efecto": "Su puño cerrado tiembla contra la espalda del niño, con el pergamino escondido donde nadie puede verlo",
         "puestos": "Detalle del puño con el pergamino, contra la espalda del niño.",
         "continuidad": "El pergamino queda donde nadie puede verlo: en su puño, contra la espalda de él. Su destino no se dice en ninguna parte.",
         "escena": "8"
@@ -4146,7 +4146,7 @@
         "imagen": "Medium shot: at last the mother opens her arms slowly, a moment later than she could have, as if letting go also had to be decided",
         "video": "Her arms open slowly and settle on the boy's shoulders. Camera locked.",
         "voz": null,
-        "efecto": null,
+        "efecto": "Sus brazos se abren despacio, un momento más tarde de lo que podía: soltar también tuvo que decidirse",
         "puestos": "La madre suelta el abrazo y se queda agachada a su altura, en el mismo sitio.",
         "continuidad": "Soltarlo también hubo que decidirlo: tarda un momento más en abrir los brazos.",
         "escena": "8"
@@ -4199,7 +4199,7 @@
         "imagen": "Close shot of the boy alone in frame, sitting exactly as he was, unmoving, after his mother's hands have left his shoulders",
         "video": "He has not moved at all. The scene ends on his stillness. Camera locked.",
         "voz": null,
-        "efecto": null,
+        "efecto": "El niño sigue sentado exactamente igual, sin moverse; la escena se cierra sobre su quietud",
         "puestos": "El niño en su puesto, solo en el encuadre.",
         "continuidad": "El niño sigue sin moverse: la advertencia queda dicha y el recuerdo se corta sobre su quietud, como la escena anterior se cortó sobre su asentimiento.",
         "escena": "8"
@@ -4249,7 +4249,7 @@
         "imagen": "Detail of the investigation wall: papers pinned in rows, cords stretched between them, the charcoal drawing of the ring in its hollow at centre-left, SIETE written large at the very top in a child's hand",
         "video": "Nothing moves but the lamp's light breathing faintly on the paper. Camera locked.",
         "voz": null,
-        "efecto": null,
+        "efecto": "Nada se mueve en la pared salvo la luz del farol respirando leve sobre el papel",
         "puestos": "Detalle de la pared: los papeles, los hilos, el dibujo del anillo en su hueco y SIETE arriba.",
         "continuidad": "La pared no se reinicia ni se reordena nunca: cada dato nuevo se añade a lo que ya hay.",
         "escena": "9"
@@ -4436,7 +4436,7 @@
         "imagen": "Detail resting on the wall's papers one after another: figures, names, dates, cords — on no paper is there any sentence of his; the wall holds only data",
         "video": "The camera rests on paper after paper of pure data. Camera locked.",
         "voz": null,
-        "efecto": null,
+        "efecto": "La cámara descansa papel tras papel de datos puros; en la sala, el silencio seco de siempre",
         "puestos": "Detalle de la pared: solo datos; en ningún papel, una frase suya.",
         "continuidad": "No la escribe: en la pared no hay ninguna frase suya, solo datos, y esta no va a ser la primera. La primera frase de la pared es la de la escena 23 y no se adelanta.",
         "escena": "9"
@@ -4574,7 +4574,7 @@
           "en_cuadro": true,
           "parte": "completa"
         },
-        "efecto": null,
+        "efecto": "Su petición empieza por lo que no pide, dicho de pie y sin preámbulo; el salón de día, vacío",
         "puestos": "Saharis de pie en su sitio, frente a Iven por encima del ancho de la mesa.",
         "continuidad": "Abre desnudo: la negociación entera cuelga de esta primera negación.",
         "escena": "10"
@@ -4607,7 +4607,7 @@
           "en_cuadro": true,
           "parte": "completa"
         },
-        "efecto": null,
+        "efecto": "La respuesta de Iven por reflejo, sin levantar del todo la vista de sus papeles",
         "puestos": "Iven en la cabecera, entre sus papeles.",
         "continuidad": "La respuesta de un hombre al que todo el mundo le pide dinero.",
         "escena": "10"
@@ -4640,7 +4640,7 @@
           "en_cuadro": true,
           "parte": "frase 1 de 2 de su línea"
         },
-        "efecto": null,
+        "efecto": "Nombra la mercancía: el nombre; la frase queda sola en la mesa vacía",
         "puestos": "Saharis de pie en su sitio.",
         "continuidad": "La petición en firme, primera frase: el nombre es la mercancía.",
         "escena": "10"
@@ -4673,7 +4673,7 @@
           "en_cuadro": false,
           "parte": "frase 2 de 2 de su línea (la voz sigue sobre Iven)"
         },
-        "efecto": null,
+        "efecto": "La voz de Saharis termina la frase sobre las manos de Iven, que no se mueven: la oferta cae en ellas",
         "puestos": "Iven en la cabecera; Saharis fuera de cuadro, a su este.",
         "continuidad": "«El dinero lo pongo yo»: la segunda frase cae sobre las manos de Iven, que es donde el trato se decide.",
         "escena": "10"
@@ -4732,7 +4732,7 @@
           "en_cuadro": true,
           "parte": "frase 1 de 2 de su línea"
         },
-        "efecto": null,
+        "efecto": "Iven pone el dato sobre la mesa entre los dos, como una moneda; habla despacio, probándolo",
         "puestos": "Iven en la cabecera, mirándolo de otro modo.",
         "continuidad": "La prueba: la partida pagada sin nombre de la escena 5, puesta ahora sobre la mesa por el propio Iven.",
         "escena": "10"
@@ -4765,7 +4765,7 @@
           "en_cuadro": false,
           "parte": "frase 2 de 2 de su línea (la voz sigue sobre Saharis)"
         },
-        "efecto": null,
+        "efecto": "La voz de Iven completa la prueba sobre Saharis, que la oye sin un parpadeo",
         "puestos": "Saharis de pie, escuchando; Iven fuera de cuadro, al norte.",
         "continuidad": "«El administrador no sabe quién la pagó»: la frase cae sobre la cara que no se mueve — es exactamente lo que el administrador dijo en su escena (escena 5).",
         "escena": "10"
@@ -4798,7 +4798,7 @@
           "en_cuadro": true,
           "parte": "completa"
         },
-        "efecto": null,
+        "efecto": "Un solo dato y nada más: ni confirma ni niega; simplemente lo sabe",
         "puestos": "Saharis en su sitio.",
         "continuidad": "Ni confirma ni niega: si la partida es suya o no, el texto no lo dice y este plano tampoco. Es la opacidad con la que Saharis trabaja.",
         "escena": "10"
@@ -4858,7 +4858,7 @@
           "en_cuadro": true,
           "parte": "completa"
         },
-        "efecto": null,
+        "efecto": "La pregunta práctica de un hombre arruinado: de dónde sale el dinero, dicha casi con respeto",
         "puestos": "Iven en la cabecera.",
         "continuidad": "La pregunta práctica de un hombre arruinado: no el qué, sino el de dónde.",
         "escena": "10"
@@ -4891,7 +4891,7 @@
           "en_cuadro": true,
           "parte": "frase 1 de 2 de su línea"
         },
-        "efecto": null,
+        "efecto": "Le quita toda importancia al dinero en una frase corta; el salón vacío la deja sonar",
         "puestos": "Saharis en su sitio.",
         "continuidad": "El dinero no es la mercancía escasa de esta conversación, y su respuesta lo deja claro sin darle importancia.",
         "escena": "10"
@@ -4924,7 +4924,7 @@
           "en_cuadro": false,
           "parte": "frase 2 de 2 de su línea (la voz sigue sobre Iven)"
         },
-        "efecto": null,
+        "efecto": "La voz de Saharis cierra el punto sobre Iven, que ya escucha de otra manera",
         "puestos": "Iven en la cabecera; Saharis fuera de cuadro.",
         "continuidad": "«Por eso lo pongo yo»: la frase cae sobre un Iven que ya está viendo a otro hombre delante.",
         "escena": "10"
@@ -4983,7 +4983,7 @@
           "en_cuadro": true,
           "parte": "frase 1 de 3 de su línea"
         },
-        "efecto": null,
+        "efecto": "Empieza el argumento que duele, sin crueldad: su apellido todavía abre puertas",
         "puestos": "Saharis en su sitio.",
         "continuidad": "El argumento empieza por lo que Iven todavía tiene: el apellido como puerta.",
         "escena": "10"
@@ -5016,7 +5016,7 @@
           "en_cuadro": true,
           "parte": "parte central de su línea, hasta la coma"
         },
-        "efecto": null,
+        "efecto": "Gira el argumento sin alzar la voz: las puertas ya no se abren para el hombre mismo",
         "puestos": "Saharis en su sitio, más cerca en el encuadre.",
         "continuidad": "La línea va completada desde la prosa de la escena (en el guion guardado venía cortada); aquí se parte en la coma para que respire sin romperse.",
         "escena": "10"
@@ -5049,7 +5049,7 @@
           "en_cuadro": false,
           "parte": "cierre de la frase larga de su línea (la voz sigue sobre Iven)"
         },
-        "efecto": null,
+        "efecto": "La cuenta de los años cae sobre Iven uno a uno; él no interrumpe ni se defiende",
         "puestos": "Iven en la cabecera; Saharis fuera de cuadro.",
         "continuidad": "«...porque hace ocho años que no se sienta en ninguna mesa que importe»: la segunda parte cae sobre el hombre del que habla.",
         "escena": "10"
@@ -5082,7 +5082,7 @@
           "en_cuadro": true,
           "parte": "frase 3 de 3 de su línea"
         },
-        "efecto": null,
+        "efecto": "Cierra el argumento con él mismo de contraejemplo, nivelado y en voz baja",
         "puestos": "Saharis en su sitio.",
         "continuidad": "«Yo me siento en todas y no tengo apellido»: el trato entero queda dicho en esa comparación.",
         "escena": "10"
@@ -5142,7 +5142,7 @@
           "en_cuadro": true,
           "parte": "completa"
         },
-        "efecto": null,
+        "efecto": "Iven habla bajo, más para sí que para el muchacho: un inventario de lo que le queda",
         "puestos": "Iven en la cabecera, hablando bajo.",
         "continuidad": "Su única admisión de la escena es de inventario, no del trato: el apellido es lo último que le queda que todavía vale algo.",
         "escena": "10"
@@ -5175,7 +5175,7 @@
           "en_cuadro": true,
           "parte": "completa"
         },
-        "efecto": null,
+        "efecto": "Dos palabras con todo lo que protege dentro: ¿y Rothar?",
         "puestos": "Iven en la cabecera.",
         "continuidad": "«¿Y Rothar?»: su única condición en voz alta en todo el capítulo hasta la oferta de la escena 13.",
         "escena": "10"
@@ -5208,7 +5208,7 @@
           "en_cuadro": true,
           "parte": "frase 1 de 3 de su línea"
         },
-        "efecto": null,
+        "efecto": "La seguridad dada como una cláusula más del trato, sin calor añadido",
         "puestos": "Saharis en su sitio.",
         "continuidad": "Argumentario de venta dicho plano, como una cláusula: el texto no lo garantiza ni la historia se lo reconoce — el desplazamiento real de Rothar es cosa del capítulo 11 y llega por el testamento.",
         "escena": "10"
@@ -5241,7 +5241,7 @@
           "en_cuadro": true,
           "parte": "frase 2 de 3 de su línea"
         },
-        "efecto": null,
+        "efecto": "Corto y exacto: no le pide el sitio del hijo",
         "puestos": "Saharis en su sitio.",
         "continuidad": "Desactiva el miedo antes de que se haga objeción: no pide el sitio del hijo.",
         "escena": "10"
@@ -5274,7 +5274,7 @@
           "en_cuadro": true,
           "parte": "frase 3 de 3 de su línea"
         },
-        "efecto": null,
+        "efecto": "El nombre, y nada más: la única palabra de toda la entrevista cae en el salón vacío",
         "puestos": "Saharis en su sitio.",
         "continuidad": "La petición queda reducida a su palabra central: el nombre.",
         "escena": "10"
@@ -5307,7 +5307,7 @@
           "en_cuadro": true,
           "parte": "frase 1 de 2 de su línea"
         },
-        "efecto": null,
+        "efecto": "Cierra con calma, como quien lee en voz alta los términos de algo ya acordado",
         "puestos": "Saharis en su sitio.",
         "continuidad": "Cierre de la petición: la respuesta no ocurre en esta escena ni a esta hora del día — es de la escena 13 y aquí no se anticipa.",
         "escena": "10"
@@ -5340,7 +5340,7 @@
           "en_cuadro": false,
           "parte": "frase 2 de 2 de su línea (la voz sigue sobre Iven)"
         },
-        "efecto": null,
+        "efecto": "La última frase de Saharis se asienta sobre Iven, que no contesta ni lo echa: el silencio decide por él",
         "puestos": "Iven en la cabecera; Saharis fuera de cuadro.",
         "continuidad": "«Por eso no me ha echado»: la prueba de que no hay respuesta es que la entrevista sigue abierta cuando la frase cae.",
         "escena": "10"
@@ -5446,7 +5446,7 @@
         "imagen": "Shot from behind Saharis: his back and his unchanging pace down the centre of the street; he does not look back once",
         "video": "The same pace he kept at dinner and on the way down to the quarter. Camera locked.",
         "voz": null,
-        "efecto": null,
+        "efecto": "Su espalda y su paso invariable por el centro de la calle; no mira atrás ni una vez",
         "puestos": "Saharis delante, de espaldas, a su paso de siempre.",
         "continuidad": "No mira atrás ni una vez: el paso de la cena y el del camino al barrio del capítulo 1, sin variación.",
         "escena": "11"
@@ -5498,7 +5498,7 @@
         "imagen": "Side medium shot of Saharis walking past closed doorways in daylight, neither slowing nor quickening; if he knows he is being followed, nothing in him shows it",
         "video": "He walks on, even and unbothered. Camera locked.",
         "voz": null,
-        "efecto": null,
+        "efecto": "Camina junto a los portales cerrados sin bajar ni apurar el paso; la calle de día, en su ruido ordinario",
         "puestos": "Saharis avanza por el centro de la calle, hacia la esquina del fondo.",
         "continuidad": "Si sabe que lo siguen, no lo demuestra en nada; si no lo sabe, tampoco le hace falta. La escena no lo decide y estos planos tampoco.",
         "escena": "11"
@@ -5524,7 +5524,7 @@
         "imagen": "Wide shot: Saharis reaches the corner at the end of the street and turns it, passing out of sight",
         "video": "He turns the corner at the same pace and is gone. Camera locked.",
         "voz": null,
-        "efecto": null,
+        "efecto": "Dobla la esquina al mismo paso y desaparece; la calle sigue sin él",
         "puestos": "Saharis dobla la esquina del fondo: el único punto de giro del mapa.",
         "continuidad": "Dobla una esquina sin cambiar el paso: la desaparición se hace caminando despacio.",
         "escena": "11"
@@ -5700,7 +5700,7 @@
         "imagen": "Close shot of the old scribe looking at the purse on his table. He does not touch it",
         "video": "His eyes stay on the purse; his hands stay where they are. Camera locked.",
         "voz": null,
-        "efecto": null,
+        "efecto": "El escribano mira la bolsa sobre su mesa y no la toca; el cuartucho huele a papel y a silencio",
         "puestos": "El escribano tras la mesa, mirando la bolsa sin tocarla.",
         "continuidad": "Mira la bolsa y no la toca: un hombre de su oficio primero escucha el encargo entero.",
         "escena": "12"
@@ -5733,7 +5733,7 @@
           "en_cuadro": true,
           "parte": "frase 1 de 2 de su línea"
         },
-        "efecto": null,
+        "efecto": "Saharis entrega la primera mitad de la instrucción, neutro: quién vendrá y a preguntar qué",
         "puestos": "Saharis de pie frente a la mesa.",
         "continuidad": "La instrucción abre con el visitante que vendrá: un hombre, sin nombre ni identidad — la fuente no dice quién es y estos planos tampoco.",
         "escena": "12"
@@ -5764,7 +5764,7 @@
           "en_cuadro": false,
           "parte": "frase 2 de 2 de su línea (el nombre, sobre los legajos)"
         },
-        "efecto": null,
+        "efecto": "El nombre se dice sobre los legajos sin marcar: Levalen; la cámara descansa en el papel anónimo",
         "puestos": "Detalle de los legajos sin nombre, en el mapa del cuartucho.",
         "continuidad": "«Levalen»: el nombre cae sobre un papel que no lo etiqueta — es el nombre que no estará en ningún libro, y se dice una sola vez en la escena.",
         "escena": "12"
@@ -5795,7 +5795,7 @@
           "en_cuadro": true,
           "parte": "completa"
         },
-        "efecto": null,
+        "efecto": "La primera pregunta del oficio, con recelo: qué le digo",
         "puestos": "El escribano tras la mesa.",
         "continuidad": "El escribano recibe la versión como recibe cualquier encargo: probándola por los bordes, a ver por dónde se rompe.",
         "escena": "12"
@@ -5828,7 +5828,7 @@
           "en_cuadro": true,
           "parte": "completa"
         },
-        "efecto": null,
+        "efecto": "Su respuesta simple, las dos frases en una sola respiración: la verdad, que no hay registro",
         "puestos": "Saharis en su sitio.",
         "continuidad": "El corazón de la identidad de Levalen es una verdad: no hay ningún registro porque Levalen no existe.",
         "escena": "12"
@@ -5883,7 +5883,7 @@
           "en_cuadro": true,
           "parte": "completa"
         },
-        "efecto": null,
+        "efecto": "Pregunta con un gesto leve hacia sus estanterías de papel: si hay que dejarlo escrito",
         "puestos": "El escribano en su sitio.",
         "continuidad": "Todo lo suyo vive escrito: por eso esta es la primera grieta que prueba.",
         "escena": "12"
@@ -5916,7 +5916,7 @@
           "en_cuadro": true,
           "parte": "completa"
         },
-        "efecto": null,
+        "efecto": "Dos palabras secas de Saharis: en ninguna parte",
         "puestos": "Saharis en su sitio.",
         "continuidad": "La identidad se construye de que no quede escrito en ninguna parte — tampoco el propio encargo.",
         "escena": "12"
@@ -5947,7 +5947,7 @@
           "en_cuadro": true,
           "parte": "completa"
         },
-        "efecto": null,
+        "efecto": "Prueba el siguiente filo de la versión, como quien prueba el segundo pasador de una cerradura",
         "puestos": "El escribano en su sitio.",
         "continuidad": "Prueba la versión como se prueba una cerradura: ahora toca el origen de la casa.",
         "escena": "12"
@@ -5980,7 +5980,7 @@
           "en_cuadro": true,
           "parte": "frase 1 de 2 de su línea"
         },
-        "efecto": null,
+        "efecto": "Una sola dirección, sin adorno: del este",
         "puestos": "Saharis en su sitio.",
         "continuidad": "La casa de Levalen se apoya solo en lo que la fuente da: las casas del este arruinadas tras la peste y sus libros perdidos. Nada más se inventa.",
         "escena": "12"
@@ -6011,7 +6011,7 @@
           "en_cuadro": false,
           "parte": "frase 2 de 2 de su línea (la voz sigue sobre los legajos viejos)"
         },
-        "efecto": null,
+        "efecto": "La explicación termina sobre los legajos viejos y polvorientos: como todas las que se arruinaron",
         "puestos": "Detalle de los legajos viejos del cuartucho.",
         "continuidad": "«Como todas las que se arruinaron»: Levalen se esconde dentro de una categoría entera de casas reales.",
         "escena": "12"
@@ -6042,7 +6042,7 @@
           "en_cuadro": true,
           "parte": "completa"
         },
-        "efecto": null,
+        "efecto": "Señala sus estanterías con un movimiento de la cabeza, sin levantarse de su asiento",
         "puestos": "El escribano señala los estantes sin moverse de su sitio.",
         "continuidad": "La prueba siguiente señala los estantes: los libros del este existen y se pueden ver.",
         "escena": "12"
@@ -6075,7 +6075,7 @@
           "en_cuadro": true,
           "parte": "frase 1 de 2 de su línea"
         },
-        "efecto": null,
+        "efecto": "Saharis, tranquilo: que los vea; es la parte verdadera y no se inmuta",
         "puestos": "Saharis en su sitio.",
         "continuidad": "La versión no teme la inspección porque esta parte es verdadera.",
         "escena": "12"
@@ -6106,7 +6106,7 @@
           "en_cuadro": false,
           "parte": "frase 2 de 2 de su línea (la voz sigue sobre los libros del este)"
         },
-        "efecto": null,
+        "efecto": "Su voz completa el punto sobre los propios libros: en los que quedan, el nombre no está",
         "puestos": "Los estantes del este, en el mapa del cuartucho; Saharis fuera de cuadro, al sur.",
         "continuidad": "«En los que quedan, no está»: en los libros que quedan, Levalen no está — y eso también es verdad.",
         "escena": "12"
@@ -6137,7 +6137,7 @@
           "en_cuadro": true,
           "parte": "completa"
         },
-        "efecto": null,
+        "efecto": "La última duda del escribano, preguntada ya más bajo",
         "puestos": "El escribano en su sitio.",
         "continuidad": "La última duda, ya casi convencido: qué pasa si el visitante no se lo cree.",
         "escena": "12"
@@ -6170,7 +6170,7 @@
           "en_cuadro": true,
           "parte": "parte 1 de la primera frase de su línea (hasta «del este»)"
         },
-        "efecto": null,
+        "efecto": "Empieza la respuesta que tapa el hueco con la verdad de otras casas, con la misma neutralidad de todo el cuarto",
         "puestos": "Saharis en su sitio.",
         "continuidad": "La línea va completada desde la prosa de la escena (en el guion guardado venía cortada); aquí se parte en la cláusula de relativo para que respire sin romperse.",
         "escena": "12"
@@ -6201,7 +6201,7 @@
           "en_cuadro": false,
           "parte": "parte 2 de la primera frase de su línea (la voz sigue sobre el escribano)"
         },
-        "efecto": null,
+        "efecto": "El escribano escucha cómo cae la cláusula: la peste, las casas arruinadas; lo absorbe en silencio",
         "puestos": "El escribano tras la mesa; Saharis fuera de cuadro.",
         "continuidad": "«...que se arruinaron después de la peste»: la segunda parte cae sobre el hombre que tendrá que decirla.",
         "escena": "12"
@@ -6234,7 +6234,7 @@
           "en_cuadro": true,
           "parte": "frase 2 de 2 de su línea"
         },
-        "efecto": null,
+        "efecto": "La piedra clave de la explicación, nivelada y final: que se perdieron los libros",
         "puestos": "Saharis en su sitio.",
         "continuidad": "«Que se perdieron los libros»: la explicación que tapa el hueco — verdadera de otras casas, no de la de Levalen.",
         "escena": "12"
@@ -6265,7 +6265,7 @@
           "en_cuadro": true,
           "parte": "frase 1 de 2 de su línea"
         },
-        "efecto": null,
+        "efecto": "El escribano repite la versión a media voz para aprendérsela, mirando sus propias estanterías",
         "puestos": "El escribano recita mirando sus estantes.",
         "continuidad": "Se lo repite a media voz, como se aprende una lección: la versión empieza a ser suya.",
         "escena": "12"
@@ -6296,7 +6296,7 @@
           "en_cuadro": true,
           "parte": "frase 2 de 2 de su línea (se detiene en ella)"
         },
-        "efecto": null,
+        "efecto": "Sigue repitiendo y se detiene en seco: ha llegado a la parte que no encaja con nada que sepa de sus libros",
         "puestos": "El escribano se detiene dentro de la frase, mirando sus libros.",
         "continuidad": "Recita hasta la parte falsa y se detiene en ella: es lo único que no cuadra con nada de lo que él sabe de sus propios libros.",
         "escena": "12"
@@ -6327,7 +6327,7 @@
           "en_cuadro": true,
           "parte": "completa"
         },
-        "efecto": null,
+        "efecto": "Su única objeción, tímida, casi una disculpa, y exacta: eso último no es verdad",
         "puestos": "El escribano en su sitio.",
         "continuidad": "La objeción tímida es línea original: la única grieta que el escribano no puede cerrar solo.",
         "escena": "12"
@@ -6360,7 +6360,7 @@
           "en_cuadro": true,
           "parte": "frase 1 de 2 de su línea"
         },
-        "efecto": null,
+        "efecto": "El corte seco de Saharis, sin alzar la voz: es verdad de otras",
         "puestos": "Saharis en su sitio.",
         "continuidad": "El mecanismo se defiende con verdades de otras casas, que es como se defiende todo en Feyrond.",
         "escena": "12"
@@ -6391,7 +6391,7 @@
           "en_cuadro": false,
           "parte": "frase 2 de 2 de su línea (el cierre, sobre el silencio de papel)"
         },
-        "efecto": null,
+        "efecto": "El silencio de papel del cuartucho: ninguno se mueve y la última palabra de Saharis cierra el trato desde fuera de cuadro",
         "puestos": "El cuartucho entero en cuadro; Saharis, junto a la puerta, fuera del encuadre principal.",
         "continuidad": "«Basta»: el corte seco cierra el mecanismo y la conversación — silencio de papel, y el escribano no dice nada más.",
         "escena": "12"
@@ -6470,7 +6470,7 @@
         "imagen": "Close-up of the half-empty bottle and the cup on the dark desk, and below the desk's edge the wine stain spread across Iven's clothes, larger than ever",
         "video": "The cup trembles almost imperceptibly in his hand. Camera locked.",
         "voz": null,
-        "efecto": null,
+        "efecto": "La copa tiembla apenas en su mano sobre el escritorio oscuro; la mancha de vino, más grande que nunca",
         "puestos": "Detalle: la botella mediada, la copa y la mancha de vino de Iven.",
         "continuidad": "La borrachera se presenta como inventario visual antes de que hable: botella, copa y mancha.",
         "escena": "13"
@@ -6503,7 +6503,7 @@
           "en_cuadro": true,
           "parte": "frase 1 de 2 de su línea"
         },
-        "efecto": null,
+        "efecto": "Iven hace sitio con la copa al hablar; el despacho de noche guarda su eco bajo",
         "puestos": "Iven tras el escritorio, señalando con la copa la silla de visita del lado sur.",
         "continuidad": "La broma del acreedor empieza como hospitalidad de borracho: primero lo sienta.",
         "escena": "13"
@@ -6596,7 +6596,7 @@
           "en_cuadro": true,
           "parte": "completa"
         },
-        "efecto": null,
+        "efecto": "Entrega el veredicto de su hijo como comedia familiar, medio en broma, mirando el efecto",
         "puestos": "Iven tras el escritorio, con la copa baja.",
         "continuidad": "La investigación de Rothar llega a su único fruto, y llega en boca de su padre, como un chiste: una palabra para lo que no puede probar.",
         "escena": "13"
@@ -6629,7 +6629,7 @@
           "en_cuadro": true,
           "parte": "completa"
         },
-        "efecto": null,
+        "efecto": "Saharis lo acepta con ligereza, sin un parpadeo; la lámpara del despacho entre los dos",
         "puestos": "Saharis sentado al sur del escritorio, de frente a Iven.",
         "continuidad": "Acepta la serpiente sin defenderse: no hay acusación que le haga falta negar.",
         "escena": "13"
@@ -6688,7 +6688,7 @@
           "en_cuadro": true,
           "parte": "frase 1 de 2 de su línea"
         },
-        "efecto": null,
+        "efecto": "Iven se ríe a través de la primera frase, señalando con la copa a nadie",
         "puestos": "Iven tras el escritorio, con la copa en alto.",
         "continuidad": "La burla del hijo es la manera que tiene Iven de no mirar lo que su hijo sí está viendo.",
         "escena": "13"
@@ -6721,7 +6721,7 @@
           "en_cuadro": false,
           "parte": "frase 2 de 2 de su línea (la voz sigue sobre Saharis)"
         },
-        "efecto": null,
+        "efecto": "La voz de Iven completa el juicio fuera de cuadro; Saharis no sonríe y deja que la frase acabe sobre su quietud",
         "puestos": "Saharis sentado al sur, quieto; Iven fuera de cuadro.",
         "continuidad": "La frase sobre no verse a sí mismo cae sobre el único hombre de la sala que se conoce entero.",
         "escena": "13"
@@ -6780,7 +6780,7 @@
           "en_cuadro": true,
           "parte": "parte 1 de su línea, hasta la coma"
         },
-        "efecto": null,
+        "efecto": "Habla para su copa más que para el muchacho, sentimental: empieza el inventario de su casa",
         "puestos": "Iven tras el escritorio, hablando para la copa.",
         "continuidad": "El inventario de los escombros: la línea se parte en la coma, como mandan los precedentes de la casa, y se cierra sobre la sala entera.",
         "escena": "13"
@@ -6813,7 +6813,7 @@
           "en_cuadro": false,
           "parte": "parte 2 de su línea (la voz sigue sobre el despacho en penumbra)"
         },
-        "efecto": null,
+        "efecto": "El despacho oscuro entero alrededor del escritorio; su voz termina de caer sobre la casa en sombra",
         "puestos": "El despacho entero en penumbra; Iven pequeño tras la luz de la lámpara.",
         "continuidad": "«Brindando entre los escombros»: la frase se completa sobre la casa que describe, no sobre su cara.",
         "escena": "13"
@@ -6846,7 +6846,7 @@
           "en_cuadro": true,
           "parte": "frase 1 de 2 de su línea"
         },
-        "efecto": null,
+        "efecto": "Lo dice llano, como quien corrige una cuenta: no se le está cayendo, señor",
         "puestos": "Saharis sentado al sur del escritorio.",
         "continuidad": "Saharis le devuelve el dato plano: la ruina de la casa no es un accidente, es una suma de manos.",
         "escena": "13"
@@ -6879,7 +6879,7 @@
           "en_cuadro": false,
           "parte": "frase 2 de 2 de su línea (la voz sigue sobre Iven)"
         },
-        "efecto": null,
+        "efecto": "La voz de Saharis termina fuera de cuadro sobre Iven, que escucha con la copa olvidada en la mano",
         "puestos": "Iven tras el escritorio, recibiendo la frase; Saharis fuera de cuadro.",
         "continuidad": "«Entre todos» incluye a los dos hombres de la sala, y los dos lo saben.",
         "escena": "13"
@@ -6938,7 +6938,7 @@
           "en_cuadro": true,
           "parte": "completa"
         },
-        "efecto": null,
+        "efecto": "Se lo dice con sentimiento, inclinándose un poco hacia él: a quién le recuerda",
         "puestos": "Iven tras el escritorio, inclinado un poco hacia Saharis.",
         "continuidad": "La frase más peligrosa de la escena es un cumplido: Iven se está mirando en él.",
         "escena": "13"
@@ -6971,7 +6971,7 @@
           "en_cuadro": true,
           "parte": "completa"
         },
-        "efecto": null,
+        "efecto": "Señala con la copa, preciso a pesar del vino: la misma manera de callar",
         "puestos": "Iven tras el escritorio, señalándolo con la copa.",
         "continuidad": "Lo que Iven compra no es el dinero: es la manera de callar. La oferta ya está nombrada antes de hacerse.",
         "escena": "13"
@@ -7030,7 +7030,7 @@
           "en_cuadro": true,
           "parte": "completa"
         },
-        "efecto": null,
+        "efecto": "Se inclina sobre el escritorio y baja la voz aunque nadie pueda oírle: por fin la pregunta",
         "puestos": "Iven inclinado hacia adelante sobre el escritorio.",
         "continuidad": "La oferta, por fin, hecha en voz alta: la pregunta que la petición del otro día dejó sobre esta mesa.",
         "escena": "13"
@@ -7089,7 +7089,7 @@
           "en_cuadro": true,
           "parte": "completa"
         },
-        "efecto": null,
+        "efecto": "Su respuesta cálida y medida: la gratitud llega exactamente a su hora",
         "puestos": "Saharis sentado al sur del escritorio.",
         "continuidad": "La respuesta llega tres segundos tarde, a propósito, y suena a honor: la oferta queda aceptada de palabra.",
         "escena": "13"
@@ -7558,7 +7558,7 @@
         "imagen": "Close-up of the blank sheet of paper spread on the dark wood of the desk, a quill lying beside it, the lamp's light across the empty surface",
         "video": "Nothing is written yet; the paper waits. Camera locked.",
         "voz": null,
-        "efecto": null,
+        "efecto": "El papel en blanco espera sobre la madera oscura, con la pluma al lado y la luz de la lámpara encima",
         "puestos": "Detalle: el papel en blanco sobre el escritorio, con la pluma al lado.",
         "continuidad": "El papel en blanco: en Feyrond las cosas existen cuando existen en papel, y este nombre todavía no existe en ninguna parte.",
         "escena": "15"
@@ -7636,7 +7636,7 @@
         "imagen": "Close-up of the finished writing on the paper: the complete new name, Saharis Elserath, in small sure letters, the ink still fresh",
         "video": "The ink settles; nothing else moves. Camera locked.",
         "voz": null,
-        "efecto": null,
+        "efecto": "La tinta del nombre nuevo se asienta en el papel; nada más se mueve en el despacho",
         "puestos": "Detalle: el nombre nuevo completo, ya escrito en el papel.",
         "continuidad": "El nombre entero, en papel: el precio del apellido, pagado y cobrado en una sola línea de tinta.",
         "escena": "15"
@@ -7792,7 +7792,7 @@
         "imagen": "Extreme close-up of the seal rising slowly off the wax: beneath it, the mark of the house, whole and clean in the dark wax",
         "video": "The seal lifts away unhurriedly, leaving the mark entire. Camera locked.",
         "voz": null,
-        "efecto": null,
+        "efecto": "El sello sube despacio de la cera y deja la marca de la casa entera y limpia",
         "puestos": "Detalle: el sello subiendo y la marca de la casa, entera, en la cera.",
         "continuidad": "La marca de la casa, entera: desde este plano, Saharis es Elserath en el papel de la casa.",
         "escena": "15"
@@ -7895,7 +7895,7 @@
         "imagen": "Close shot over the top of the stone wall: the scattered lights of the city below in the dark — what he is looking at",
         "video": "The lights shimmer faintly in the night air. Camera locked.",
         "voz": null,
-        "efecto": null,
+        "efecto": "Las luces de la ciudad titilan leves en el aire de la noche, sobre el muro de piedra",
         "puestos": "Detalle: las luces de la ciudad por encima del muro.",
         "continuidad": "Lo que él mira cuando no responde: la ciudad entera, que es donde su pared apunta.",
         "escena": "16"
@@ -7954,7 +7954,7 @@
           "en_cuadro": true,
           "parte": "frase 1 de 2 de su línea"
         },
-        "efecto": null,
+        "efecto": "Livia trae la noticia del despacho como un juego, ligera, disfrutándolo",
         "puestos": "Livia llegando junto al muro, cerca de Saharis.",
         "continuidad": "«El libro de la casa» es su fórmula de juego para el papel sellado de la escena 15: no es un segundo documento.",
         "escena": "16"
@@ -7987,7 +7987,7 @@
           "en_cuadro": false,
           "parte": "frase 2 de 2 de su línea (la voz sigue sobre Saharis)"
         },
-        "efecto": null,
+        "efecto": "Él no se gira del todo; la gracia de Livia cae sobre su quietud, desde fuera de cuadro",
         "puestos": "Saharis junto al muro; Livia fuera de cuadro.",
         "continuidad": "«Con cera y todo»: la firma entera reducida a su chiste por la única persona de la casa que puede permitírselo.",
         "escena": "16"
@@ -8020,7 +8020,7 @@
           "en_cuadro": true,
           "parte": "completa"
         },
-        "efecto": null,
+        "efecto": "Se quita el asunto de encima en una frase plana: un papel aguanta cualquier nombre",
         "puestos": "Saharis junto al muro, mirando las luces.",
         "continuidad": "Saharis rebaja el papel a lo que es para él: un papel aguanta cualquier nombre — el nombre vale por lo que hará con él, no por la cera.",
         "escena": "16"
@@ -8053,7 +8053,7 @@
           "en_cuadro": true,
           "parte": "completa"
         },
-        "efecto": null,
+        "efecto": "Ella se apoya en el muro a su lado y lo dice como un juego: ahora eres mi hermano",
         "puestos": "Livia apoyada en el muro, a ~0,5 m a la izquierda de Saharis.",
         "continuidad": "Lo dice por fin en voz alta, probando cómo suena: el juego empieza aquí y se acaba dos frases después.",
         "escena": "16"
@@ -8086,7 +8086,7 @@
           "en_cuadro": true,
           "parte": "completa"
         },
-        "efecto": null,
+        "efecto": "Una palabra plana y con humor seco: legalmente",
         "puestos": "Saharis junto al muro.",
         "continuidad": "«Legalmente»: la única clase de hermano que el papel puede fabricar, dicha sin peso.",
         "escena": "16"
@@ -8179,7 +8179,7 @@
           "en_cuadro": true,
           "parte": "frase 1 de 2 de su línea"
         },
-        "efecto": null,
+        "efecto": "Su pregunta ya de verdad, estudiándolo: de dónde viene ese nombre",
         "puestos": "Livia junto al muro, girada hacia Saharis.",
         "continuidad": "La pregunta por el origen, hecha en el jardín: su recogida no es esta escena, es la pared de la escena 23.",
         "escena": "16"
@@ -8212,7 +8212,7 @@
           "en_cuadro": false,
           "parte": "frase 2 de 2 de su línea (la voz sigue sobre Saharis)"
         },
-        "efecto": null,
+        "efecto": "Él sigue mirando las luces; la observación de Livia cae sobre su perfil, desde fuera de cuadro",
         "puestos": "Saharis de perfil junto al muro; Livia fuera de cuadro.",
         "continuidad": "«No es de aquí»: la frase cae sobre el perfil del hombre al que describe.",
         "escena": "16"
@@ -8245,7 +8245,7 @@
           "en_cuadro": true,
           "parte": "completa"
         },
-        "efecto": null,
+        "efecto": "Dos palabras y un nombre, dichos llanos, sin girarse de las luces",
         "puestos": "Saharis junto al muro.",
         "continuidad": "La madre se nombra por primera vez en el presente del capítulo — y se nombra como respuesta, no como presencia: es el único sitio de la casa donde existe.",
         "escena": "16"
@@ -8278,7 +8278,7 @@
           "en_cuadro": true,
           "parte": "completa"
         },
-        "efecto": null,
+        "efecto": "Su pregunta inocente, sin ninguna idea de su peso",
         "puestos": "Livia junto al muro, mirándolo.",
         "continuidad": "La pregunta inocente que abre el único hueco verdadero de la noche.",
         "escena": "16"
@@ -8337,7 +8337,7 @@
           "en_cuadro": true,
           "parte": "completa"
         },
-        "efecto": null,
+        "efecto": "Lo dice como si no fuera nada: la verdad dicha tan llana que pasa inadvertida",
         "puestos": "Saharis junto al muro.",
         "continuidad": "«No lo sé»: es lo más sincero que ha dicho en toda la noche, y ella no lo nota. El espectador sí.",
         "escena": "16"
@@ -8414,7 +8414,7 @@
         "imagen": "Close-up of the work list hung among the wall's data: its first line in small sure handwriting reads «conseguir un apellido», and below it twelve more lines, all uncrossed",
         "video": "The farol's light trembles faintly across the paper. Camera locked.",
         "voz": null,
-        "efecto": null,
+        "efecto": "La luz del farol tiembla leve sobre la lista: la primera línea viva todavía bajo las demás, y doce más sin tachar",
         "puestos": "Detalle: la lista de trabajo, con su primera línea y las doce de debajo.",
         "continuidad": "La lista se presenta antes de tocarla: una línea por cumplir arriba y doce vivas debajo — el orden de la escena es ese orden.",
         "escena": "17"
@@ -8490,7 +8490,7 @@
         "imagen": "Close-up of the list as it now stands: the first line dead under its single stroke, and below it the twelve lines still alive, untouched, in the same small sure hand",
         "video": "The light holds on the dead line and the living ones. Camera locked.",
         "voz": null,
-        "efecto": null,
+        "efecto": "La luz se queda sobre la línea muerta y las doce vivas; en la sala, el silencio seco",
         "puestos": "Detalle: la lista con su primera línea tachada y las doce vivas.",
         "continuidad": "El estado nuevo de la pared queda fijado en imagen: una línea muerta y doce vivas — es el saldo del capítulo en una sola lista.",
         "escena": "17"
@@ -8540,7 +8540,7 @@
         "imagen": "Close study of the wall around the list: the three hundred papers, the threads between them, the drawing of the ring in its centre-left hollow, SIETE large at the very top — and no question written anywhere yet",
         "video": "The camera studies the wall's order without finding any question on it. Camera locked.",
         "voz": null,
-        "efecto": null,
+        "efecto": "La cámara estudia el orden de la pared sin encontrar ninguna pregunta en ella; solo datos",
         "puestos": "Detalle: la pared alrededor de la lista — papeles, hilos, el anillo, SIETE.",
         "continuidad": "La pared sigue siendo solo datos: la primera pregunta de la pared («¿de dónde era ella?») es de la escena 23 y aquí NO se adelanta en ninguna forma.",
         "escena": "17"
@@ -8948,7 +8948,7 @@
         "imagen": "Close-up of the carved symbol in the stone wall —a circle, an eye, four teeth— its grooves worn and darkened by long use",
         "video": "A candle's glow slides very slightly across the carving. Camera locked.",
         "voz": null,
-        "efecto": null,
+        "efecto": "La luz de una vela pasa muy leve sobre el símbolo tallado en la piedra del sótano",
         "puestos": "Detalle: el simbolo tallado en el muro norte.",
         "continuidad": "Cuarta aparicion del signo y la primera en su sitio: no en una mano, no en un papel, no en una puerta — en la pared de una casa que lo usa.",
         "escena": "19"
@@ -8972,7 +8972,7 @@
         "imagen": "Close-up of the small altar: fruit with today's colour still on it, and black candles at uneven heights, none new and none fully spent",
         "video": "Wax trembles on one wick. Camera locked.",
         "voz": null,
-        "efecto": null,
+        "efecto": "Una mecha tiembla en su cera sobre el altar pequeño; la fruta de hoy y las velas a medias",
         "puestos": "Detalle: las ofrendas y las velas del altar.",
         "continuidad": "Ofrendas frescas y velas a medio consumir: es el rastro de un uso de todos los dias.",
         "escena": "19"
@@ -8996,7 +8996,7 @@
         "imagen": "Extreme close-up of the surface of the dark liquid in the bowl on the altar, perfectly still, reflecting one candle flame",
         "video": "The reflected flame wavers once. Camera locked.",
         "voz": null,
-        "efecto": null,
+        "efecto": "La llama reflejada vacila una vez en la superficie oscura y quieta del cuenco",
         "puestos": "Detalle: la superficie del cuenco.",
         "continuidad": "Todavia liquido: alguien lo dejo asi hoy.",
         "escena": "19"
@@ -9020,7 +9020,7 @@
         "imagen": "Row of black candles on the floor beside the altar, each burnt down to a different height, like a small uneven skyline",
         "video": "The flames lean together in a draught that is not felt. Camera locked.",
         "voz": null,
-        "efecto": null,
+        "efecto": "Las llamas de la fila de velas se inclinan juntas en una corriente que no se siente",
         "puestos": "Detalle: las velas del suelo, cada una a su altura.",
         "continuidad": "Ninguna nueva, ninguna apagada del todo: las alturas distintas son el calendario de la sala.",
         "escena": "19"
@@ -9044,7 +9044,7 @@
         "imagen": "The swept stone floor of the cellar, clean, with the faint arc-marks of a broom still readable in the dust near the altar",
         "video": "Dust settles in the candlelight. Camera locked.",
         "voz": null,
-        "efecto": null,
+        "efecto": "El polvo se asienta en la luz de las velas sobre el suelo barrido del sótano",
         "puestos": "Detalle: el suelo barrido.",
         "continuidad": "Barrido. Limpio. En uso: la sala se cuida como se cuida una cocina.",
         "escena": "19"
@@ -9094,7 +9094,7 @@
         "imagen": "The same wide shot of the cellar: beside the east column there is now one shadow more than before, motionless — a man's silhouette the light does not reach, which may have been there all along",
         "video": "The silhouette does not move at all. Camera locked.",
         "voz": null,
-        "efecto": null,
+        "efecto": "Una sombra más junto a la columna, inmóvil: la sala no hace ningún sonido nuevo",
         "puestos": "Saharis inmovil junto a la columna, en sombra; el altar al centro-norte, intacto.",
         "continuidad": "Sin que se vea por donde ha entrado —la fuente no lo ensena y no se inventa—: la sala ya no esta vacia del todo.",
         "escena": "19"
@@ -9120,7 +9120,7 @@
         "imagen": "Medium shot of Saharis standing motionless in the column's shadow, his face half in darkness, looking at the altar without approaching it",
         "video": "He does not move; only his eyes work. Camera locked.",
         "voz": null,
-        "efecto": null,
+        "efecto": "No se mueve; solo sus ojos trabajan en la sombra de la columna, mirando el altar",
         "puestos": "Saharis junto a la columna, sin acercarse al altar.",
         "continuidad": "No se acerca. No toca nada. Mira la sala como se mira una pagina que por fin se ha abierto en su sitio.",
         "escena": "19"
@@ -9146,7 +9146,7 @@
         "imagen": "Close shot over Saharis's shoulder: the altar and the carved symbol beyond it, sharp in candlelight, his dark shoulder still in the foreground",
         "video": "His breathing does not disturb the frame. Camera locked.",
         "voz": null,
-        "efecto": null,
+        "efecto": "Su respiración no altera el cuadro: el altar y el símbolo, nítidos a la luz de las velas",
         "puestos": "El altar y el simbolo desde los ojos de Saharis.",
         "continuidad": "El simbolo en su sitio, visto por fin por quien lo dibujo de memoria en un papel.",
         "escena": "19"
@@ -9172,7 +9172,7 @@
         "imagen": "Close-up of Saharis's hand hanging motionless at his side, fingers relaxed, touching nothing",
         "video": "The hand stays exactly where it is. Camera locked.",
         "voz": null,
-        "efecto": null,
+        "efecto": "Su mano cuelga inmóvil a su lado, sin tocar nada; las velas siguen su luz baja",
         "puestos": "Detalle: la mano quieta de Saharis.",
         "continuidad": "La orden de la escena cabe en una mano: no toca nada.",
         "escena": "19"
@@ -9222,7 +9222,7 @@
         "imagen": "The altar in medium shot, candles burning steadily, the room in use and at peace, unaware of its witness",
         "video": "The flames settle. Camera locked.",
         "voz": null,
-        "efecto": null,
+        "efecto": "Las llamas se asientan sobre el altar; la sala en uso y en paz, sin saber que tiene un testigo",
         "puestos": "El altar, en su funcionamiento ordinario.",
         "continuidad": "La sala sigue a lo suyo: el culto, en esta casa, es una rutina con buena luz de velas.",
         "escena": "19"
@@ -9248,7 +9248,7 @@
         "imagen": "Final wide shot of the cellar: symbol, altar, candles — and the one shadow more beside the column that was not in the first shot of the scene",
         "video": "Nothing moves. The scene closes on the room and its hidden witness. Camera locked.",
         "voz": null,
-        "efecto": null,
+        "efecto": "Nada se mueve: la sala se cierra con su testigo escondido junto a la columna",
         "puestos": "La sala entera, con Saharis dentro, sin tocar nada.",
         "continuidad": "Cierre de la escena: el esta dentro y la casa todavia no lo sabe.",
         "escena": "19"
@@ -9272,7 +9272,7 @@
         "imagen": "Detail of the worn carving of the symbol where a tooth meets the circle, the groove dark with age and touch",
         "video": "Candlelight slides off the groove. Camera locked.",
         "voz": null,
-        "efecto": null,
+        "efecto": "La luz de las velas se retira del surco oscuro y gastado del símbolo",
         "puestos": "Detalle: el desgaste del simbolo.",
         "continuidad": "Gastado como el del dintel: anos de manos y de miradas que ya no estan.",
         "escena": "19"
@@ -9322,7 +9322,7 @@
         "imagen": "Saharis slipping silently behind the east column, gone from the room's open space before the door finishes opening",
         "video": "He moves once, fast and without sound, and is still. Camera locked.",
         "voz": null,
-        "efecto": null,
+        "efecto": "Se mete tras la columna con un solo movimiento, rápido y sin sonido, antes de que la puerta acabe de abrirse",
         "puestos": "Saharis detras de la columna, fuera del eje puerta-altar.",
         "continuidad": "Antes de que la puerta termine de abrirse, la sombra vuelve a ser solo una sombra.",
         "escena": "20"
@@ -9370,7 +9370,7 @@
         "imagen": "The servant sets down the bucket and the jug exactly where he always sets them, beside the altar, without looking around",
         "video": "He puts everything down by habit, in its place. Camera locked.",
         "voz": null,
-        "efecto": null,
+        "efecto": "Deja el cubo y la jarra donde los deja siempre, junto al altar, sin mirar alrededor: la costumbre entera en el gesto",
         "puestos": "El criado junto al altar, dejando el cubo y la jarra en su sitio de siempre.",
         "continuidad": "Trae lo que trae todos los dias y lo deja donde lo deja todos los dias.",
         "escena": "20"
@@ -9394,7 +9394,7 @@
         "imagen": "Close-up of the servant's hands lifting out the most burnt-down candle stubs from the altar",
         "video": "The stubs come out one by one, unhurried. Camera locked.",
         "voz": null,
-        "efecto": null,
+        "efecto": "Los cabos más gastados salen uno a uno, sin prisa, de las manos del criado",
         "puestos": "Detalle: las manos del criado retirando las velas mas gastadas.",
         "continuidad": "Cambia las velas con la economia de quien no gasta ni un gesto en lo que no lo mira nadie.",
         "escena": "20"
@@ -9442,7 +9442,7 @@
         "imagen": "Close-up of yesterday's fruit being swept off the altar into the bucket, without disgust and without reverence",
         "video": "The fruit drops into the bucket like kitchen waste. Camera locked.",
         "voz": null,
-        "efecto": null,
+        "efecto": "La fruta de ayer cae al cubo como desperdicio de cocina, sin asco y sin respeto",
         "puestos": "Detalle: la fruta pasada cayendo en el cubo.",
         "continuidad": "Sin asco y sin respeto: es fruta vieja, no una ofrenda.",
         "escena": "20"
@@ -9490,7 +9490,7 @@
         "imagen": "The servant walking past the north wall directly beneath the carved symbol, carrying the bucket, without once looking up at it",
         "video": "He passes under the symbol the way one passes under a doorframe. Camera locked.",
         "voz": null,
-        "efecto": null,
+        "efecto": "Pasa bajo el símbolo como se pasa bajo el marco de una puerta, con el cubo en la mano y sin mirar arriba",
         "puestos": "El criado pasando bajo el simbolo sin mirarlo.",
         "continuidad": "No mira el simbolo de la pared ni una sola vez, igual que no se mira el marco de una puerta por la que se pasa a diario.",
         "escena": "20"
@@ -9516,7 +9516,7 @@
         "imagen": "Behind the column: Saharis motionless in the dark, only his eyes lit, watching the servant work",
         "video": "He does not move a muscle; the watching is the whole action. Camera locked.",
         "voz": null,
-        "efecto": null,
+        "efecto": "Tras la columna, Saharis no mueve un músculo: la mirada es toda la acción; el criado trabaja al otro lado",
         "puestos": "Saharis tras la columna, inmovil, mirando.",
         "continuidad": "Lo que ha venido a buscar a esta casa no era un misterio: era esto.",
         "escena": "20"
@@ -9540,7 +9540,7 @@
         "imagen": "The servant pausing at the finished altar, glancing over his work with a housekeeper's brief satisfaction, blowing out nothing, adjusting one candle an inch",
         "video": "He nudges one candle straight and is done. Camera locked.",
         "voz": null,
-        "efecto": null,
+        "efecto": "El criado repasa su obra con la satisfacción breve de un ama de llaves y endereza una vela un dedo",
         "puestos": "El criado ante el altar terminado.",
         "continuidad": "La tarea esta hecha: ni reza, ni baja la voz, ni comprueba si alguien mira.",
         "escena": "20"
@@ -9638,7 +9638,7 @@
         "imagen": "Saharis stepping out from behind the column into the room's edge of light, looking once at the tended altar",
         "video": "He comes out slowly and stops; he touches nothing on his way out either. Camera locked.",
         "voz": null,
-        "efecto": null,
+        "efecto": "Sale despacio de detrás de la columna y se detiene al borde de la luz; tampoco al salir toca nada",
         "puestos": "Saharis saliendo de detras de la columna.",
         "continuidad": "Sale sin tocar nada tampoco al salir: la sala queda como la encontro el criado y como la encontrara manana.",
         "escena": "20"
@@ -9662,7 +9662,7 @@
         "imagen": "Final shot of the cellar: symbol, fresh candles, full bowl, swept floor — a shrine in daily use that has had a witness and does not know it",
         "video": "Nothing moves. The scene closes. Camera locked.",
         "voz": null,
-        "efecto": null,
+        "efecto": "La sala queda como el criado la dejó: símbolo, velas nuevas, cuenco lleno y suelo barrido, con un testigo que no sabe que tuvo",
         "puestos": "La sala entera, renovada, sin rastro del testigo.",
         "continuidad": "Nadie sabra que ha tenido un testigo: el horror de Feyrond no se esconde, tiene un criado, una jarra y una hora.",
         "escena": "20"
@@ -9715,7 +9715,7 @@
         "imagen": "Medium shot of Saharis sitting on the roof's edge with his legs hanging over the street, coat settled around him, utterly at ease for once",
         "video": "His legs sway almost imperceptibly, once. Camera locked.",
         "voz": null,
-        "efecto": null,
+        "efecto": "Está sentado en el borde con las piernas colgando, a gusto por una vez; la noche de la ciudad debajo",
         "puestos": "Saharis al borde, con las piernas colgando sobre la calle.",
         "continuidad": "La unica postura desarmada de todo el capitulo: aqui, donde nadie lo ve, las piernas cuelgan.",
         "escena": "21"
@@ -9741,7 +9741,7 @@
         "imagen": "Close shot of his boots hanging in the air above the dark street, the rooftiles' edge below his coat",
         "video": "One boot drifts a centimetre and stops. Camera locked.",
         "voz": null,
-        "efecto": null,
+        "efecto": "Una de sus botas se desplaza un centímetro y se detiene, colgando sobre la calle oscura",
         "puestos": "Detalle: las piernas colgando sobre la calle.",
         "continuidad": "El detalle que desarma la postura: ningun apoyo, ningun cuidado.",
         "escena": "21"
@@ -9765,7 +9765,7 @@
         "imagen": "The windows of the great houses across the city: tall, few, widely spaced, warm with lamplight",
         "video": "One window darkens as a lamp is carried away inside. Camera locked.",
         "voz": null,
-        "efecto": null,
+        "efecto": "Las ventanas de las casas grandes, altas y pocas; una se apaga cuando se llevan una lámpara dentro",
         "puestos": "Detalle: las ventanas de las casas grandes, altas y pocas.",
         "continuidad": "Las de las casas grandes: una de ellas guarda su nombre sellado con cera, y no lo sabe.",
         "escena": "21"
@@ -9789,7 +9789,7 @@
         "imagen": "The windows of the low quarter: small, low, crowded together, many still lit late",
         "video": "Lights tremble behind thin curtains. Camera locked.",
         "voz": null,
-        "efecto": null,
+        "efecto": "Las ventanas del barrio, bajas y juntas, muchas encendidas tarde; la luz tiembla tras las cortinas finas",
         "puestos": "Detalle: las ventanas del barrio, bajas y juntas.",
         "continuidad": "Las del barrio: bajas y juntas, la otra mitad de la ciudad-pared.",
         "escena": "21"
@@ -9839,7 +9839,7 @@
         "imagen": "Close shot of Saharis's face in profile against the lit city, calm, looking at all of it and at nothing in particular",
         "video": "His gaze travels slowly and does not fix on anything. Camera locked.",
         "voz": null,
-        "efecto": null,
+        "efecto": "Su mirada viaja despacio sobre la ciudad sin fijarse en nada; el viento apenas mueve su abrigo",
         "puestos": "Saharis de perfil, mirando el conjunto.",
         "continuidad": "No cuenta —ya las tiene contadas de otras noches— y no busca ninguna en concreto: busca el conjunto.",
         "escena": "21"
@@ -9891,7 +9891,7 @@
         "imagen": "Very wide shot: Saharis tiny on the roofline, the lit city spread before him like a wall too large for any single room",
         "video": "He is one still point in the whole frame. Camera locked.",
         "voz": null,
-        "efecto": null,
+        "efecto": "Él es un punto quieto en todo el cuadro: el tejado, la ciudad encendida y la noche entera",
         "puestos": "Saharis pequeno contra la ciudad entera.",
         "continuidad": "Cada ventana es una casa, cada casa un nombre, cada nombre una deuda o una puerta: la pared demasiado grande para una sola habitacion.",
         "escena": "21"
@@ -9917,7 +9917,7 @@
         "imagen": "Over his shoulder: the sweep of windows passing slowly as his head turns a fraction, never stopping on any one of them",
         "video": "The pan of his gaze is slow and continuous. Camera locked.",
         "voz": null,
-        "efecto": null,
+        "efecto": "El barrido de su mirada pasa despacio sobre las ventanas, sin detenerse en ninguna",
         "puestos": "El barrido de su mirada sobre las ventanas.",
         "continuidad": "Su nombre esta escrito dentro de una de las mas grandes —sellado con cera— y el esta aqui fuera, sin que ninguna ventana lo sepa.",
         "escena": "21"
@@ -9941,7 +9941,7 @@
         "imagen": "The city at night, one more window going dark far below, the rest burning on",
         "video": "The darkness takes one small square and the whole remains. Camera locked.",
         "voz": null,
-        "efecto": null,
+        "efecto": "La oscuridad se lleva un cuadrado pequeño de la ciudad y el conjunto sigue ardiendo",
         "puestos": "La ciudad, con una ventana menos.",
         "continuidad": "La noche sigue su contabilidad sin prisa.",
         "escena": "21"
@@ -9967,7 +9967,7 @@
         "imagen": "Saharis still sitting on the edge, legs hanging, exactly as he was, while the night continues around him",
         "video": "He does not get up. The shot holds. Camera locked.",
         "voz": null,
-        "efecto": null,
+        "efecto": "No se levanta; el plano se sostiene con él sentado en el borde y la noche siguiendo alrededor",
         "puestos": "Saharis al borde del tejado, sin levantarse.",
         "continuidad": "No se levanta. La noche sigue. La escena lo deja ahi.",
         "escena": "21"
@@ -9991,7 +9991,7 @@
         "imagen": "A single lit window among dark ones on a great house's facade, curtains drawn, nothing moving behind them",
         "video": "The lamplight behind the curtain steadies. Camera locked.",
         "voz": null,
-        "efecto": null,
+        "efecto": "Una sola ventana encendida entre las oscuras de una casa grande; tras las cortinas, nada se mueve",
         "puestos": "Detalle: una ventana encendida entre las apagadas.",
         "continuidad": "Debajo de una de esas ventanas, en alguna parte, esta la puerta de piedra a la que ya no necesita volver esta noche.",
         "escena": "21"
@@ -10045,7 +10045,7 @@
         "imagen": "Close-up of the mother's thin arms rising slowly to take the boy in, the effort visible in how little the gesture weighs",
         "video": "Her arms come up slowly and close around him. Camera locked.",
         "voz": null,
-        "efecto": null,
+        "efecto": "Sus brazos delgados suben despacio a tomarlo: el gesto pesa en lo poco que pesa",
         "puestos": "Detalle: los brazos delgados de la madre levantandose.",
         "continuidad": "Muy delgada, mas que en ningun otro recuerdo: se le nota en lo poco que pesa el gesto de levantar los brazos.",
         "escena": "22"
@@ -10072,7 +10072,7 @@
         "imagen": "The mother gathering the boy fully against her chest, her hair falling over both of them, her face hidden in shadow and hair as she holds him",
         "video": "She pulls him in and does not let go. Camera locked.",
         "voz": null,
-        "efecto": null,
+        "efecto": "Lo recoge entero contra su pecho, con el pelo cayéndoles encima a los dos; la celda queda en su penumbra",
         "puestos": "El abrazo completo: ella lo tiene apretado contra si.",
         "continuidad": "Lo abraza como si fuera la ultima vez — que es otra manera de abrazar, y el nino la reconoce sin tener palabras para ella.",
         "escena": "22"
@@ -10105,7 +10105,7 @@
           "intencion": "exhausta, sin miedo",
           "en_cuadro": true
         },
-        "efecto": null,
+        "efecto": "Su boca escondida en el pelo del niño; habla agotada y ya sin miedo, cerca, con la cara sin verse",
         "puestos": "La madre hablando contra el pelo del nino; su cara no se ve.",
         "continuidad": "Primera linea: el miedo es para lo que todavia puede cambiar, y esto ya no.",
         "escena": "22"
@@ -10131,7 +10131,7 @@
         "imagen": "Close shot of the boy's face over her shoulder, looking at nothing, listening, giving no answer",
         "video": "He looks and does not answer. Camera locked.",
         "voz": null,
-        "efecto": null,
+        "efecto": "El niño mira a nada y no contesta; la celda guarda el silencio entre frase y frase",
         "puestos": "El nino mirando, sin contestar.",
         "continuidad": "El nino la mira. No contesta: no ha contestado nunca, y esta noche tampoco.",
         "escena": "22"
@@ -10157,7 +10157,7 @@
         "imagen": "Close-up of the mother's thin hands pressed flat against the boy's back, holding on with what strength she has left",
         "video": "Her fingers press once, gently, and stay. Camera locked.",
         "voz": null,
-        "efecto": null,
+        "efecto": "Sus manos delgadas se aprietan planas contra la espalda del niño, una vez, con la fuerza que le queda",
         "puestos": "Detalle: las manos de la madre contra la espalda del nino.",
         "continuidad": "El orgullo que le sale de donde ya no le queda casi nada empieza en las manos.",
         "escena": "22"
@@ -10190,7 +10190,7 @@
           "intencion": "con una especie de orgullo",
           "en_cuadro": true
         },
-        "efecto": null,
+        "efecto": "Su susurro no se rompe en sollozo: un orgullo extraño la sostiene mientras habla al pelo del niño",
         "puestos": "La madre, con la cabeza inclinada sobre el nino; su cara no se ve.",
         "continuidad": "Segunda linea: le tiembla la voz, y se le quiebra en susurro, que es como se quiebran las cosas que ya estan rotas de antes.",
         "escena": "22"
@@ -10216,7 +10216,7 @@
         "imagen": "The boy's eyes over her shoulder, open and still, receiving the words without moving",
         "video": "His eyes do not change. Camera locked.",
         "voz": null,
-        "efecto": null,
+        "efecto": "Sus ojos no cambian sobre el hombro de ella; recibe las palabras sin moverse",
         "puestos": "Los ojos del nino, abiertos, sin moverse.",
         "continuidad": "Sus ojos son lo que ella esta nombrando, y el lo escucha sin defenderse ni asentir.",
         "escena": "22"
@@ -10242,7 +10242,7 @@
         "imagen": "The mother's shoulders trembling very slightly inside the embrace, her hair shifting with her breath",
         "video": "The trembling comes and goes with her breathing. Camera locked.",
         "voz": null,
-        "efecto": null,
+        "efecto": "Sus hombros tiemblan muy leve dentro del abrazo, al ritmo de su respiración",
         "puestos": "Detalle: el temblor de los hombros de la madre.",
         "continuidad": "El temblor es el puente entre el orgullo y la frase que viene.",
         "escena": "22"
@@ -10276,7 +10276,7 @@
           "en_cuadro": true,
           "parte": "frase 1 de 2 de su línea"
         },
-        "efecto": null,
+        "efecto": "Susurra la primera mitad contra su pelo, con la voz quebrándose sin alzarse nunca",
         "puestos": "La madre susurrando la primera mitad de la frase contra el pelo del nino.",
         "continuidad": "La frase de la serie empieza: voz rota, casi susurrada, con lagrimas — nunca gritada.",
         "escena": "22"
@@ -10309,7 +10309,7 @@
           "en_cuadro": false,
           "parte": "frase 2 de 2 de su línea"
         },
-        "efecto": null,
+        "efecto": "Su voz completa la frase fuera de cuadro, susurrada contra el pelo, sobre la cara quieta del niño",
         "puestos": "El nino escuchando; la voz de la madre suena fuera de cuadro, contra su pelo.",
         "continuidad": "La frase se completa sobre la cara del que la recibe: es la ley que le queda puesta para toda la serie.",
         "escena": "22"
@@ -10362,7 +10362,7 @@
         "imagen": "Extreme close-up of the boy's cheek in the lamplight: a single tear slides down his face",
         "video": "One tear only, in silence. Camera locked.",
         "voz": null,
-        "efecto": null,
+        "efecto": "Una sola lágrima baja en silencio por su cara; la celda no hace otro sonido",
         "puestos": "Detalle: la mejilla del nino y la unica lagrima.",
         "continuidad": "Una lagrima le baja por la cara. Una sola. Es de este recuerdo: en el presente de este capitulo Saharis no llora.",
         "escena": "22"
@@ -10388,7 +10388,7 @@
         "imagen": "Close-up of the boy's small hand rising quickly and wiping the tear away before she can see it",
         "video": "The hand wipes fast and is gone, with the same care he has learned for hiding everything. Camera locked.",
         "voz": null,
-        "efecto": null,
+        "efecto": "Su manita sube rápido y se limpia la lágrima antes de que ella la vea, con el cuidado aprendido de esconderlo todo",
         "puestos": "Detalle: la mano del nino limpiandose la lagrima.",
         "continuidad": "Se la limpia antes de que ella la vea — rapido, con el mismo cuidado con el que ha aprendido a que no se le vea nada — y ella no la ve.",
         "escena": "22"
@@ -10415,7 +10415,7 @@
         "imagen": "The mother still holding him, her head resting against his hair, at peace in not knowing what she has missed",
         "video": "She holds him a while longer, breathing slowly. Camera locked.",
         "voz": null,
-        "efecto": null,
+        "efecto": "Ella lo sigue abrazando un rato más, respirando despacio, en paz de no saber lo que se ha perdido",
         "puestos": "La madre, sin haber visto la lagrima, siguiendolo abrazando.",
         "continuidad": "Nadie la ha visto nunca: ni ella, que era para quien no iba, ni nadie.",
         "escena": "22"
@@ -10492,7 +10492,7 @@
         "imagen": "The paper wall in section: three hundred pinned sheets of names, dates, figures and maps, dense and ordered like a mind",
         "video": "A corner of one sheet stirs in no draught at all. Camera locked.",
         "voz": null,
-        "efecto": null,
+        "efecto": "Una esquina de un papel se mueve en una corriente que no hay; la pared de datos, entera y densa",
         "puestos": "Detalle: la pared y sus trescientos papeles.",
         "continuidad": "La pared esta como este capitulo la ha ido dejando: todo datos, todo cosas que se saben.",
         "escena": "23"
@@ -10516,7 +10516,7 @@
         "imagen": "Close-up of the charcoal drawing of the ring in its hollow at the centre-left of the wall, among the papers",
         "video": "The drawing sits in its place, long settled. Camera locked.",
         "voz": null,
-        "efecto": null,
+        "efecto": "El dibujo del anillo queda en su hueco centro-izquierda, asentado desde hace tiempo entre los papeles",
         "puestos": "Detalle: el dibujo del anillo en su hueco centro-izquierda.",
         "continuidad": "El dibujo del anillo sigue en su hueco: el simbolo ya tiene su papel; esta noche la pared recibe otra clase de frase.",
         "escena": "23"
@@ -10540,7 +10540,7 @@
         "imagen": "Close-up of the work list pinned on the wall: its first line struck through with one stroke, twelve living lines beneath it",
         "video": "The struck line sits above the twelve, settled. Camera locked.",
         "voz": null,
-        "efecto": null,
+        "efecto": "La lista con su primera línea tachada de una raya y las doce vivas debajo, a la luz del farol",
         "puestos": "Detalle: la lista de trabajo, con la primera linea tachada y las doce vivas debajo.",
         "continuidad": "La lista como quedo en la escena 17: «conseguir un apellido» tachado, doce lineas vivas debajo.",
         "escena": "23"
@@ -10566,7 +10566,7 @@
         "imagen": "Saharis standing before the wall, charcoal in hand, not sitting, looking at the papers the way he looks at the city from a roof",
         "video": "He stands and reads his own wall without moving. Camera locked.",
         "voz": null,
-        "efecto": null,
+        "efecto": "Está de pie ante la pared con el carboncillo en la mano, leyéndola como lee la ciudad desde un tejado",
         "puestos": "Saharis de pie frente a la pared, con el carboncillo en la mano.",
         "continuidad": "Ha vuelto de los tejados con un dato nuevo y grande —el sotano de los Renn, en uso— y ese dato tiene su sitio en esta pared.",
         "escena": "23"
@@ -10592,7 +10592,7 @@
         "imagen": "Close-up of his hand holding the charcoal, motionless, above the table's edge",
         "video": "The charcoal does not move yet. Camera locked.",
         "voz": null,
-        "efecto": null,
+        "efecto": "Su mano con el carboncillo no se mueve todavía, sobre el borde de la mesa",
         "puestos": "Detalle: la mano con el carboncillo, quieta.",
         "continuidad": "La mano espera: lo que va a escribir no es lo que ha venido a escribir.",
         "escena": "23"
@@ -10668,7 +10668,7 @@
         "imagen": "Close-up of the finished writing on the wall, in small charcoal letters: «¿de dónde era ella?» — alone, with no answer beneath it",
         "video": "The letters sit fresh and black among the old papers. Camera locked.",
         "voz": null,
-        "efecto": null,
+        "efecto": "Las letras frescas y negras de la pregunta quedan entre los papeles viejos, sin respuesta debajo",
         "puestos": "Detalle: la pregunta escrita en la pared, sola.",
         "continuidad": "La primera pregunta de la pared: debajo no hay respuesta, ni flecha, ni cordel que la ate a ningun papel.",
         "escena": "23"
@@ -10692,7 +10692,7 @@
         "imagen": "The wall in wider frame: three hundred data-papers, and among them the one question, unconnected to anything, facing the room",
         "video": "The lantern light holds it among the data. Camera locked.",
         "voz": null,
-        "efecto": null,
+        "efecto": "La luz del farol sostiene la pregunta entre los datos, de cara a la sala",
         "puestos": "La pared entera, con la pregunta sola entre los datos.",
         "continuidad": "Queda sola, abierta, mirando a la sala como la sala lo mira a el: la primera frase suya que la pared guarda.",
         "escena": "23"
@@ -10718,7 +10718,7 @@
         "imagen": "Saharis lowering his hand, the charcoal spent for tonight, standing before what he has written",
         "video": "His hand comes down slowly. Camera locked.",
         "voz": null,
-        "efecto": null,
+        "efecto": "Su mano baja despacio: el carboncillo, gastado por esta noche",
         "puestos": "Saharis bajando la mano frente a la pared.",
         "continuidad": "Baja la mano. La pregunta queda escrita en la madrugada.",
         "escena": "23"
@@ -10744,7 +10744,7 @@
         "imagen": "Saharis standing before the wall in the lantern light, the whole chapter reordering itself behind the question he has just left there",
         "video": "He does not turn away yet. Camera locked.",
         "voz": null,
-        "efecto": null,
+        "efecto": "No se gira todavía: el capítulo entero se reordena detrás de la pregunta que acaba de dejar en la pared",
         "puestos": "Saharis frente a la pared, con la pregunta nueva.",
         "continuidad": "Todo lo demas —el apellido, la firma, el sotano— eran las doce lineas. Esto es lo que hay debajo de las doce lineas.",
         "escena": "23"
@@ -10768,7 +10768,7 @@
         "imagen": "The question on the wall in the lantern's light, the charcoal strokes still fresh, no cord running from it to any paper",
         "video": "The light does not waver. Camera locked.",
         "voz": null,
-        "efecto": null,
+        "efecto": "La pregunta en la pared a la luz del farol, con los trazos aún frescos y ningún cordel que la una a ningún papel",
         "puestos": "Detalle final: la pregunta, sin atar a nada.",
         "continuidad": "Cierre de la escena: la pregunta queda en la pared, sin respuesta, y es el motor que el capitulo deja encendido.",
         "escena": "23"
@@ -10794,7 +10794,7 @@
         "imagen": "Saharis sitting down in the single chair facing the paper wall, settling in front of it, the lantern burning on the table at its east end",
         "video": "He sits and becomes still, facing the wall. Camera locked.",
         "voz": null,
-        "efecto": null,
+        "efecto": "Se sienta en la única silla frente a la pared y se queda quieto; el farol arde sobre la mesa a su extremo este",
         "puestos": "Saharis sentandose en la unica silla, de frente a la pared; el farol sobre la mesa, al este.",
         "continuidad": "Se sienta enfrente. La mira. La escena entera es ese quedarse.",
         "escena": "24"
@@ -10818,7 +10818,7 @@
         "imagen": "The wall in the lantern's light: among the three hundred papers, the new question written alone, still unconnected to anything",
         "video": "The light holds warm on the papers. Camera locked.",
         "voz": null,
-        "efecto": null,
+        "efecto": "La luz cálida del farol se queda sobre los papeles y la pregunta nueva, todavía sin unir a nada",
         "puestos": "Detalle: la pared con su pregunta nueva, en la luz del farol.",
         "continuidad": "La pared, con su pregunta nueva todavia sin atar a nada, le queda delante en la luz del farol.",
         "escena": "24"
@@ -10868,7 +10868,7 @@
         "imagen": "Saharis seated facing the wall, motionless, watching the light begin to fail and doing nothing about it",
         "video": "He does not rise, does not reach out. Camera locked.",
         "voz": null,
-        "efecto": null,
+        "efecto": "Mira cómo la luz empieza a fallar y no hace nada: no se levanta, no alarga la mano",
         "puestos": "Saharis sentado, sin atender el farol.",
         "continuidad": "No lo recoge: no se levanta, no alarga la mano, no aviva la mecha. La negativa es el gesto de la escena.",
         "escena": "24"
@@ -10892,7 +10892,7 @@
         "imagen": "The far edge of the paper wall darkening first, its outermost sheets losing the light while the centre still holds it",
         "video": "The darkness takes the border of the wall, slowly. Camera locked.",
         "voz": null,
-        "efecto": null,
+        "efecto": "La oscuridad toma primero el borde lejano de la pared; el centro todavía guarda la luz",
         "puestos": "El borde de la pared apagandose primero.",
         "continuidad": "Primero se apaga el borde de la pared: la luz baja por orden, como todo en esta casa interior.",
         "escena": "24"
@@ -10916,7 +10916,7 @@
         "imagen": "Papers of names in the failing light, their written edges going soft and unreadable one by one",
         "video": "The letters lose their sharpness. Camera locked.",
         "voz": null,
-        "efecto": null,
+        "efecto": "Las letras de los papeles pierden su filo una a una en la luz que falla",
         "puestos": "Detalle: los nombres quedandose sin filo.",
         "continuidad": "Luego los nombres se quedan sin filo: los datos se retiran antes que la pregunta.",
         "escena": "24"
@@ -10940,7 +10940,7 @@
         "imagen": "In the last of the lantern's light, the question alone still readable on the wall: «¿de dónde era ella?»",
         "video": "The question is the last thing the light lets go of. Camera locked.",
         "voz": null,
-        "efecto": null,
+        "efecto": "En lo último de la luz del farol, la pregunta es lo último que la luz suelta: ¿de dónde era ella?",
         "puestos": "La pregunta, lo ultimo que se lee.",
         "continuidad": "La pregunta es lo ultimo que se lee — o lo primero que se deja de leer: es lo que la luz suelta al final.",
         "escena": "24"
@@ -10966,7 +10966,7 @@
         "imagen": "Close-up of Saharis's hand resting motionless on his knee, making no move toward the lantern's wick",
         "video": "The hand stays exactly where it is. Camera locked.",
         "voz": null,
-        "efecto": null,
+        "efecto": "Su mano descansa inmóvil sobre la rodilla, sin hacer ningún movimiento hacia la mecha del farol",
         "puestos": "Detalle: la mano quieta, que no se alarga a la mecha.",
         "continuidad": "La mano no se alarga: la escena se sostiene en lo que el no hace.",
         "escena": "24"
@@ -11019,7 +11019,7 @@
         "imagen": "The wall gone dark, its papers now only shapes; Saharis's silhouette seated before it, facing what can no longer be read",
         "video": "The last glow dies out of the frame. Camera locked.",
         "voz": null,
-        "efecto": null,
+        "efecto": "El último resplandor sale del cuadro; sigue sentado ante lo que ya no se puede leer",
         "puestos": "La pared a oscuras y la silueta de Saharis sentado enfrente.",
         "continuidad": "La habitacion se va quedando con la oscuridad que tenia guardada detras de todos sus papeles.",
         "escena": "24"

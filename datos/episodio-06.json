@@ -507,7 +507,7 @@
         "flashback": true,
         "escenario": "bosque-lago",
         "luz": "BARRIO",
-        "mapa_puestos": "EL LAGO EN EL BOSQUE, de NOCHE, en el RECUERDO (placa «bosque-lago»). MAPA NUEVO de esta tanda, fijado para heredarlo en la tanda 3, que vuelve a este lago: un lago de agua QUIETA bajo la luna, rodeado de bosque cerrado de troncos enormes; LA ORILLA de tierra y piedras bajas queda al SUR y al ESTE. EIRA (16 años, ~1,60 m, placa «eira-joven») está EN EL AGUA, a ~6 m de la orilla sur, DE ESPALDAS a la orilla, con el agua a la cintura, cantando bajito. EL CHICO (12 años, ~1,42 m, placa «saharis-12») está ENTRE LOS ARBUSTOS de la orilla ESTE, inmóvil, a ~8 m de ella, tapado por el bosque. La escena se cuenta por la espalda de ella, el agua y la orilla: ningún primer plano de su cuerpo en el agua. Escala humana escrita en cada encargo: nada de muñecos ni gigantes."
+        "mapa_puestos": "EL LAGO EN EL BOSQUE, de NOCHE, en el RECUERDO (placa «bosque-lago»). MAPA NUEVO de esta tanda, fijado para heredarlo en la tanda 3, que vuelve a este lago: un lago de agua QUIETA bajo la luna, rodeado de bosque cerrado de troncos enormes; LA ORILLA de tierra y piedras bajas queda al SUR y al ESTE. EIRA (16 años, ~1,60 m, placa «eira-joven») está EN EL AGUA, a ~6 m de la orilla sur, DE ESPALDAS a la orilla, con el agua a la cintura, cantando bajito. EL CHICO (12 años, ~1,42 m, placa «saharis-12-barrio») está ENTRE LOS ARBUSTOS de la orilla ESTE, inmóvil, a ~8 m de ella, tapado por el bosque. La escena se cuenta por la espalda de ella, el agua y la orilla: ningún primer plano de su cuerpo en el agua. Escala humana escrita en cada encargo: nada de muñecos ni gigantes."
       },
       {
         "escena": 10,
@@ -517,7 +517,7 @@
         "flashback": true,
         "escenario": "bosque-lago",
         "luz": "BARRIO",
-        "mapa_puestos": "EL LAGO, CONTINUO del recuerdo (placa «bosque-lago»). EL MISMO MAPA de la escena 9, sin mover nada: EIRA (16 años, ~1,60 m, placa «eira-joven») sigue EN EL AGUA, a ~6 m de la orilla sur, DE ESPALDAS, cantando bajito; EL CHICO (12 años, ~1,42 m, placa «saharis-12») sigue ENTRE LOS ARBUSTOS de la orilla ESTE, a ~8 m de ella. La escena entera es la enumeración de lo que no hace: no se acerca, no dice nada, no hace nada. Sus lágrimas son DE RECUERDO y no caen en llanto. Escala humana escrita en cada encargo: nada de muñecos ni gigantes."
+        "mapa_puestos": "EL LAGO, CONTINUO del recuerdo (placa «bosque-lago»). EL MISMO MAPA de la escena 9, sin mover nada: EIRA (16 años, ~1,60 m, placa «eira-joven») sigue EN EL AGUA, a ~6 m de la orilla sur, DE ESPALDAS, cantando bajito; EL CHICO (12 años, ~1,42 m, placa «saharis-12-barrio») sigue ENTRE LOS ARBUSTOS de la orilla ESTE, a ~8 m de ella. La escena entera es la enumeración de lo que no hace: no se acerca, no dice nada, no hace nada. Sus lágrimas son DE RECUERDO y no caen en llanto. Escala humana escrita en cada encargo: nada de muñecos ni gigantes."
       },
       {
         "escena": 11,
@@ -557,7 +557,7 @@
         "flashback": true,
         "escenario": "bosque",
         "luz": "BARRIO",
-        "mapa_puestos": "EL SENDERO DEL BOSQUE, de DÍA, en el RECUERDO (dato de escenario del guion: «bosque»). MAPA NUEVO de esta tanda, fijado para heredarlo en las escenas 15 a 17, que lo continúan sin mover nada: un camino de tierra que corre de SUR a NORTE entre troncos enormes, cerca del lago de las escenas 9 y 10 — el SUR baja hacia la orilla ESTE del lago —, con UN ENSANCHE pequeño (~4 m) a mitad de tramo. KAEL JOVEN (placa «kael-joven»: un muchacho mayor que el chico, ~1,70 m, las DOS PIERNAS ENTERAS, SIN muleta, la cara LIMPIA, sin marca alguna) está DE PIE EN EL CENTRO del ensanche, de cara al SUR, cortando el paso. EL CHICO (12 años, ~1,42 m, placa «saharis-12») sube por el sendero desde el SUR y se detiene a ~1,5 m de Kael, de cara al NORTE. La edad de Kael no la fija la fuente y ningún plano la fija: va como «más joven», sin muleta. Escala humana escrita en cada encargo: nada de muñecos ni gigantes."
+        "mapa_puestos": "EL SENDERO DEL BOSQUE, de DÍA, en el RECUERDO (dato de escenario del guion: «bosque»). MAPA NUEVO de esta tanda, fijado para heredarlo en las escenas 15 a 17, que lo continúan sin mover nada: un camino de tierra que corre de SUR a NORTE entre troncos enormes, cerca del lago de las escenas 9 y 10 — el SUR baja hacia la orilla ESTE del lago —, con UN ENSANCHE pequeño (~4 m) a mitad de tramo. KAEL JOVEN (placa «kael-joven»: un muchacho mayor que el chico, ~1,70 m, las DOS PIERNAS ENTERAS, SIN muleta, la cara LIMPIA, sin marca alguna) está DE PIE EN EL CENTRO del ensanche, de cara al SUR, cortando el paso. EL CHICO (12 años, ~1,42 m, placa «saharis-12-barrio») sube por el sendero desde el SUR y se detiene a ~1,5 m de Kael, de cara al NORTE. La edad de Kael no la fija la fuente y ningún plano la fija: va como «más joven», sin muleta. Escala humana escrita en cada encargo: nada de muñecos ni gigantes."
       },
       {
         "escena": 15,
@@ -577,7 +577,7 @@
         "flashback": true,
         "escenario": "bosque",
         "luz": "BARRIO",
-        "mapa_puestos": "EL SENDERO DEL BOSQUE, CONTINUO de la escena 15 (dato de escenario del guion: «bosque»). EL MISMO MAPA, sin mover nada: en el CENTRO del ensanche, EIRA (16 años, ~1,60 m, placa «eira-joven») está EN EL SUELO, arrodillada junto a KAEL JOVEN, abrazándolo contra ella mientras él recupera el aire; EL CHICO (12 años, ~1,42 m, placa «saharis-12») sigue DE PIE a ~2 m al SUR del centro, con el brazo ya bajo. Ningún plano se detiene en el cuello de Kael ni nombra marca alguna. Escala humana escrita en cada encargo."
+        "mapa_puestos": "EL SENDERO DEL BOSQUE, CONTINUO de la escena 15 (dato de escenario del guion: «bosque»). EL MISMO MAPA, sin mover nada: en el CENTRO del ensanche, EIRA (16 años, ~1,60 m, placa «eira-joven») está EN EL SUELO, arrodillada junto a KAEL JOVEN, abrazándolo contra ella mientras él recupera el aire; EL CHICO (12 años, ~1,42 m, placa «saharis-12-barrio») sigue DE PIE a ~2 m al SUR del centro, con el brazo ya bajo. Ningún plano se detiene en el cuello de Kael ni nombra marca alguna. Escala humana escrita en cada encargo."
       },
       {
         "escena": 17,

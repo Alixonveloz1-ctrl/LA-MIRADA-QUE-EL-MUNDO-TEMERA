@@ -22,9 +22,7 @@
      "flashback": true,
      "personajes": [
       "celebrante",
-      "madre",
-      "acolita",
-      "escribano"
+      "madre"
      ],
      "dialogo": [
       {
@@ -100,7 +98,7 @@
      "flashback": true,
      "personajes": [
       "celebrante",
-      "acolita"
+      "título: la mirada que el mundo temerá"
      ],
      "dialogo": [
       {
@@ -152,8 +150,7 @@
      "personajes": [
       "invitada",
       "invitado",
-      "saharis",
-      "iven"
+      "saharis"
      ],
      "dialogo": [
       {
@@ -217,8 +214,7 @@
      "personajes": [
       "iven",
       "rothar",
-      "saharis",
-      "livia"
+      "saharis"
      ],
      "dialogo": [
       {
@@ -816,9 +812,7 @@
      "flashback": false,
      "personajes": [
       "saharis",
-      "vendedora",
-      "mozo",
-      "nino"
+      "vendedora"
      ],
      "dialogo": [
       {
@@ -3759,7 +3753,7 @@
        "quien": "eira",
        "etiqueta": "EIRA",
        "texto": "Treinta días para desalojar.",
-       "intencion": "leyendo; la segunda parte del bando"
+       "intencion": "leyendo; la segunda parte del bando (desde la prosa de la escena: las palabras son las del propio bando)"
       }
      ],
      "accion": "El campamento junto al río, de día: cientos de tiendas de tela y barro, los fuegos pequeños, el barro de los caminos entre tienda y tienda. La vida de un sitio que se puede recoger en una hora, en su hora de siempre.\n\nY entra una cosa que el campamento no tiene: papel con escolta.\n\nUn PREGONERO llega con escolta —dos hombres, el paso de los que vienen de la ciudad a hacer un trámite y a volverse— y clava un BANDO en un poste. Los golpes son contados, de oficio: los que ponen una cosa para que dure. La gente se agolpa. Los que llegan primero se quedan delante; los de detrás se suben a lo que haya. Todos miran el papel.\n\nNadie sabe leer.\n\nEl papel se queda ahí, clavado y mudo, con su letra ordenada diciendo algo que nadie de los que lo miran puede oír. Alguien se acerca más, como si de cerca la letra fuera a abrirse. No se abre.\n\nEIRA se abre paso entre la gente —el pelo plateado recogido, las manos rojas de frío y de trabajo— y se pone frente al poste. Lee primero para sí, con los labios quietos. Después lee en voz alta, despacio, para todos, con la voz de las cosas que hay que oír enteras:\n\n**EIRA** *(leyendo el bando en voz alta, despacio, para que lo oiga todo el campamento (desde la prosa de la escena: las palabras son las del propio bando))*: Canalización del río.\n\nLa gente se aprieta un poco más. Ella sigue, con la misma voz, hasta el final del papel:\n\n**EIRA** *(leyendo; la segunda parte del bando)*: Treinta días para desalojar.\n\nY se hace un silencio largo.\n\nUn silencio de cientos de personas haciendo la misma cuenta a la vez: treinta días, las tiendas, los niños, el río. El bando no dice adónde. No dice quién paga el camino, ni qué pasa el día treinta y uno, ni a quién se le pregunta. Dice lo que dice y se queda clavado en su poste, y el pregonero y su escolta ya van de vuelta hacia la ciudad, y el campamento entero se queda mirando a la única persona que ha podido leer su propia sentencia en voz alta.",
@@ -5128,7 +5122,8 @@
        "quien": "vharn",
        "etiqueta": "LORD VHARN",
        "texto": "¡Tres meses! ¡Tres meses de mi casa en tus manos!",
-       "intencion": "grito de rabia de un padre (original)"
+       "intencion": "grito de rabia de un padre (original)",
+       "riesgo": "alto"
       },
       {
        "quien": "vharn",
@@ -5339,31 +5334,31 @@
        "quien": "saharis",
        "etiqueta": "SAHARIS",
        "texto": "Usted estaba cuando yo nací.",
-       "intencion": "suave, con una anciana"
+       "intencion": "suave, con una anciana (original)"
       },
       {
        "quien": "acolita",
        "etiqueta": "ACÓLITA",
        "texto": "Yo te tuve en brazos.",
-       "intencion": "cariñosa"
+       "intencion": "cariñosa (original)"
       },
       {
        "quien": "saharis",
        "etiqueta": "SAHARIS",
        "texto": "¿Cuándo llegó mi madre aquí?",
-       "intencion": "conteniendo la urgencia"
+       "intencion": "conteniendo la urgencia (original)"
       },
       {
        "quien": "acolita",
        "etiqueta": "ACÓLITA",
        "texto": "En invierno. Muy flaca.",
-       "intencion": "recordando sin dificultad"
+       "intencion": "recordando sin dificultad (original)"
       },
       {
        "quien": "saharis",
        "etiqueta": "SAHARIS",
        "texto": "¿Sola?",
-       "intencion": "una palabra, y en ella se le va la vida"
+       "intencion": "una palabra, y en ella se le va la vida (original)"
       }
      ],
      "accion": "Yo te tuve en brazos\n\nLa cripta, de noche. Una habitación pequeña.\n\nNo es el santuario, con su bóveda y su estatua: es una habitación pequeña de la casa de abajo, de las que no salen en ningún mapa de la pared. En ella, sentada, con una manta, está la ACÓLITA.\n\nLa acólita de la primera escena de la serie. La que meció a un bebé junto al lado sur del altar la noche en que nació, tarareando sin palabras, agotada, y dijo su única frase de entonces —«Está dormido.»— a un hombre enmascarado que le contestó que no. Ahora es anciana: el tiempo de la serie entera está en su cuerpo, sentado y abrigado con una manta, en una habitación pequeña de la casa que ha servido toda su vida. La fuente la trae así, sin prepararla en ninguna escena de este capítulo —ninguna tanda la insinuó, ninguna la nombró—: está, como están las cosas de abajo, porque siempre ha estado.\n\nSAHARIS está con ella. Ha bajado a la casa heredada con la cuenta de los dedos hecha dos veces, y viene a preguntarle a la única persona viva que estaba donde él empezó. Empieza por el hecho, dicho suave, con el tono que se usa con una anciana, que en él es una cosa nueva y no le cuesta: es cortesía y es acta.\n\n**SAHARIS** *(suave, con una anciana (original))*: Usted estaba cuando yo nací.\n\nLa anciana contesta con el recuerdo en las manos, cariñosa, con la certeza corporal de las que han tenido el peso.\n\n**ACÓLITA** *(cariñosa (original))*: Yo te tuve en brazos.\n\nEntonces él pregunta lo que ha venido a preguntar, conteniendo la urgencia: no el comprador —ese consta en un libro—, no el vendedor —ese está tachado—, sino la llegada: el principio del asiento, antes de que fuera asiento.\n\n**SAHARIS** *(conteniendo la urgencia (original))*: ¿Cuándo llegó mi madre aquí?\n\nLa anciana recuerda sin dificultad. La memoria de las de abajo no está en los libros: está en las mujeres que estuvieron, y la suya llega entera y sencilla, con la estación y el cuerpo.\n\n**ACÓLITA** *(recordando sin dificultad (original))*: En invierno. Muy flaca.\n\nY entonces la pregunta de una palabra, en la que la fuente fija que se le va la vida: no cuándo, no cómo, no de dónde — si vino sola. Si con ella, al llegar, venía ya lo que el margen de un registro dice con otra letra.\n\n**SAHARIS** *(una palabra, y en ella se le va la vida (original))*: ¿Sola?\n\nLa anciana lo mira.\n\nLa escena se cierra en esa mirada, antes de la respuesta: la mujer que lo tuvo en brazos mirando al hombre que tiene delante, con su invierno y su flaca en la memoria, midiendo —o no midiendo nada: solo mirando— la pregunta que le acaban de hacer. Lo que contesta es la escena siguiente, y es el cierre del capítulo.",
@@ -5384,19 +5379,19 @@
        "quien": "acolita",
        "etiqueta": "ACÓLITA",
        "texto": "No.",
-       "intencion": "simple"
+       "intencion": "simple (original)"
       },
       {
        "quien": "acolita",
        "etiqueta": "ACÓLITA",
        "texto": "Llegó con un niño.",
-       "intencion": "sin idea de lo que está diciendo"
+       "intencion": "sin idea de lo que está diciendo (original)"
       },
       {
        "quien": "acolita",
        "etiqueta": "ACÓLITA",
        "texto": "No eras tú. Tú tardaste todavía un año en nacer.",
-       "intencion": "aclarando, servicial"
+       "intencion": "aclarando, servicial (original)"
       }
      ],
      "accion": "No eras tú\n\nLa cripta. *Continuo.*\n\nLa misma habitación pequeña, la misma anciana con su manta, la misma pregunta colgando de su única palabra. La acólita contesta primero lo preguntado, con la sencillez de las cosas simples.\n\n**ACÓLITA** *(simple (original))*: No.\n\nPausa.\n\nNo llegó sola. Y la anciana añade lo que su memoria guarda del invierno en que llegó una mujer muy flaca a la casa de abajo, y lo añade sin idea de lo que está diciendo —sin saber que lleva diecisiete años siendo la única persona viva que lo sabe, sin saber que la frase cae sobre el único hombre al que no se le podía caer encima—: servicial, aclarando, como se aclara una cosa de la casa a quien pregunta por ella.\n\n**ACÓLITA** *(sin idea de lo que está diciendo (original))*: Llegó con un niño.\n\nSaharis no se mueve.\n\nEs la quietud de los túneles otra vez, la de la cuenta con los dedos, traída a una habitación con otra persona dentro: el hombre al que no le tiembla la mano escribiendo ni contando se queda exactamente donde está, y la anciana, que no ha notado nada —porque no hay nada que notar en una cara que no dice nada—, le completa la aclaración con la segunda parte, la que ordena las fechas contra su vida:\n\n**ACÓLITA** *(aclarando, servicial (original))*: No eras tú. Tú tardaste todavía un año en nacer.\n\nLlegó con un niño. No era él. Él tardó todavía un año en nacer. La cuenta que Saharis hizo con los dedos en su refugio —la compra, el traslado cuatro meses después, todo ello anterior a su nacimiento— recibe de esta anciana su forma humana y su remate: su madre llegó a la casa de abajo en invierno, muy flaca, **con un niño que no era él**, un año antes de que él naciera. Quién era ese niño, qué fue de él, cómo se llamaba —eso último, sobre todo, cómo se llamaba—, la escena no lo dice: la anciana no lo dice, y esta expansión no se lo escribe. Es la materia que la temporada guarda para donde la guarda, y aquí queda exactamente en el borde: un niño anterior, sin nombre en esta habitación.\n\nPrimer plano de la cara de Saharis mientras lo entiende.\n\nLa cara de siempre —la que no dice nada, la que sostuvo cuarenta miradas, la que oyó «Se acabó» desde un pasillo y «La boda sigue en pie» desde un silencio— en primer plano, entendiendo. La fuente no le da una lágrima, ni un gesto, ni una palabra: le da el primer plano y el entendimiento, y la expansión lo deja exactamente ahí, sin numerar nada y sin cerrar nada.\n\nNegro.\n\n*(Fin del capítulo.)*",
