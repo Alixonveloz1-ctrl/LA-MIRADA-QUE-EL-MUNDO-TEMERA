@@ -384,6 +384,28 @@ if (!serie.piezas.ep06) {
   anota(`pieza «ep06» añadida (${ep06Archivo.ep06.tomas.length} planos, ${ep06Archivo.ep06.duracion_s} s)`);
 }
 
+// ---------------------------------------------------------------------------
+// 4h. El episodio 7, escrito a mano desde el guion expandido.
+//
+// Igual que los episodios 1 a 6: se escribió plano a plano en el código
+// (304 planos, 1057 s) y vive en datos/episodio-07.json. Este episodio no
+// tiene pieza en el estado (el desglose automático nunca llegó a él), así
+// que no hay copia viva que mande sobre esta: es la que se ve en las
+// pantallas desde el primer momento. Su duración (17 minutos y 37
+// segundos) queda por debajo de los ~20 pedidos y se declara tal cual,
+// sin rellenar, como el capítulo 4: es el capítulo más callado de la
+// temporada y su tercio final es silencio por diseño. Lleva una sola
+// excepción de duración contada, con su justificación escrita en el
+// plano: E23-05, ante la celda.
+// ---------------------------------------------------------------------------
+
+const ep07Archivo = JSON.parse(readFileSync(join(raiz, 'datos/episodio-07.json'), 'utf8'));
+
+if (!serie.piezas.ep07) {
+  serie.piezas.ep07 = ep07Archivo.ep07;
+  anota(`pieza «ep07» añadida (${ep07Archivo.ep07.tomas.length} planos, ${ep07Archivo.ep07.duracion_s} s)`);
+}
+
 const yaSuena = new Set(serie.musica.piezas.map((m) => m.id));
 for (const tema of opEd.musica) {
   if (yaSuena.has(tema.id)) continue;
