@@ -365,6 +365,25 @@ if (!serie.piezas.ep05) {
   anota(`pieza «ep05» añadida (${ep05Archivo.ep05.tomas.length} planos, ${ep05Archivo.ep05.duracion_s} s)`);
 }
 
+// ---------------------------------------------------------------------------
+// 4g. El episodio 6, escrito a mano desde el guion expandido.
+//
+// Igual que los episodios 1 a 5: se escribió plano a plano en el código
+// (358 planos, 1123 s) y vive en datos/episodio-06.json. Este episodio no
+// tiene pieza en el estado (el desglose automático nunca llegó a él), así
+// que no hay copia viva que mande sobre esta: es la que se ve en las
+// pantallas desde el primer momento. Su duración (18 minutos y 43
+// segundos) queda por debajo de los ~20 pedidos y se declara tal cual,
+// sin rellenar: su último tramo es el más callado del capítulo.
+// ---------------------------------------------------------------------------
+
+const ep06Archivo = JSON.parse(readFileSync(join(raiz, 'datos/episodio-06.json'), 'utf8'));
+
+if (!serie.piezas.ep06) {
+  serie.piezas.ep06 = ep06Archivo.ep06;
+  anota(`pieza «ep06» añadida (${ep06Archivo.ep06.tomas.length} planos, ${ep06Archivo.ep06.duracion_s} s)`);
+}
+
 const yaSuena = new Set(serie.musica.piezas.map((m) => m.id));
 for (const tema of opEd.musica) {
   if (yaSuena.has(tema.id)) continue;

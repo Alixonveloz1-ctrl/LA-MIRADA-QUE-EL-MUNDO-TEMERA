@@ -6,7 +6,7 @@
   "escenas": 289,
   "escenarios": 27,
   "nota_escenarios": "Cada escena trae ya su escenario canonico y su esquema de luz. Derivado de los guiones, no escrito a mano.",
-  "lineas": 542,
+  "lineas": 545,
   "nota_intencion": "Cada línea lleva su intención: cómo se dice, no solo qué se dice. Las marcadas con riesgo 'alto' son gritos o llanto sostenido, donde ningún TTS llega: se resuelven fuera de cuadro, tapadas, cortadas sobre quien escucha, o como grito sin palabras generado aparte."
  },
  "guiones": [
@@ -3748,8 +3748,21 @@
      "momento": "DÍA",
      "flashback": false,
      "personajes": [],
-     "dialogo": [],
-     "accion": "Un pregonero con escolta clava un bando en un poste. Canalización del río. Treinta días para desalojar. La gente se agolpa. Nadie sabe leer. Eira lo lee en voz alta y se hace un silencio largo.",
+     "dialogo": [
+      {
+       "quien": "eira",
+       "etiqueta": "EIRA",
+       "texto": "Canalización del río.",
+       "intencion": "leyendo el bando en voz alta, despacio, para que lo oiga todo el campamento (desde la prosa de la escena: las palabras son las del propio bando)"
+      },
+      {
+       "quien": "eira",
+       "etiqueta": "EIRA",
+       "texto": "Treinta días para desalojar.",
+       "intencion": "leyendo; la segunda parte del bando"
+      }
+     ],
+     "accion": "El campamento junto al río, de día: cientos de tiendas de tela y barro, los fuegos pequeños, el barro de los caminos entre tienda y tienda. La vida de un sitio que se puede recoger en una hora, en su hora de siempre.\n\nY entra una cosa que el campamento no tiene: papel con escolta.\n\nUn PREGONERO llega con escolta —dos hombres, el paso de los que vienen de la ciudad a hacer un trámite y a volverse— y clava un BANDO en un poste. Los golpes son contados, de oficio: los que ponen una cosa para que dure. La gente se agolpa. Los que llegan primero se quedan delante; los de detrás se suben a lo que haya. Todos miran el papel.\n\nNadie sabe leer.\n\nEl papel se queda ahí, clavado y mudo, con su letra ordenada diciendo algo que nadie de los que lo miran puede oír. Alguien se acerca más, como si de cerca la letra fuera a abrirse. No se abre.\n\nEIRA se abre paso entre la gente —el pelo plateado recogido, las manos rojas de frío y de trabajo— y se pone frente al poste. Lee primero para sí, con los labios quietos. Después lee en voz alta, despacio, para todos, con la voz de las cosas que hay que oír enteras:\n\n**EIRA** *(leyendo el bando en voz alta, despacio, para que lo oiga todo el campamento (desde la prosa de la escena: las palabras son las del propio bando))*: Canalización del río.\n\nLa gente se aprieta un poco más. Ella sigue, con la misma voz, hasta el final del papel:\n\n**EIRA** *(leyendo; la segunda parte del bando)*: Treinta días para desalojar.\n\nY se hace un silencio largo.\n\nUn silencio de cientos de personas haciendo la misma cuenta a la vez: treinta días, las tiendas, los niños, el río. El bando no dice adónde. No dice quién paga el camino, ni qué pasa el día treinta y uno, ni a quién se le pregunta. Dice lo que dice y se queda clavado en su poste, y el pregonero y su escolta ya van de vuelta hacia la ciudad, y el campamento entero se queda mirando a la única persona que ha podido leer su propia sentencia en voz alta.",
      "escenario": "campamento",
      "luz": "BARRIO"
     },
@@ -3768,22 +3781,22 @@
        "quien": "concejal",
        "etiqueta": "CONCEJAL",
        "texto": "...y queda el asunto del campamento. Necesitamos a alguien que lo gestione.",
-       "intencion": "trámite"
+       "intencion": "trámite (original)"
       },
       {
        "quien": "saharis",
        "etiqueta": "SAHARIS",
        "texto": "Yo lo hago.",
-       "intencion": "dos palabras, sin dar explicaciones"
+       "intencion": "dos palabras, sin dar explicaciones (original)"
       },
       {
        "quien": "deras",
        "etiqueta": "DERAS",
        "texto": "Que se manche él.",
-       "intencion": "por lo bajo, al de al lado"
+       "intencion": "por lo bajo, al de al lado (original)"
       }
      ],
-     "accion": "...y queda el asunto del campamento. Necesitamos a alguien que lo gestione. Nadie levanta la mano. Es un trabajo sucio. Yo lo hago. Se giran a mirarlo. Un par de sonrisas de compasión. Que se manche él.",
+     "accion": "El Consejo de Comercio, de día: el anfiteatro de bancos oscuros, los ventanales altos, la luz dorada con polvo, las cuarenta personas de las casas en sus filas de siempre. La sesión lleva horas: partida tras partida, la cantinela administrativa de siempre, y la sala ha llegado a ese tramo en el que ya solo queda lo que nadie quiere.\n\nEl CONCEJAL que lleva el orden del día pasa la última hoja:\n\n**CONCEJAL** *(trámite (original))*: ...y queda el asunto del campamento. Necesitamos a alguien que lo gestione.\n\nNadie levanta la mano.\n\nLa sala descubre de pronto un interés enorme por sus papeles: cabezas que bajan, una copa que se recoloca, un murmullo que se traga a sí mismo. Gestionar el campamento quiere decir bajar al barro, contar tiendas, firmar el desalojo de cientos de personas y quedarse con el nombre de eso pegado a la casa de uno para siempre. Es un trabajo sucio, y la sala entera lo sabe con la precisión con la que sabe todas las cosas que no dice.\n\nEl silencio dura lo que dura. Y desde su sitio —de pie, al fondo, en el sitio de los que acompañan y llevan los libros de otro— habla SAHARIS.\n\n**SAHARIS** *(dos palabras, sin dar explicaciones (original))*: Yo lo hago.\n\nSe giran a mirarlo. Todas las cabezas, un solo movimiento: el joven de los Elserath, diecisiete años, el que lleva las cuentas de una casa que no es la suya de nacimiento y las lleva mejor que nadie, ofreciéndose para el barro. Un par de sonrisas de compasión: el alivio de la sala disfrazado de lástima —el trabajo sucio ya tiene dueño, y el dueño no es ninguno de ellos—.\n\nDERAS, en la bancada de su casa, ni siquiera se gira del todo. Lo dice por lo bajo, al de al lado, con la tranquilidad de los que resumen una sala entera en cuatro palabras:\n\n**DERAS** *(por lo bajo, al de al lado (original))*: Que se manche él.\n\nLa sesión sigue. El asunto del campamento ya no es un asunto: es un nombre —el de otro— y la sala puede volver a sus partidas. Nadie le pregunta cómo piensa hacerlo. Nadie le pregunta nada: ese no preguntar es también un acuerdo, y es el que él ha venido a recoger a esta sala.",
      "escenario": "consejo",
      "luz": "NOBLE"
     },
@@ -3798,7 +3811,7 @@
       "saharis"
      ],
      "dialogo": [],
-     "accion": "Montaje. Tres días. Saharis con planos del río. Saharis pagando a un INGENIERO por un informe técnico. Saharis en una sala pequeña con un INSPECTOR de obras. No oímos lo que le dice. Vemos la cara del inspector. Saharis dejando caer una frase a la mujer de un concejal en una fiesta.",
+     "accion": "Montaje. Tres días.\n\nSAHARIS con los planos del río: el cauce dibujado, las márgenes, el sitio donde el campamento se ha puesto sin pedir permiso a ningún plano. Los mira como mira las salas: una vez, y para siempre, guardando dónde el agua aprieta y dónde la obra tendría que morder.\n\nSAHARIS pagando a un INGENIERO por un informe técnico: una bolsa sobre la mesa, la mano del ingeniero, el papel que a partir de esa bolsa va a existir. Ni una palabra de los dos queda fijada: la escena es la bolsa y el papel, y lo que el informe dirá no se dice aquí.\n\nSAHARIS en una sala pequeña con un INSPECTOR de obras.\n\nNo oímos lo que le dice.\n\nLa escena se queda con la otra mitad de la conversación: la cara del inspector. Un funcionario de obras, de los que firman lo que les ponen delante, escuchando a un muchacho de diecisiete años que habla bajo y sin prisa, con la misma planicie con la que sirve el té en una casa noble. La cara pasa por sus estaciones —la atención de oficio, una cosa que no encaja, el momento exacto en el que el hombre entiende que lo que está oyendo no es una petición— y la escena corta antes de que conteste. Lo que Saharis le ha dicho no existe como texto: no lo ha oído nadie, y no va a oírlo nadie nunca. Existe solo el sitio donde cayó: esa cara.\n\nSAHARIS dejando caer una frase a la mujer de un concejal en una fiesta: una sala con música y copas, la superficie de siempre, y el muchacho que en medio de la conversación suelta una frase como se suelta una cosa sin importancia —una frase, una sola, dicha al pasar— y sigue hablando de otra cosa. Qué frase es no se fija. Dónde cae, tampoco: el montaje corta, que es lo que hacen los montajes con las frases que todavía no han hecho su trabajo.\n\nTres días. Cuatro movimientos. Y en los cuatro, ni una sola palabra suya que se oiga: la máquina de este capítulo trabaja con la boca cerrada, y lo único que deja en pantalla son una bolsa, un papel que va a existir, una cara y una frase sin texto.\n\n*(Sin diálogo, como en el guion guardado: la palabra de la escena central está retirada a propósito por la propia fuente —«No oímos lo que le dice»— y no se le ha escrito ninguna.)*",
      "escenario": "elserath-despacho",
      "luz": "NOBLE"
     },
@@ -3817,22 +3830,22 @@
        "quien": "concejal",
        "etiqueta": "CONCEJAL",
        "texto": "El informe dice que el cauce no aguanta la obra este año.",
-       "intencion": "leyendo"
+       "intencion": "leyendo (original)"
       },
       {
        "quien": "otro concejal",
        "etiqueta": "OTRO CONCEJAL",
        "texto": "¿Y el terreno?",
-       "intencion": "preguntando por preguntar"
+       "intencion": "preguntando por preguntar (original)"
       },
       {
        "quien": "concejal",
        "etiqueta": "CONCEJAL",
        "texto": "El terreno da igual si no se puede canalizar.",
-       "intencion": "zanjando"
+       "intencion": "zanjando (original)"
       }
      ],
-     "accion": "El informe dice que el cauce no aguanta la obra este año. ¿Y el terreno? El terreno da igual si no se puede canalizar. Se aplaza. Nadie discute. Nadie se acuerda de quién lo propuso. Saharis, al fondo, tacha una línea en su libreta.",
+     "accion": "El Consejo, otra vez. Días después —la fuente no cuenta cuántos, y la sala tampoco—: las mismas filas, la misma luz, el mismo orden del día gastado por el mismo sitio. Solo que esta vez sobre la mesa hay un papel nuevo: el informe técnico.\n\nEl CONCEJAL lo lee en voz alta, con la voz plana de los que leen para el acta:\n\n**CONCEJAL** *(leyendo (original))*: El informe dice que el cauce no aguanta la obra este año.\n\nLa sala lo recibe como se reciben los informes técnicos: como se recibe el tiempo. Un asentimiento aquí, una copa que se mueve allá. El OTRO CONCEJAL hace la pregunta que la sala se hace por cortesía hacia el terreno, que es lo único que la obra le iba a dar a alguien:\n\n**OTRO CONCEJAL** *(preguntando por preguntar (original))*: ¿Y el terreno?\n\n**CONCEJAL** *(zanjando (original))*: El terreno da igual si no se puede canalizar.\n\nSe aplaza.\n\nNadie discute. La canalización se queda sin año, el bando clavado en el campamento se queda sin efecto, y el asunto entero se cierra con la velocidad con la que esta sala cierra todo lo que ya no le importa. Nadie se acuerda de quién lo propuso: el voluntario de la otra sesión ya no tiene nombre en esta sala, ni el informe tiene camino, ni el campamento tiene gestor: hay un papel que dice que el río no aguanta, y eso basta para que cuarenta personas puedan olvidar a la vez.\n\nAl fondo, SAHARIS tacha una línea en su libreta.\n\nUna línea, una raya, con la misma letra pequeña y segura de todo lo suyo. Qué línea es, la escena no lo dice: la sala ha archivado el asunto en el olvido, y el único que lo archiva por escrito lo archiva tachándolo.",
      "escenario": "consejo",
      "luz": "NOBLE"
     },
@@ -3844,8 +3857,15 @@
      "personajes": [
       "hombre"
      ],
-     "dialogo": [],
-     "accion": "La gente celebra. Alguien reparte vino aguado. Kael, apoyado en la muleta, escucha a un hombre contarle que ha sido el noble joven. Se le tensa la cara.",
+     "dialogo": [
+      {
+       "quien": "hombre",
+       "etiqueta": "HOMBRE",
+       "texto": "Ha sido el noble joven.",
+       "intencion": "contándoselo, de pasada, con el vino aguado en la mano (desde la prosa de la escena)"
+      }
+     ],
+     "accion": "La noticia ha llegado a las tiendas antes que cualquier papel: el bando sigue clavado en su poste, pero ya es papel muerto —la obra se aplaza, el desalojo no viene, hay un año— y la gente celebra.\n\nCelebra con lo que hay, que es lo que se celebra en los sitios que se pueden recoger en una hora: alguien reparte vino aguado, cuenco a cuenco, y el vino da la vuelta a los fuegos entre risas que llevaban treinta días sin sitio donde ponerse. Las tiendas siguen en su sitio. El río sigue en el suyo. El campamento entero respira: un año.\n\nA un lado del reparto, KAEL está apoyado en su muleta, con el cuenco en la mano libre. Junto a él, un HOMBRE del campamento, de los que han estado en la ciudad y han oído lo que la ciudad ya cuenta, se lo está contando como se cuentan las cosas que ya sabe todo el mundo:\n\n**HOMBRE** *(contándoselo, de pasada, con el vino aguado en la mano (desde la prosa de la escena))*: Ha sido el noble joven.\n\nSe le tensa la cara.\n\nKael no contesta. No brinda, no repite la frase, no mira hacia la ciudad. El hombre sigue con su vino y con su historia, que ya es la historia de todo el campamento, y la celebración sigue alrededor del único hombre al que la noticia le ha hecho otra cosa: uno con una muleta bajo el brazo y la cara tensa, oyendo cómo el campamento entero le da las gracias, sin saberlo, a un muchacho al que él conoce de otra parte.",
      "escenario": "campamento",
      "luz": "BARRIO"
     },
@@ -3863,28 +3883,28 @@
        "quien": "eira",
        "etiqueta": "EIRA",
        "texto": "Gracias.",
-       "intencion": "agradecimiento sincero, incómodo de oír"
+       "intencion": "agradecimiento sincero, incómodo de oír (original)"
       },
       {
        "quien": "eira",
        "etiqueta": "EIRA",
        "texto": "De verdad. Gracias.",
-       "intencion": "insistiendo, con calor"
+       "intencion": "insistiendo, con calor (original)"
       },
       {
        "quien": "saharis",
        "etiqueta": "SAHARIS",
        "texto": "No es nada.",
-       "intencion": "sin saber qué hacer con el agradecimiento"
+       "intencion": "sin saber qué hacer con el agradecimiento (original)"
       },
       {
        "quien": "eira",
        "etiqueta": "EIRA",
        "texto": "Es un año. Para nosotros es un año.",
-       "intencion": "explicando lo que significa un año para ellos"
+       "intencion": "explicando lo que significa un año para ellos (original)"
       }
      ],
-     "accion": "Eira y Saharis. Gracias. Saharis no sabe qué hacer con eso. De verdad. Gracias. No es nada. Es un año. Para nosotros es un año. Le pone la mano en el brazo un segundo y la retira. Es la escena más amable del episodio y es la peor.",
+     "accion": "La orilla del río. Las piedras planas de siempre, el agua pasando, el campamento detrás con su celebración quedándose lejos, en ruido y humo. EIRA y SAHARIS, solos en la orilla.\n\nElla ha venido a decir en persona lo que el campamento está diciendo con vino aguado, y lo dice como dice ella las cosas: de frente, sin rebaja.\n\n**EIRA** *(agradecimiento sincero, incómodo de oír (original))*: Gracias.\n\nSaharis no sabe qué hacer con eso.\n\nLo ha sabido hacer con todo lo demás —con una deuda, con una oferta, con una amenaza, con la pregunta que no tenía respuesta—: cada cosa de esas tenía su sitio en sus libros y su frase en su boca. Esto no lo tiene. Una mujer dándole las gracias en una orilla no es un asiento de nada, y el hombre que en dos minutos deshace un pleito delante de un escritorio se queda delante de una sola palabra sin encontrar la suya. Ella lo ve, y en vez de retirarla, la repite con más calor:\n\n**EIRA** *(insistiendo, con calor (original))*: De verdad. Gracias.\n\n**SAHARIS** *(sin saber qué hacer con el agradecimiento (original))*: No es nada.\n\nElla le corrige la cuenta, con la exactitud de los que cuentan en años porque los años son lo único que tienen:\n\n**EIRA** *(explicando lo que significa un año para ellos (original))*: Es un año. Para nosotros es un año.\n\nLe pone la mano en el brazo un segundo y la retira.\n\nUn segundo: toda la escena cabe en ese segundo —la mano de las vendas y del agua, puesta un instante sobre el brazo del muchacho, y retirada por ella misma, como se retiran las cosas que no se pueden quedar—. Los dos miran el río. La celebración sigue detrás, sin ellos.\n\nEs la escena más amable del episodio y es la peor.\n\n*(Las cuatro líneas de la fuente son toda la palabra de la escena y no se les ha añadido ninguna.)*",
      "escenario": "orilla",
      "luz": "BARRIO"
     },
@@ -3897,7 +3917,7 @@
       "madre"
      ],
      "dialogo": [],
-     "accion": "Kael, con la muleta, hablando en una puerta con una MUJER llorando. Detrás de ella, en el pasillo, una NIÑA de unos doce años, pálida, sentada en una silla, mirando al suelo.",
+     "accion": "Una casa modesta de la ciudad, de día. No es una casa de las grandes ni una casa del campamento: una puerta de calle, un pasillo estrecho detrás, la vida de una familia metida en pocas habitaciones.\n\nKAEL está en la puerta, apoyado en la muleta. No ha entrado. Habla con una MUJER que llora.\n\nLa mujer se mantiene en el umbral, con una mano cerca del borde de la puerta, como si todavía no hubiera decidido si aquella conversación pertenece a la calle o a la casa. Llora mientras contesta. No llora como se llora delante de un desconocido al que se quiere impresionar: llora como se llora cuando una cosa ya ha pasado y, sin embargo, sigue pasando cada vez que hay que contarla.\n\nKael no levanta la voz. No se oye qué pregunta ni qué responde ella: ninguna palabra de los dos queda fijada. La escena no está construida sobre lo que se dicen, sino sobre el sitio en el que se dicen —él fuera, con la muleta; ella dentro, sin dejar de llorar; la puerta abierta solo lo justo—.\n\nDetrás de ella, en el pasillo, hay una NIÑA de unos doce años.\n\nEstá sentada en una silla, pálida, mirando al suelo.\n\nNo se levanta cuando hablan. No mira hacia la puerta. No sigue la conversación con los ojos, ni parece esperar que termine. La silla está en el pasillo, no recogida en una habitación: la niña está donde la dejaron al volver, o donde se quedó cuando ya nadie supo qué hacer con su silencio.\n\nKael la ve.\n\nNo se dirige a ella. No cambia el tono para incluirla ni le hace una pregunta por encima del hombro de la mujer. Sigue hablando con la mujer en el mismo sitio, y la conversación baja todavía un poco, como bajan las conversaciones cuando la persona de la que se habla está a pocos pasos, mirando al suelo, y no debería tener que oír otra vez lo que ya ha vivido.\n\nLa mujer contesta a trozos. A veces se detiene. A veces mira hacia el pasillo sin terminar de girarse. La niña no se mueve.\n\nLo que Kael ha venido a buscar no es una denuncia: nadie abre una puerta así para firmar nada, ni hay papel sobre una mesa, ni un criado esperando una respuesta. Ha venido a oír de una boca lo que en la ciudad solo existe como firma al pie de un informe. Y lo que encuentra no es una explicación. Es una casa con una puerta abierta, una mujer que no puede dejar de llorar y una niña sentada en un pasillo, mirando al suelo.\n\nLa escena se queda ahí. No se dice de quién es la casa. No se dice qué relación une a la mujer con la niña. No se nombra a ningún funcionario, ni a ningún noble, ni a ningún informe.\n\nSolo queda Kael en el umbral, con la muleta, mirando por primera vez el precio de una cosa que el campamento está celebrando sin conocer.\n\n*(Sin diálogo fijado, como en el guion guardado: la fuente trae a Kael hablando en la puerta, pero no escribe ni una palabra de esa conversación.)*",
      "escenario": "barrio-humo",
      "luz": "BARRIO"
     },
@@ -3914,22 +3934,22 @@
        "quien": "kael",
        "etiqueta": "KAEL",
        "texto": "El inspector tiene una hija.",
-       "intencion": "bajo, junto al fuego"
+       "intencion": "bajo, junto al fuego (original)"
       },
       {
        "quien": "kael",
        "etiqueta": "KAEL",
        "texto": "La niña estuvo tres días fuera de casa. Volvió sola, sin un rasguño, y no habla.",
-       "intencion": "conteniéndose"
+       "intencion": "conteniéndose (original)"
       },
       {
        "quien": "kael",
        "etiqueta": "KAEL",
        "texto": "El informe lo firmó al día siguiente.",
-       "intencion": "el remate, muy seco"
+       "intencion": "el remate, muy seco (original)"
       }
      ],
-     "accion": "Kael y Eira junto a un fuego. El inspector tiene una hija. Eira no entiende. La niña estuvo tres días fuera de casa. Volvió sola, sin un rasguño, y no habla. Eira deja de moverse. El informe lo firmó al día siguiente.",
+     "accion": "El campamento, de noche. Un fuego pequeño. KAEL y EIRA junto a él.\n\nLa celebración del día ya no está en primer plano: quedan las tiendas, el humo bajo, la gente recogida alrededor de sus propios fuegos. Kael no ha traído a Eira a un aparte solemne ni le habla como quien presenta una acusación. Le habla bajo, junto al fuego, con la contención de quien ya ha hecho el camino hasta una puerta y ha vuelto con tres hechos que no necesitan adorno.\n\n**KAEL** *(bajo, junto al fuego (original))*: El inspector tiene una hija.\n\nEira no entiende.\n\nNo todavía. Un inspector tiene una hija: puede ser una frase de vecindad, una desgracia contada en una casa, una cosa que no tiene nada que ver con el bando, ni con el río, ni con el año que el campamento acaba de ganar. Kael la deja hacer el primer tramo sola y después pone el segundo hecho.\n\n**KAEL** *(conteniéndose (original))*: La niña estuvo tres días fuera de casa. Volvió sola, sin un rasguño, y no habla.\n\nEira deja de moverse.\n\nTres días fuera de casa. Volvió sola. Sin un rasguño. Y no habla. Cada parte de la frase corrige la anterior antes de que pueda convertirse en alivio: volvió, sí; sola; no le hicieron una marca que se pueda enseñar; y desde entonces, silencio. La niña de la silla en el pasillo ya tiene nombre de relación y de oficio en esta frase —es la hija del inspector—, pero Kael todavía no ha dicho para qué sirve saberlo junto a este fuego.\n\nLo dice con la última frase, muy seco.\n\n**KAEL** *(el remate, muy seco (original))*: El informe lo firmó al día siguiente.\n\nY ahí se cierra el mecanismo en el aire, sin que Kael nombre a Saharis.\n\nNo dice quién se llevó a la niña. No dice quién la devolvió. No dice qué se le pidió al inspector ni qué papel tuvo que firmar para que su hija volviera a casa. Pone las fechas una junto a otra —tres días fuera, regreso, firma al día siguiente— y deja que Eira haga la suma que cualquier persona haría.\n\nEira no contesta en la escena.\n\nSu parte no es preguntar. Es dejar de moverse. Es mirar el fuego con los tres hechos ya dentro: el inspector de la sala pequeña, la hija sentada en el pasillo, la firma que aplazó la obra y le dio un año al campamento. La gratitud de la orilla sigue existiendo —el año es real, las tiendas siguen en su sitio—, pero ya no está sola. Tiene una niña de doce años sentada al lado.\n\nKael tampoco añade nada. No convierte lo que sabe en proclama ni se lo lleva al campamento entero. Se lo dice a Eira, que es quien dio las gracias en nombre de todos sin saber qué estaba agradeciendo.\n\nEl fuego sigue. La escena no pasa de ahí.\n\n*(Las tres líneas de la fuente son toda la palabra de la escena y no se les ha añadido ninguna.)*",
      "escenario": "campamento",
      "luz": "BARRIO"
     },
@@ -3940,7 +3960,7 @@
      "flashback": true,
      "personajes": [],
      "dialogo": [],
-     "accion": "Luna. Agua quieta. Eira, dieciséis años, en el agua, de espaldas. Cantando bajito. Entre los arbustos, el chico de doce, inmóvil.",
+     "accion": "Recuerdo. Noche. El lago en el bosque.\n\nLa luna está sobre el agua quieta. No hay viento que ordene la superficie ni ruido que llegue de ningún camino. El bosque se cierra alrededor como se cerraba entonces, antes de ser una ausencia con nombre: troncos enormes, sombra completa, un mundo que todavía parece fuera del alcance de las casas.\n\nEIRA, dieciséis años, está en el agua, de espaldas.\n\nCantando bajito.\n\nLa canción se oye apenas. No se le ponen palabras: llega como llega una voz sobre el agua, sostenida por la noche, sin que la escena necesite decir de dónde la aprendió ni qué dice. No es una llamada. No está cantando para nadie. Está en el lago como se está en un sitio propio, con la seguridad breve de quien todavía cree que hay lugares a los que el resto del mundo no entra.\n\nEntre los arbustos, el chico de doce años está inmóvil.\n\nNo sale a la orilla. No se acerca al agua. No se anuncia. Desde donde está, Eira es una figura de espaldas dentro de la luna y del agua, y su voz baja llena el hueco entre los árboles sin pedirle nada a nadie.\n\nLa escena no le da al chico una intención que la fuente no le dé. No se dice si ha llegado siguiendo la canción, si ha venido al lago por otro camino o si lleva mucho rato entre los arbustos. Está. Y su inmovilidad es el hecho: frente a una Eira que se mueve despacio en un agua sin oleaje, él se queda reducido a una forma quieta entre otras formas quietas.\n\nLa distancia entre los dos no se mide solo en pasos. Ella está dentro. Él está en el borde, escondido por el bosque que a ella la sostiene y a él solo lo tapa.\n\nLa canción sigue, bajito.\n\nNadie habla. Nadie se encuentra. Nadie se pierde todavía.\n\n*(Sin diálogo, como en el guion guardado. La canción de Eira no lleva letra en esta escena y no se identifica con ninguna otra canción de la temporada.)*",
      "escenario": "bosque-lago",
      "luz": "BARRIO"
     },
@@ -3951,7 +3971,7 @@
      "flashback": true,
      "personajes": [],
      "dialogo": [],
-     "accion": "Él no se acerca. No dice nada. No hace nada. Le tiemblan las manos. Se le llenan los ojos de lágrimas y no sabe por qué. No es deseo. Es que no puede entrar ahí.",
+     "accion": "El mismo lago, continuo.\n\nÉl no se acerca.\n\nNo dice nada.\n\nNo hace nada.\n\nLa enumeración importa porque cualquiera de esos tres gestos rompería la escena: acercarse sería entrar; hablar sería pedir que el momento lo incluyera; hacer algo —lo que fuera— sería convertir a Eira en parte de una historia que ella no ha elegido contar con él. El chico se queda entre los arbustos y sostiene su propia ausencia con todo el cuerpo.\n\nLe tiemblan las manos.\n\nNo es un temblor que pueda esconder metiéndolas en la ropa o cerrándolas contra el suelo. Las manos dicen lo que su cara todavía está aprendiendo a no decir: que aquello le está pasando por dentro con una fuerza para la que no tiene nombre ni permiso.\n\nSe le llenan los ojos de lágrimas y no sabe por qué.\n\nNo caen como una decisión ni se convierten en llanto. Se quedan ahí, en los ojos de un niño de doce años que mira a una muchacha en un lago y descubre, antes de tener palabras para descubrirlo, que hay sitios a los que no basta con llegar andando.\n\nNo es deseo.\n\nLa fuente lo corta con esa claridad y la escena lo respeta: no hay hambre en su mirada, ni cálculo, ni la primera forma de una posesión. Hay una imposibilidad. Eira está en el agua como quien pertenece a un mundo que respira sin esfuerzo —el bosque, la noche, su propia voz— y él está fuera de ese mundo incluso cuando lo está mirando desde dentro del mismo bosque.\n\nEs que no puede entrar ahí.\n\n«Ahí» es el agua, sí. Pero es también todo lo que el agua sostiene en ese instante: la naturalidad de Eira, su vida sin permiso, su manera de estar en un lugar sin deberle nada a nadie. El chico ha salido de sitios cerrados, ha aprendido a esconderse, a esperar, a mirar sin ser visto. Entrar no se le ha enseñado. Y ninguna de las cosas que sabe hacer —quedarse quieto, aguantar, no llorar— sirve para cruzar esa distancia.\n\nLa canción continúa al otro lado de los arbustos.\n\nÉl no se mueve.\n\nLa escena no lo castiga ni lo absuelve. Lo deja con las manos temblando y los ojos llenos, fuera del agua, entendiendo sin entender que el lago no es un sitio al que se entra solo porque se ha llegado hasta su orilla.\n\n*(Sin diálogo, como en el guion guardado. Las lágrimas son de un recuerdo de infancia y quedan dentro de ese recuerdo: no son un llanto del Saharis presente.)*",
      "escenario": "bosque-lago",
      "luz": "BARRIO"
     },
@@ -3969,22 +3989,22 @@
        "quien": "eira",
        "etiqueta": "EIRA",
        "texto": "El inspector.",
-       "intencion": "dos palabras, dura"
+       "intencion": "dos palabras, dura (original)"
       },
       {
        "quien": "saharis",
        "etiqueta": "SAHARIS",
        "texto": "¿Qué pasa con él.",
-       "intencion": "evasivo"
+       "intencion": "evasivo (original)"
       },
       {
        "quien": "eira",
        "etiqueta": "EIRA",
        "texto": "Cuéntamelo.",
-       "intencion": "orden, no petición"
+       "intencion": "orden, no petición (original)"
       }
      ],
-     "accion": "Presente. Eira lo está esperando. El inspector. ¿Qué pasa con él. Cuéntamelo.",
+     "accion": "Presente. La orilla del río, de día.\n\nLas mismas piedras planas. El mismo agua pasando. El campamento detrás, todavía con el año ganado por delante.\n\nEIRA lo está esperando.\n\nNo hay celebración en su postura ni resto visible de la otra conversación de esta orilla. No viene a darle las gracias otra vez. No le pone la mano en el brazo. Ha oído a Kael junto al fuego, ha pasado la noche con una niña sentada en un pasillo dentro de la cabeza, y ahora está en el sitio exacto donde le dijo a Saharis que un año era un año, esperando a que él llegue a oír la segunda parte.\n\nCuando lo tiene delante, no gasta ni una palabra en preparar la frase.\n\n**EIRA** *(dos palabras, dura (original))*: El inspector.\n\nSaharis entiende. La escena no necesita enseñar cómo: su respuesta no pregunta qué inspector, ni de qué está hablando, ni por qué lo nombra en una orilla. Hace otra cosa. Desvía.\n\n**SAHARIS** *(evasivo (original))*: ¿Qué pasa con él.\n\nLa frase lleva la pregunta abierta y cerrada a la vez, con ese punto final que la deja caer como si pudiera pasar por una respuesta. Es el gesto de un hombre que todavía cree que el terreno de la conversación se puede elegir: si ella quiere hablar de un funcionario, hablarán de un funcionario; si quiere un dato suelto, él tiene datos sueltos para todos los días del año.\n\nEira no acepta el desvío.\n\n**EIRA** *(orden, no petición (original))*: Cuéntamelo.\n\nNo le pide la versión que pueda darle. No le pregunta si es verdad. Le ordena que lo cuente él, con su voz, en esta orilla donde hace nada le dio las gracias por el resultado.\n\nLa escena se detiene en esa orden.\n\nSaharis todavía no ha dicho que lo hizo. Eira todavía no ha dicho que lo sabe. Pero los dos están ya dentro de la misma conversación, y la única salida que queda es la explicación.\n\n*(Las tres líneas de la fuente son toda la palabra de la escena y no se les ha añadido ninguna. La puntuación de la línea de Saharis se conserva exactamente como viene en el guion guardado.)*",
      "escenario": "orilla",
      "luz": "BARRIO"
     },
@@ -4001,35 +4021,35 @@
       {
        "quien": "saharis",
        "etiqueta": "SAHARIS",
-       "texto": "Necesitaba un informe técnico y él era el único que podía firmarlo. Tenía una",
-       "intencion": "ordenado, casi orgulloso. Repasa una operación bien hecha"
+       "texto": "Necesitaba un informe técnico y él era el único que podía firmarlo. Tenía una deuda, pero no la suficiente para arriesgarse.",
+       "intencion": "ordenado, casi orgulloso. Repasa una operación bien hecha (original — completada desde la prosa de la escena; en el guion guardado viene cortada)"
       },
       {
        "quien": "eira",
        "etiqueta": "EIRA",
        "texto": "Sigue.",
-       "intencion": "una palabra, sin expresión"
+       "intencion": "una palabra, sin expresión (original)"
       },
       {
        "quien": "saharis",
        "etiqueta": "SAHARIS",
-       "texto": "Tenía una hija. La niña pasó tres días con gente que le dio de comer y no le tocó",
-       "intencion": "sigue explicando, tranquilo"
+       "texto": "Tenía una hija. La niña pasó tres días con gente que le dio de comer y no le tocó un pelo. Estuvo perfectamente atendida.",
+       "intencion": "sigue explicando, tranquilo (original — completada desde la prosa de la escena; en el guion guardado viene cortada)"
       },
       {
        "quien": "eira",
        "etiqueta": "EIRA",
        "texto": "Sigue.",
-       "intencion": "otra vez, más apagada"
+       "intencion": "otra vez, más apagada (original)"
       },
       {
        "quien": "saharis",
        "etiqueta": "SAHARIS",
        "texto": "Firmó. Se la devolvieron. No volverá a pasarle nada.",
-       "intencion": "cerrando, satisfecho. Espera que ella lo entienda"
+       "intencion": "cerrando, satisfecho. Espera que ella lo entienda (original)"
       }
      ],
-     "accion": "Saharis se lo cuenta. Con calma. Ordenadamente. Como quien repasa una operación bien hecha. Necesitaba un informe técnico y él era el único que podía firmarlo. Tenía una deuda, pero no la suficiente para arriesgarse. Sigue. Tenía una hija. La niña pasó tres días con gente que le dio de comer y no le tocó un pelo. Estuvo perfectamente atendida. Sigue. Firmó. Se la devolvieron. No volverá a pasarle nada. Se calla. La mira, esperando la reacción que él ha calculado. Ella está blanca.",
+     "accion": "La orilla, continuo.\n\nSaharis se lo cuenta.\n\nCon calma. Ordenadamente. Como quien repasa una operación bien hecha.\n\nNo empieza por la niña. Empieza por la necesidad, que es donde empiezan todas sus explicaciones: había un trabajo que hacer, un papel que conseguir, una sola mano autorizada a firmarlo.\n\n**SAHARIS** *(ordenado, casi orgulloso. Repasa una operación bien hecha (original — completada desde la prosa de la escena; en el guion guardado viene cortada))*: Necesitaba un informe técnico y él era el único que podía firmarlo. Tenía una deuda, pero no la suficiente para arriesgarse.\n\nAhí está la primera parte de su lógica, dicha sin bajar la voz. El inspector tenía una deuda; la deuda no bastaba. En la contabilidad de Saharis, eso no cierra el problema: lo define. Si una palanca no mueve el peso, se busca otra palanca.\n\nEira no le discute ni le interrumpe con el horror que él podría registrar y contestar.\n\n**EIRA** *(una palabra, sin expresión (original))*: Sigue.\n\nY Saharis sigue, tranquilo, porque todavía cree que está explicando una solución.\n\n**SAHARIS** *(sigue explicando, tranquilo (original — completada desde la prosa de la escena; en el guion guardado viene cortada))*: Tenía una hija. La niña pasó tres días con gente que le dio de comer y no le tocó un pelo. Estuvo perfectamente atendida.\n\nLo dice como quien presenta las garantías de un procedimiento. La niña comió. Nadie la tocó. Estuvo atendida. En su enumeración, cada cuidado es una prueba de que la operación se hizo bien; el hecho central —que una niña de doce años pasó tres días fuera de su casa para que su padre firmara— queda colocado entre las garantías como si fuera el soporte técnico de todas ellas.\n\nNo dice quiénes eran esa gente. No dice dónde estuvo la niña. No dice qué se le dijo, ni qué creyó ella durante esos tres días, ni cómo volvió sola a su casa. Su relato tiene la precisión exacta de sus libros: entra la necesidad, entra la palanca, sale la firma. Lo que no cabe en una columna no entra en la explicación.\n\nEira vuelve a hacer el mismo gesto mínimo, pero la segunda vez su voz llega más apagada.\n\n**EIRA** *(otra vez, más apagada (original))*: Sigue.\n\nSaharis cierra la operación.\n\n**SAHARIS** *(cerrando, satisfecho. Espera que ella lo entienda (original))*: Firmó. Se la devolvieron. No volverá a pasarle nada.\n\nSe calla.\n\nLa mira, esperando la reacción que él ha calculado.\n\nSu cálculo también está hecho de garantías: el informe existe, la obra se aplazó, el campamento tiene un año, la niña volvió sin un rasguño y su seguridad futura está comprada por la misma operación que la puso en peligro. Para Saharis, la suma cierra. Por eso puede contarlo casi con orgullo. Por eso no entiende todavía que cada frase que a él le parece una atenuante a Eira le ha sonado como una cuenta distinta.\n\nElla está blanca.\n\nNo dice nada en esta escena. La blancura es su respuesta por ahora: la sangre que se retira de la cara de una mujer que acaba de oír al hombre al que dio las gracias explicarle, con orden y satisfacción, que el precio de su año fue una niña de doce años sentada tres días fuera de su casa.\n\nSaharis la mira y espera.\n\nLa explicación ha terminado. El juicio no ha empezado todavía.\n\n*(Las cinco líneas de la fuente están todas dentro, literales en su orden. Dos venían cortadas en el diálogo guardado y se completan solo con la prosa de esta misma escena: la deuda que no bastaba para que el inspector se arriesgara, y que a la niña no le tocaron un pelo y estuvo perfectamente atendida.)*",
      "escenario": "orilla",
      "luz": "BARRIO"
     },
@@ -4047,46 +4067,46 @@
        "quien": "saharis",
        "etiqueta": "SAHARIS",
        "texto": "¿Qué.",
-       "intencion": "desconcertado de verdad"
+       "intencion": "desconcertado de verdad (original)"
       },
       {
        "quien": "eira",
        "etiqueta": "EIRA",
        "texto": "Tres días.",
-       "intencion": "dos palabras, sin aire"
+       "intencion": "dos palabras, sin aire (original)"
       },
       {
        "quien": "saharis",
        "etiqueta": "SAHARIS",
        "texto": "No le pasó nada.",
-       "intencion": "defendiéndose con lógica"
+       "intencion": "defendiéndose con lógica (original)"
       },
       {
        "quien": "eira",
        "etiqueta": "EIRA",
        "texto": "Tiene doce años y estuvo tres días sin saber si volvía.",
-       "intencion": "temblando de contenerse"
+       "intencion": "temblando de contenerse (original)"
       },
       {
        "quien": "eira",
        "etiqueta": "EIRA",
        "texto": "Los mataste tú.",
-       "intencion": "bajo, definitivo"
+       "intencion": "bajo, definitivo (original)"
       },
       {
        "quien": "saharis",
        "etiqueta": "SAHARIS",
        "texto": "No he matado a nadie.",
-       "intencion": "literal, casi ofendido"
+       "intencion": "literal, casi ofendido (original)"
       },
       {
        "quien": "eira",
        "etiqueta": "EIRA",
        "texto": "No con las manos.",
-       "intencion": "la frase que le queda para siempre. Muy baja"
+       "intencion": "la frase que le queda para siempre. Muy baja (original)"
       }
      ],
-     "accion": "¿Qué. Tres días. No le pasó nada. Tiene doce años y estuvo tres días sin saber si volvía. Saharis abre la boca para explicar la diferencia. Los mataste tú. No he matado a nadie. No con las manos.",
+     "accion": "La orilla, continuo. La misma agua pasando, las mismas piedras planas, y entre los dos el silencio que la explicación dejó abierto: Saharis todavía mirándola, esperando la reacción que había calculado, y Eira todavía blanca.\n\nSu cálculo decía que la conversación había terminado. La explicación era completa: entraba la necesidad, entraba la palanca, salía la firma, y la niña estaba en su casa sin un rasguño. Él se lo había contado como se cuenta una operación bien hecha, y se había callado a esperar lo que se espera cuando una cuenta cierra: que la otra parte asienta.\n\nEira no asiente.\n\nLo que hace es quedarse un momento más dentro de ese silencio, como si necesitara reunir una sola cosa y no un discurso, y cuando por fin habla, Saharis no entiende la pregunta. Porque no hay pregunta. Hay un hueco donde él esperaba el final de la conversación, y su desconcierto sale antes que ninguna defensa, con la forma exacta de lo que es: un hombre al que le falta la pieza que ordena todo lo demás.\n\n**SAHARIS** *(desconcertado de verdad (original))*: ¿Qué.\n\nEira le contesta con la única cifra de su explicación que en su boca suena distinta. No con el informe, ni con la deuda, ni con la firma. Con el tiempo de la niña.\n\n**EIRA** *(dos palabras, sin aire (original))*: Tres días.\n\nSaharis se defiende con lógica, que es su manera de defenderse de todo: si el daño no dejó marca, el daño no está en el libro. Repite la garantía central de su explicación como si repetirla la hiciera respuesta.\n\n**SAHARIS** *(defendiéndose con lógica (original))*: No le pasó nada.\n\nY Eira le devuelve la frase corregida, temblando de contenerse, con la parte que sus garantías borraban: no lo que le hicieron a la niña, sino lo que la niña vivió. Una niña de doce años, tres días fuera de su casa, sin saber si volvía. En la contabilidad de Saharis eso no es una columna. En la de Eira es la escena entera.\n\n**EIRA** *(temblando de contenerse (original))*: Tiene doce años y estuvo tres días sin saber si volvía.\n\nSaharis abre la boca para explicar la diferencia.\n\nLa diferencia entre usar y matar, entre una palanca y una mano, entre lo que sus libros separan con tanto cuidado: la frase viene entera, ordenada, lista para salir, y no sale, porque Eira la corta con la suya, bajo, definitiva, sin enumerar a quién nombra ese plural ni convertirlo en lista: lo deja caer sobre todo lo que sus métodos han costado hasta hoy, en esta orilla y antes de esta orilla.\n\n**EIRA** *(bajo, definitivo (original))*: Los mataste tú.\n\nÉl contesta lo literal. Casi ofendido: en su mundo, una acusación falsa es una acusación que se puede corregir con un dato, y el dato es verdad.\n\n**SAHARIS** *(literal, casi ofendido (original))*: No he matado a nadie.\n\nY Eira cierra la conversación con la frase que le queda para siempre. Muy baja. Sin subir la voz, sin añadir un nombre, sin retirarse todavía: solo la corrección exacta de su literalidad, la que separa para siempre su manera de contar de la de él.\n\n**EIRA** *(la frase que le queda para siempre. Muy baja (original))*: No con las manos.\n\nLa escena se queda ahí: él con su verdad intacta y sin sitio donde ponerla, ella con la suya dicha en cuatro palabras. La gratitud de esta misma orilla no se retira con un discurso. Se retira con esto.\n\n*(Las siete líneas de la fuente son toda la palabra de la escena y no se les ha añadido ninguna.)",
      "escenario": "orilla",
      "luz": "BARRIO"
     },
@@ -4104,28 +4124,28 @@
        "quien": "kael",
        "etiqueta": "KAEL (JOVEN)",
        "texto": "Te vi. Vi cómo la miras.",
-       "intencion": "celos adolescentes"
+       "intencion": "celos adolescentes (original)"
       },
       {
        "quien": "kael",
        "etiqueta": "KAEL (JOVEN)",
        "texto": "No eres como nosotros. No puedes tenerla.",
-       "intencion": "hiriente"
+       "intencion": "hiriente (original)"
       },
       {
        "quien": "saharis",
        "etiqueta": "SAHARIS (NIÑO)",
        "texto": "Ella no es tuya.",
-       "intencion": "infantil, tensa"
+       "intencion": "infantil, tensa (original)"
       },
       {
        "quien": "kael",
        "etiqueta": "KAEL (JOVEN)",
        "texto": "Y tampoco será tuya. Sigues siendo un animal escapado del infierno.",
-       "intencion": "cruel, buscando el golpe"
+       "intencion": "cruel, buscando el golpe (original)"
       }
      ],
-     "accion": "Doce años. Kael, más joven, sin muleta, le corta el paso. Te vi. Vi cómo la miras. Silencio. No eres como nosotros. No puedes tenerla. Ella no es tuya. Y tampoco será tuya. Sigues siendo un animal escapado del infierno.",
+     "accion": "Recuerdo. El sendero del bosque, de día.\n\nDoce años tiene el chico. KAEL, más joven, sin muleta —las dos piernas enteras, el paso de un muchacho del bosque que conoce cada tramo de este sendero como se conoce una casa—, le corta el paso.\n\nNo ha venido a pelear todavía. Ha venido a decirle una cosa que lleva días cargando, y la dice primero como una acusación de testigo, porque eso es lo que es: el lago tuvo otros ojos. Mientras el chico estaba inmóvil entre los arbustos creyendo que nadie lo veía, Kael lo estaba viendo a él.\n\n**KAEL (JOVEN)** *(celos adolescentes (original))*: Te vi. Vi cómo la miras.\n\nSilencio.\n\nEl chico no lo niega. No dice que no estaba, ni que no miraba, ni que la canción no era lo que Kael dice que era: su silencio es el de siempre, el de la fila y el de la celda, y en este sendero suena a confesión. Kael toma ese silencio como lo que necesita para seguir, y pasa de lo que vio a lo que ha decidido que significa, con la crueldad ordenada de los celos adolescentes: primero la frontera, después la sentencia.\n\n**KAEL (JOVEN)** *(hiriente (original))*: No eres como nosotros. No puedes tenerla.\n\nY el chico contesta. Una sola línea, infantil y tensa, la única que tiene: no discute la frontera —no dice que sea como ellos, no dice que pueda—; discute la propiedad, que es el idioma que él sí habla, el de las marcas y los libros, dicho por un niño de doce años que no posee nada y acaba de usar su gramática entera en cuatro palabras.\n\n**SAHARIS (NIÑO)** *(infantil, tensa (original))*: Ella no es tuya.\n\nKael recoge la frase y la devuelve cerrada por el otro lado. Si no es de ninguno, que quede escrito de quién no será nunca: y para cerrarlo baja hasta el sitio del que el chico salió, el sitio que en el bosque todos conocen sin nombrarlo, y lo nombra.\n\n**KAEL (JOVEN)** *(cruel, buscando el golpe (original))*: Y tampoco será tuya. Sigues siendo un animal escapado del infierno.\n\nLa frase está construida para que el otro haga algo. Kael lo sabe: la ha medido, la ha traído hasta este sendero, la ha dicho entera. Está esperando el golpe que la confirme —que el animal escapado se defienda como un animal y le dé la razón delante de sí mismo—.\n\nLa escena se detiene con la frase en el aire y el chico quieto.\n\n*(Las cuatro líneas de la fuente son toda la palabra de la escena y no se les ha añadido ninguna. La cara de Kael entra en este recuerdo sin marca alguna: la lleva limpia, como la llevaba entonces.)",
      "escenario": "bosque",
      "luz": "BARRIO"
     },
@@ -4142,11 +4162,11 @@
        "quien": "eira",
        "etiqueta": "EIRA",
        "texto": "¡Basta!",
-       "intencion": "grito de pánico",
+       "intencion": "grito de pánico (original)",
        "riesgo": "alto"
       }
      ],
-     "accion": "Sin aviso, el chico lo levanta del cuello con una mano. Bajo la piel del brazo, las líneas se encienden. Kael grita. ¡Basta! El chico duda. Le tiembla la mano. Suelta. Kael cae. Eira corre. Corre hacia Kael. No hacia él.",
+     "accion": "El mismo sendero, continuo.\n\nSin aviso, el chico lo levanta del cuello con una mano.\n\nNo hay forcejeo que contar: hay una diferencia de mundo. El muchacho del bosque queda suspendido de una mano de niño, con los pies buscando un suelo que ya no está donde estaba, y bajo la piel del brazo que lo sostiene, las líneas se encienden. No como una luz que se enseña: como una cosa que se escapa por donde siempre estuvo escrita, despierta por primera vez delante de testigos.\n\nKael grita.\n\nY otra voz corta la escena por la mitad: EIRA, que estaba cerca —la fuente no dice dónde, y la escena no lo inventa: está, y su grito llega antes que ella—, grita con pánico, no con autoridad. No es una orden de las que se obedecen por rango. Es el sonido que hace una persona viendo lo que está viendo.\n\n**EIRA** *(grito de pánico (original))*: ¡Basta!\n\nEl chico duda.\n\nLa duda es el centro de la escena y dura lo que dura: el brazo sigue arriba, Kael sigue en el aire, y dentro del niño que no duda nunca —el de la fila, el del registro, el que se quedó quieto bajo la frase de Kael— algo se detiene a mitad del gesto. No es la voz de Kael. No es el miedo de Kael. Es la otra voz, la del agua, sonando por primera vez en seco y en contra de él.\n\nLe tiembla la mano.\n\nLa misma mano que temblaba entre los arbustos sin hacer nada tiembla ahora sujetando: allí temblaba porque no podía entrar; aquí tiembla porque puede hacer esto. El temblor no lo suelta a él: lo suelta a Kael. La mano se abre.\n\nSuelta.\n\nKael cae.\n\nEira corre.\n\nCorre hacia Kael. No hacia él.\n\nLa escena no se queda con el chico ni un instante más del necesario: se queda con esa dirección. Una muchacha cruzando un sendero en la dirección contraria a la suya, hacia el que está en el suelo, y el chico de pie, con el brazo todavía en alto un segundo de más, entendiendo la geometría entera de su vida en quién corre hacia quién.\n\n*(La única línea de la fuente es toda la palabra de la escena y no se le ha añadido ninguna. La agresión queda contada con el detalle exacto que la fuente da —la mano al cuello, las líneas encendidas bajo la piel del brazo, el grito— y con ningún mecanismo más: ver duda 3 del apunte.)",
      "escenario": "bosque",
      "luz": "BARRIO"
     },
@@ -4163,10 +4183,10 @@
        "quien": "eira",
        "etiqueta": "EIRA",
        "texto": "No eres lo que creí que eras.",
-       "intencion": "horror, muy bajo. No es reproche: es descubrimiento"
+       "intencion": "horror, muy bajo. No es reproche: es descubrimiento (original)"
       }
      ],
-     "accion": "Eira, abrazando a Kael, levanta la vista. No eres lo que creí que eras.",
+     "accion": "El mismo sendero, continuo.\n\nEIRA está en el suelo, abrazando a Kael.\n\nLo sostiene como se sostiene a alguien al que acaban de bajar de un sitio alto: contra ella, con el cuerpo entero haciendo de suelo segundo, mientras el muchacho recupera el aire que la mano le quitó. Ella no mira primero su cuello ni sus manos. Lo abraza, y solo después levanta la vista.\n\nLo que ve es al chico de pie donde lo dejó la escena anterior, con el brazo ya bajo y la misma cara de siempre, y el horror le llega despacio, como llegan los descubrimientos y no como llegan los reproches: no es que haya hecho una cosa que ella no aprueba —es que el que la ha hecho no es el que ella creía que tenía delante—. Lo dice muy bajo, sin soltar a Kael, sin convertirlo en grito ni en sentencia: se lo dice como se dice una cosa que se acaba de entender y ya no se puede desentender.\n\n**EIRA** *(horror, muy bajo. No es reproche: es descubrimiento (original))*: No eres lo que creí que eras.\n\nLa escena es esta: una muchacha de dieciséis años abrazando a uno y mirando al otro, y la frase cayendo entre los dos como cae una puerta. Todo lo que el lago fue —la canción, el agua, la distancia guardada— queda de un lado; todo lo que viene después, de este.\n\nEl chico no contesta. No hay línea suya en la escena: lo que le queda por decir en este recuerdo no es una defensa, y él lo sabe sin saberlo, y lo guarda para dentro de un momento.\n\n*(La única línea de la fuente es toda la palabra de la escena y no se le ha añadido ninguna.)",
      "escenario": "bosque",
      "luz": "BARRIO"
     },
@@ -4184,16 +4204,16 @@
        "quien": "saharis",
        "etiqueta": "SAHARIS (NIÑO)",
        "texto": "¿Vendrías conmigo?",
-       "intencion": "la voz de un niño de doce años pidiendo lo imposible"
+       "intencion": "la voz de un niño de doce años pidiendo lo imposible (original)"
       },
       {
        "quien": "eira",
        "etiqueta": "EIRA",
        "texto": "No.",
-       "intencion": "una palabra. Con lágrimas y sin dudar"
+       "intencion": "una palabra. Con lágrimas y sin dudar (original)"
       }
      ],
-     "accion": "El chico retrocede un paso. Otro. ¿Vendrías conmigo? Eira lo mira con lágrimas. No. Una palabra. Él desaparece entre los árboles.",
+     "accion": "El mismo sendero, continuo.\n\nEl chico retrocede un paso.\n\nOtro.\n\nLa distancia que en el lago guardó sin moverse la está rehaciendo ahora hacia atrás, paso a paso, como si el suelo del sendero se le hubiera vuelto de la misma materia que el agua: un sitio del que se sale. Y desde esa distancia que crece, con Eira todavía en el suelo junto a Kael, hace la única pregunta que su mundo le ha enseñado a hacer con las cosas que quiere: no pide perdón, no explica la mano, no promete no ser lo que ella acaba de descubrir que es. Propone irse. La voz de un niño de doce años pidiendo lo imposible.\n\n**SAHARIS (NIÑO)** *(la voz de un niño de doce años pidiendo lo imposible (original))*: ¿Vendrías conmigo?\n\nEira lo mira con lágrimas.\n\nLas lágrimas son de ella y son del recuerdo: le corren por la cara de dieciséis años mientras sostiene a Kael y mira al otro, y no le tiembla la respuesta ni un grado. No duda. No consulta a Kael, ni al sendero, ni a lo que el chico le está ofreciendo sin saber nombrarlo. Una palabra, entera.\n\n**EIRA** *(una palabra. Con lágrimas y sin dudar (original))*: No.\n\nÉl desaparece entre los árboles.\n\nSin correr en pantalla más de lo que la fuente cuenta y sin mirar atrás que la escena registre: el bosque se lo traga por el mismo sitio por el que tragaba todo lo que salía de abajo, y el sendero se queda con dos. La primera negativa de Eira queda fijada aquí, en el pasado, con su forma completa: lágrimas, y ni una duda.\n\n*(Las dos líneas de la fuente son toda la palabra de la escena y no se les ha añadido ninguna.)",
      "escenario": "bosque",
      "luz": "BARRIO"
     },
@@ -4210,29 +4230,29 @@
       {
        "quien": "saharis",
        "etiqueta": "SAHARIS",
-       "texto": "Puedo sacarte de aquí. A ti y a los nueve. Una casa, tierra al norte, dinero",
-       "intencion": "ofreciendo el mundo, sin arrogancia"
+       "texto": "Puedo sacarte de aquí. A ti y a los nueve. Una casa, tierra al norte, dinero para diez años.",
+       "intencion": "ofreciendo el mundo, sin arrogancia (original — completada desde la prosa de la escena; en el guion guardado el diálogo viene cortado en «dinero»)"
       },
       {
        "quien": "eira",
        "etiqueta": "EIRA",
        "texto": "¿Y quién lo paga?",
-       "intencion": "suave"
+       "intencion": "suave (original)"
       },
       {
        "quien": "saharis",
        "etiqueta": "SAHARIS",
        "texto": "Yo.",
-       "intencion": "una palabra"
+       "intencion": "una palabra (original)"
       },
       {
        "quien": "eira",
        "etiqueta": "EIRA",
        "texto": "No. Quién lo paga.",
-       "intencion": "insistiendo, sin subir la voz"
+       "intencion": "insistiendo, sin subir la voz (original)"
       }
      ],
-     "accion": "Presente. Seis años después. La misma pregunta con otras palabras. Puedo sacarte de aquí. A ti y a los nueve. Una casa, tierra al norte, dinero para diez años. ¿Y quién lo paga? Yo. No. Quién lo paga. Saharis se calla.",
+     "accion": "Presente. La orilla, de día. Seis años después del sendero, en la cuenta de la propia fuente: la misma pregunta con otras palabras.\n\nEl campamento sigue detrás, con su año por delante y su celebración ya fría. La conversación del juicio ha pasado por esta orilla como pasa el agua por las piedras, y Saharis hace lo que hace siempre que una conversación le enseña un daño: ofrece repararlo con el instrumento que tiene. No con una disculpa —no tiene esa columna—, sino con una salida entera, construida como se construyen sus operaciones: completa, financiada y sin arrogancia, ofrecida como se ofrece el mundo.\n\n**SAHARIS** *(ofreciendo el mundo, sin arrogancia (original — completada desde la prosa de la escena; en el guion guardado el diálogo viene cortado en «dinero»))*: Puedo sacarte de aquí. A ti y a los nueve. Una casa, tierra al norte, dinero para diez años.\n\nLos nueve entran en su oferta con su número, el mismo número que su pared guarda en grande: él sabe exactamente cuántos son los que ella carga, y los incluye a todos, sin dejar a ninguno como resto. La oferta es, en sus términos, perfecta: saca a Eira y a los suyos del barro, del bando y del río, y los pone fuera del alcance de cualquier inspector.\n\nEira no mira la oferta. Mira su base, con la suavidad de las preguntas que no necesitan subir la voz porque ya saben la respuesta.\n\n**EIRA** *(suave (original))*: ¿Y quién lo paga?\n\nÉl contesta la pregunta que ha oído, que es la pregunta de los libros: quién firma, quién pone el dinero, quién queda como deudor de la operación. Una palabra, y es verdad en su contabilidad.\n\n**SAHARIS** *(una palabra (original))*: Yo.\n\nY ella le corrige la pregunta sin corregir el tono: no le está preguntando por el nombre que va en el asiento, sino por el otro lado del asiento —por el sitio del que sale lo que él mueve, por la persona que se queda sin aquello con lo que se paga una casa, una tierra y diez años—.\n\n**EIRA** *(insistiendo, sin subir la voz (original))*: No. Quién lo paga.\n\nSaharis se calla.\n\nNo es el silencio de la celda ni el de la fila: es el silencio de un hombre al que le han repetido su propia pregunta cambiándole el sujeto, y descubre que en su idioma esa frase no se puede contestar sin nombrar a alguien. La escena corta con él callado y ella esperando todavía, de pie en la misma orilla donde de niño le preguntó si vendría con él y oyó la misma palabra con la que ella ha empezado su corrección: no.\n\n*(Las cuatro líneas de la fuente están todas dentro, literales en su orden. La primera venía cortada en el diálogo guardado —terminaba en «dinero»— y se completa solo con la prosa de esta misma escena: «dinero para diez años».)",
      "escenario": "orilla",
      "luz": "BARRIO"
     },
@@ -4249,16 +4269,16 @@
        "quien": "eira",
        "etiqueta": "EIRA",
        "texto": "Siempre hay alguien. Un inspector. Una niña. Una aldea.",
-       "intencion": "cansada, casi tierna"
+       "intencion": "cansada, casi tierna (original)"
       },
       {
        "quien": "eira",
        "etiqueta": "EIRA",
        "texto": "Tú no das cosas. Las mueves de sitio. Y siempre las quitas del mismo lado.",
-       "intencion": "el diagnóstico. Sin rabia. Se levanta al terminar"
+       "intencion": "el diagnóstico. Sin rabia. Se levanta al terminar (original)"
       }
      ],
-     "accion": "Siempre hay alguien. Un inspector. Una niña. Una aldea. Se levanta. Tú no das cosas. Las mueves de sitio. Y siempre las quitas del mismo lado. Se va.",
+     "accion": "La orilla, continuo. El río sigue pasando por las mismas piedras planas, y la pregunta repetida de Eira sigue sin respuesta entre los dos: quién lo paga. Saharis no la ha contestado. No porque la esté pensando todavía: porque ya ha entendido que en su idioma esa frase no se puede contestar sin nombrar a alguien —una persona, un lado, un sitio del que sale lo que él mueve— y que ella lo sabe desde antes de preguntarla.\n\nEira no insiste una tercera vez. Hace una cosa más grande y más tranquila: pasa del precio a la mecánica. Cada nombre que pone es uno de los que este capítulo ha puesto sobre la mesa sin que ella necesite ninguna lista: el inspector, el de la sala pequeña y la firma al día siguiente; la niña, la de los tres días fuera de casa; la aldea —las aldeas, las que no firman nada y pagan igual—. Lo dice cansada, casi tierna, como se le dice a alguien la cosa más triste que se sabe de él.\n\n**EIRA** *(cansada, casi tierna (original))*: Siempre hay alguien. Un inspector. Una niña. Una aldea.\n\nY al terminar se levanta: no como quien se va a mitad de una frase, sino como quien ha llegado al final de la única frase que venía a decir. Ya de pie, en la postura de la marcha, le deja el diagnóstico entero, sin rabia: la descripción exacta de su máquina, dicha por la única persona que la ha visto funcionar desde fuera y desde dentro —desde el agua de un lago, desde un fuego, desde esta orilla—.\n\n**EIRA** *(el diagnóstico. Sin rabia. Se levanta al terminar (original))*: Tú no das cosas. Las mueves de sitio. Y siempre las quitas del mismo lado.\n\nSe va.\n\nNo corre, no se despide dos veces, no añade una condición ni una puerta abierta. Se va por el camino de barro hacia el campamento, con su paso de trabajo, el pelo plateado recogiéndose en la distancia entre las tiendas y el humo, y la orilla se queda con el hombre que en seis años no ha encontrado respuesta para ninguna de sus preguntas grandes y con el río, que sigue pasando como pasaba antes de que ella llegara. Él no la sigue. No la llama. La escena no le da ni un gesto hacia ella: le da la orilla vacía y el diagnóstico puesto, que es lo que se lleva de esta conversación para el resto de la temporada.",
      "escenario": "orilla",
      "luz": "BARRIO"
     },
@@ -4271,7 +4291,7 @@
       "saharis"
      ],
      "dialogo": [],
-     "accion": "Saharis camina por la ciudad. Un guardia lo saluda. Un comerciante le hace una reverencia. Un carruaje se detiene para dejarle pasar. La ciudad entera le funciona. No le sirve de nada.",
+     "accion": "Saharis camina por la ciudad. De noche, por la Calle Alta: la parte alta de Feyrond, la de los portales con luz y los patios de las casas grandes, la misma calle por la que una madrugada, al principio de esta historia, bajó andando hacia el barrio sin detenerse en ningún portal.\n\nUn guardia lo saluda.\n\nNo el saludo de trámite que se le hace a un desconocido: el de un hombre que sabe quién pasa por su calle. El joven de los Elserath. El que lleva las cuentas de la casa. El que se ofreció en el Consejo para el asunto del campamento cuando nadie levantaba la mano, y lo sacó adelante. Saharis le devuelve el saludo con la inclinación exacta y sigue andando.\n\nUn comerciante le hace una reverencia.\n\nLa reverencia que se le hace a un nombre, no a un muchacho: a la casa que el muchacho lleva puesta y a lo que esa casa puede hacer por quien se inclina a tiempo. El comerciante se queda inclinado lo que dura el paso, y el paso no se detiene.\n\nUn carruaje se detiene para dejarle pasar.\n\nEl cochero frena los caballos en mitad de la calle porque el joven que cruza es de los que no se hacen esperar en un cruce: la ciudad le abre el paso como se lo abre a todo lo que ya forma parte de su mecanismo, sin que él lo pida ni lo note como un favor.\n\nLa ciudad entera le funciona.\n\nPieza a pieza —el guardia, el comerciante, el carruaje— todo le responde como responde una máquina bien llevada a la mano que la lleva: sin fricción, sin ruido, sin una sola cosa que le salga al paso en toda la calle. Es la cosecha entera de estos años puesta en una sola calle de noche: el apellido, el sitio aceptado, las cuentas ordenadas, el campamento salvado. Todo funciona.\n\nNo le sirve de nada.\n\nPorque la única persona cuya respuesta le ha importado alguna vez le acaba de decir en una orilla que lo que él hace no es dar: es mover de sitio, y quitar siempre del mismo lado. Y en la ciudad que le funciona entera no hay ninguna pieza que conteste a eso: ni el saludo, ni la reverencia, ni el carruaje detenido son una respuesta; son la máquina, funcionando. Sigue andando hacia abajo, hacia la sala seca donde está su pared, con el paso de siempre. El paso no ha cambiado. Lo que ha cambiado es que ya no hay nadie, en ninguna orilla, esperándolo.",
      "escenario": "calle",
      "luz": "BARRIO"
     },
@@ -4282,7 +4302,7 @@
      "flashback": false,
      "personajes": [],
      "dialogo": [],
-     "accion": "Entra. Se queda frente a la pared. Arranca un papel. Luego cinco. Luego arranca con las dos manos. Tira de un cordel y se lleva media pared por delante. Cuando termina, no queda nada colgado.",
+     "accion": "El refugio, de noche. La sala seca de siempre: el farol único sobre la mesa, en su extremo este; la única silla en el lado de la sala; el jergón sin usar pegado a la pared oeste. Y la pared, delante, en su estado heredado entero, el que ningún capítulo ha reiniciado: los trescientos papeles unidos por cordeles —un nombre atado a una fecha, una fecha a una cifra, una cifra a un mapa—; el hueco de piedra desnuda en el tramo del mapa, largo y limpio, con los cordeles cortados colgando, y los papeles de esa fila todavía en el suelo, al pie, sin recoger desde la noche de la caída; el dibujo del anillo en su hueco centro-izquierda; SIETE arriba del todo, en la piedra, con letra de niño; la lista de trabajo con su primera línea tachada —«conseguir un apellido»— y las doce líneas vivas debajo; la lista de las deudas como papel de trabajo; el dibujo del signo con sus tres cifras debajo, sin transcribir en ninguna parte; las tres preguntas, una debajo de otra, sin respuesta, sin flecha y sin cordel; EIRA, grande y tachada con una sola raya, legible bajo ella; y NUEVE, grande, en su hueco vacío, sin fecha ni cordel.\n\nEntra. Se queda frente a la pared.\n\nLa mira como se mira lo que la orilla acaba de describir desde fuera: una máquina de mover cosas de un sitio a otro, quitándolas siempre del mismo lado. Esta pared es esa máquina en papel: cada nombre movido hasta su fecha, cada fecha hasta su cifra, todo atado, todo quitado de algún sitio. Y esta noche, por primera vez, el dueño de la máquina está de acuerdo con el diagnóstico.\n\nArranca un papel.\n\nLuego cinco.\n\nLuego arranca con las dos manos.\n\nEl primer papel es todavía un gesto de trabajo: la mano que deshace una parte, como deshizo la fila del mapa la otra vez. Los cinco siguientes ya no eligen tanto. Y con las dos manos deja de ser un deshacer por partes: tira de un cordel y se lleva media pared por delante —el cordel arrastra sus papeles, los papeles arrastran sus cordeles, y la pared se viene abajo en cadena, con el ruido seco de lo que llevaba años clavado en su sitio, como se viene abajo todo lo que está atado cuando se tira del hilo que lo ata todo—.\n\nCuando termina, no queda nada colgado.\n\nNi el dibujo, ni las listas, ni las preguntas, ni el nombre tachado, ni el número grande: lo que tardó años en colgarse está en el suelo en un rato, roto y mezclado, papeles que ya no atan nada con nada. La sala se queda con su dueño de pie frente a la pared vacía, respirando, con las manos vacías por primera vez en esta habitación.",
      "escenario": "tuneles",
      "luz": "BARRIO"
     },
@@ -4293,7 +4313,7 @@
      "flashback": false,
      "personajes": [],
      "dialogo": [],
-     "accion": "Se sienta en el suelo, entre los papeles rotos. Se le descompone la cara. Llora. De verdad, feo, sin control. Segunda vez.",
+     "accion": "Se sienta en el suelo, entre los papeles rotos.\n\nNo en la silla: en el suelo, en medio de lo que acaba de deshacer, con la pared vacía delante. El hombre que en esta sala solo se ha sentado en el suelo cuando una cuenta le salía —la noche de los dos papeles, la noche del mapa roto— esta vez no tiene ninguna cuenta en las manos: tiene lo contrario de una cuenta, que es un diagnóstico, y el diagnóstico no se puede tachar ni atar con un cordel.\n\nSe le descompone la cara.\n\nLa cara que no se le movió en una cena, ni en un Consejo, ni bajo los golpes de un callejón, ni en ninguna orilla: se le descompone aquí, solo, donde no hay nadie a quien le sirva de nada que se la componga.\n\nLlora.\n\nDe verdad, feo, sin control. Sin la economía de todo lo demás que hace: no es un llanto medido, ni contenido, ni puesto al servicio de nada. Es el cuerpo cobrando entero y de una vez todo lo que la superficie ha ido sosteniendo —el juicio y el diagnóstico de la orilla, los tres días de una niña, el lago y la mano que se abrió sobre un cuello, el «No.» de los dieciséis años y la marcha de los veintidós, la ciudad que le funciona y no le sirve de nada— y cobrándolo en la única habitación de su vida donde nadie puede verlo, ni contarlo, ni cobrárselo a su vez.\n\nSegunda vez.\n\nNo se limpia la cara. No se levanta. No recoge nada. La escena no lo consuela ni lo ordena ni le pone una frase encima: lo deja sentado entre sus papeles rotos, llorando sin saber hacerlo, hasta que el llanto se gasta solo, como se gastan las cosas del cuerpo, y la sala vuelve poco a poco a su silencio seco de siempre, con la pared vacía delante y el amanecer todavía lejos.\n\n*(La numeración de esa frase de la prosa —«Segunda vez.»— se conserva literal, como la escribió la fuente, y su cuenta queda declarada y resuelta en el apunte de continuidad final de esta tanda: ver «La resolución del llanto».)*",
      "escenario": "tuneles",
      "luz": "BARRIO"
     },
@@ -4306,7 +4326,7 @@
       "saharis"
      ],
      "dialogo": [],
-     "accion": "La luz gris entra por una rejilla. Saharis, en el suelo, coge un papel del montón. Lo alisa con la mano. Lo clava. Coge otro.",
+     "accion": "La luz gris entra por una rejilla.\n\nLa sala, a esa luz, enseña lo que la noche ha dejado: la pared vacía, la piedra desnuda donde colgaba su vida entera, y el suelo cubierto de papeles rotos —los trescientos, mezclados, los cordeles sueltos, sin el orden que los hacía una máquina—. Saharis, en el suelo, donde el llanto lo dejó, con la cara ya recompuesta en su sitio de siempre, que es el sitio de no decir nada.\n\nSaharis, en el suelo, coge un papel del montón.\n\nLo mira un instante —un nombre, una fecha, la letra pequeña y segura de todos esos años— y hace con él lo contrario de todo lo que hizo anoche.\n\nLo alisa con la mano.\n\nDespacio, contra el suelo, pasando la palma abierta hasta que el papel roto vuelve a estar plano: el gesto más pequeño de esta historia y el único de reparación que se le conoce —deshacer un daño con la mano abierta, papel a papel, sin prisa y sin testigos—.\n\nLo clava.\n\nEn la pared vacía, el primer papel: solo, ocupando su sitio —no un sitio cualquiera: el suyo, el que la pared vieja le tenía guardado, encontrado sin dudar, porque esta pared, antes de estar en la piedra, está en él, y él la tiene entera en la memoria como tiene los nombres y las cifras—.\n\nCoge otro.\n\nLa escena se queda ahí, en el segundo papel: no enseña la pared rehecha —eso es de la escena siguiente, y a plena luz—, enseña el rehacer. Un hombre al amanecer, todavía en el suelo, alisando papeles rotos uno a uno con la mano, empezando otra vez lo único que sabe hacer con lo que se ha roto: ponerlo en su sitio.",
      "escenario": "tuneles",
      "luz": "BARRIO"
     },
@@ -4319,7 +4339,7 @@
       "saharis"
      ],
      "dialogo": [],
-     "accion": "La pared está entera otra vez. Todo en su sitio. Los papeles alineados. Los cordeles tensos. Está mejor que antes. Saharis se levanta, se sacude las rodillas y sale a trabajar. Negro.",
+     "accion": "La pared está entera otra vez.\n\nTodo en su sitio. Los papeles alineados. Los cordeles tensos. El dibujo del anillo en su hueco; SIETE presidiendo arriba, con su letra de niño; las listas con su primera línea muerta y sus doce vivas; el signo con sus tres cifras debajo, sin transcribir; las tres preguntas, una debajo de otra, todavía sin respuesta ninguna de las tres; el nombre tachado, legible bajo su raya; el número grande en su hueco vacío; y la fila del mapa rehecha sobre su hueco de piedra desnuda.\n\nEstá mejor que antes.\n\nNo porque diga otra cosa —dice lo mismo, con los mismos papeles, rotos y alisados, clavados otra vez por las mismas manos que los arrancaron—: está mejor porque ahora la ha puesto un hombre que sabe lo que la pared es, porque se lo han dicho en una orilla con las palabras exactas: una máquina de mover cosas de sitio, quitándolas siempre del mismo lado. La pared rehecha no desmiente el diagnóstico. Lo cuelga. Y su orden nuevo —el organigrama entero del sistema, la pared convertida en el mapa de quién manda en Feyrond— es trabajo de otro capítulo y aquí no se adelanta: esta pared es la de siempre, entera y mejor, no todavía la otra.\n\nSaharis se levanta, se sacude las rodillas y sale a trabajar.\n\nNo se queda mirándola con ninguna ceremonia: la deja detrás, encendida de papeles, como se deja una herramienta en su sitio, y sale a la ciudad que le funciona —al Consejo, a las cuentas, al sitio que le hicieron en la casa que lo compró todo sin nombrarlo— con la superficie recompuesta entera, pieza a pieza, igual que la pared.\n\nNegro.\n\nFin del capítulo 6.",
      "escenario": "tuneles",
      "luz": "BARRIO"
     }
