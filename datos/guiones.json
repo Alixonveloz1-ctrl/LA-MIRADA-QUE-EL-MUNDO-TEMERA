@@ -5914,7 +5914,7 @@
       "saharis"
      ],
      "dialogo": [],
-     "accion": "Montaje. Tres semanas. Campos. Después colinas. Después piedra. Saharis a pie, luego en un carro de paja, luego a pie otra vez. Come poco. Duerme al raso. No habla con nadie.",
+     "accion": "Tres semanas\n\nMontaje. Tres semanas.\n\nCampos. Después colinas. Después piedra. El camino va perdiendo la ciudad como se pierde una costumbre: primero los campos que la alimentan, después las colinas que la miran, después la piedra, que ya no es de nadie.\n\nSaharis a pie. Luego en un carro de paja, entre la carga, sin que nadie le pregunte el nombre porque a nadie le importa el nombre de un hombre que paga su sitio y no pide conversación. Luego a pie otra vez.\n\nCome poco. Lo que el camino da y lo que trae encima, sin detenerse en ninguna parte más de lo que dura comerlo.\n\nDuerme al raso. Al borde del camino, contra una piedra, donde la noche lo encuentra: el hombre que en la ciudad tiene un refugio con una pared de trescientos papeles duerme en el suelo como se dormía de niño en los túneles, sin quejarse y sin extrañarlo siquiera.\n\nNo habla con nadie.\n\nTres semanas enteras sin usar la voz: ni una pregunta en un cruce, ni una palabra en el carro, ni un nombre dado ni un nombre pedido. Su instrumento —el que mide, el que ofrece, el que consigue— va apagado todo el camino, porque en este camino no hay nada que conseguir. Hay solo que llegar.\n\nY el montaje no dice a dónde. Dice el tiempo: tres semanas. Dice el medio: los pies, un carro, los pies. Dice el precio: poco comer, suelo duro, silencio entero. Lo demás lo dirá el valle cuando aparezca.",
      "escenario": "camino-norte",
      "luz": "BARRIO"
     },
@@ -5927,7 +5927,7 @@
       "saharis"
      ],
      "dialogo": [],
-     "accion": "Un puerto alto. Empieza a caer algo del cielo. Saharis se detiene. Levanta la mano. Un copo se le deshace en la palma, sobre la cicatriz. Se queda mirándose la mano mucho rato.",
+     "accion": "El copo\n\nUn puerto alto. El camino entre piedra, con el valle ya lejos a la espalda y otro mundo todavía sin enseñar del otro lado.\n\nEmpieza a caer algo del cielo.\n\nAl principio no es nada: un punto blanco que no llega, otro que se pierde contra la piedra clara. Saharis se detiene.\n\nLevanta la mano.\n\nUn copo se le deshace en la palma, sobre la cicatriz: la línea pálida que el grabado le dejó a los seis años recibe la nieve como recibe todo lo demás, sin sentirla distinta. El copo dura un instante —una forma perfecta y breve— y se hace agua.\n\nSe queda mirándose la mano mucho rato.\n\nNo hay nadie en el puerto. No hay nada que hacer con una mano mojada en mitad de un puerto alto, y él la mira como se mira una cosa que ha cambiado sin avisar: al sur de ese puerto no nieva sobre los caminos de su vida; al otro lado, sí. El mundo de ella —el que le describía en la oscuridad de la cripta— empieza exactamente así: cayendo del cielo sobre la palma de su mano.\n\nCuando baja la mano y sigue andando, la lleva abierta todavía un rato, sin darse cuenta.",
      "escenario": "camino-norte",
      "luz": "BARRIO"
     },
@@ -5940,7 +5940,7 @@
       "saharis"
      ],
      "dialogo": [],
-     "accion": "Un valle. Casas de madera oscura con los tejados cargados de nieve. Humo de chimeneas. Y un olor que llega antes que la imagen: pan. Saharis se para a la entrada del pueblo. Es exactamente lo que ella le describía.",
+     "accion": "Kadre\n\nUn valle.\n\nCasas de madera oscura con los tejados cargados de nieve. Humo de chimeneas, recto en el aire quieto. Y un olor que llega antes que la imagen: pan.\n\nPan caliente, subiendo del valle a la entrada del camino, por delante de cualquier tejado y de cualquier humo. Saharis se para a la entrada del pueblo.\n\nEs exactamente lo que ella le describía.\n\nElla: en la oscuridad, con la voz rota, contándole a un niño que no veía la luz un lugar que el niño no iba a ver nunca —y el lugar está aquí, entero, sin cambiar una casa por el camino—: el valle, la madera oscura, la nieve en los tejados, el humo. Y el pan primero, como ella lo decía, antes que todo lo demás.\n\nNo hay puerta que llamar en una entrada de pueblo. No hay señal que gastar ni nombre que dar: hay un hombre parado en el camino con tres semanas de polvo y de piedra encima, mirando el sitio donde su madre fue una persona antes de ser una línea en un libro.\n\nSe queda parado un buen rato. Después baja al pueblo.",
      "escenario": "kadre",
      "luz": "BARRIO"
     },
@@ -5954,7 +5954,7 @@
       "madre"
      ],
      "dialogo": [],
-     "accion": "Camina. Una mujer barre nieve. Un hombre carga leña. Dos niños corren. Nadie lo mira con miedo. Nadie le hace una reverencia. Nadie lo mira. Aquí no es nada, y se le nota en la cara que no sabe cómo estar.",
+     "accion": "Nadie lo mira\n\nCamina.\n\nUna mujer barre nieve de delante de su puerta, con la escoba de siempre, y no levanta la cabeza más de lo que la levanta el trabajo. Un hombre carga leña, los brazos llenos, y pasa por su lado midiendo solo el hueco que queda en la calle. Dos niños corren, se persiguen, se ríen de algo que no tiene nada que ver con él, y se pierden entre las casas.\n\nNadie lo mira con miedo.\n\nNadie le hace una reverencia.\n\nNadie lo mira.\n\nEn su ciudad, su paso mueve la calle: un guardia saluda, un comerciante se inclina, un carruaje se detiene. Aquí su paso no mueve nada. Es un forastero más en un pueblo donde los forasteros son una cosa del tiempo, no una noticia, y la calle sigue barriendo, cargando y corriendo como si no hubiera llegado nadie.\n\nAquí no es nada, y se le nota en la cara que no sabe cómo estar.\n\nNo sabe dónde poner las manos sin que sean una orden. No sabe cuánto vale su silencio donde su silencio no pesa. Camina más despacio que en el camino, no por el cansancio: porque ninguna de las formas que trae sirve en esta calle, y todavía no tiene otra.",
      "escenario": "kadre",
      "luz": "BARRIO"
     },
@@ -5972,28 +5972,28 @@
        "quien": "saharis",
        "etiqueta": "SAHARIS",
        "texto": "Busco a la familia Ilmen.",
-       "intencion": "neutro, de viajero"
+       "intencion": "neutro, de viajero (original)"
       },
       {
        "quien": "posadero",
        "etiqueta": "POSADERO",
        "texto": "Al final de la calle larga, la casa del tejado nuevo.",
-       "intencion": "servicial, sin bajar la voz"
+       "intencion": "servicial, sin bajar la voz (original)"
       },
       {
        "quien": "saharis",
        "etiqueta": "SAHARIS",
        "texto": "¿Les va bien?",
-       "intencion": "con cuidado"
+       "intencion": "con cuidado (original)"
       },
       {
        "quien": "posadero",
        "etiqueta": "POSADERO",
        "texto": "Les va bien a todos desde que hay ferrería.",
-       "intencion": "con orgullo de pueblo"
+       "intencion": "con orgullo de pueblo (original)"
       }
      ],
-     "accion": "Un salón con fuego. Cinco o seis personas. Busco a la familia Ilmen. El POSADERO le sirve sin bajar la voz. Al final de la calle larga, la casa del tejado nuevo. ¿Les va bien? Les va bien a todos desde que hay ferrería.",
+     "accion": "La casa del tejado nuevo\n\nUn salón con fuego. Cinco o seis personas: gente del pueblo acabando el día donde se acaba el día, con la nieve quedándose fuera de la puerta. Saharis entra como se entra en cualquier posada del camino, y le hacen el sitio que se le hace a un viajero.\n\nEl POSADERO le sirve sin bajar la voz.\n\nEsto, que no es nada, es lo primero que el pueblo le dice sin decirlo: en su ciudad la gente baja la voz delante de él sin darse cuenta, como se baja delante de un altar o de una deuda. Aquí el posadero habla a su volumen, le pone lo que le pone a cualquiera y sigue con lo suyo.\n\nSaharis pregunta con la voz de tres semanas sin uso, y la usa como un viajero.\n\n**SAHARIS** *(neutro, de viajero (original))*: Busco a la familia Ilmen.\n\nLa respuesta llega sin pausa y sin interés especial, como se dan las señas de una casa conocida.\n\n**POSADERO** *(servicial, sin bajar la voz (original))*: Al final de la calle larga, la casa del tejado nuevo.\n\nLa casa del tejado nuevo. En el pueblo se llega a los Ilmen por su tejado: es una casa que se ha hecho notar por cuidarse, no por esconderse. Saharis guarda las señas como guarda todo: enteras. Y hace la segunda pregunta con el cuidado de quien sabe que está preguntando otra cosa.\n\n**SAHARIS** *(con cuidado (original))*: ¿Les va bien?\n\n**POSADERO** *(con orgullo de pueblo (original))*: Les va bien a todos desde que hay ferrería.\n\nCon orgullo de pueblo: no de la familia —del pueblo entero, que tiene ferrería y al que le va bien, y de esa prosperidad pequeña y común los Ilmen son una parte como otra cualquiera. El posadero no sabe que acaba de contestar a la pregunta con la que un hombre ha cruzado tres semanas de camino. Sigue sirviendo.\n\nSaharis no pregunta más. Come lo que le han puesto —o lo mira— y paga su sitio, y la noche de la posada sigue sin él en el centro de nada.",
      "escenario": "kadre",
      "luz": "BARRIO"
     },
@@ -6006,7 +6006,7 @@
       "saharis"
      ],
      "dialogo": [],
-     "accion": "Una casa grande. Cuidada. Leña apilada con orden. Un perro gordo. Humo en la chimenea. Saharis mira la casa desde la calle un buen rato.",
+     "accion": "La casa desde la calle\n\nAl final de la calle larga, la casa del tejado nuevo.\n\nUna casa grande. Cuidada: se le nota el cuidado en lo que no se enseña —la madera sana, el tejado nuevo de verdad y no de anuncio, el orden de las cosas que nadie mira—. Leña apilada con orden contra una pared, canto con canto, la de un invierno entero puesta como se pone lo que se cuenta con respeto. Un perro gordo, dormido o haciéndose el dormido, en el sitio bueno de la casa. Humo en la chimenea: dentro hay fuego, y hay gente alrededor del fuego, y el día está en marcha sin saber que lo miran.\n\nSaharis mira la casa desde la calle un buen rato.\n\nNo se acerca a la puerta. No cuenta ventanas ni busca una cara en ninguna: mira la casa como se mira un dato que por fin tiene forma —la familia que vendió a su madre por una deuda pequeña y ridícula vive aquí, come de esta leña, duerme bajo este tejado nuevo, y la casa está cuidada—. Nada de eso cabe en las líneas del libro que la trajo hasta aquí. El libro decía una cantidad. Esto dice una vida.\n\nEl perro levanta la cabeza una vez, lo decide irrelevante y vuelve a lo suyo: es el único ser del pueblo que lo ha examinado y ha dictado sentencia.\n\nSaharis sigue en la calle. La escena no lo mueve: lo deja mirando, con todo el capítulo por delante y la puerta todavía sin tocar.",
      "escenario": "casa-ilmen",
      "luz": "NOBLE"
     },
@@ -6025,10 +6025,10 @@
        "quien": "abuela",
        "etiqueta": "MUJER MAYOR",
        "texto": "¿Sí?",
-       "intencion": "abriendo la puerta a un desconocido, sin miedo"
+       "intencion": "abriendo la puerta a un desconocido, sin miedo (original)"
       }
      ],
-     "accion": "Llama. Abre una MUJER MAYOR. Setenta y tantos. Manos de trabajo. Y unos pómulos que Saharis conoce. ¿Sí?",
+     "accion": "La puerta\n\nAl final de la calle larga, la casa del tejado nuevo. Saharis se detiene delante de la puerta como se detuvo delante de la casa entera: un momento entero, con la calle a la espalda y el humo de la chimenea saliendo sobre el tejado.\n\nLlama.\n\nNo es ninguna señal de las suyas: es la llamada de un viajero a una puerta cualquiera, la que haría cualquier hombre que llega a una casa del norte con el frío encima. La otra puerta —la de piedra, la de la señal aprendida y guardada— no existe en este pueblo. Aquí las puertas se abren porque alguien llama, y ya está.\n\nAbre una MUJER MAYOR.\n\nSetenta y tantos. Manos de trabajo: manos que han partido leña, que han amasado, que han hecho todo lo que esta casa ha necesitado durante setenta años, y que abren la puerta sin ninguna ceremonia. Y unos pómulos que Saharis conoce.\n\nLos conoce como se conoce una cara vista en la oscuridad: son los pómulos de su madre, los que él lleva en su propia cara, los que la memoria le ha enseñado mil veces sin enseñarle nunca el nombre que va con ellos. La mujer de la puerta es de la misma madera que la mujer de la cripta, y no lo sabe: para ella, el hombre de la puerta es un forastero con frío, y nada más en el mundo.\n\nElla no retrocede. En su ciudad, quien abre una puerta y lo encuentra a él mide su cara antes de hablar. Esta mujer lo mira como se mira a cualquiera —una sola vez, de arriba abajo, para saber qué necesita— y dice la primera palabra que la casa Ilmen dice en el capítulo.\n\n**MUJER MAYOR** *(abriendo la puerta a un desconocido, sin miedo (original))*: ¿Sí?\n\nUna sílaba. Sin miedo y sin reverencia, con la misma medida que la calle entera: aquí nadie le debe nada a su nombre porque aquí su nombre no ha llegado. Saharis está en el umbral de la casa de su madre, delante de su familia, y la casa le pregunta qué quiere, como se le pregunta a cualquiera.",
      "escenario": "casa-ilmen",
      "luz": "NOBLE"
     },
@@ -6046,10 +6046,10 @@
        "quien": "abuela",
        "etiqueta": "MUJER MAYOR",
        "texto": "Pasa, hombre, que hace un frío que pela.",
-       "intencion": "hospitalidad automática del norte"
+       "intencion": "hospitalidad automática del norte (original)"
       }
      ],
-     "accion": "Pasa, hombre, que hace un frío que pela. No le ha preguntado quién es. Lo sienta junto al fuego. Le pone una manta en las rodillas sin pedir permiso.",
+     "accion": "Pasa, hombre\n\nLa respuesta no espera a que él conteste la pregunta de la puerta.\n\n**MUJER MAYOR** *(hospitalidad automática del norte (original))*: Pasa, hombre, que hace un frío que pela.\n\nNo le ha preguntado quién es.\n\nNi de dónde viene, ni qué busca, ni si trae dinero o deuda: la casa decide primero que un hombre no se queda en la puerta con este frío, y las preguntas —si vienen— vendrán después, con el calor ya puesto. Es la hospitalidad automática del norte: no es confianza, es costumbre, y funciona con cualquier desconocido igual que funcionaría con él.\n\nSaharis entra.\n\nLo sienta junto al fuego. No en un sitio de visita: junto al fuego, en el sitio bueno de la cocina, como se sienta a los que llegan mojados de camino. Le pone una manta en las rodillas sin pedir permiso, con las manos de trabajo y la naturalidad de quien ha puesto mantas sobre rodillas toda su vida.\n\nY él la deja hacer.\n\nÉl, que no deja que nadie disponga de su sitio en ninguna mesa de la ciudad; él, que mide cada gesto que le hacen como se mide una oferta. Aquí una anciana le arregla las rodillas como se le arreglan a un crío o a un viejo, y Saharis no aparta las manos ni corrige el gesto. No hay nada que negociar en una manta: la casa lo ha metido dentro por el frío, no por su nombre, y su nombre sigue fuera, en la calle, sin que nadie lo haya echado de menos.",
      "escenario": "casa-ilmen",
      "luz": "NOBLE"
     },
@@ -6067,10 +6067,10 @@
        "quien": "abuela",
        "etiqueta": "MUJER MAYOR",
        "texto": "Come.",
-       "intencion": "una orden cariñosa"
+       "intencion": "una orden cariñosa (original)"
       }
      ],
-     "accion": "Le pone delante un plato con pan caliente. Come. Saharis mira el pan. No lo toca en todo el episodio.",
+     "accion": "Come\n\nLe pone delante un plato con pan caliente.\n\n**MUJER MAYOR** *(una orden cariñosa (original))*: Come.\n\nUna orden. La primera orden que recibe en años que no es una negociación: no lleva precio, no lleva contrapartida, no se puede aceptar ni rechazar con ventaja. Es la orden más vieja del mundo, dicha por una mujer mayor a cualquiera que se sienta a su mesa con cara de camino.\n\nSaharis mira el pan.\n\nEl pan: lo primero que este pueblo le dio, antes que ninguna cara y que ningún nombre, fue su olor —llegó antes que la imagen, al bajar al valle—. Ahora está aquí, caliente, en un plato, a la distancia de una mano. Su mano no se mueve.\n\nNo lo toca.\n\nNo lo toca en todo el episodio: ni en esta cocina, ni en la cena que vendrá, ni en ningún sitio de esta casa. La escena no dice por qué —no hay asco, no hay orgullo, no hay cálculo que la escena enseñe—: hay un plato intacto delante de un hombre que ha cruzado tres semanas de camino comiendo poco, y el pan se queda entero, enfriándose, mientras la casa sigue a lo suyo alrededor.\n\nLa mujer no insiste. En esta casa, comer es cosa de cada uno, y un hombre que mira su pan sin tocarlo es solo un hombre raro, de los que el camino hace. Ella vuelve a su fuego.",
      "escenario": "elserath-cocina",
      "luz": "NOBLE"
     },
@@ -6089,34 +6089,34 @@
        "quien": "saharis",
        "etiqueta": "SAHARIS",
        "texto": "Vengo por unas cuentas antiguas. De hace dieciocho años.",
-       "intencion": "preparado, neutro"
+       "intencion": "preparado, neutro (original)"
       },
       {
        "quien": "abuela",
        "etiqueta": "MUJER MAYOR",
        "texto": "Uy. De aquello ya no queda nada.",
-       "intencion": "quitándole importancia"
+       "intencion": "quitándole importancia (original)"
       },
       {
        "quien": "saharis",
        "etiqueta": "SAHARIS",
        "texto": "Una deuda con una casa del sur.",
-       "intencion": "preciso"
+       "intencion": "preciso (original)"
       },
       {
        "quien": "abuela",
        "etiqueta": "MUJER MAYOR",
        "texto": "Aquel año se heló todo en mayo. Todo. No hubo grano ni para nosotros.",
-       "intencion": "recordando un mal año, sin culpa"
+       "intencion": "recordando un mal año, sin culpa (original)"
       },
       {
        "quien": "abuela",
        "etiqueta": "MUJER MAYOR",
        "texto": "Vinieron unos del sur ofreciendo. Aquí vino mucha gente aquel año.",
-       "intencion": "como quien cuenta el tiempo"
+       "intencion": "como quien cuenta el tiempo (original)"
       }
      ],
-     "accion": "Vengo por unas cuentas antiguas. De hace dieciocho años. Uy. De aquello ya no queda nada. Una deuda con una casa del sur. La mujer se sienta enfrente. Suspira sin dramatismo. Aquel año se heló todo en mayo. Todo. No hubo grano ni para nosotros. Remueve una olla. Vinieron unos del sur ofreciendo. Aquí vino mucha gente aquel año.",
+     "accion": "Cuentas antiguas\n\nEs él quien abre el asunto, y lo abre como abre todo: con una fórmula preparada, neutra, de papel.\n\n**SAHARIS** *(preparado, neutro (original))*: Vengo por unas cuentas antiguas. De hace dieciocho años.\n\nDieciocho años: la cifra que él ha contado con los dedos en su refugio, la distancia exacta entre la compra y esta cocina. La dice como se dice un dato de archivo, sin que la voz le cambie: un hombre que viene por unas cuentas es un hombre comprensible en cualquier casa, y él necesita ser comprensible un rato más.\n\nLa mujer no se alarma. Ni siquiera levanta el asunto a la altura de una visita importante.\n\n**MUJER MAYOR** *(quitándole importancia (original))*: Uy. De aquello ya no queda nada.\n\nDe aquello: la deuda, el año, la hija —todo lo que él trae en la cabeza como tres preguntas y una pared— cabe para ella en un «aquello» dicho sin peso, como se habla de una cosecha vieja. Él precisa, porque precisar es su manera de empujar.\n\n**SAHARIS** *(preciso (original))*: Una deuda con una casa del sur.\n\nNo dice qué casa. Esa casa tiene nombre en sus libros, y aquí la deja en «una casa del sur», sin nombre, como la deuda merece en esta cocina: una cosa genérica que vino del sur una vez.\n\nLa mujer se sienta enfrente. Suspira sin dramatismo —el suspiro de quien remueve un año viejo, no una culpa— y remueve una olla mientras la memoria le hace lo que le hace a todo el pueblo: irse al tiempo.\n\n**MUJER MAYOR** *(recordando un mal año, sin culpa (original))*: Aquel año se heló todo en mayo. Todo. No hubo grano ni para nosotros.\n\nEse es el centro de su versión, y hay que oírlo entero: para ella, aquel año es un año de hielo, no de venta. Hizo frío en mayo, se perdió todo, y no hubo grano ni para los de la casa. Lo que pasó después pasó porque pasó aquello primero, y su memoria guarda la helada donde la de él guarda un asiento con un tachón.\n\n**MUJER MAYOR** *(como quien cuenta el tiempo (original))*: Vinieron unos del sur ofreciendo. Aquí vino mucha gente aquel año.\n\nOfreciendo: la palabra queda ahí, sin decir qué. Unos del sur, mucha gente, un año malo. La mujer cuenta el año como se cuenta el tiempo, y en su relato todavía no hay ninguna persona con nombre: ni la hija, ni el crío, ni el hijo mayor. La cocina huele a caldo y a leña, y la conversación sigue siendo, para ella, una conversación sobre un año en que hizo frío.",
      "escenario": "elserath-cocina",
      "luz": "NOBLE"
     },
@@ -6133,23 +6133,23 @@
       {
        "quien": "abuela",
        "etiqueta": "MUJER MAYOR",
-       "texto": "Mi hijo mayor quiso ir él. Y mi marido dijo que no, que el chico hacía falta para",
-       "intencion": "hilo de la memoria, mientras cocina"
+       "texto": "Mi hijo mayor quiso ir él. Y mi marido dijo que no, que el chico hacía falta para la siembra.",
+       "intencion": "hilo de la memoria, mientras cocina (original, completada desde la prosa de su propia escena: en el archivo venía cortada en «hacía falta para»)"
       },
       {
        "quien": "abuela",
        "etiqueta": "MUJER MAYOR",
        "texto": "Así que fue Sera.",
-       "intencion": "el nombre. Dicho de pasada, entre dos frases sobre la cosecha. Sin música y sin peso"
+       "intencion": "el nombre. Dicho de pasada, entre dos frases sobre la cosecha. Sin música y sin peso (original)"
       },
       {
        "quien": "abuela",
        "etiqueta": "MUJER MAYOR",
        "texto": "Y bueno. Con el crío.",
-       "intencion": "añadido casi olvidado. Tres palabras"
+       "intencion": "añadido casi olvidado. Tres palabras (original)"
       }
      ],
-     "accion": "Mi hijo mayor quiso ir él. Y mi marido dijo que no, que el chico hacía falta para la siembra. Prueba el caldo. Así que fue Sera. Saharis se queda con la taza a medio camino. Y bueno. Con el crío.",
+     "accion": "Para la siembra\n\nLa mujer sigue con su hilo, mientras cocina, sin darse cuenta de que está abriendo la única puerta que él ha cruzado tres semanas para encontrar.\n\n**MUJER MAYOR** *(hilo de la memoria, mientras cocina (original, completada desde la prosa de su propia escena: en el archivo venía cortada en «hacía falta para»))*: Mi hijo mayor quiso ir él. Y mi marido dijo que no, que el chico hacía falta para la siembra.\n\nEl hijo mayor quiso ir él. El marido dijo que no: el chico hacía falta para la siembra. Así se decidió —entre un padre, un campo y un año helado— quién de la casa iba al sur con los que ofrecían. No la eligió un destino: la eligió una siembra. La mujer lo cuenta como se cuenta una decisión de granja, porque para ella lo es.\n\nPrueba el caldo.\n\n**MUJER MAYOR** *(el nombre. Dicho de pasada, entre dos frases sobre la cosecha. Sin música y sin peso (original))*: Así que fue Sera.\n\nSera.\n\nEl nombre cae en la cocina entre el caldo y la cosecha, sin música y sin peso, dicho de pasada por la mujer que menos lo guarda: no es un secreto revelado, es una palabra de familia en boca de su madre —de la madre de ella—, usada como se usan los nombres de los de casa. La temporada ha tardado diez capítulos en llegar a esta palabra, y la palabra llega como llegan las cosas en esta casa: sin ceremonia.\n\nSaharis se queda con la taza a medio camino.\n\nLa taza no llega. La mano que la lleva se detiene donde está, a medio camino, y allí se queda, con la cocina entera siguiendo a lo suyo alrededor de un hombre que acaba de dejar de moverse. Nadie más en la casa nota nada: no hay nada que notar, un forastero quieto con una taza.\n\nY la mujer añade lo último como un añadido casi olvidado.\n\n**MUJER MAYOR** *(añadido casi olvidado. Tres palabras (original))*: Y bueno. Con el crío.\n\nCon el crío. Tres palabras para el otro hecho entero de la temporada: ella no fue sola al sur; fue con un niño pequeño —el que llegó con ella, el del margen de un asiento, el de un papel en una pared— y la mujer lo dice como se dice lo que casi no hace falta decir, porque en su memoria el crío nunca fue un misterio: era un niño de la casa que iba con su madre, y ya está.\n\nSaharis no dice nada. La cocina sigue: el caldo, el fuego, la mujer que vuelve a su olla con el nombre de su hija ya gastado en una frase de cosecha. Él tiene por fin lo que vino a buscar y no tiene ningún sitio donde ponerlo: no hay pared en esta cocina, ni papel, ni nadie a quien decírselo. Hay una taza a medio camino y una anciana que no sabe lo que acaba de hacer.",
      "escenario": "elserath-cocina",
      "luz": "NOBLE"
     },
@@ -6168,16 +6168,16 @@
        "quien": "saharis",
        "etiqueta": "SAHARIS",
        "texto": "Sera.",
-       "intencion": "repitiéndolo. Es la primera vez en su vida que lo dice"
+       "intencion": "repitiéndolo. Es la primera vez en su vida que lo dice (original)"
       },
       {
        "quien": "abuela",
        "etiqueta": "MUJER MAYOR",
        "texto": "Mi hija.",
-       "intencion": "dos palabras, con una tristeza corriente"
+       "intencion": "dos palabras, con una tristeza corriente (original)"
       }
      ],
-     "accion": "Primer plano de Saharis. Acaba de oír el nombre de su madre por primera vez en su vida. Se lo ha dicho, mientras remueve un caldo, la mujer que la vendió. Sera. Mi hija. Lo dice con una tristeza corriente, la de quien menciona algo viejo.",
+     "accion": "Mi hija\n\nPrimer plano de Saharis.\n\nAcaba de oír el nombre de su madre por primera vez en su vida. Se lo ha dicho, mientras remueve un caldo, la mujer que la vendió: no un registro, no un margen, no una acólita en una habitación pequeña. La mujer que la parió a ella, en la cocina donde ella se crió, con la cuchara en la mano.\n\nLo dice él. Por primera vez.\n\n**SAHARIS** *(repitiéndolo. Es la primera vez en su vida que lo dice (original))*: Sera.\n\nDos sílabas en la boca de un hombre que ha hecho de las palabras su instrumento durante años, y esta no mide nada, no ofrece nada, no consigue nada: la repite. El nombre entra en su voz por un sitio que no estaba hecho para eso, y la cocina entera —el fuego, el caldo, el pan intacto— sigue exactamente igual con el nombre ya dentro.\n\nLa mujer contesta sin levantar el asunto ni un grado.\n\n**MUJER MAYOR** *(dos palabras, con una tristeza corriente (original))*: Mi hija.\n\nMi hija. Dos palabras con una tristeza corriente, la de quien menciona algo viejo: la tristeza que cabe en una cocina, entre el caldo y la leña, sin derramarse. Para ella es eso: una hija que se fue un año malo y de la que no se volvió a saber; una cosa vieja, que duele lo que duelen las cosas viejas mientras se cocina. No sabe que acaba de darle a un desconocido sentado a su mesa lo único que ese desconocido no tenía en ninguna de sus paredes: el nombre.\n\nSaharis la mira. No dice quién es. No dice de quién es hijo. El nombre se queda en la cocina, entre los dos, valiendo una cosa distinta a cada lado de la mesa: a un lado, una hija perdida en un año de hielo; al otro, la primera palabra de una persona que hasta hoy era solo «ella».",
      "escenario": "elserath-cocina",
      "luz": "NOBLE"
     },
@@ -6196,28 +6196,28 @@
        "quien": "saharis",
        "etiqueta": "SAHARIS",
        "texto": "¿La buscaron?",
-       "intencion": "conteniéndose"
+       "intencion": "conteniéndose (original)"
       },
       {
        "quien": "abuela",
        "etiqueta": "MUJER MAYOR",
        "texto": "¿A dónde?",
-       "intencion": "sin entender la pregunta"
+       "intencion": "sin entender la pregunta (original)"
       },
       {
        "quien": "saharis",
        "etiqueta": "SAHARIS",
        "texto": "Al sur.",
-       "intencion": "una palabra"
+       "intencion": "una palabra (original)"
       },
       {
        "quien": "abuela",
        "etiqueta": "MUJER MAYOR",
        "texto": "Hijo, nosotros no habíamos salido del valle en la vida.",
-       "intencion": "cariñosa, explicando lo obvio"
+       "intencion": "cariñosa, explicando lo obvio (original)"
       }
      ],
-     "accion": "¿La buscaron? ¿A dónde? Al sur. La mujer se ríe un poco, sin ganas. Hijo, nosotros no habíamos salido del valle en la vida.",
+     "accion": "¿La buscaron?\n\nLa cocina sigue en su continuo: el caldo, el fuego, el nombre recién dicho dos veces y todavía en el aire sin que nadie lo recoja. Saharis se contiene. Se le nota solo en que la pregunta sale medida, como salen las suyas cuando lo que pregunta no cabe en la fórmula que trae preparada.\n\n**SAHARIS** *(conteniéndose (original))*: ¿La buscaron?\n\nLa mujer no entiende la pregunta.\n\n**MUJER MAYOR** *(sin entender la pregunta (original))*: ¿A dónde?\n\nNo es una evasiva: es que la pregunta, en esta casa, no tiene dónde agarrarse. Buscar es una palabra de gente que sale, que tiene caminos, que puede ir a alguna parte a preguntar por alguien. Él le da la dirección como se da un dato, en una palabra.\n\n**SAHARIS** *(una palabra (original))*: Al sur.\n\nAl sur: el sitio del que él viene, el de la casa que ofrecía, el del libro donde ella fue una línea con una cantidad pequeña y ridícula al lado. La mujer se ríe un poco, sin ganas, y le contesta como se le contesta a un niño que pregunta por qué el río no sube.\n\n**MUJER MAYOR** *(cariñosa, explicando lo obvio (original))*: Hijo, nosotros no habíamos salido del valle en la vida.\n\nLo obvio: esta familia no ha salido del valle en la vida. No buscaron porque buscar no era una cosa que existiera para ellos; el valle era el mundo entero, y fuera del valle no había adónde ir ni a quién preguntar. La respuesta no le da lo que él traía en la cabeza —una búsqueda, una culpa, alguien que fue o que no fue—: le da la forma exacta del mundo del que su madre salió y al que nunca pudo volver la noticia de lo que fue de ella.\n\nLa cocina sigue. La escena no añade ni una palabra más: lo que queda sonando no es una respuesta, es la distancia entre dos maneras de perder a alguien.",
      "escenario": "elserath-cocina",
      "luz": "NOBLE"
     },
@@ -6236,16 +6236,16 @@
        "quien": "saharis",
        "etiqueta": "SAHARIS",
        "texto": "¿Se arrepienten?",
-       "intencion": "bajo. Es la pregunta que vino a hacer"
+       "intencion": "bajo. Es la pregunta que vino a hacer (original)"
       },
       {
        "quien": "abuela",
        "etiqueta": "MUJER MAYOR",
        "texto": "¿De qué?",
-       "intencion": "desconcertada de verdad. No es cinismo: no entiende"
+       "intencion": "desconcertada de verdad. No es cinismo: no entiende (original)"
       }
      ],
-     "accion": "¿Se arrepienten? La mujer levanta la vista. No entiende la pregunta. ¿De qué? Saharis la mira. Ella espera, con la cuchara en la mano, sinceramente esperando que le aclare la pregunta. Saharis no la aclara.",
+     "accion": "¿De qué?\n\nY entonces hace la otra. Bajo. Es la pregunta que vino a hacer: la que cruzó tres semanas de camino, la que de verdad traía debajo de las cuentas antiguas y de la deuda sin nombre. No se la hace a un registro ni a una pared: se la hace a esta mujer, en su cocina, con el caldo humeando entre los dos.\n\n**SAHARIS** *(bajo. Es la pregunta que vino a hacer (original))*: ¿Se arrepienten?\n\nLa mujer levanta la vista.\n\nNo entiende la pregunta.\n\n**MUJER MAYOR** *(desconcertada de verdad. No es cinismo: no entiende (original))*: ¿De qué?\n\nNo es cinismo: no entiende. No hay en su cara ni defensa ni ataque; hay una mujer mayor con una cuchara en la mano que acaba de oír una palabra —arrepentirse— y no encuentra en su memoria de aquel año el sitio donde esa palabra pudiera ponerse. Para ella hubo un año helado, una deuda, unos del sur ofreciendo, una hija que fue. El arrepentimiento necesitaría que aquello hubiera sido una elección entre cosas, y en su relato fue el tiempo: hizo frío, y pasó lo que pasa cuando hace frío.\n\nSaharis la mira.\n\nElla espera, con la cuchara en la mano, sinceramente esperando que le aclare la pregunta.\n\nSaharis no la aclara.\n\nNo la aclara porque aclararla sería decirlo todo: quién era ella para la casa del sur, qué fue de ella, de quién es hijo el hombre sentado a esta mesa. La pregunta queda así, hecha a medias por los dos lados —él no la termina de hacer, ella no la puede terminar de oír— y la escena se cierra sobre esa espera limpia, sin que nadie la rompa: la cuchara en alto, la mujer mirándolo, él mirándola a ella, y el capítulo entero sostenido en dos palabras que no se encontraron.",
      "escenario": "elserath-cocina",
      "luz": "NOBLE"
     },
@@ -6258,7 +6258,7 @@
       "saharis"
      ],
      "dialogo": [],
-     "accion": "Cena. Once personas. Hijos, nueras, cuatro nietos. Ruido, discusiones tontas, alguien roba comida del plato de otro. Saharis está sentado a la mesa. Le hacen sitio, le sirven, le preguntan por el camino, se olvidan de él y siguen hablando entre ellos. Es la escena más cálida de toda la temporada.",
+     "accion": "La cena\n\nCena. Once personas.\n\nHijos, nueras, cuatro nietos: la casa entera sentada a su mesa, con el fuego cerca y la nieve fuera. Hay ruido —el ruido bueno de una mesa que no se vigila—: discusiones tontas que nacen y mueren en dos frases, risas que no piden permiso, alguien que roba comida del plato de otro y el otro que protesta sin enfadarse de verdad.\n\nSaharis está sentado a la mesa.\n\nLe hacen sitio sin ceremonia, como se le hace sitio a uno más. Le sirven como se sirve a cualquiera: sin medirle el plato ni bajar la voz. Le preguntan por el camino —el camino, esa cosa común que en su ciudad nadie le pregunta porque de él no se pregunta nada que no sea negocio— y él contesta lo que contesta un viajero, y ellos se olvidan de él y siguen hablando entre ellos.\n\nSe olvidan de él: esa es la forma exacta de la escena. En su ciudad nadie se olvida de él en una mesa; su presencia ordena cada conversación y pesa en cada silencio. Aquí es un hombre más entre once, con su sitio y su plato, y la familia sigue siendo la familia con él o sin él, discutiendo de sus cosas tontas, robándose la comida de los platos, viviendo en voz alta alrededor de un desconocido que podría no estar.\n\nEl pan pasa de mano en mano por la mesa, como pasa en esta casa desde antes de que él naciera. El suyo queda entero en su sitio, como quedó el de la cocina: la escena no lo señala y nadie en la mesa lo nota, porque en esta mesa nadie vigila lo que otro come o deja de comer.\n\nEs la escena más cálida de toda la temporada, y su calor no es para él: es el calor de siempre de esta casa, el que había antes de que él llegara y el que seguirá cuando se vaya, prestado a un forastero por una noche porque en esta casa así se hacen las noches.",
      "escenario": "casa-ilmen",
      "luz": "NOBLE"
     },
@@ -6269,7 +6269,7 @@
      "flashback": false,
      "personajes": [],
      "dialogo": [],
-     "accion": "Una NIÑA de unos seis años canturrea mientras juega con el pan. Es la canción. Es exactamente la canción.",
+     "accion": "Es la canción\n\nLa cena sigue en su continuo, con su ruido bajando y subiendo como baja y sube el de todas las mesas.\n\nUna NIÑA de unos seis años canturrea mientras juega con el pan.\n\nNo canta para nadie: canturrea como canturrean los niños que tienen las manos ocupadas y la cabeza en otra parte, con la melodía saliendo a trozos entre el juego, sin letra que se fije y sin prestarle atención a su propia voz. Tiene pan entre los dedos y una canción vieja en la boca, y las dos cosas le importan lo mismo, que es casi nada.\n\nEs la canción.\n\nEs exactamente la canción.\n\nLa melodía que un niño oyó en la oscuridad de una cripta, en la voz rota de su madre, girando sobre sí misma noche tras noche sin terminar nunca, está aquí: en la cocina caliente de la casa de donde ella salió, en boca de una niña de seis años que no sabe que existe un sitio como aquel ni que hubo una mujer que se la cantaba a un hijo entre piedras. La canción no ha necesitado a nadie para llegar hasta esta mesa: ha estado aquí todo el tiempo, en las bocas de este valle, esperando a que él viniera a oírla donde nació.\n\nLa escena no dice todavía qué es: eso lo pregunta la siguiente. Esta se queda en el hecho desnudo —la niña, el pan, el canturreo— y en un hombre sentado a una mesa llena que acaba de dejar de oír todo lo demás.",
      "escenario": "casa-ilmen",
      "luz": "NOBLE"
     },
@@ -6282,7 +6282,7 @@
       "madre"
      ],
      "dialogo": [],
-     "accion": "La madre, en la oscuridad de la cripta, cantando esa misma melodía con la voz rota. Corte a la niña, en la cocina caliente, cantándola mal y sin prestar atención. Corte a la madre. Corte a la niña, que se aburre y la deja a medias.",
+     "accion": "La misma melodía\n\nRecuerdo.\n\nLa madre, en la oscuridad de la cripta, cantando esa misma melodía con la voz rota.\n\nSin cara: la oscuridad y el pelo, como siempre que ella canta en esta serie. La melodía sale de donde salía entonces —de una celda, de una mujer atada por la vida a aquel sitio, cantándole a un niño la única cosa de su casa que pudo meter con ella entre aquellas piedras— y gira sobre sí misma como giraba entonces, sin cerrarse, porque esa melodía no se cierra: es el sonido de un sitio que ya no existe para quien la canta.\n\nCorte a la niña, en la cocina caliente, cantándola mal y sin prestar atención.\n\nLa canta mal: se le escapan trozos, vuelve atrás, la tuerce como la tuercen los niños que la han oído sin escucharla nunca. Y no pasa nada: la canción aguanta que la canten mal, porque no es de nadie y es de todos los que han dormido en este valle.\n\nCorte a la madre.\n\nLa voz rota, en la oscuridad, sosteniendo la misma vuelta de la melodía con lo que le quedaba de voz, mucho tiempo y muchas noches atrás.\n\nCorte a la niña, que se aburre y la deja a medias.\n\nLa deja a medias: el juego con el pan gana, la canción se queda colgada en la cocina caliente y la niña sigue a lo suyo sin saber que ha dejado algo sin terminar. Nadie la termina por ella. Ni la madre la terminó nunca —su melodía no terminaba— ni la niña la termina ahora: la nana queda a medias en las dos bocas y en los dos tiempos, que es exactamente donde esta serie la ha tenido siempre y donde la seguirá teniendo.\n\nEl corte devuelve la escena a la mesa, con la melodía ya dentro de la habitación y un hombre que la ha reconocido.",
      "escenario": "cripta-celda",
      "luz": "BARRIO"
     },
@@ -6301,28 +6301,28 @@
        "quien": "saharis",
        "etiqueta": "SAHARIS",
        "texto": "¿Qué es eso?",
-       "intencion": "interrumpiendo la cena"
+       "intencion": "interrumpiendo la cena (original)"
       },
       {
        "quien": "nina-kadre",
        "etiqueta": "NIÑA",
        "texto": "¿El qué.",
-       "intencion": "distraída"
+       "intencion": "distraída (original)"
       },
       {
        "quien": "saharis",
        "etiqueta": "SAHARIS",
        "texto": "Lo que cantabas.",
-       "intencion": "con urgencia contenida"
+       "intencion": "con urgencia contenida (original)"
       },
       {
        "quien": "abuela",
        "etiqueta": "MUJER MAYOR",
        "texto": "Es una nana de aquí. Se la cantan a todos.",
-       "intencion": "de pasada, siguiendo con la comida"
+       "intencion": "de pasada, siguiendo con la comida (original)"
       }
      ],
-     "accion": "¿Qué es eso? ¿El qué. Lo que cantabas. La niña se encoge de hombros. Es una nana de aquí. Se la cantan a todos. Sigue comiendo. Saharis mira su plato.",
+     "accion": "Una nana de aquí\n\nEs él quien rompe la mesa. Interrumpiendo la cena —él, que no interrumpe nada en ninguna parte sin calcular el sitio exacto donde su voz va a caer— pregunta como se pregunta cuando la pregunta sale antes que el cálculo.\n\n**SAHARIS** *(interrumpiendo la cena (original))*: ¿Qué es eso?\n\nLa niña ni siquiera sabe de qué le habla: está en su pan, en su juego, en su cena.\n\n**NIÑA** *(distraída (original))*: ¿El qué.\n\n**SAHARIS** *(con urgencia contenida (original))*: Lo que cantabas.\n\nLa niña se encoge de hombros. Es todo el gesto que la escena le da y es el gesto exacto: para ella no hay nada que explicar, y lo que no hay que explicar no se explica encogiéndose de hombros más que un instante. La respuesta la da la abuela, de pasada, siguiendo con la comida, sin levantar el asunto ni un grado.\n\n**MUJER MAYOR** *(de pasada, siguiendo con la comida (original))*: Es una nana de aquí. Se la cantan a todos.\n\nEs una nana de aquí. Se la cantan a todos.\n\nLa melodía más guardada de su vida —la que sonaba en la oscuridad de la cripta, la que era solo de su madre y de él, la que ningún libro registraba y ninguna pared podía guardar— es una nana de pueblo. De aquí: de este valle, de estas cocinas. Se la cantan a todos: a los once de esta mesa, a los niños de las casas de al lado, a cualquiera que haya dormido de crío entre estas paredes de madera. Su madre no la inventó ni la trajo de ningún otro sitio: la cantaba porque era de su casa, y la cantaba en la celda como se canta lo único que a una la sigue perteneciendo cuando todo lo demás se lo han quitado.\n\nLa niña sigue comiendo.\n\nSaharis mira su plato.\n\nLa mesa vuelve a su ruido de siempre alrededor de las dos respuestas más pequeñas del mundo —un encogimiento de hombros y una frase de pasada— y él se queda mirando su plato, con la explicación entera de su melodía dada por fin y dada como se dan las cosas en esta casa: sin que nadie sepa que la estaba dando.",
      "escenario": "casa-ilmen",
      "luz": "NOBLE"
     },
@@ -6335,7 +6335,7 @@
       "saharis"
      ],
      "dialogo": [],
-     "accion": "Le han dado una cama. La casa duerme. Saharis, sentado en el borde, se sube la manga. Los circuitos brillan bajo la piel. Toda la habitación se tiñe de rojo apagado. Podría hacer desaparecer esta casa esta noche y nadie en el mundo lo sabría.",
+     "accion": "Podría\n\nNoche. Le han dado una cama: una habitación de esta casa, con su sitio como el de cualquiera que duerme bajo este tejado, porque en esta casa un forastero que llega con el frío se queda a dormir y no hay más ceremonia que esa.\n\nLa casa duerme.\n\nToda la casa: los once de la mesa, en sus cuartos, con la nieve contra las ventanas y el fuego bajando a brasa en la cocina. El silencio de una casa llena que duerme es un silencio distinto del de su refugio y del de la cripta: es un silencio con gente dentro, con respiraciones detrás de las paredes de madera.\n\nSaharis, sentado en el borde de la cama, se sube la manga.\n\nLos circuitos brillan bajo la piel.\n\nToda la habitación se tiñe de rojo apagado: la luz que lleva dentro desde que un libro de taller se la ordenó a los diez años, encendida aquí, en la casa de su madre, en la única habitación del mundo donde esa luz no significa nada para nadie más que para él. Las líneas suben por el brazo como suben siempre, sin pedirle permiso a la oscuridad de este cuarto.\n\nPodría hacer desaparecer esta casa esta noche y nadie en el mundo lo sabría.\n\nEso es todo lo que la escena dice, y lo dice sin subir la voz: el hombre que ha cruzado tres semanas para encontrar a esta familia está sentado en la cama que esa familia le ha dado, con su poder encendido en el brazo, y la medida exacta de ese poder es esa frase. Esta casa —la del tejado nuevo, la de la mesa de once, la de la nana de todos— podría no estar mañana, y no habría testigo, ni registro, ni asiento con su nombre.\n\nLa escena se queda ahí: la casa dormida, la luz roja en la habitación, y el hombre sentado en el borde de su cama con todo eso en la mano.",
      "escenario": "casa-ilmen",
      "luz": "NOBLE"
     },
@@ -6346,7 +6346,7 @@
      "flashback": false,
      "personajes": [],
      "dialogo": [],
-     "accion": "Se queda así. La luz de los circuitos ilumina la pared de madera. Una viga. Un clavo. Una mancha de humedad. Pasan las horas y él no se mueve. La luz se va apagando sola.",
+     "accion": "Se queda así\n\nSe queda así: sentado en el borde de la cama que le han dado, con la manga subida y los circuitos encendidos, mientras la casa de su madre duerme entera detrás de las paredes de madera.\n\nLa luz de los circuitos ilumina la pared de madera. No la pared de sus papeles: una pared de tablones, con lo que una habitación cualquiera deja en ella. Una viga. Un clavo. Una mancha de humedad. Su luz —la que en su ciudad ordena salas y pesa en cada silencio— se gasta aquí contando tres cosas que no significan nada, en una casa donde nadie sabe que existe.\n\nPasan las horas y él no se mueve.\n\nNo hay un gesto que lo saque del borde de esa cama: ni se levanta, ni se acerca a ninguna puerta, ni se le enseña bajar la manga por una decisión. La casa sigue dormida; el fuego de la cocina baja a brasa tras la pared; la nieve sigue contra las ventanas. Y él sigue sentado, con el brazo encendido, delante de una viga, un clavo y una mancha de humedad.\n\nLa luz se va apagando sola.\n\nSola: no con el puño cerrado con que la ha apagado otras veces, sino como se apaga lo que arde sin que nadie lo alimente. Las líneas bajan de brillo poco a poco, el cuarto deja de estar teñido de rojo apagado y vuelve a ser lo que era: una habitación oscura de una casa de madera, con un hombre sentado en el borde de una cama que no es suya.\n\nLa escena no dice qué ha decidido. Dice lo que no ha hecho: con esa luz podría haber hecho desaparecer esta casa esta noche, y la casa sigue ahí, dormida, entera, y él sigue sentado en su borde cuando la luz se acaba.",
      "escenario": "casa-ilmen",
      "luz": "NOBLE"
     },
@@ -6357,7 +6357,7 @@
      "flashback": false,
      "personajes": [],
      "dialogo": [],
-     "accion": "Baja sin hacer ruido. Todos duermen. En el suelo, junto a la puerta, botas pequeñas alineadas por tamaño.",
+     "accion": "Botas pequeñas\n\nAmanecer. Baja sin hacer ruido: los escalones de madera de una casa que no es la suya, pisados como se pisan las casas dormidas, sin prisa y sin peso de más. Todos duermen: los de la mesa de anoche, en sus cuartos, con el ruido bueno de la cena ya lejos y la casa entera en su hora más quieta.\n\nEn el suelo, junto a la puerta, botas pequeñas alineadas por tamaño.\n\nLas botas de los niños de la casa, dejadas en fila al entrar, de la más pequeña a la más grande: el orden doméstico de una familia con cuatro nietos y una puerta por la que se entra con la nieve en los pies. La escena no lo explica y él no lo comenta: es el suelo de esta casa diciendo sin palabras lo contrario de la cripta —aquí los niños dejan las botas junto a la puerta y duermen dentro, con la casa entera alrededor—.\n\nPasa junto a las botas sin tocarlas y sigue hacia la cocina. Nadie se despierta. La casa no se entera de que el hombre que cenó en su mesa está de pie en su escalera antes que el sol.",
      "escenario": "casa-ilmen",
      "luz": "NOBLE"
     },
@@ -6368,7 +6368,7 @@
      "flashback": false,
      "personajes": [],
      "dialogo": [],
-     "accion": "Deja sobre la mesa la bolsa entera. La abre para que se vea. Es mucho dinero. Es una cantidad que cambia una vida. No deja nota.",
+     "accion": "La bolsa entera\n\nLa cocina al amanecer: el fuego todavía en brasa, la mesa fregada de la cena, desierta. Sobre esa mesa —la mesa donde le sirvieron, donde el pan pasó de mano en mano y el suyo quedó entero en su sitio— deja la bolsa.\n\nLa bolsa entera. La que cogió entera en su refugio la mañana en que salió de la ciudad; la que viajó con él tres semanas de camino sin enseñarse ni gastarse en ninguna posada, en ningún carro, en ninguna puerta. Aquí se enseña por primera vez, y se enseña dejándola.\n\nLa abre para que se vea.\n\nNo la deja cerrada, como se deja un bulto: la abre, para que quien entre en esta cocina entienda a la primera mirada lo que hay dentro sin tener que tocarla. Es mucho dinero. Es una cantidad que cambia una vida: en este valle, con esta casa, esa bolsa son años de ferrería, de techos nuevos, de inviernos en los que una helada de mayo ya no pueda con ellos.\n\nNo deja nota.\n\nNi una línea con su nombre, ni una palabra de gracias, ni una explicación de a cuenta de qué. El hombre que ha vivido de papeles —asientos, libros, márgenes, preguntas escritas en una pared— deja sobre esta mesa una bolsa abierta y ningún papel. Quien la encuentre sabrá cuánto hay. No sabrá quién era el hombre que cenó en su mesa la noche anterior, ni por qué lo dejó.\n\nLa mesa queda con la bolsa abierta encima, esperando a que la casa despierte.",
      "escenario": "elserath-cocina",
      "luz": "NOBLE"
     },
@@ -6379,7 +6379,7 @@
      "flashback": false,
      "personajes": [],
      "dialogo": [],
-     "accion": "Sale. Cierra la puerta con cuidado para que no golpee. Anda calle abajo entre la nieve. Nadie lo ve marcharse, igual que nadie lo vio llegar.",
+     "accion": "Nadie lo ve marcharse\n\nSale. Cierra la puerta con cuidado para que no golpee: la mano que ha cerrado sin golpe las puertas de piedra de la casa de abajo cierra igual esta puerta de madera, la de la casa del tejado nuevo, la de la calle larga. Dentro, la casa sigue dormida con su dinero sobre la mesa todavía sin encontrar.\n\nAnda calle abajo entre la nieve.\n\nLa calle de Kadre a la primera hora: la misma por la que caminó ayer entre la mujer que barría, el hombre de la leña y los niños que corrían, ahora vacía, con la nieve marcada solo por sus pasos. Nadie asoma a ninguna ventana. El humo de las chimeneas empieza sin que nadie lo mire a él bajar.\n\nNadie lo ve marcharse, igual que nadie lo vio llegar.\n\nEl pueblo se queda con su tejado nuevo, su humo y su olor a pan, sin saber que ha tenido en su mesa, una noche, al hijo de la hija que vendió. Entre las dos invisibilidades —la de la llegada y la de la marcha— ha pasado todo el capítulo, y el pueblo no se ha enterado de ninguna de las dos.",
      "escenario": "kadre",
      "luz": "BARRIO"
     },
@@ -6390,7 +6390,7 @@
      "flashback": false,
      "personajes": [],
      "dialogo": [],
-     "accion": "Anda hacia el sur. No llora. No grita. No mira atrás ni una vez.",
+     "accion": "No llora\n\nAnda hacia el sur.\n\nEl camino al revés que el de ida, con el valle quedándose atrás paso a paso: piedra, colinas, campos, y al fondo de todo, cada vez más lejos, la ciudad —su pared, su sistema, su vida de papeles—. Anda hacia el sur con las manos vacías y con el nombre de su madre sabido por fin, que es lo único que se trae de Kadre y no pesa en ninguna bolsa.\n\nNo llora.\n\nDicho así, en el camino, sin más. Ni en la calle de Kadre al marcharse ni en esta piedra del camino hay lágrima alguna, y la frase no es promesa de nada ni cuenta de nada: es el estado de un hombre andando hacia el sur con lo que fue a buscar en la cabeza y sin haber dicho quién era.\n\nNo grita.\n\nNo mira atrás ni una vez.\n\nNi al valle, ni a la casa del tejado nuevo, ni a la calle donde nadie lo miró. El camino se lo traga hacia el sur como el camino del norte se lo tragó hacia Kadre, y la única diferencia entre los dos viajes es la que él lleva dentro y nadie puede verle en la cara.",
      "escenario": "camino-norte",
      "luz": "BARRIO"
     },
@@ -6401,7 +6401,7 @@
      "flashback": false,
      "personajes": [],
      "dialogo": [],
-     "accion": "Se detiene en mitad del camino. Se da cuenta de algo. No les dijo quién era. Se queda parado, en la nieve, con esa idea. Y sigue andando. Negro.",
+     "accion": "No les dijo quién era\n\nNoche. Se detiene en mitad del camino.\n\nEl andar de días se para de golpe, en plena noche y en plena nieve, como se paró en mitad de la calle de Kadre cuando no sabía cómo estar. No hay cruce, ni posada, ni señal: hay un hombre parado en un camino vacío, y algo que acaba de llegarle entero.\n\nSe da cuenta de algo.\n\nNo les dijo quién era.\n\nEso es todo el descubrimiento, y llega andando, ya lejos, cuando ya no tiene remedio de camino: cenó en su mesa, durmió en su cama, oyó el nombre de su madre en su cocina dicho por su abuela, dejó su dinero sobre su mesa — y en ningún momento, delante de ninguna de aquellas personas, dijo la única frase que habría cambiado cada una de esas escenas. No se lo dijo a la mujer de los pómulos que le abrió la puerta sin miedo. No se lo dijo con el nombre recién oído entre los dos y la cuchara en alto. No lo dejó escrito en una nota junto a la bolsa abierta.\n\nSe queda parado, en la nieve, con esa idea.\n\nLa nieve cayendo sobre el camino como cayó sobre su palma en el puerto, y él quieto debajo, entendiendo el precio entero de su manera de hacer las cosas: él consigue nombres, cantidades y respuestas sin dar nunca lo suyo, y esta vez lo suyo era él. La casa de Kadre se queda con un forastero generoso y sin nombre; él se queda con el nombre de su madre y con no haber dado el suyo.\n\nY sigue andando.\n\nNegro.",
      "escenario": "camino-norte",
      "luz": "BARRIO"
     }

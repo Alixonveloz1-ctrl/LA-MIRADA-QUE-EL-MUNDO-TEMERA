@@ -451,6 +451,30 @@ if (!serie.piezas.ep09) {
   anota(`pieza «ep09» añadida (${ep09Archivo.ep09.tomas.length} planos, ${ep09Archivo.ep09.duracion_s} s)`);
 }
 
+// ---------------------------------------------------------------------------
+// 4k. El episodio 10, escrito a mano desde el guion expandido.
+//
+// Igual que los episodios 1 a 9: se escribió plano a plano en el código
+// (274 planos, 827 s) y vive en datos/episodio-10.json. Este episodio no
+// tiene pieza en el estado (el desglose automático nunca llegó a él), así
+// que no hay copia viva que mande sobre esta: es la que se ve en las
+// pantallas desde el primer momento. Su duración (13 minutos y 47
+// segundos) queda por debajo de los ~20 pedidos y se declara tal cual,
+// sin rellenar, como los capítulos 4, 7, 8 y 9: tras el 9 es el capítulo
+// más callado de la temporada — 156 palabras habladas y su tramo final
+// son seis escenas mudas — y su tiempo es camino, nieve, cocina y
+// marcha. Es el capítulo del viaje de tres semanas a Kadre y del nombre
+// de su madre, dicho por fin y dicho de pasada. No lleva ninguna
+// excepción de duración.
+// ---------------------------------------------------------------------------
+
+const ep10Archivo = JSON.parse(readFileSync(join(raiz, 'datos/episodio-10.json'), 'utf8'));
+
+if (!serie.piezas.ep10) {
+  serie.piezas.ep10 = ep10Archivo.ep10;
+  anota(`pieza «ep10» añadida (${ep10Archivo.ep10.tomas.length} planos, ${ep10Archivo.ep10.duracion_s} s)`);
+}
+
 const yaSuena = new Set(serie.musica.piezas.map((m) => m.id));
 for (const tema of opEd.musica) {
   if (yaSuena.has(tema.id)) continue;
