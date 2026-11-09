@@ -429,6 +429,28 @@ if (!serie.piezas.ep08) {
   anota(`pieza «ep08» añadida (${ep08Archivo.ep08.tomas.length} planos, ${ep08Archivo.ep08.duracion_s} s)`);
 }
 
+// ---------------------------------------------------------------------------
+// 4j. El episodio 9, escrito a mano desde el guion expandido.
+//
+// Igual que los episodios 1 a 8: se escribió plano a plano en el código
+// (294 planos, 904 s) y vive en datos/episodio-09.json. Este episodio no
+// tiene pieza en el estado (el desglose automático nunca llegó a él), así
+// que no hay copia viva que mande sobre esta: es la que se ve en las
+// pantallas desde el primer momento. Su duración (15 minutos y 4
+// segundos) queda por debajo de los ~20 pedidos y se declara tal cual,
+// sin rellenar, como los capítulos 4, 7 y 8: es el capítulo más callado
+// de la temporada — 122 palabras habladas y su tercio del medio en cero
+// palabras exactas — y su tiempo es procedimiento, lectura e
+// inmovilidad, no palabra. No lleva ninguna excepción de duración.
+// ---------------------------------------------------------------------------
+
+const ep09Archivo = JSON.parse(readFileSync(join(raiz, 'datos/episodio-09.json'), 'utf8'));
+
+if (!serie.piezas.ep09) {
+  serie.piezas.ep09 = ep09Archivo.ep09;
+  anota(`pieza «ep09» añadida (${ep09Archivo.ep09.tomas.length} planos, ${ep09Archivo.ep09.duracion_s} s)`);
+}
+
 const yaSuena = new Set(serie.musica.piezas.map((m) => m.id));
 for (const tema of opEd.musica) {
   if (yaSuena.has(tema.id)) continue;
