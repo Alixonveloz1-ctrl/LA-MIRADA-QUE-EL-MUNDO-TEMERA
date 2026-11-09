@@ -1061,7 +1061,21 @@ if (quejas.length) {
   process.exit(1);
 }
 
-writeFileSync(join(raiz, 'datos/serie.json'), JSON.stringify(serie, null, 2) + '\n');
+// SE ESCRIBE COMPACTO, SIN SANGRÍA, Y ES POR EL TECHO DE LA SUBIDA.
+//
+// serie.json se publica al repositorio con la herramienta de GitHub, que manda
+// el contenido dentro de una sola petición. Con la pieza del episodio 11 el
+// archivo con sangría llegó a 4.873.316 bytes y la subida fue rechazada con un
+// 413 («request body too large»): el episodio 10, con 4,5 MB, aún pasaba. Sin
+// sangría el mismo contenido ocupa 3.584.581 bytes —un 26 % menos— y deja
+// sitio para el episodio 12 y lo que venga.
+//
+// El contenido no cambia en nada: todos los lectores del archivo —la función
+// (api/_lib/datos.js), el navegador (app/cola.js) y las herramientas— lo leen
+// con JSON.parse. Lo que era legible a ojo sigue siéndolo donde se lee de
+// verdad: en serie.base.json y en los datos/episodio-NN.json, que son las
+// fuentes; serie.json es el resultado armado, no una fuente.
+writeFileSync(join(raiz, 'datos/serie.json'), JSON.stringify(serie) + '\n');
 writeFileSync(join(raiz, 'datos/mapa-escenas.js'), serializarMapaDeEscenas(construirMapaDeEscenas(prepararGuiones(guiones))));
 console.log(`datos/serie.json escrito. ${cambios.length} cambios:\n`);
 for (const c of cambios) console.log('  · ' + c);
