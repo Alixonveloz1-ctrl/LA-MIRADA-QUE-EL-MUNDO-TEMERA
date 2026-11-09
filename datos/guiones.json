@@ -6,7 +6,7 @@
   "escenas": 289,
   "escenarios": 27,
   "nota_escenarios": "Cada escena trae ya su escenario canonico y su esquema de luz. Derivado de los guiones, no escrito a mano.",
-  "lineas": 545,
+  "lineas": 552,
   "nota_intencion": "Cada línea lleva su intención: cómo se dice, no solo qué se dice. Las marcadas con riesgo 'alto' son gritos o llanto sostenido, donde ningún TTS llega: se resuelven fuera de cuadro, tapadas, cortadas sobre quien escucha, o como grito sin palabras generado aparte."
  },
  "guiones": [
@@ -4875,28 +4875,28 @@
        "quien": "saharis",
        "etiqueta": "SAHARIS",
        "texto": "Cuarenta y una personas el año pasado. Y el beneficio bajó.",
-       "intencion": "frío, de auditoría"
+       "intencion": "frío, de auditoría (original)"
       },
       {
        "quien": "encargado",
        "etiqueta": "ENCARGADO",
        "texto": "Los rituales...",
-       "intencion": "empezando a excusarse"
+       "intencion": "empezando a excusarse (original)"
       },
       {
        "quien": "saharis",
        "etiqueta": "SAHARIS",
        "texto": "Los rituales son un gasto. Lo que da dinero es el vado y el préstamo.",
-       "intencion": "cortando, práctico"
+       "intencion": "cortando, práctico (original)"
       },
       {
        "quien": "saharis",
        "etiqueta": "SAHARIS",
        "texto": "Doce personas al año. No cuarenta. Y las doce elegidas por mí.",
-       "intencion": "orden. Sin subir la voz"
+       "intencion": "orden. Sin subir la voz (original)"
       }
      ],
-     "accion": "Saharis con un libro de cuentas abierto sobre el altar. Dos ENCARGADOS delante, incómodos. Cuarenta y una personas el año pasado. Y el beneficio bajó. Los rituales... Los rituales son un gasto. Lo que da dinero es el vado y el préstamo. Cierra el libro. Doce personas al año. No cuarenta. Y las doce elegidas por mí. Los encargados asienten, aliviados. Acaban de recibir menos trabajo.",
+     "accion": "La auditoría\n\nLa cripta, de día. No es hora de rito: es hora de trabajo. La bóveda baja de piedra, las paredes negras y húmedas, el altar de piedra oscura en su sitio — y sobre el altar, abierto, un libro de cuentas.\n\nSAHARIS está junto al altar con el libro delante. Diecisiete años, el abrigo bueno, la cara de siempre. No está oficiando nada: está auditando. La casa de abajo, heredada hace nada, se le presenta en su forma verdadera, que no es la de las velas ni la de la estatua: es esta, una contabilidad con las partidas en su sitio y los totales que no salen.\n\nDelante de él, dos ENCARGADOS. Hombres de oficio de la casa de abajo, de los que llevan años haciendo que aquello funcione sin que nadie de arriba les pregunte cómo. Están incómodos. No porque el muchacho grite —no va a gritar—: porque pregunta por las cuentas como se pregunta en las casas de arriba, y abajo nadie les había preguntado nunca así.\n\nSaharis pasa una página. Lee un total. Lee el de al lado. Y pone el dedo sobre la diferencia.\n\n**SAHARIS** *(frío, de auditoría (original))*: Cuarenta y una personas el año pasado. Y el beneficio bajó.\n\nUno de los encargados abre la boca con la excusa que esta casa ha dado siempre, la que lo ordena todo y no explica nada.\n\n**ENCARGADO** *(empezando a excusarse (original))*: Los rituales...\n\nSaharis lo corta sin subir la voz, con la limpieza de quien corrige una partida mal puesta en su columna.\n\n**SAHARIS** *(cortando, práctico (original))*: Los rituales son un gasto. Lo que da dinero es el vado y el préstamo.\n\nLos encargados se miran. Es la primera vez que alguien les dice en su propia casa que el corazón de su casa es un gasto: la parte sagrada, la que da nombre y miedo, no da dinero. Lo que da dinero es lo de siempre, lo que pasa por el agua y lo que se presta con interés — el vado que la rama lleva «como siempre», oído una vez en el sótano de los Renn por un hombre que escuchaba desde las vigas, y los préstamos que las casas se hacen unas a otras con personas en medio. Él no lo explica. Lo está contando.\n\nCierra el libro.\n\nY dicta la nueva partida entera, con la misma voz con la que ha leído los totales, como si fuera un total más.\n\n**SAHARIS** *(orden. Sin subir la voz (original))*: Doce personas al año. No cuarenta. Y las doce elegidas por mí.\n\nLos encargados asienten, aliviados.\n\nAcaban de recibir menos trabajo. La escena no lo disimula y la expansión tampoco: el alivio de los dos hombres es real, y es el dato entero de esta nueva administración — la rama de abajo, ejercida por fin en pantalla, empieza con un número más pequeño y una elección centralizada, y los que la trabajan lo agradecen. Lo que ha cambiado no es la naturaleza de la casa. Es su contable.\n\nSaharis se queda junto al altar cerrado, con el libro bajo la mano, mirando la sala que es suya desde hace unos días y que lleva funcionando sin él siete años.",
      "escenario": "cripta",
      "luz": "CRIPTA"
     },
@@ -4910,7 +4910,7 @@
       "saharis"
      ],
      "dialogo": [],
-     "accion": "Sacan a la mujer embarazada de la celda. La llevan a una habitación seca, con ventana alta, cama y comida. Cierran la puerta con llave. Saharis lo mira desde el pasillo y se va.",
+     "accion": "La habitación seca\n\nLa celda, de día. La misma celda: la piedra desnuda, el jergón de paja, la abertura alta con barrotes, la puerta pesada. Dentro, la mujer que Saharis dejó tras esa puerta la noche de la bajada: joven, embarazada de muchos meses, sucia, con las muñecas marcadas. No tiene nombre en esta escena ni en ninguna, y esta escena no se lo da.\n\nLa sacan de la celda.\n\nNo se enseña quién da la orden ni con qué palabras: la escena trae el hecho y su forma. La llevan a una habitación seca, con ventana alta, cama y comida. No es la calle. No es la libertad. Es otra habitación de la casa de abajo, mejor que la celda: seca donde la celda era húmeda, con cama donde la celda tenía paja, con comida puesta, con luz de una ventana que sigue siendo alta y sigue sin estar a su alcance.\n\nCierran la puerta con llave.\n\nLa llave es el dato que no cambia: la mujer sigue siendo de la casa, sigue contada en su contabilidad, sigue sin nombre y sin palabra. Lo que ha cambiado es la partida donde la casa la tiene puesta — de la celda al cuarto seco — y eso ha ocurrido en los días en que la rama ha cambiado de manos, bajo la administración nueva que la escena anterior acaba de enseñar contando personas por año. La expansión no pone la orden en boca de nadie: la fuente no la pone, y convertir el traslado en una frase suya sería escribir la escena que la historia no ha escrito.\n\nSAHARIS lo mira desde el pasillo.\n\nEstá en el pasillo de las celdas, quieto, viendo pasar el traslado de la mujer de una puerta a otra de su casa heredada. No se acerca. No pregunta nada. No se fija qué piensa ni qué entiende ella, porque la fuente no lo fija y la escena no lo necesita: consta el hecho, la llave y la mirada desde el pasillo.\n\nY se va.",
      "escenario": "cripta-celda",
      "luz": "BARRIO"
     },
@@ -4928,10 +4928,10 @@
        "quien": "deras",
        "etiqueta": "DERAS",
        "texto": "Alguien cambió los sellos. Y ese alguien está en esta sala.",
-       "intencion": "acusación pública, sin pruebas y sabiéndolo"
+       "intencion": "acusación pública, sin pruebas y sabiéndolo (original)"
       }
      ],
-     "accion": "Alguien cambió los sellos. Y ese alguien está en esta sala. Mira a Saharis directamente. Cuarenta cabezas se giran.",
+     "accion": "Alguien en esta sala\n\nEl Consejo, de día: el anfiteatro poco profundo de bancos oscuros, los ventanales altos, la luz dorada con su polvo. Las cuarenta personas de las casas en sus filas de siempre. La sesión trae encima el asunto que la ciudad entera trae encima desde hace días: una carga retenida en la aduana del norte porque los papeles no concuerdan, una ruta buena presentada en esta misma sala y aprobada por unanimidad, y un sello que no es el que tenía que ser.\n\nDERAS VHARN se levanta.\n\nHabla para la sala entera y lo dice como lo que es: una acusación pública. No tiene pruebas y lo sabe — la escena no le da ni un papel en la mano, ni un testigo, ni un nombre —: tiene una sospecha con la forma exacta de la verdad y una sala delante para oírla.\n\n**DERAS** *(acusación pública, sin pruebas y sabiéndolo (original))*: Alguien cambió los sellos. Y ese alguien está en esta sala.\n\nMira a Saharis directamente.\n\nCuarenta cabezas se giran.\n\nEl giro es el hecho de la escena: cuarenta personas mirando al mismo sitio a la vez, y en ese sitio, en su fila de siempre, SAHARIS, diecisiete años, con la cara de siempre — la que no dice nada — sosteniendo la mirada de la sala sin moverse. La acusación no trae su nombre y todo el mundo lo ha oído con su nombre: eso es lo que Deras ha comprado con su frase, y es todo lo que ha comprado, porque una sospecha dicha en voz alta no es todavía una prueba de nada, y Deras lo sabe mejor que nadie en la sala: él presentó la ruta, él perdió la carga, y su palabra es la de la parte interesada.\n\nLa sala espera. Lo que pase ahora depende de lo que conteste el mirado.",
      "escenario": "consejo",
      "luz": "NOBLE"
     },
@@ -4949,28 +4949,28 @@
        "quien": "saharis",
        "etiqueta": "SAHARIS",
        "texto": "Tiene razón.",
-       "intencion": "dándole la razón, tranquilo"
+       "intencion": "dándole la razón, tranquilo (original)"
       },
       {
        "quien": "saharis",
        "etiqueta": "SAHARIS",
-       "texto": "Y si me lo permite, le ayudo a encontrarlo. Yo tengo acceso a la aduana del norte",
-       "intencion": "ofrecimiento generoso delante de todos"
+       "texto": "Y si me lo permite, le ayudo a encontrarlo. Yo tengo acceso a la aduana del norte por los Elserath y usted no.",
+       "intencion": "ofrecimiento generoso delante de todos (original, completada desde la prosa de su propia escena: en el archivo de diálogo venía cortada en «la aduana del norte»)"
       },
       {
        "quien": "deras",
        "etiqueta": "DERAS",
        "texto": "...De acuerdo.",
-       "intencion": "atrapado, aceptando"
+       "intencion": "atrapado, aceptando (original)"
       },
       {
        "quien": "saharis",
        "etiqueta": "SAHARIS",
        "texto": "Deme quince días.",
-       "intencion": "cerrando"
+       "intencion": "cerrando (original)"
       }
      ],
-     "accion": "Tiene razón. Pausa. Y si me lo permite, le ayudo a encontrarlo. Yo tengo acceso a la aduana del norte por los Elserath y usted no. Deras duda. Todo el mundo lo está mirando. ...De acuerdo. Deme quince días.",
+     "accion": "Le ayudo a encontrarlo\n\nContinúa la sesión, sin corte. La sala sigue girada hacia el mismo sitio. Y SAHARIS contesta con la primera cosa que nadie esperaba y la única que no se puede rechazar: le da la razón.\n\n**SAHARIS** *(dándole la razón, tranquilo (original))*: Tiene razón.\n\nPausa.\n\nLa pausa hace su trabajo en las cuarenta filas: el acusado que está de acuerdo desarma la acusación sin tocarla. Y Saharis pone encima la segunda parte, en voz alta y pública, con la generosidad limpia de los ofrecimientos que son una jaula: se ofrece a buscar al culpable él mismo, y pone sobre la mesa su única ventaja, dicha entera, con la cláusula que la hace inalcanzable para el otro.\n\n**SAHARIS** *(ofrecimiento generoso delante de todos (original, completada desde la prosa de su propia escena: en el archivo de diálogo venía cortada en «la aduana del norte»))*: Y si me lo permite, le ayudo a encontrarlo. Yo tengo acceso a la aduana del norte por los Elserath y usted no.\n\nDeras duda.\n\nTodo el mundo lo está mirando. Es la otra mitad de la trampa, y la escena la escribe sin subrayarla: rechazar la ayuda delante de todos sería confesar que la acusación era un nombre sin pruebas y que el acusador prefiere su sospecha a la verdad; aceptarla es poner la investigación de su propia pérdida en manos del único hombre de la sala al que no puede vigilar. Deras duda lo que dura dudar en público, que es poco, y acepta con la voz de los atrapados.\n\n**DERAS** *(atrapado, aceptando (original))*: ...De acuerdo.\n\nY Saharis cierra la sesión de la ruta con la frase de los plazos, que es la forma que tiene esta historia de firmar las cosas: un plazo dicho delante de todos, que desde ahora corre para los dos.\n\n**SAHARIS** *(cerrando (original))*: Deme quince días.\n\nLa sala vuelve poco a poco a su orden del día. Queda escrito en su aire, sin que nadie lo haya dicho: durante quince días, el hombre que cambió los sellos buscará al hombre que cambió los sellos, con el permiso firmado en público por el hombre que lo perdió todo por ese sello. Nadie en la sala lo encuentra raro todavía. Deras vuelve a su sitio despacio, como ya volvió una vez, habiendo ganado algo que no sabe todavía qué ha pagado.",
      "escenario": "consejo",
      "luz": "NOBLE"
     },
@@ -4981,7 +4981,7 @@
      "flashback": true,
      "personajes": [],
      "dialogo": [],
-     "accion": "Doce años. Un hueco entre dos muros. Dos niños durmiendo espalda contra espalda. Él y SURA, una niña de su edad, con una sonrisa rota. Ella habla en sueños. Él no duerme.",
+     "accion": "Espalda contra espalda\n\nEl Barrio de Humo, de noche. *Recuerdo.*\n\nDoce años.\n\nUn hueco entre dos muros. No es una casa ni una habitación: es el espacio que queda entre dos paredes que no se tocan, con el cielo estrecho encima y el suelo de la calle por cama. El barrio entero duerme alrededor con su ruido apagado de brasas y de perros lejanos.\n\nEn el hueco, dos niños durmiendo espalda contra espalda.\n\nÉl, con los ojos rojos que la oscuridad no le apaga, la ropa de nadie, la cara de siempre en pequeño. Y SURA: una niña de su edad, flaca de calle, con la sonrisa rota — un diente delantero que le falta — que dormida no se le ve: dormida es solo una niña pequeña con la respiración corta de los que duermen con frío.\n\nEspalda contra espalda es la manera de dormir de los que no tienen manta: se dan el calor que tienen, que es el de un cuerpo contra otro cuerpo, y cada uno mira hacia su lado de la oscuridad. No hay en la escena ternura declarada ni falta que le hace: hay dos niños solos en una ciudad entera, y el hueco entre dos muros es su casa de esta noche.\n\nElla habla en sueños.\n\nDice algo, bajo, sin despertarse — una frase de sueño, de las que no llegan a la superficie — y sigue durmiendo. Lo que dice no se fija: la fuente dice que habla y no escribe su palabra, y su palabra de sueño queda donde la fuente la deja, en el aire del hueco, sin que nadie la recoja.\n\nÉl no duerme.\n\nEstá despierto contra su espalda, con los ojos abiertos hacia su lado de la oscuridad, oyendo el barrio y oyéndola a ella. No se gira. No la despierta. Vela, que es lo único que un niño de doce años sin nada puede hacer por otra persona: estar despierto en su sitio.",
      "escenario": "barrio-humo",
      "luz": "BARRIO"
     },
@@ -4992,7 +4992,7 @@
      "flashback": true,
      "personajes": [],
      "dialogo": [],
-     "accion": "Sura sentada contra la pared, con la ropa cambiada. No está herida a la vista. No habla. El chico le pone la mano en el hombro. Ella no reacciona.",
+     "accion": "La mano en el hombro\n\nUn callejón del Barrio de Humo, de día. *Recuerdo, en los días de la escena anterior.*\n\nSURA está sentada contra la pared.\n\nLleva la ropa cambiada. No es la ropa de anoche: es otra, entera, que no es la suya de siempre. La escena lo pone donde la fuente lo pone, en primer lugar y sin comentario: la ropa cambiada es el primer dato, y no viene con ninguna explicación pegada.\n\nNo está herida a la vista. No hay en ella nada que mirar dos veces: ni sangre, ni golpe, ni marca que la escena enseñe. Está sentada contra la pared de un callejón, con las manos en su sitio, quieta.\n\nNo habla.\n\nEl chico está delante de ella. Doce años, de pie, mirándola. No ha traído nada — no tiene nada que traer — y no dice nada: la escena no le da ni una palabra, ni de pregunta ni de consuelo, y la expansión no se la da tampoco, porque lo que esta escena sostiene es exactamente eso: que no hay palabra que le llegue.\n\nLe pone la mano en el hombro.\n\nEs el gesto entero de la escena y es el único que tiene: la mano pequeña abierta sobre el hombro de la niña sentada, sin apretar, sin sacudir, puesta como se pone una cosa que se quiere que pese un poco y sostenga algo. El mismo gesto con el que los mayores de esta historia cierran puertas y conceden mundos — la mano en el hombro — hecho por un niño de doce años que no tiene otra cosa que dar.\n\nElla no reacciona.\n\nNo levanta la vista. No se aparta. No se apoya. La mano se queda en su hombro un rato largo y no cambia nada que la escena enseñe: la niña sigue contra la pared, con la ropa que no es la suya, mirando a donde estaba mirando, que no es a ninguna parte.\n\nLa escena se queda ahí, donde la fuente la deja: en la mano puesta y en la respuesta que no llega. Lo que ha pasado entre la noche del hueco y este callejón la escena no lo dice, y esta tanda no lo dice por ella: ni un nombre, ni un lugar, ni un culpable, ni una palabra de ella. Su comprensión es de la escena siguiente y llega por dentro del chico, sin que nadie se lo explique: aquí solo hay una niña sentada, una ropa cambiada y una mano que no consigue nada.",
      "escenario": "barrio-humo",
      "luz": "BARRIO"
     },
@@ -5003,7 +5003,7 @@
      "flashback": true,
      "personajes": [],
      "dialogo": [],
-     "accion": "El chico de doce años la mira mucho rato. Entiende exactamente lo que ha pasado sin que nadie se lo diga. Se le pone la cara de adulto.",
+     "accion": "La cara de adulto\n\nEl mismo callejón, de día. *Recuerdo, en los días de la escena anterior.*\n\nSURA sigue sentada contra la pared, con la ropa cambiada, sin herida a la vista. No ha hablado. No se ha movido de donde la escena anterior la dejó.\n\nEl chico sigue delante de ella.\n\nLa mira mucho rato. La escena no trae otra cosa y la expansión no le añade otra: ni una pregunta, ni un nombre, ni un gesto nuevo. Hay un niño de doce años de pie en un callejón, mirando a una niña sentada contra una pared, y el tiempo de la mirada es el material entero de la escena.\n\nY mirándola, sin que nadie se lo diga, entiende exactamente lo que ha pasado.\n\nNadie se lo dice: esa es la forma exacta del hecho. No hay una frase en la escena —no la hay en el capítulo— que le explique nada, y su comprensión no llega por ninguna boca: llega por lo que tiene delante, por la ropa que no es la suya, por el silencio que no se rompe, por la mano que puso en un hombro y no consiguió nada. La expansión no nombra lo que entiende, porque la fuente no lo nombra y porque el mecanismo de la fuente es este: que el espectador entienda lo mismo que el chico entiende, al mismo tiempo que él y sin que nadie lo explique. Darle nombre aquí sería robarle a la escena su único movimiento.\n\nLo que la escena enseña, en vez del nombre, es el efecto.\n\nSe le pone la cara de adulto.\n\nNo es una mueca ni un llanto ni un gesto: es la misma cara de siempre —la que no dice nada, la que llevará puesta toda la temporada— con la edad equivocada. Un niño de doce años con la cara de un hombre que ya ha entendido una cosa que no se puede desentender. La escena se queda en esa cara el rato que la fuente manda, que es mucho rato, y no pasa a ninguna otra cosa: ni él se marcha en cuadro, ni ella levanta la vista, ni el callejón les da nada más.\n\n*(Sin diálogo, como en el guion guardado.)*",
      "escenario": "barrio-humo",
      "luz": "BARRIO"
     },
@@ -5016,7 +5016,7 @@
       "saharis"
      ],
      "dialogo": [],
-     "accion": "Presente. Saharis en una taberna, hablando con un socio de Casa Vharn que sale preocupado. Saharis en un banco, moviendo una letra de cambio. Saharis en una fiesta, contándole algo al oído a una anciana que suelta una carcajada. Cada escena dura seis segundos. Ninguna tiene violencia.",
+     "accion": "Tres escenas de seis segundos\n\nPresente. *Montaje, en días.*\n\nLa fuente fija hasta la duración de cada pieza: seis segundos. Tres habitaciones de la ciudad, tres gestos pequeños, y una advertencia que la expansión subraya porque es el dato entero del montaje: ninguna tiene violencia.\n\nEn una taberna, SAHARIS habla con un socio de Casa Vharn. Hablan lo que dura la pieza —seis segundos de imagen, una conversación de la que no se recoge ni una palabra: lo que le dice la fuente lo narra sin fijarlo, y no se le ha escrito texto, con el criterio de la casa para la palabra narrada sin contenido—. Lo que se fija es el final de la pieza: el socio de Casa Vharn sale de la taberna preocupado. Un hombre de la casa rival se va con la preocupación puesta en la cara, y eso es todo lo que el montaje cobra de la escena.\n\nEn un banco, SAHARIS mueve una letra de cambio. Papel firmado, cantidades, un instrumento que pasa de donde estaba a donde él lo pone. Seis segundos de manos y de papel: su guerra, la que este capítulo está contando, se hace así —sin armas, sin gritos, con documentos que cambian de sitio en mesas de la ciudad—.\n\nEn una fiesta, SAHARIS le cuenta algo al oído a una anciana. Tampoco eso se fija: la fuente dice que le cuenta algo y no escribe qué, y la expansión no lo escribe. Lo que se fija es la respuesta, que es la carcajada: la anciana suelta una carcajada entera, en medio de la fiesta, y la pieza se corta ahí, con un hombre de diecisiete años retirándose de un oído y una mujer mayor riéndose de algo que la sala no ha oído.\n\nTres piezas. Un socio preocupado, una letra movida, una anciana riendo. El montaje no explica qué une las tres cosas ni qué compra cada una —eso lo cobrará el Consejo en las escenas que vienen—, y la expansión no lo explica por él: lo fijado es el método, enseñado tres veces seguidas sin una gota de sangre, que es la frase que el Celebrante le dirá en el jardín cuando el trabajo esté hecho. Aquí todavía no está hecho: está haciéndose, en días, en seis segundos por pieza.\n\n*(Sin diálogo, como en el guion guardado.)*",
      "escenario": "ciudad",
      "luz": "NOBLE"
     },
@@ -5030,7 +5030,7 @@
       "saharis"
      ],
      "dialogo": [],
-     "accion": "Tres de la mañana. Saharis escribiendo. Livia entra con una taza. Él no la oye. Se queda en la puerta un momento, mirándolo trabajar.",
+     "accion": "Las tres de la mañana\n\nEl despacho de Elserath, de noche. La fuente fija la hora con la precisión de un acta: las tres de la mañana.\n\nLa casa duerme. El despacho no: hay luz, hay papeles, y está SAHARIS escribiendo. Diecisiete años, a las tres de la mañana, con la mesa cubierta del trabajo que este capítulo le ha visto hacer de día en tabernas, bancos y fiestas —y que de noche se sigue haciendo aquí, a mano, línea a línea—. Qué papeles son, la escena no lo dice todavía: eso lo enseña la escena siguiente, por encima de su hombro. Esta enseña otra cosa.\n\nLIVIA entra con una taza.\n\nÉl no la oye.\n\nNo es que finja no oírla: es que no la oye. No levanta la vista, no se detiene, no cambia el ritmo de la mano. La escena lo fija como un dato de su manera de trabajar, y es un dato que pesa sobre todo el capítulo: el hombre que lo nota todo —el que cuenta cabezas giradas, sellos cambiados y miradas— no nota a la persona que le trae una taza a las tres de la mañana, porque está dentro del papel.\n\nLivia se queda en la puerta un momento, mirándolo trabajar.\n\nNo habla. No se anuncia. No deja todavía la taza en ninguna parte. La escena se queda en ese momento de puerta: ella de pie, con la taza en la mano, mirando a un muchacho que escribe sin saber que lo miran; él escribiendo, sin saber que ella está. Es la primera vez en el capítulo que los dos están en la misma habitación, y están así: uno dentro del trabajo y la otra en el umbral, mirando.\n\n*(Sin diálogo, como en el guion guardado.)*",
      "escenario": "elserath-despacho",
      "luz": "NOBLE"
     },
@@ -5043,7 +5043,7 @@
       "livia"
      ],
      "dialogo": [],
-     "accion": "Ella deja la taza a su lado y le mira los papeles por encima del hombro. Una lista de nombres. Al lado de cada uno, una cantidad. Al lado, una palabra: *deuda*, *hija*, *bebida*, *hermano*. Livia reconoce dos nombres. Se endereza despacio.",
+     "accion": "Nombre, cantidad, palabra\n\nEl despacho, continuo. LIVIA deja la taza a su lado.\n\nY entonces, por encima de su hombro, le mira los papeles.\n\nUna lista de nombres. Al lado de cada nombre, una cantidad. Al lado de la cantidad, una palabra: *deuda*, *hija*, *bebida*, *hermano*.\n\nEso es todo lo que la escena enseña de la lista, y la expansión no le añade ni un nombre: los nombres están escritos en el papel, en la letra de Saharis, y ninguno se transcribe —ni aquí ni en ninguna parte—; las cantidades no se leen; y la palabra de al lado no se explica. Lo que la columna significa —que la gente tiene puntos de apoyo y que él los busca, los pesa y los usa— es la explicación de la escena 17, que llegará cuando Livia vuelva con esta misma lista en la mano y pregunte. Aquí la palabra es solo una columna vista por encima de un hombro, a las tres de la mañana, por una persona que no debería estar leyéndola y que la está leyendo.\n\nLivia reconoce dos nombres.\n\nLa fuente lo dice así, sin decir cuáles: dos. Ni qué nombres son, ni de qué los conoce, ni qué palabra lleva cada uno al lado. La expansión no lo fija: darle a Livia dos nombres concretos sería escribir su historia con esas dos personas, y la fuente no la escribe. Lo fijado es la medida exacta de su conocimiento: de una lista entera de la ciudad, ella reconoce dos —sabe lo bastante para entender dónde está parada, y no lo bastante para que la escena se lo explique todo—.\n\nSe endereza despacio.\n\nEse es el cierre de la escena y es un cierre de cuerpo, no de palabra: la espalda que se endereza despacio sobre el hombro de un hombre que sigue escribiendo. No deja caer nada, no dice nada, no lo despierta a preguntas. Lo que ha visto se lo lleva puesto, y la pregunta que la lista le deja es la que traerá de vuelta a este despacho en la escena 17, con la lista ya en su mano y no por encima del hombro.\n\nSi Saharis nota que lo están leyendo, la escena no lo enseña: él no la oyó entrar, y su mano no se detiene en ningún momento de las dos escenas. La expansión no lo fija en ningún sentido (ver duda 7 del apunte).\n\n*(Sin diálogo, como en el guion guardado.)*",
      "escenario": "elserath-despacho",
      "luz": "NOBLE"
     },
@@ -5054,7 +5054,7 @@
      "flashback": true,
      "personajes": [],
      "dialogo": [],
-     "accion": "Sura colgada de una cuerda hecha de sábanas. El chico la baja. La sostiene. Pesa poco.",
+     "accion": "Pesa poco\n\nUn callejón del Barrio de Humo, de noche. *Recuerdo.*\n\nSURA está colgada de una cuerda hecha de sábanas.\n\nLa escena lo trae así, sin preparación y sin adorno, y la expansión lo escribe así: una cuerda hecha de sábanas —lo que una niña de la calle tiene a mano— y la niña en su extremo, de noche, en un callejón. De dónde baja la cuerda, a qué está atada, cuánto lleva ahí: la fuente no lo fija y la expansión no lo fija (ver duda 8 del apunte). Lo que la escena trae es lo que el chico encuentra y lo que hace.\n\nEl chico la baja.\n\nSin ayuda —no hay nadie más en la escena—, sin palabra —no hay ni una sílaba en la escena, ni de él ni de nadie—: la baja. La escena no detalla el cómo ni se detiene en el cuerpo más allá de lo que el gesto pide, y la expansión tampoco: esto se cuenta con las manos de un niño deshaciendo lo que puede deshacer, en la oscuridad de un callejón, solo.\n\nLa sostiene.\n\nY pesa poco.\n\nEsa es la frase entera de la escena y su cierre, y la expansión la deja donde la fuente la pone, por última y sin comentario: una niña de doce años, flaca de calle, en los brazos de un niño de doce años, y lo que la escena pesa es eso —lo poco que pesa—. Todo lo que el recuerdo de Sura ha estado cargando desde el hueco entre los dos muros —la noche espalda contra espalda, la ropa cambiada, la mano en el hombro que no consiguió nada— llega aquí a su única medida física, y es esa: poca.\n\nNo se fija cuánto tiempo ha pasado desde el callejón de día de las escenas 6 y 7 —la fuente no lo cuenta: ni esa misma noche ni días después—, ni quién más lo sabe, ni si alguien lo sabrá nunca. La escena siguiente es un solar y unas manos en la tierra: lo que hay entre esta y aquella es solo a él.\n\n*(Sin diálogo, como en el guion guardado.)*",
      "escenario": "barrio-humo",
      "luz": "BARRIO"
     },
@@ -5065,7 +5065,7 @@
      "flashback": true,
      "personajes": [],
      "dialogo": [],
-     "accion": "La entierra con las manos. Tarda horas. Le sangran los dedos. Cuando termina se queda sentado. Se levanta la manga. Y con un trozo de metal empieza a grabarse el primer circuito. No para matar. Para no volver a sentir esto.",
+     "accion": "Para no volver a sentir esto\n\nUn solar del Barrio de Humo, de noche. *Recuerdo.*\n\nLa entierra con las manos.\n\nSin pala, sin ayuda, sin nadie: con las manos, que es lo que tiene. La fuente fija la duración con la medida de las cosas hechas a mano: tarda horas. Un niño de doce años abriendo la tierra de un solar, de noche, durante horas, hasta que el hueco basta.\n\nLe sangran los dedos.\n\nLa escena lo dice en su orden y sin detenerse: primero las horas, después la sangre de los dedos, y ninguna de las dos cosas lo para. Cuando termina, se queda sentado. Un rato, junto a la tierra removida de un solar vacío, de noche: el recuerdo no le da ni una palabra, ni un rezo, ni un nombre dicho en voz alta —no hay voz alta en todo el arco de Sura, ni siquiera aquí—, y la expansión no se lo da.\n\nEntonces se levanta la manga.\n\nY con un trozo de metal empieza a grabarse el primer circuito.\n\nLa escena lo trae en su forma más desnuda: no un rito, no un libro abierto, no una sala del culto — un solar, de noche, un niño sentado junto a una tumba que ha hecho con las manos, grabándose el brazo con un trozo de metal. Y trae su motivo entero, en dos frases que la expansión deja por cierre, sin glosa, porque son el eje del recuerdo y casi de la temporada:\n\nNo para matar.\n\nPara no volver a sentir esto.\n\nEl «esto» no se desdobla: es todo lo que el arco de Sura ha puesto sobre el chico desde el hueco entre los muros —la noche, la ropa cambiada, la comprensión sin palabras, la cuerda, lo poco que pesaba, las horas de tierra—, y la escena lo sostiene entero en esa palabra sin inventariarlo. El primer circuito de su vida, según la fuente de esta escena, no nace de una ambición ni de una orden: nace de una tumba en un solar y de una decisión de no sentir. Cómo casa eso con las líneas que le nacieron bajo la piel leyendo el libro del culto a los diez años, la expansión no lo funde ni lo resuelve: lo deja marcado como duda, con la fuente mandando en las dos escenas (ver duda 3 del apunte).\n\n*(Sin diálogo, como en el guion guardado.)*",
      "escenario": "barrio-humo",
      "luz": "BARRIO"
     },
@@ -5076,7 +5076,7 @@
      "flashback": true,
      "personajes": [],
      "dialogo": [],
-     "accion": "Tres soldados borrachos salen de una taberna. El chico los sigue. Los mata uno a uno, con una cuchilla oxidada, en tres callejones distintos. Sin magia. Sin decir una palabra. Cuando termina se lava las manos en un abrevadero.",
+     "accion": "Tres soldados\n\nUna calle del Barrio de Humo, de noche. *Recuerdo, en los días del solar.*\n\nTres soldados borrachos salen de una taberna.\n\nSalen como salen los hombres que han bebido de noche en un barrio que no es el suyo: despacio, riendo de algo que ya se acabó, ocupando la calle entera con los hombros. La escena no les da nombre, ni regimiento, ni motivo, ni historia: les da una taberna, una calle y el estado en que van, y eso es todo lo que da de ellos.\n\nEl chico los sigue.\n\nDoce años, a la distancia de los que no tienen prisa, con la cara que se le puso en el callejón todavía puesta. La escena anterior de este capítulo lo dejó sentado junto a una tumba hecha con las manos, con un trozo de metal y dos frases por motivo —no para matar; para no volver a sentir esto—. Esta escena no toca esas frases: ni las repite, ni las explica, ni las suaviza. Las deja al lado de lo que viene, y el lado pesa lo que pesa.\n\nLos mata uno a uno.\n\nCon una cuchilla oxidada, en tres callejones distintos. Uno a uno: no juntos, no en la calle abierta, no a la vista de nadie que la escena enseñe. Sin magia —ningún circuito se enciende en toda la escena: lo que hay es una cuchilla vieja y el tiempo de un niño que sabe esperar—. Y sin decir una palabra: ni antes, ni durante, ni después hay una sílaba suya en la escena, y de ellos tampoco se recoge ninguna.\n\nLa expansión no añade lo que la fuente no trae: no dice quiénes eran para Sura, ni si lo eran, ni por qué estos tres y no otros. La fuente pone la secuencia —el callejón, la cuerda, la tumba, el metal, los tres soldados— y no pone la frase que la una; escribir esa frase sería inventar el corazón del recuerdo, y este capítulo ha sostenido desde su primera escena de Sura que lo decisivo no se nombra.\n\nCuando termina, se lava las manos en un abrevadero.\n\nAgua quieta, de noche, en una calle vacía. Se las lava como se lava quien ha trabajado: sin prisa y sin ceremonia. La escena se cierra ahí —las manos limpias, la calle en silencio— y no le da al hecho ninguna consecuencia todavía: ni un testigo, ni un nombre, ni una búsqueda que la escena enseñe.\n\n*(Sin diálogo, como en el guion guardado.)*",
      "escenario": "calle",
      "luz": "BARRIO"
     },
@@ -5094,22 +5094,22 @@
        "quien": "concejal",
        "etiqueta": "CONCEJAL",
        "texto": "Casa Vharn pierde la concesión del paso alto y la del vado.",
-       "intencion": "leyendo"
+       "intencion": "leyendo (original)"
       },
       {
        "quien": "vharn",
        "etiqueta": "LORD VHARN",
        "texto": "Eso es un error administrativo.",
-       "intencion": "negando lo evidente"
+       "intencion": "negando lo evidente (original)"
       },
       {
        "quien": "concejal",
        "etiqueta": "CONCEJAL",
        "texto": "Es el tercero en un mes.",
-       "intencion": "seco"
+       "intencion": "seco (original)"
       }
      ],
-     "accion": "Presente. Casa Vharn pierde la concesión del paso alto y la del vado. Eso es un error administrativo. Es el tercero en un mes.",
+     "accion": "El tercero en un mes\n\nEl Consejo, de día: el anfiteatro poco profundo de bancos oscuros, los ventanales altos, la luz dorada con su polvo, las cuarenta personas de las casas en sus filas.\n\nHan pasado los quince días.\n\nNo se enseña cómo: se enseña el resultado, que es la forma que tiene esta historia de cobrar las cosas —en un acta, leída en voz alta, delante de todos—. La sesión trae la contabilidad de Casa Vharn, y la trae un CONCEJAL con el papel en la mano y la voz de los que leen lo que ya está escrito y no se puede desdecir.\n\n**CONCEJAL** *(leyendo (original))*: Casa Vharn pierde la concesión del paso alto y la del vado.\n\nLas dos concesiones. El paso alto: la ruta que Deras presentó en esta misma sala y que se aprobó por unanimidad, la de la carga retenida en la aduana del norte con el grano, la del sello cambiado. Y el vado: lo que da dinero en la casa de abajo, la partida que el nuevo administrador de la rama nombró en su primera auditoría. Las dos caen en la misma lectura, en la misma frase, como dos líneas de un mismo asiento.\n\nLORD VHARN contesta desde su sitio, con la única defensa que le queda a una casa a la que le leen las pérdidas en público: que sea un papel mal puesto.\n\n**LORD VHARN** *(negando lo evidente (original))*: Eso es un error administrativo.\n\nY el concejal cierra el acta con la medida del daño, seca, sin subir la voz, que es como se cierran las cosas que ya no tienen arreglo en esta sala.\n\n**CONCEJAL** *(seco (original))*: Es el tercero en un mes.\n\nEl tercero. La escena no inventaría los otros dos: no los nombra, no los fecha, no dice qué perdió la casa en ellos. Lo que fija es el ritmo —tres errores en un mes, todos en la misma casa, todos de papel— y que el ritmo ya es público: está leído en la sala donde cuarenta personas cuentan mejor que nadie.\n\nDe Saharis, la escena no dice nada: no está en su lista, no habla, no consta. El trabajo de los quince días —las piezas de seis segundos, la letra de cambio movida, lo contado al oído— cobra aquí su primera partida, y la cobra sin firma: en el acta no hay ningún nombre al que colgarla, y en la sala nadie gira la cabeza esta vez.",
      "escenario": "consejo",
      "luz": "NOBLE"
     },
@@ -5128,17 +5128,16 @@
        "quien": "vharn",
        "etiqueta": "LORD VHARN",
        "texto": "¡Tres meses! ¡Tres meses de mi casa en tus manos!",
-       "intencion": "grito de rabia de un padre",
-       "riesgo": "alto"
+       "intencion": "grito de rabia de un padre (original)"
       },
       {
        "quien": "vharn",
        "etiqueta": "LORD VHARN",
        "texto": "Se acabó.",
-       "intencion": "dos palabras, definitivas, ya sin gritar"
+       "intencion": "dos palabras, definitivas, ya sin gritar (original)"
       }
      ],
-     "accion": "Lord Vharn y Deras, a solas. Se oye desde el pasillo. ¡Tres meses! ¡Tres meses de mi casa en tus manos! Un golpe. Se acabó. En el pasillo, Saharis espera con unos papeles bajo el brazo, mirando al frente.",
+     "accion": "Tres meses\n\nEl despacho de Casa Vharn, de día. La escena no entra en él: se queda en el pasillo, que es donde la fuente la pone, y todo lo que trae llega como llegan las cosas a través de las puertas de las casas grandes —entero en la voz, nada en la cara—.\n\nDentro están LORD VHARN y DERAS, a solas.\n\nLo primero que se oye es el grito. No es la voz de la sala ni la de las formas: es la voz de un padre que ha sumado lo que su casa ha perdido en el tiempo en que ha estado en manos de su heredero, y la suma le ha salido en voz alta.\n\n**LORD VHARN** *(grito de rabia de un padre (original))*: ¡Tres meses! ¡Tres meses de mi casa en tus manos!\n\nTres meses. La escena no convierte la cifra en inventario —no enumera las pérdidas, no fecha el principio, no dice qué contaba Vharn como el principio de esas manos—: lo fijado es la medida que el dueño de la casa pone a su desastre, dicha a gritos al hombre que lo ha administrado.\n\nSe oye un golpe.\n\nLa escena no dice qué golpea qué: ni una mesa nombrada, ni una mano contra nada, ni un cuerpo. Un golpe, a través de una puerta, y después el silencio en el que el grito se acaba de gastar.\n\n**LORD VHARN** *(dos palabras, definitivas, ya sin gritar (original))*: Se acabó.\n\nQué se acabó, la escena no lo desdobla: si la mano de Deras en la casa, si su sitio de heredero, si el crédito de un padre. Las dos palabras llegan enteras y cerradas, y su alcance es de los capítulos que vienen, no de este pasillo.\n\nDERAS no dice nada que la escena recoja. Ni una defensa, ni una palabra: del heredero, a través de la puerta, no llega ni la voz.\n\nEn el pasillo, SAHARIS espera con unos papeles bajo el brazo, mirando al frente.\n\nEstá donde la escena lo deja: fuera, en su sitio, con el trabajo bajo el brazo y la cara de siempre, oyendo cómo la casa más entera de la ciudad se rompe por dentro en dos frases. No se acerca a la puerta. No se aparta de ella. No se le mueve nada que la escena enseñe. La sesión del Consejo le acaba de leer a esa casa sus pérdidas en público; el pasillo le enseña ahora el recibo en privado, y el hombre que lo escucha es el hombre que lo ha hecho, esperando con sus papeles a que le toque entrar.",
      "escenario": "casa-vharn",
      "luz": "NOBLE"
     },
@@ -5156,28 +5155,28 @@
        "quien": "celebrante",
        "etiqueta": "CELEBRANTE",
        "texto": "Ni una gota de sangre.",
-       "intencion": "admiración sincera"
+       "intencion": "admiración sincera (original)"
       },
       {
        "quien": "saharis",
        "etiqueta": "SAHARIS",
        "texto": "No hacía falta.",
-       "intencion": "sin darle importancia"
+       "intencion": "sin darle importancia (original)"
       },
       {
        "quien": "celebrante",
        "etiqueta": "CELEBRANTE",
        "texto": "Yo tardé cuarenta años en aprender eso.",
-       "intencion": "reconociendo su propia lentitud"
+       "intencion": "reconociendo su propia lentitud (original)"
       },
       {
        "quien": "celebrante",
        "etiqueta": "CELEBRANTE",
        "texto": "Tú lo sabías antes de llegar.",
-       "intencion": "y esto lo dice con algo parecido al cariño"
+       "intencion": "y esto lo dice con algo parecido al cariño (original)"
       }
      ],
-     "accion": "El Celebrante y Saharis, andando despacio. Ni una gota de sangre. No hacía falta. Yo tardé cuarenta años en aprender eso. Se para. Tú lo sabías antes de llegar.",
+     "accion": "Ni una gota de sangre\n\nEl jardín de Casa Vharn, de día. No es el jardín de la noche de la petición —aquel era de noche, con la casa a oscuras detrás y un manojo de llaves por entregar—: este es de día, y lo que se entrega aquí no se puede coger con la mano.\n\nEl CELEBRANTE y SAHARIS, andando despacio.\n\nAndan como andan los hombres que ya no tienen que llegar a ninguna parte dentro de la conversación: el anciano, con su paso de anciano, y el muchacho a su lado, a su ritmo. El trabajo de los quince días está hecho y leído en el Consejo; el grito de la casa ha sonado a través de su puerta; y el administrador de la casa de abajo mira el resultado entero y lo nombra con la admiración limpia de los profesionales que se reconocen.\n\n**CELEBRANTE** *(admiración sincera (original))*: Ni una gota de sangre.\n\nNo es una metáfora en su boca: es el parte exacto del desplazamiento. Una casa ha perdido el paso alto y el vado, su heredero ha oído el «Se acabó» de su padre, y en ninguna parte del procedimiento ha habido un golpe dado por él: papel, oído, seis segundos por pieza. Saharis contesta sin darle importancia, con la economía de los que no cobran dos veces la misma frase.\n\n**SAHARIS** *(sin darle importancia (original))*: No hacía falta.\n\nY el anciano pone entonces la medida de su propia vida contra la del muchacho, reconociéndola sin amargura, como se reconoce una cuenta bien llevada que a uno le salió lenta.\n\n**CELEBRANTE** *(reconociendo su propia lentitud (original))*: Yo tardé cuarenta años en aprender eso.\n\nCuarenta años: la vida entera de oficio del administrador del culto, puesta en una frase, para decir que el arte de mover el mundo sin derramar nada se aprende —y que a él le costó una vida—. Se para.\n\n**CELEBRANTE** *(y esto lo dice con algo parecido al cariño (original))*: Tú lo sabías antes de llegar.\n\nAntes de llegar adónde, la escena no lo desdobla: si a la casa, si a la ciudad, si a este jardín. Lo fijado es la forma del reconocimiento —el maestro de la casa de abajo diciéndole a su heredero que no ha tenido nada que enseñarle en lo único que importa— y el tono con que llega, que la fuente subraya y la expansión no toca: algo parecido al cariño. Siguen andando, o no: la escena se queda en la frase y en los dos hombres parados en el jardín de la casa que acaba de perder dos concesiones sin que nadie haya tocado a nadie.",
      "escenario": "vharn-jardin",
      "luz": "BARRIO"
     },
@@ -5195,10 +5194,52 @@
        "quien": "livia",
        "etiqueta": "LIVIA",
        "texto": "¿Qué es esto?",
-       "intencion": "tres palabras. Ya sospecha la respuesta"
+       "intencion": "tres palabras. Ya sospecha la respuesta (original)"
+      },
+      {
+       "quien": "saharis",
+       "etiqueta": "SAHARIS",
+       "texto": "Es una lista de nombres.",
+       "intencion": "plano, sin adornarlo (escrita desde la prosa de la fuente)"
+      },
+      {
+       "quien": "saharis",
+       "etiqueta": "SAHARIS",
+       "texto": "Al lado de cada nombre hay una cantidad. Y una palabra.",
+       "intencion": "la estructura, no la lista (escrita desde la prosa de la fuente)"
+      },
+      {
+       "quien": "saharis",
+       "etiqueta": "SAHARIS",
+       "texto": "La palabra es el punto de apoyo de esa persona.",
+       "intencion": "la definición, como quien lee un asiento (escrita desde la prosa de la fuente)"
+      },
+      {
+       "quien": "saharis",
+       "etiqueta": "SAHARIS",
+       "texto": "Todo el mundo se apoya en algo para estar de pie. Uno, en una deuda. Otro, en una hija. Otro, en la bebida. Otro, en un hermano.",
+       "intencion": "los cuatro apoyos, con las cuatro palabras de la columna y ninguna otra (escrita desde la prosa de la fuente)"
+      },
+      {
+       "quien": "saharis",
+       "etiqueta": "SAHARIS",
+       "texto": "El que debe, no puede decir que no. El que tiene una hija, tiene algo que perder. El que bebe, tiene una hora en la que no se gobierna. El que tiene un hermano, se vende por él si por sí mismo no se vende.",
+       "intencion": "lo que pesa cada apoyo, en el mismo orden (escrita desde la prosa de la fuente)"
+      },
+      {
+       "quien": "saharis",
+       "etiqueta": "SAHARIS",
+       "texto": "Yo busco esos puntos. Los peso. Y los uso.",
+       "intencion": "el procedimiento entero, con los tres verbos de la fuente (escrita desde la prosa de la fuente)"
+      },
+      {
+       "quien": "saharis",
+       "etiqueta": "SAHARIS",
+       "texto": "Eso es todo.",
+       "intencion": "cerrando, sin añadir nada (escrita desde la prosa de la fuente)"
       }
      ],
-     "accion": "Livia con la lista en la mano. ¿Qué es esto? Saharis se lo explica. Sin adornarlo, sin justificarse y sin bajar la voz. Le explica que la gente tiene puntos de apoyo y que él los busca, los pesa y los usa. Habla dos minutos. Cuando termina, la mira esperando una pregunta técnica.",
+     "accion": "Puntos de apoyo\n\nEl despacho de Elserath, de noche.\n\nNo son las tres de la mañana esta vez, y LIVIA no viene con una taza ni se queda en la puerta: viene con la lista en la mano.\n\nLa misma lista que leyó por encima de un hombro —nombres, cantidades, y la palabra de al lado— traída ahora a la luz y puesta entre los dos, en la mano de ella, que es donde la escena la quiere: ya no es una lectura a escondidas, es una pregunta con el papel delante. Livia la sostiene y pregunta lo único que hay que preguntar de un papel así, sabiendo ya la respuesta, que es la forma que tienen en esta casa las preguntas que importan.\n\n**LIVIA** *(tres palabras. Ya sospecha la respuesta (original))*: ¿Qué es esto?\n\nSaharis se lo explica.\n\nSin adornarlo. Sin justificarse. Sin bajar la voz. La fuente fija el contenido de la explicación casi al dictado —que la gente tiene puntos de apoyo, y que él los busca, los pesa y los usa— y esta expansión lo fija en su boca con ese contenido y ningún otro: ni un nombre de la lista, ni una cantidad, ni un caso, ni una categoría que la columna no traiga. Habla despacio, con las pausas de quien lee asientos en voz alta, y habla dos minutos.\n\n**SAHARIS** *(plano, sin adornarlo (escrita desde la prosa de la fuente))*: Es una lista de nombres.\n\n**SAHARIS** *(la estructura, no la lista (escrita desde la prosa de la fuente))*: Al lado de cada nombre hay una cantidad. Y una palabra.\n\n**SAHARIS** *(la definición, como quien lee un asiento (escrita desde la prosa de la fuente))*: La palabra es el punto de apoyo de esa persona.\n\n**SAHARIS** *(los cuatro apoyos, con las cuatro palabras de la columna y ninguna otra (escrita desde la prosa de la fuente))*: Todo el mundo se apoya en algo para estar de pie. Uno, en una deuda. Otro, en una hija. Otro, en la bebida. Otro, en un hermano.\n\n**SAHARIS** *(lo que pesa cada apoyo, en el mismo orden (escrita desde la prosa de la fuente))*: El que debe, no puede decir que no. El que tiene una hija, tiene algo que perder. El que bebe, tiene una hora en la que no se gobierna. El que tiene un hermano, se vende por él si por sí mismo no se vende.\n\n**SAHARIS** *(el procedimiento entero, con los tres verbos de la fuente (escrita desde la prosa de la fuente))*: Yo busco esos puntos. Los peso. Y los uso.\n\n**SAHARIS** *(cerrando, sin añadir nada (escrita desde la prosa de la fuente))*: Eso es todo.\n\nCuando termina, la mira esperando una pregunta técnica.\n\nEsa es la última línea de la escena y es un dato entero de él: ha explicado el mecanismo con el que mueve a la ciudad como quien explica un procedimiento de libros —porque para él lo es—, y lo que espera de vuelta es lo que se espera de un procedimiento: una pregunta sobre el cómo. No espera absolución, porque no se ha acusado de nada; no espera horror, porque no ha contado ningún horror: ha contado una columna, cuatro palabras y tres verbos. La pregunta técnica no llega en esta escena. Lo que llega es el silencio de la siguiente, y es de ella.",
      "escenario": "elserath-despacho",
      "luz": "NOBLE"
     },
@@ -5216,22 +5257,22 @@
        "quien": "livia",
        "etiqueta": "LIVIA",
        "texto": "La boda sigue en pie.",
-       "intencion": "después de un silencio largo. Sin calor y sin frío"
+       "intencion": "después de un silencio largo. Sin calor y sin frío (original)"
       },
       {
        "quien": "saharis",
        "etiqueta": "SAHARIS",
        "texto": "...Bien.",
-       "intencion": "desconcertado, buscando el tono"
+       "intencion": "desconcertado, buscando el tono (original)"
       },
       {
        "quien": "livia",
        "etiqueta": "LIVIA",
        "texto": "No lo he dicho como un premio.",
-       "intencion": "clara. Se va al terminar"
+       "intencion": "clara. Se va al terminar (original)"
       }
      ],
-     "accion": "Livia está callada. Mucho tiempo. La boda sigue en pie. ...Bien. No lo he dicho como un premio. Deja la lista sobre la mesa y sube.",
+     "accion": "La boda sigue en pie\n\nEl despacho, continuo.\n\nLivia está callada. Mucho tiempo.\n\nLa fuente fija la duración del silencio como fijó la de la explicación: mucho tiempo. La lista sigue entre los dos —en la mano de ella, sobre la mesa, donde la escena la haya dejado— y él espera su pregunta técnica con la paciencia de los procedimientos, y lo que el silencio le está haciendo a esa espera no se le nota en la cara, que es la de siempre. Ella no está contando la columna: está contando otra cosa, y la escena no dice qué —si a sí misma en la vida que le viene, si a él en la suya, si el precio entero de lo que ha oído—, porque lo que la escena trae no es su cuenta: es su respuesta.\n\nY su respuesta no es sobre la lista.\n\n**LIVIA** *(después de un silencio largo. Sin calor y sin frío (original))*: La boda sigue en pie.\n\nLo dice como se dice una cosa decidida antes de entrar, o decidida en el silencio de ahora: la escena no fija cuándo lo decidió, y la expansión no lo fija. Lo fijado es que lo dice después de haber oído la explicación entera —con el mecanismo delante, sin adornos, con su propia casa y su propio apellido dentro de la contabilidad de ese hombre— y que lo dice en el despacho, de noche, con la lista todavía en la mano. Saharis, que esperaba una pregunta técnica, recibe una sentencia sobre su vida, y se le nota en lo único que se le nota nunca: en la frase, que le sale buscando el tono.\n\n**SAHARIS** *(desconcertado, buscando el tono (original))*: ...Bien.\n\nElla corrige la lectura antes de que se asiente. No es un premio, no es una absolución, no es la recompensa del hombre que se ha explicado bien: es una decisión dicha en su forma más desnuda, y ella la deja dicho con la claridad de los que no quieren ser mal leídos ni por accidente.\n\n**LIVIA** *(clara. Se va al terminar (original))*: No lo he dicho como un premio.\n\nDeja la lista sobre la mesa y sube.\n\nLa lista se queda en el despacho, con él: no se la lleva, no la rompe, no la esconde — la deja donde están los papeles de su trabajo, que es el sitio al que pertenece, y eso también es una forma de haber entendido—. Y ella sube: a sus habitaciones, a su planta de la casa, fuera de la escena. La pregunta técnica que él esperaba no ha llegado, y el matrimonio que él calculó en cuatro segundos en una sala de Casa Vharn sigue en pie por palabra de ella, en unos términos que no son los de su cálculo: no como premio. La escena se cierra con los dos hechos en su sitio —la lista sobre la mesa, la boda en pie— y ninguno de los dos explicado por el otro.",
      "escenario": "elserath-despacho",
      "luz": "NOBLE"
     },
@@ -5244,7 +5285,7 @@
       "saharis"
      ],
      "dialogo": [],
-     "accion": "Saharis copia de memoria, en una hoja limpia, la línea del registro de Casa Vharn. Lleva semanas repitiéndola en la cabeza. *Adquisición. Lote 3.*",
+     "accion": "De memoria\n\nLos túneles, de noche. El refugio: la habitación seca bajo la ciudad, el catre, la mesa, el farol en su extremo este. Y la pared, detrás de él, en su estado nuevo —el organigrama del capítulo anterior, con sus dos frases y su decisión pequeña debajo, sin tachar—: en esta escena la pared no recibe nada. Lo que Saharis va a escribir esta noche no va a la pared. Va a una hoja limpia.\n\nSAHARIS está sentado a la mesa, con la hoja delante y la pluma en la mano.\n\nCopia de memoria, en una hoja limpia, la línea del registro de Casa Vharn.\n\nLa línea que encontró al amanecer de su noche entre los cuatrocientos años, con el farol en las últimas y el dedo detenido: la de la compra, la del comprador claro y el vendedor tachado con tinta más nueva. Lleva **semanas repitiéndola en la cabeza**. La fuente lo fija así —semanas: no días, no desde anoche—: la línea ha vivido en su cabeza todo este tiempo, a través de la auditoría de la cripta, del plazo del Consejo, de la lista explicada a Livia, dicha y redicha por dentro como se dice una cosa que todavía no se ha decidido dónde poner.\n\nY esta noche la pone. En una hoja limpia. De memoria, sin el libro delante —el libro quedó devuelto a su estante la misma mañana en que devolvió la llave—: letra a letra, como quien traslada un asiento de un libro a otro.\n\n*Adquisición. Lote 3.*\n\nEs todo lo que copia en esta escena, y va copiado entero en esas tres palabras y su punto: la copia no trae aquí ni el tachón ni el nombre del comprador —trae el núcleo del asiento, la adquisición y su número de lote, que es lo que su cabeza ha estado repitiendo—. La hoja se queda sobre la mesa, con la línea escrita, y él mirándola: por primera vez desde la sala de registros, la línea existe fuera de un libro de las casas y fuera de su cabeza, en un papel suyo.\n\n*(Sin diálogo, como en el guion guardado: la línea es texto copiado en la hoja, no línea hablada.)*",
      "escenario": "tuneles",
      "luz": "BARRIO"
     },
@@ -5255,7 +5296,7 @@
      "flashback": false,
      "personajes": [],
      "dialogo": [],
-     "accion": "Y debajo, otra línea que también memorizó y que hasta ahora no había mirado: *Traslado a rama inferior.* Con fecha. Cuatro meses después de la compra.",
+     "accion": "La otra línea\n\nLos túneles. *Continuo.*\n\nLa misma noche, la misma mesa, la misma hoja. Debajo de la primera línea —en la misma hoja limpia, con la misma mano— Saharis copia otra línea.\n\nOtra línea que también memorizó. Y que hasta ahora no había mirado.\n\nLas dos cosas van fijadas juntas por la fuente y las dos importan: la memorizó —su cabeza la guardó en la misma noche de los registros, junto a la otra, sin que él lo decidiera— y no la había mirado —ha estado semanas dentro de él, sin leer, como la segunda parte de un asiento que uno se niega a girar—. Esta noche, debajo de la primera, la escribe por fin y la mira:\n\n*Traslado a rama inferior.*\n\n**Con fecha.**\n\nLa línea del registro no viene sola: trae su fecha puesta, y la fecha tiene su medida contada contra la otra fecha, la de la compra: **cuatro meses después de la compra**.\n\nLa expansión no desdobla la frase más de lo que la frase da. *Rama inferior* son las palabras del registro, las palabras administrativas de la casa de abajo: la misma red que él pidió en un jardín con las palabras de la calle —la rama de abajo— y que ahora administra, aparece en el libro de los cuatrocientos años con su nombre de asiento. Y el asiento dice que algo —la línea habla del Lote 3, que es lo que la hoja de esta noche lleva escrito encima— fue trasladado a esa rama cuatro meses después de comprado. Qué se traslada, en el lenguaje de esos libros, cuando se traslada un lote a la rama que vende y usa personas, la escena no lo dice con una palabra más: dice el traslado, la rama y la fecha, y deja la hoja sobre la mesa con sus dos líneas, una debajo de otra, separadas en el libro por quién sabe cuántas páginas y en esta hoja por un renglón.\n\n*(Sin diálogo, como en el guion guardado: la línea es texto copiado en la hoja, no línea hablada.)*",
      "escenario": "tuneles",
      "luz": "BARRIO"
     },
@@ -5268,7 +5309,7 @@
       "saharis"
      ],
      "dialogo": [],
-     "accion": "Al margen, con otra letra, tres palabras: *con el niño.* Saharis se queda quieto. Cuenta con los dedos. La fecha del traslado es anterior a su nacimiento.",
+     "accion": "Con el niño\n\nLos túneles. *Continuo.*\n\nLa hoja sigue sobre la mesa, con sus dos líneas. Pero la noche de los registros le dejó a Saharis una tercera cosa memorizada, y no es una línea: es un margen.\n\nAl margen de aquella línea del registro —la del traslado—, con **otra letra**, hay tres palabras:\n\n*con el niño.*\n\nOtra letra: no la del asiento. La línea del traslado la escribió una mano, en su tinta, en su año; el margen lo escribió otra, en otro momento que la página no fecha —lo único que esta expansión conserva del examen de aquella noche es el criterio que la escena 13 del capítulo anterior fijó para el tachón, y aquí no se traslada ese dato: la fuente no dice que la tinta del margen sea más nueva ni más vieja, dice solo que es otra letra, y con eso se queda la escena (ver duda 3 del apunte)—.\n\nSaharis se queda quieto.\n\nEs la inmovilidad entera que esta historia le da a los golpes que no hacen ruido: el hombre que no se inmutó ante cuarenta cabezas giradas ni ante un grito a través de una puerta se queda quieto ante tres palabras de un margen.\n\nCuenta con los dedos.\n\nLa escena lo fija como un gesto de escuela: los dedos, uno a uno, contando lo que la cabeza ya ha contado y no quiere creer. Las fechas están las dos en su hoja y en su memoria: la del traslado, cuatro meses después de la compra; y la compra, un año antes de su nacimiento —así la leyó en la sala, contra su propia vida, sin año en cifras—. La cuenta que hace con los dedos es la que une los dos extremos, y su resultado cabe en una frase, que no es una frase de la escena sino el suelo de las dos que vienen:\n\n**La fecha del traslado es anterior a su nacimiento.**\n\nEl Lote 3 fue comprado, y cuatro meses después fue trasladado a la rama inferior —con el niño, dice el margen, con otra letra—, antes de que Saharis naciera. Qué niño, de quién, y cómo casa eso con lo que la pared lleva años preguntando, la escena no lo dice: dice la fecha, la cuenta y la quietud. La hoja se queda sobre la mesa. Los dedos se quedan donde se quedaron.\n\n*(Sin diálogo, como en el guion guardado: las tres palabras son texto leído en el margen, no línea hablada.)*",
      "escenario": "tuneles",
      "luz": "BARRIO"
     },
@@ -5279,7 +5320,7 @@
      "flashback": false,
      "personajes": [],
      "dialogo": [],
-     "accion": "Vuelve a contar. Otra vez.",
+     "accion": "Otra vez\n\nLos túneles. *Continuo.*\n\nVuelve a contar.\n\nOtra vez.\n\nEs toda la escena, y su brevedad es su forma exacta: la fuente le da dos frases y la expansión no le añade un tercer movimiento. Un hombre de diecisiete años, solo, de noche, en su refugio, contando con los dedos la distancia entre dos fechas de un registro —la compra de un lote, su traslado a la rama de abajo cuatro meses después— contra la fecha de su propio nacimiento, y llegando al mismo sitio: antes. Antes de que él existiera, el lote ya había sido comprado y trasladado, y al margen de su traslado alguien escribió, con otra letra, que iba con un niño.\n\nOtra vez: los dedos, la cuenta, el mismo resultado. No hay en la escena una conclusión dicha, ni una frase para la pared, ni una decisión: hay la repetición de una aritmética que no se deja deshacer contándola de nuevo. Lo que esa cuenta le hace —qué le mueve, qué le confirma, qué le quita— no lo escribe la escena ni lo escribe esta expansión: lo escribirá, si acaso, la conversación a la que este hombre va a ir con la cuenta ya hecha dos veces. La hoja se queda sobre la mesa, con sus dos líneas. La escena se cierra sobre los dedos detenidos.\n\n*(Sin diálogo, como en el guion guardado.)*",
      "escenario": "tuneles",
      "luz": "BARRIO"
     },
@@ -5325,7 +5366,7 @@
        "intencion": "una palabra, y en ella se le va la vida"
       }
      ],
-     "accion": "Una habitación pequeña. La ACÓLITA de la primera escena de la serie, ahora anciana, sentada, con una manta. Usted estaba cuando yo nací. Yo te tuve en brazos. ¿Cuándo llegó mi madre aquí? En invierno. Muy flaca. ¿Sola? La anciana lo mira.",
+     "accion": "Yo te tuve en brazos\n\nLa cripta, de noche. Una habitación pequeña.\n\nNo es el santuario, con su bóveda y su estatua: es una habitación pequeña de la casa de abajo, de las que no salen en ningún mapa de la pared. En ella, sentada, con una manta, está la ACÓLITA.\n\nLa acólita de la primera escena de la serie. La que meció a un bebé junto al lado sur del altar la noche en que nació, tarareando sin palabras, agotada, y dijo su única frase de entonces —«Está dormido.»— a un hombre enmascarado que le contestó que no. Ahora es anciana: el tiempo de la serie entera está en su cuerpo, sentado y abrigado con una manta, en una habitación pequeña de la casa que ha servido toda su vida. La fuente la trae así, sin prepararla en ninguna escena de este capítulo —ninguna tanda la insinuó, ninguna la nombró—: está, como están las cosas de abajo, porque siempre ha estado.\n\nSAHARIS está con ella. Ha bajado a la casa heredada con la cuenta de los dedos hecha dos veces, y viene a preguntarle a la única persona viva que estaba donde él empezó. Empieza por el hecho, dicho suave, con el tono que se usa con una anciana, que en él es una cosa nueva y no le cuesta: es cortesía y es acta.\n\n**SAHARIS** *(suave, con una anciana (original))*: Usted estaba cuando yo nací.\n\nLa anciana contesta con el recuerdo en las manos, cariñosa, con la certeza corporal de las que han tenido el peso.\n\n**ACÓLITA** *(cariñosa (original))*: Yo te tuve en brazos.\n\nEntonces él pregunta lo que ha venido a preguntar, conteniendo la urgencia: no el comprador —ese consta en un libro—, no el vendedor —ese está tachado—, sino la llegada: el principio del asiento, antes de que fuera asiento.\n\n**SAHARIS** *(conteniendo la urgencia (original))*: ¿Cuándo llegó mi madre aquí?\n\nLa anciana recuerda sin dificultad. La memoria de las de abajo no está en los libros: está en las mujeres que estuvieron, y la suya llega entera y sencilla, con la estación y el cuerpo.\n\n**ACÓLITA** *(recordando sin dificultad (original))*: En invierno. Muy flaca.\n\nY entonces la pregunta de una palabra, en la que la fuente fija que se le va la vida: no cuándo, no cómo, no de dónde — si vino sola. Si con ella, al llegar, venía ya lo que el margen de un registro dice con otra letra.\n\n**SAHARIS** *(una palabra, y en ella se le va la vida (original))*: ¿Sola?\n\nLa anciana lo mira.\n\nLa escena se cierra en esa mirada, antes de la respuesta: la mujer que lo tuvo en brazos mirando al hombre que tiene delante, con su invierno y su flaca en la memoria, midiendo —o no midiendo nada: solo mirando— la pregunta que le acaban de hacer. Lo que contesta es la escena siguiente, y es el cierre del capítulo.",
      "escenario": "cripta",
      "luz": "CRIPTA"
     },
@@ -5358,7 +5399,7 @@
        "intencion": "aclarando, servicial"
       }
      ],
-     "accion": "No. Pausa. Llegó con un niño. Saharis no se mueve. No eras tú. Tú tardaste todavía un año en nacer. Primer plano de la cara de Saharis mientras lo entiende. Negro.",
+     "accion": "No eras tú\n\nLa cripta. *Continuo.*\n\nLa misma habitación pequeña, la misma anciana con su manta, la misma pregunta colgando de su única palabra. La acólita contesta primero lo preguntado, con la sencillez de las cosas simples.\n\n**ACÓLITA** *(simple (original))*: No.\n\nPausa.\n\nNo llegó sola. Y la anciana añade lo que su memoria guarda del invierno en que llegó una mujer muy flaca a la casa de abajo, y lo añade sin idea de lo que está diciendo —sin saber que lleva diecisiete años siendo la única persona viva que lo sabe, sin saber que la frase cae sobre el único hombre al que no se le podía caer encima—: servicial, aclarando, como se aclara una cosa de la casa a quien pregunta por ella.\n\n**ACÓLITA** *(sin idea de lo que está diciendo (original))*: Llegó con un niño.\n\nSaharis no se mueve.\n\nEs la quietud de los túneles otra vez, la de la cuenta con los dedos, traída a una habitación con otra persona dentro: el hombre al que no le tiembla la mano escribiendo ni contando se queda exactamente donde está, y la anciana, que no ha notado nada —porque no hay nada que notar en una cara que no dice nada—, le completa la aclaración con la segunda parte, la que ordena las fechas contra su vida:\n\n**ACÓLITA** *(aclarando, servicial (original))*: No eras tú. Tú tardaste todavía un año en nacer.\n\nLlegó con un niño. No era él. Él tardó todavía un año en nacer. La cuenta que Saharis hizo con los dedos en su refugio —la compra, el traslado cuatro meses después, todo ello anterior a su nacimiento— recibe de esta anciana su forma humana y su remate: su madre llegó a la casa de abajo en invierno, muy flaca, **con un niño que no era él**, un año antes de que él naciera. Quién era ese niño, qué fue de él, cómo se llamaba —eso último, sobre todo, cómo se llamaba—, la escena no lo dice: la anciana no lo dice, y esta expansión no se lo escribe. Es la materia que la temporada guarda para donde la guarda, y aquí queda exactamente en el borde: un niño anterior, sin nombre en esta habitación.\n\nPrimer plano de la cara de Saharis mientras lo entiende.\n\nLa cara de siempre —la que no dice nada, la que sostuvo cuarenta miradas, la que oyó «Se acabó» desde un pasillo y «La boda sigue en pie» desde un silencio— en primer plano, entendiendo. La fuente no le da una lágrima, ni un gesto, ni una palabra: le da el primer plano y el entendimiento, y la expansión lo deja exactamente ahí, sin numerar nada y sin cerrar nada.\n\nNegro.\n\n*(Fin del capítulo.)*",
      "escenario": "cripta",
      "luz": "CRIPTA"
     }

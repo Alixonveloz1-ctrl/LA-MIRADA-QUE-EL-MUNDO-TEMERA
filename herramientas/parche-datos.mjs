@@ -406,6 +406,29 @@ if (!serie.piezas.ep07) {
   anota(`pieza «ep07» añadida (${ep07Archivo.ep07.tomas.length} planos, ${ep07Archivo.ep07.duracion_s} s)`);
 }
 
+// ---------------------------------------------------------------------------
+// 4i. El episodio 8, escrito a mano desde el guion expandido.
+//
+// Igual que los episodios 1 a 7: se escribió plano a plano en el código
+// (290 planos, 1015 s) y vive en datos/episodio-08.json. Este episodio no
+// tiene pieza en el estado (el desglose automático nunca llegó a él), así
+// que no hay copia viva que mande sobre esta: es la que se ve en las
+// pantallas desde el primer momento. Su duración (16 minutos y 55
+// segundos) queda por debajo de los ~20 pedidos y se declara tal cual,
+// sin rellenar, como los capítulos 4 y 7: su tramo final es de escritura
+// y cuenta, no de palabra. Lleva tres excepciones de duración contadas,
+// con su justificación escrita en el plano, todas en el montaje de la
+// escena 8: E08-02, E08-04 y E08-06, a 6 segundos porque los seis
+// segundos de cada pieza los fija la fuente.
+// ---------------------------------------------------------------------------
+
+const ep08Archivo = JSON.parse(readFileSync(join(raiz, 'datos/episodio-08.json'), 'utf8'));
+
+if (!serie.piezas.ep08) {
+  serie.piezas.ep08 = ep08Archivo.ep08;
+  anota(`pieza «ep08» añadida (${ep08Archivo.ep08.tomas.length} planos, ${ep08Archivo.ep08.duracion_s} s)`);
+}
+
 const yaSuena = new Set(serie.musica.piezas.map((m) => m.id));
 for (const tema of opEd.musica) {
   if (yaSuena.has(tema.id)) continue;
