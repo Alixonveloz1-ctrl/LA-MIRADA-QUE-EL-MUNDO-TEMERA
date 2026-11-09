@@ -501,6 +501,35 @@ if (!serie.piezas.ep11) {
   anota(`pieza «ep11» añadida (${ep11Archivo.ep11.tomas.length} planos, ${ep11Archivo.ep11.duracion_s} s)`);
 }
 
+// ---------------------------------------------------------------------------
+// 4m. El episodio 12, escrito a mano desde el guion expandido.
+//
+// Igual que los episodios 1 a 11: se escribió plano a plano en el código
+// (238 planos, 729 s) y vive en datos/episodio-12.json. Este episodio no
+// tiene pieza en el estado (el desglose automático nunca llegó a él), así
+// que no hay copia viva que mande sobre esta: es la que se ve en las
+// pantallas desde el primer momento. Su duración (12 minutos y 9
+// segundos) queda por debajo de los ~20 pedidos y se declara tal cual,
+// sin rellenar, como los capítulos 4 y 7 a 11: es el capítulo con menos
+// palabra de la temporada — 70 palabras habladas, exactamente las de la
+// fuente, y su tercio del medio en cero palabras exactas —. Es el
+// capítulo final: seis meses después, el poder convertido en
+// procedimiento, la pregunta de Livia sin respuesta, la cripta tapiada,
+// la carta de Kadre, el niño del portal, la pared intacta con la
+// primera pregunta en carboncillo sobre la piedra, el intento de cantar
+// la nana — que no se completa tampoco aquí —, el llanto y el amanecer
+// trabajando. No lleva ninguna excepción de duración, y el ordinal del
+// llanto de la fuente vive solo en la prosa del guion: no se ha sacado
+// a ningún campo de la pieza.
+// ---------------------------------------------------------------------------
+
+const ep12Archivo = JSON.parse(readFileSync(join(raiz, 'datos/episodio-12.json'), 'utf8'));
+
+if (!serie.piezas.ep12) {
+  serie.piezas.ep12 = ep12Archivo.ep12;
+  anota(`pieza «ep12» añadida (${ep12Archivo.ep12.tomas.length} planos, ${ep12Archivo.ep12.duracion_s} s)`);
+}
+
 const yaSuena = new Set(serie.musica.piezas.map((m) => m.id));
 for (const tema of opEd.musica) {
   if (yaSuena.has(tema.id)) continue;
