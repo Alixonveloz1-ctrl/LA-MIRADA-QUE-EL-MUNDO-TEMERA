@@ -1558,9 +1558,11 @@ function tarjetaDeMaterial(ctx, laPieza) {
     h(
       'p',
       { clase: 'tarjeta-texto' },
-      `${plural(conteos.tomas, 'plano', 'planos')} · ${conteos.imagenes} con imagen · ` +
-        `${conteos.clips} con clip · ${conteos.efectos} con efecto · ` +
-        `${plural(conteos.bloquesVoz, 'bloque', 'bloques')} de voz de ${conteos.bloquesTotal} · ` +
+      `${plural(conteos.tomas, 'plano', 'planos')} · la serie para montar lleva ` +
+        `${conteos.clips + conteos.imagenes} archivos en orden ` +
+        `(${conteos.clips} vídeos y ${conteos.imagenes} imágenes) · ` +
+        `${conteos.efectos} con efecto · ` +
+        `${plural(conteos.bloquesVoz, 'archivo', 'archivos')} de diálogos de ${conteos.bloquesTotal} · ` +
         `${conteos.musica} de ${plural(conteos.musicaTotal, 'pista', 'pistas')} de música · ` +
         `${plural(conteos.lineas, 'frase', 'frases')} de diálogo.`
     )
@@ -1636,8 +1638,8 @@ async function empaquetarMaterial(ctx, laPieza) {
   const { conteos } = plan;
 
   const pregunta =
-    `¿Preparo el zip con todo el material de «${laPieza.titulo}»? Dentro van ` +
-    `${plural(conteos.imagenes + conteos.clips + conteos.efectos + conteos.bloquesVoz + conteos.musica, 'archivo', 'archivos')} ` +
+    `¿Preparo el zip con todo el material de «${laPieza.titulo}»? Dentro va todo numerado ` +
+    `en el orden de montaje: ${plural(conteos.imagenes + conteos.clips + conteos.efectos + conteos.bloquesVoz + conteos.musica, 'archivo', 'archivos')} ` +
     'de imagen, vídeo y sonido, más los subtítulos, la guía y el guion. Lleva lo que haya: si ' +
     'falta material, sale igual y la guía lo dice. Puede pesar mucho: descárgalo con wifi y deja ' +
     'el mismo espacio libre otra vez para abrirlo.';
@@ -1702,9 +1704,34 @@ function planDelMaterial(serie, estado, laPieza) {
     lineas: lineas.length
   };
 
+  // LOS DIÁLOGOS, NUMERADOS EN EL ORDEN EN QUE SUENAN. La numeración manda en
+  // todo el paquete: la serie visual, los diálogos y los efectos se llaman por
+  // su número de montaje, no por los códigos internos de plano o de bloque,
+  // que es lo que hace que en el editor baste con ponerlo todo en orden. El
+  // número de cada línea se busca por su CONTENIDO —quién la dice, en qué
+  // segundo entra y qué dice—, nunca por el objeto: cada ayudante compone
+  // sus propias copias de las líneas, así que la misma frase llega como
+  // objetos distintos según quién la traiga, y buscarla por referencia la
+  // perdería. Si dos frases fueran idénticas en todo, comparten contenido y
+  // se distinguen por el orden en que cada lista las trae (la «vez»).
+  const claveDeLinea = (linea) =>
+    [linea.quien, linea.t, linea.hasta, linea.es].join('\u0000');
+  const numeroDeLinea = new Map();
+  lineas.forEach((linea, i) => {
+    const clave = claveDeLinea(linea);
+    if (!numeroDeLinea.has(clave)) numeroDeLinea.set(clave, []);
+    numeroDeLinea.get(clave).push(i + 1);
+  });
+  const dialogoDeLinea = (linea, vez) => {
+    const suyos = numeroDeLinea.get(claveDeLinea(linea)) || [];
+    return vez !== undefined && suyos[vez] !== undefined ? suyos[vez] : suyos[0] || 0;
+  };
+  const conDialogo = (linea, numero) =>
+    numero ? { ...linea, dialogo: String(numero).padStart(3, '0') } : { ...linea, dialogo: null };
+
   tomas.forEach((toma, i) => {
     const id = soloTexto(toma.id) || `plano-${i + 1}`;
-    const base = nombreSano(id);
+    const numero = String(i + 1).padStart(3, '0');
     const entrada = esObjeto(tomasDelEstado[`${laPieza.id}/${id}`])
       ? tomasDelEstado[`${laPieza.id}/${id}`]
       : {};
@@ -1712,6 +1739,7 @@ function planDelMaterial(serie, estado, laPieza) {
     const dur = Number(toma.dur) || 0;
     const suyo = {
       id,
+      numero,
       escena: toma.escena === undefined || toma.escena === null ? null : String(toma.escena),
       inicio,
       dur,
@@ -1720,78 +1748,123 @@ function planDelMaterial(serie, estado, laPieza) {
         : null,
       imagen: null,
       video: null,
+      visual: null,
       efecto: null,
       efectoTexto: '',
-      frases: lineas.filter((linea) => linea.t >= inicio && linea.t < inicio + dur)
+      frases: (() => {
+        const vistas = new Map();
+        return lineas
+          .filter((linea) => linea.t >= inicio && linea.t < inicio + dur)
+          .map((linea) => {
+            const clave = claveDeLinea(linea);
+            const vez = vistas.get(clave) || 0;
+            vistas.set(clave, vez + 1);
+            return conDialogo(linea, dialogoDeLinea(linea, vez));
+          });
+      })()
     };
 
-    const keyframe = rutaKeyframeEnUso(entrada);
-    if (keyframe) {
-      suyo.imagen = `imagenes/${base}${extensionDeArchivo(keyframe, '.png')}`;
-      archivos.push({ nombre: suyo.imagen, origen: keyframe });
-      conteos.imagenes += 1;
-    } else {
-      faltas.push(`El plano ${id} no tiene imagen.`);
-    }
-
     const clip = rutaClipEnUso(entrada);
+    const keyframe = rutaKeyframeEnUso(entrada);
     if (clip) {
-      suyo.video = `videos/${base}${extensionDeArchivo(clip, '.mp4')}`;
+      // LA SERIE VISUAL: UN SOLO ARCHIVO POR NÚMERO. Si el plano tiene clip, el
+      // archivo de su número ES el vídeo; si no lo tiene —cobertura, o vídeo
+      // sin generar—, el de su número es su imagen. La serie no tiene huecos:
+      // se importa ordenada y se coloca tal cual, sin buscar qué va dónde.
+      suyo.video = `01-en-orden/${numero}-video${extensionDeArchivo(clip, '.mp4')}`;
+      suyo.visual = suyo.video;
       archivos.push({ nombre: suyo.video, origen: clip });
       conteos.clips += 1;
-    } else if (soloTexto(toma.tipo) === 'cobertura') {
-      // Un plano de cobertura ES una imagen quieta con la cámara moviéndose en
-      // el editor: que no tenga clip no es una falta, es su forma.
-      suyo.cobertura = true;
+      if (!keyframe) {
+        faltas.push(`El plano ${numero} (${id}) tiene clip pero no imagen.`);
+      }
+    } else if (keyframe) {
+      suyo.imagen = `01-en-orden/${numero}-imagen${extensionDeArchivo(keyframe, '.png')}`;
+      suyo.visual = suyo.imagen;
+      archivos.push({ nombre: suyo.imagen, origen: keyframe });
+      conteos.imagenes += 1;
+      if (soloTexto(toma.tipo) === 'cobertura') {
+        // Un plano de cobertura ES una imagen quieta con la cámara moviéndose
+        // en el editor: que no tenga clip no es una falta, es su forma.
+        suyo.cobertura = true;
+      } else {
+        faltas.push(
+          `El plano ${numero} (${id}) no tiene clip: en la serie va su imagen; ` +
+            'cuando lo generes, rehacer el zip lo sustituye solo.'
+        );
+      }
     } else {
-      faltas.push(`El plano ${id} no tiene clip.`);
+      faltas.push(`El plano ${numero} (${id}) no tiene ni imagen ni clip: su número queda vacío.`);
+      if (soloTexto(toma.efecto)) {
+        faltas.push(
+          `El plano ${numero} (${id}) pide un efecto —«${soloTexto(toma.efecto)}»— y tampoco está generado.`
+        );
+      }
     }
 
     const efecto = esObjeto(entrada.efecto) ? entrada.efecto : {};
     const rutaEfecto = soloTexto(efecto.ruta);
     if (rutaEfecto) {
-      suyo.efecto = `efectos/${base}${extensionDeArchivo(rutaEfecto, '.mp3')}`;
+      suyo.efecto = `03-efectos/${numero}-efecto${extensionDeArchivo(rutaEfecto, '.mp3')}`;
       suyo.efectoTexto = soloTexto(efecto.texto);
       archivos.push({ nombre: suyo.efecto, origen: rutaEfecto });
       conteos.efectos += 1;
-    } else if (soloTexto(toma.efecto)) {
-      faltas.push(`El plano ${id} pide un efecto —«${soloTexto(toma.efecto)}»— y no está generado.`);
+    } else if (soloTexto(toma.efecto) && (clip || keyframe)) {
+      faltas.push(
+        `El plano ${numero} (${id}) pide un efecto —«${soloTexto(toma.efecto)}»— y no está generado.`
+      );
     }
 
     detalle.push(suyo);
   });
 
-  // LAS VOCES, POR BLOQUES. No hay un archivo continuo de diálogos: la voz se
-  // graba por bloques, y el continuo lo arma el montaje. Para montar a mano,
-  // los bloques y la guía —que dice en qué segundo de cada bloque está cada
-  // frase— hacen el mismo papel y además dejan recolocar una frase suelta.
+  // LAS VOCES: UNA SERIE DE DIÁLOGOS NUMERADA. La voz se graba por bloques,
+  // y un bloque no se puede partir en frases sin cortar el audio de verdad
+  // —eso lo hace el montaje automático, no este paquete—, así que cada
+  // archivo de esta serie se llama por el número de su PRIMER diálogo
+  // («dialogo-007», «dialogo-012»…) y dentro van sus frases seguidas, en
+  // orden. La guía numera cada diálogo y dice el tramo exacto que ocupa
+  // dentro de su archivo: montar es colocar los archivos por su número y,
+  // si una frase tiene que ir suelta, cortarla por ese tramo.
   const bloques = [];
   for (const bloque of bloquesDeVoz(datos)) {
     conteos.bloquesTotal += 1;
     const guardado = guardadoDeVoz(estado, `${laPieza.id}/${bloque.id}`);
+    const vistasBloque = new Map();
+    const lineasNumeradas = bloque.lineas.map((linea, j) => {
+      const clave = claveDeLinea(linea);
+      const vez = vistasBloque.get(clave) || 0;
+      vistasBloque.set(clave, vez + 1);
+      const tramo = guardado.lineas[j];
+      return {
+        ...conDialogo(linea, dialogoDeLinea(linea, vez)),
+        tramo:
+          tramo && tramo.fin > tramo.inicio
+            ? { inicio: tramo.inicio, fin: tramo.fin }
+            : null
+      };
+    });
     const suyo = {
       id: bloque.id,
       personajes: bloque.personajes,
       archivo: null,
+      primerDialogo: lineasNumeradas.length ? lineasNumeradas[0].dialogo : null,
       durS: guardado.durS,
-      lineas: bloque.lineas.map((linea, j) => {
-        const tramo = guardado.lineas[j];
-        return {
-          ...linea,
-          tramo:
-            tramo && tramo.fin > tramo.inicio
-              ? { inicio: tramo.inicio, fin: tramo.fin }
-              : null
-        };
-      })
+      lineas: lineasNumeradas
     };
     if (guardado.ruta) {
-      suyo.archivo = `voces/${nombreSano(bloque.id)}${extensionDeArchivo(guardado.ruta, '.wav')}`;
+      suyo.archivo =
+        `02-dialogos/dialogo-${suyo.primerDialogo}${extensionDeArchivo(guardado.ruta, '.wav')}`;
       archivos.push({ nombre: suyo.archivo, origen: guardado.ruta });
       conteos.bloquesVoz += 1;
     } else {
+      const desde = lineasNumeradas.length ? lineasNumeradas[0].dialogo : '???';
+      const hasta = lineasNumeradas.length
+        ? lineasNumeradas[lineasNumeradas.length - 1].dialogo
+        : '???';
       faltas.push(
-        `El bloque de voz «${bloque.id}» no está grabado: ${plural(bloque.lineas.length, 'frase', 'frases')} sin voz.`
+        `Los diálogos ${desde} a ${hasta} no están grabados: ` +
+          `${plural(bloque.lineas.length, 'frase', 'frases')} sin voz.`
       );
     }
     bloques.push(suyo);
@@ -1807,11 +1880,13 @@ function planDelMaterial(serie, estado, laPieza) {
     const guardado = guardadoDeMusica(estado, pista.id);
     const suya = { id: pista.id, archivo: null, durS: guardado.durS };
     if (guardado.ruta) {
-      suya.archivo = `musica/${nombreSano(pista.id)}${extensionDeArchivo(guardado.ruta, '.wav')}`;
+      suya.archivo =
+        `04-musica/musica-${String(pistas.length + 1).padStart(2, '0')}` +
+        `${extensionDeArchivo(guardado.ruta, '.wav')}`;
       archivos.push({ nombre: suya.archivo, origen: guardado.ruta });
       conteos.musica += 1;
     } else {
-      faltas.push(`La pista «${pista.id}» no está generada.`);
+      faltas.push(`La pista de música ${pistas.length + 1} no está generada.`);
     }
     pistas.push(suya);
   }
@@ -1991,6 +2066,7 @@ function guionEnTexto(laPieza) {
   ];
 
   const dichas = new Set();
+  let numero = 0;
   for (const grupo of gruposPorEscena(tomas, inicios)) {
     if (grupo.escena !== null) partes.push(`ESCENA ${grupo.escena}`, '');
     const desde = grupo.tomas.length ? grupo.tomas[0].inicio : 0;
@@ -1998,7 +2074,9 @@ function guionEnTexto(laPieza) {
     const hasta = ultima ? ultima.inicio + (Number(ultima.toma.dur) || 0) : desde;
 
     for (const { toma } of grupo.tomas) {
-      partes.push(`[${soloTexto(toma.id) || 'plano'}] ${soloTexto(toma.imagen)}`);
+      numero += 1;
+      const suNumero = String(numero).padStart(3, '0');
+      partes.push(`[Plano ${suNumero}] ${soloTexto(toma.imagen)}`);
       if (soloTexto(toma.video)) partes.push(`  Vídeo: ${soloTexto(toma.video)}`);
     }
     for (const linea of lineas) {
@@ -2038,17 +2116,29 @@ function guiaDelMaterial(serie, estado, laPieza, plan) {
   partes.push(`# Guía de montaje — ${laPieza.titulo}`, '');
   partes.push(
     'Todo lo de este zip es el material EN USO de la pieza: la última imagen, el último clip y ' +
-      'la última grabación de cada cosa. Los clips y sus imágenes se llaman igual —el id del ' +
-      'plano— para emparejarlos sin pensar.',
+      'la última grabación de cada cosa. Y todo viene NUMERADO en el orden en que se monta: no ' +
+      'hay que buscar qué va dónde, solo ponerlo en orden.',
+    '',
+    '- `01-en-orden/` es la imagen de la pieza, plano a plano: 001, 002, 003… hasta el último. ' +
+      'Cada número es UN solo archivo: si el plano tiene vídeo, es `NNN-video`; si no lo tiene ' +
+      '—un plano de cobertura, o un vídeo aún sin generar—, en su número va `NNN-imagen`, su ' +
+      'imagen quieta. Se importa la carpeta ordenada y se coloca tal cual.',
+    '- `02-dialogos/` son las voces, también por su número: cada archivo se llama por el número ' +
+      'de su primer diálogo y dentro lleva sus diálogos seguidos, en orden.',
+    '- `03-efectos/` lleva cada efecto con el número de su plano: el 045 suena en el plano 045.',
+    '- `04-musica/` es la música de fondo de la pieza.',
+    '- `subtitulos.srt` se importa y queda colocado solo; `guion.txt` es la pieza escrita.',
     ''
   );
 
   partes.push('## La pieza en números', '');
   partes.push(
     `- Dura unos ${enTiempo(plan.duracionS)} (${plural(conteos.tomas, 'plano', 'planos')}).`,
-    `- Van ${conteos.imagenes} imágenes, ${conteos.clips} clips y ${conteos.efectos} efectos.`,
-    `- La voz va en ${plural(conteos.bloquesVoz, 'bloque', 'bloques')} de ${conteos.bloquesTotal}, ` +
-      `con ${plural(conteos.lineas, 'frase', 'frases')} de diálogo.`,
+    `- La serie de montaje lleva ${conteos.clips + conteos.imagenes} archivos: ` +
+      `${conteos.clips} vídeos y ${conteos.imagenes} imágenes, un número tras otro.`,
+    `- Van ${conteos.efectos} efectos, cada uno con el número de su plano.`,
+    `- Los diálogos van en ${plural(conteos.bloquesVoz, 'archivo', 'archivos')} de ${conteos.bloquesTotal}, ` +
+      `con ${plural(conteos.lineas, 'frase', 'frases')} numeradas en su orden.`,
     `- La música: ${conteos.musica} de ${plural(conteos.musicaTotal, 'pista', 'pistas')}.`,
     ''
   );
@@ -2058,8 +2148,8 @@ function guiaDelMaterial(serie, estado, laPieza, plan) {
     for (const pista of plan.pistas) {
       partes.push(
         pista.archivo
-          ? `- \`${pista.archivo}\` — la pista «${pista.id}»${pista.durS ? `, ${segundosCortos(pista.durS)}` : ''}.`
-          : `- La pista «${pista.id}» no está generada: no va en el zip.`
+          ? `- \`${pista.archivo}\` — la música de fondo de la pieza${pista.durS ? `, ${segundosCortos(pista.durS)}` : ''}.`
+          : `- La pista de música ${plan.pistas.indexOf(pista) + 1} no está generada: no va en el zip.`
       );
     }
     if (Number.isFinite(Number(audio.cancion_entra_s)) && audio.cancion_entra_s !== null) {
@@ -2075,23 +2165,29 @@ function guiaDelMaterial(serie, estado, laPieza, plan) {
   }
 
   if (plan.bloques.length) {
-    partes.push('## Voces', '');
+    partes.push('## Diálogos', '');
     partes.push(
-      'La voz se graba por bloques, no frase a frase: cada archivo trae sus frases dentro, en ' +
-        'orden. Debajo de cada bloque van sus frases con el segundo en que entran en la pieza y, ' +
-        'si se midió, el tramo que ocupan dentro del archivo, para cortar una suelta si hace falta.',
+      'Los diálogos están numerados en el orden en que suenan: diálogo 001, 002, 003… La voz ' +
+        'se graba por grupos de frases, no frase a frase, así que cada archivo de `02-dialogos/` ' +
+        'se llama por el número de su PRIMER diálogo y dentro lleva los suyos seguidos, en ' +
+        'orden: se colocan los archivos por su número y los diálogos quedan en su sitio. Debajo ' +
+        'va cada diálogo con su número, el segundo en que entra en la pieza y —si se midió— el ' +
+        'tramo exacto que ocupa dentro de su archivo, por si quieres cortar uno suelto: ESE ' +
+        'tramo es el diálogo, ni un segundo más.',
       ''
     );
     for (const bloque of plan.bloques) {
+      const primero = bloque.lineas.length ? bloque.lineas[0].dialogo : null;
+      const ultimo = bloque.lineas.length ? bloque.lineas[bloque.lineas.length - 1].dialogo : null;
       partes.push(
         bloque.archivo
-          ? `### \`${bloque.archivo}\` — bloque «${bloque.id}» (${bloque.personajes.join(', ')})`
-          : `### Bloque «${bloque.id}» (${bloque.personajes.join(', ')}) — NO GRABADO`,
+          ? `### \`${bloque.archivo}\` — diálogos ${primero} a ${ultimo} (${bloque.personajes.join(', ')})`
+          : `### Diálogos ${primero} a ${ultimo} (${bloque.personajes.join(', ')}) — NO GRABADOS`,
         ''
       );
       for (const linea of bloque.lineas) {
         partes.push(
-          `- ${enTiempo(linea.t)} · ${linea.quien}: «${linea.es}»` +
+          `- Diálogo ${linea.dialogo} · ${enTiempo(linea.t)} · ${linea.quien}: «${linea.es}»` +
             (linea.tramo
               ? ` — en el archivo, de ${enTiempo(linea.tramo.inicio)} a ${enTiempo(linea.tramo.fin)}.`
               : '')
@@ -2102,6 +2198,10 @@ function guiaDelMaterial(serie, estado, laPieza, plan) {
   }
 
   partes.push('## Orden de montaje', '');
+  partes.push(
+    'La serie completa, número a número: es el mismo orden de la carpeta `01-en-orden/`.',
+    ''
+  );
   const grupos = [];
   {
     let actual = null;
@@ -2117,16 +2217,16 @@ function guiaDelMaterial(serie, estado, laPieza, plan) {
     if (grupo.escena !== null) partes.push(`### Escena ${grupo.escena}`, '');
     for (const suyo of grupo.planos) {
       partes.push(
-        `${detalle.indexOf(suyo) + 1}. **${suyo.id}** — entra en ${enTiempo(suyo.inicio)}, dura ${segundosCortos(suyo.dur)}`
+        `${suyo.numero}. **Plano ${suyo.numero}** — entra en ${enTiempo(suyo.inicio)}, dura ${segundosCortos(suyo.dur)}`
       );
       partes.push(
-        `   - Imagen: ${suyo.imagen ? `\`${suyo.imagen}\`` : 'NO HAY'} · Clip: ${
-          suyo.video
-            ? `\`${suyo.video}\``
-            : suyo.cobertura
-              ? 'es un plano de cobertura: va la imagen, con la cámara moviéndose en el editor'
-              : 'NO HAY'
-        }`
+        suyo.video
+          ? `   - Vídeo: \`${suyo.video}\``
+          : suyo.imagen
+            ? suyo.cobertura
+              ? `   - Imagen: \`${suyo.imagen}\` — es un plano de cobertura: va la imagen, con la cámara moviéndose en el editor`
+              : `   - Imagen: \`${suyo.imagen}\` — su vídeo no está generado: va la imagen en su número`
+            : '   - SIN ARCHIVO: este número no tiene ni imagen ni clip todavía'
       );
       if (suyo.recorte && (suyo.recorte[0] > 0 || suyo.recorte[1] > suyo.dur)) {
         partes.push(
@@ -2139,7 +2239,7 @@ function guiaDelMaterial(serie, estado, laPieza, plan) {
         );
       }
       for (const linea of suyo.frases) {
-        partes.push(`   - Dice ${linea.quien}: «${linea.es}»`);
+        partes.push(`   - Diálogo ${linea.dialogo} · dice ${linea.quien}: «${linea.es}»`);
       }
     }
     partes.push('');

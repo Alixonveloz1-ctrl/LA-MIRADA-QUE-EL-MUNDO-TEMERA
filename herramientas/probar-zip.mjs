@@ -187,7 +187,7 @@ const deMaterial = (archivos) => ({
 });
 
 const veinticinco = Array.from({ length: 25 }, (_, i) => ({
-  nombre: `imagenes/A${i + 1}.png`,
+  nombre: `01-en-orden/${String(i + 1).padStart(3, '0')}-imagen.png`,
   origen: `keyframes/teaser/A${i + 1}/1.png`
 }));
 
@@ -195,21 +195,21 @@ try {
   const plan = entenderElPaquete(deMaterial(veinticinco), {});
   di(plan.paquete.archivos.length === 25,
     'Un paquete de material con más de veinte archivos se acepta: un capítulo son cientos');
-  di(plan.paquete.archivos[0].nombre === 'imagenes/A1.png',
-    'Y los nombres conservan su carpeta: no se aplanan');
+  di(plan.paquete.archivos[0].nombre === '01-en-orden/001-imagen.png',
+    'Y los nombres conservan su carpeta y su número: no se aplanan');
 } catch (fallo) {
   di(false, 'Un paquete de material bien escrito se acepta', fallo.message || String(fallo));
 }
 
 try {
-  entenderElPaquete(deMaterial([{ nombre: 'imagenes/../fuera.png', origen: 'keyframes/x.png' }]), {});
+  entenderElPaquete(deMaterial([{ nombre: '01-en-orden/../fuera.png', origen: 'keyframes/x.png' }]), {});
   di(false, 'Un «..» en un paquete de material se rechaza');
 } catch {
   di(true, 'Un «..» en un paquete de material se rechaza: escribiría fuera de su carpeta');
 }
 
 try {
-  entenderElPaquete(deMaterial([{ nombre: 'imagenes\\A1.png', origen: 'keyframes/x.png' }]), {});
+  entenderElPaquete(deMaterial([{ nombre: '01-en-orden\\001-imagen.png', origen: 'keyframes/x.png' }]), {});
   di(false, 'Una barra invertida en un paquete de material se rechaza');
 } catch {
   di(true, 'Una barra invertida en un paquete de material se rechaza');
@@ -246,21 +246,21 @@ try {
 // archivo en su carpeta, byte a byte.
 const conCarpetas = join(taller, 'material.zip');
 await escribirZip(
-  [{ nombre: 'imagenes/A1.png', ruta: rutaFicha, bytes: Buffer.byteLength(LA_FICHA, 'utf8') }],
+  [{ nombre: '01-en-orden/001-imagen.png', ruta: rutaFicha, bytes: Buffer.byteLength(LA_FICHA, 'utf8') }],
   conCarpetas
 );
 if (hayUnzip) {
   let listado2 = '';
   try {
     listado2 = execFileSync('unzip', ['-l', conCarpetas], { encoding: 'utf8' });
-    di(/imagenes\/A1\.png/.test(listado2), 'Un zip con una carpeta dentro se lista con su ruta entera');
+    di(/01-en-orden\/001-imagen\.png/.test(listado2), 'Un zip con una carpeta dentro se lista con su ruta entera');
   } catch (fallo) {
     di(false, 'Un zip con una carpeta dentro se abre', String(fallo.message || fallo));
   }
   const fuera2 = mkdtempSync(join(tmpdir(), 'mirada-zip-fuera2-'));
   try {
     execFileSync('unzip', ['-q', conCarpetas, '-d', fuera2], { stdio: 'ignore' });
-    di(readFileSync(join(fuera2, 'imagenes', 'A1.png'), 'utf8') === LA_FICHA,
+    di(readFileSync(join(fuera2, '01-en-orden', '001-imagen.png'), 'utf8') === LA_FICHA,
       'Y al abrirlo, el archivo queda EN su carpeta y con su contenido intacto');
   } catch (fallo) {
     di(false, 'El archivo de dentro de la carpeta sale intacto', String(fallo.message || fallo));

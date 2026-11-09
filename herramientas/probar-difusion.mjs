@@ -541,8 +541,8 @@ const materialBueno = {
   empaquetar: {
     tipo: 'material',
     archivos: [
-      { nombre: 'imagenes/A1.png', origen: 'keyframes/teaser/A1/1.png' },
-      { nombre: 'videos/A1.mp4', origen: 'veo/teaser/A1/1/clip.mp4' },
+      { nombre: '01-en-orden/001-video.mp4', origen: 'veo/teaser/A1/1/clip.mp4' },
+      { nombre: '01-en-orden/002-imagen.png', origen: 'keyframes/teaser/A2/1.png' },
       { nombre: 'guia-de-montaje.md', texto: '# Guía\n' }
     ]
   }
@@ -567,11 +567,11 @@ const rechazaMaterial = (que, cambio) => {
 };
 
 rechazaMaterial('Un «..» dentro de una carpeta se rechaza igual: escribiría fuera de su sitio',
-  (m) => { m.empaquetar.archivos[0].nombre = 'imagenes/../fuera.png'; });
+  (m) => { m.empaquetar.archivos[0].nombre = '01-en-orden/../fuera.mp4'; });
 rechazaMaterial('Una barra invertida se rechaza: en Windows es una barra y vale lo mismo',
-  (m) => { m.empaquetar.archivos[0].nombre = 'imagenes\\A1.png'; });
+  (m) => { m.empaquetar.archivos[0].nombre = '01-en-orden\\001-video.mp4'; });
 rechazaMaterial('Una carpeta vacía en medio se rechaza',
-  (m) => { m.empaquetar.archivos[0].nombre = 'imagenes//A1.png'; });
+  (m) => { m.empaquetar.archivos[0].nombre = '01-en-orden//001-video.mp4'; });
 rechazaMaterial('Un tipo de paquete que no existe se rechaza',
   (m) => { m.empaquetar.tipo = 'otro'; });
 rechaza('Y sin «tipo», una carpeta sigue sin valer: el de difusión va plano, como siempre',
@@ -601,12 +601,13 @@ const lineasDeVoz = (pieza) => ((pieza.audio && pieza.audio.voz) || [])
   .map((l) => ({ quien: l.quien, ja: l.ja || '', es: l.es || '', t: Number(l.t), hasta: Number(l.hasta), escena: l.escena ?? null, intencion: null }))
   .sort((a, b) => a.t - b.t);
 const bloquesDeVoz = (pieza) => {
+  const lineas = lineasDeVoz(pieza);
   const porQuien = new Map();
-  for (const l of lineasDeVoz(pieza)) {
+  for (const l of lineas) {
     if (!porQuien.has(l.quien)) porQuien.set(l.quien, []);
     porQuien.get(l.quien).push(l);
   }
-  return [...porQuien.entries()].map(([quien, lineas]) => ({ id: quien, personajes: [quien], lineas, escena: null }));
+  return [...porQuien.entries()].map(([quien, suyas]) => ({ id: quien, personajes: [quien], lineas: suyas, escena: null }));
 };
 `,
   'planDelMaterial, subtitulosEnSrt, guiaDelMaterial, piezasDelMaterial, materialDe'
@@ -646,37 +647,48 @@ const serieFalsa = {
 const plan = mat.planDelMaterial(serieFalsa, estadoFalso, { id: 'teaser', titulo: 'Teaser', datos: datosFalsos });
 const nombres = plan.archivos.map((uno) => uno.nombre);
 
-di(nombres.includes('imagenes/A1.png') && nombres.includes('videos/A1.mp4'),
-  'La imagen y el clip de un plano se llaman igual, en sus carpetas: se emparejan solos');
-di(plan.archivos.find((uno) => uno.nombre === 'imagenes/A1.png').origen === 'keyframes/teaser/A1/1.png',
-  'Y cada nombre apunta al material EN USO de su plano');
-di(nombres.includes('efectos/A1.mp3') && nombres.includes('voces/madre.wav') && nombres.includes('musica/teaser-lecho.wav'),
-  'Van el efecto generado, el bloque de voz grabado y la pista de la pieza');
+di(nombres.includes('01-en-orden/001-video.mp4'),
+  'La serie de montaje abre con el vídeo del primer plano, con su número: 001-video');
+di(plan.archivos.find((uno) => uno.nombre === '01-en-orden/001-video.mp4').origen === 'veo/teaser/A1/1/clip.mp4',
+  'Y cada nombre de la serie apunta al material EN USO de su plano');
+di(nombres.includes('01-en-orden/002-imagen.png') &&
+  plan.archivos.find((uno) => uno.nombre === '01-en-orden/002-imagen.png').origen === 'keyframes/teaser/A2/1.png',
+  'Donde no hay vídeo va la imagen CON EL MISMO NÚMERO: la serie no tiene huecos');
+di(!nombres.some((uno) => /imagenes\/|videos\/|A1|A2/.test(uno.nombre)),
+  'Y ningún archivo del paquete se llama por el código interno del plano');
+di(nombres.includes('03-efectos/001-efecto.mp3') && nombres.includes('02-dialogos/dialogo-001.wav') &&
+  nombres.includes('04-musica/musica-01.wav'),
+  'Van el efecto con el número de su plano, el archivo de diálogos por su primer diálogo y la música',
+  nombres.join(', '));
+di(plan.archivos.find((uno) => uno.nombre === '02-dialogos/dialogo-001.wav').origen === 'audio/voz/teaser/madre.wav',
+  'Y el archivo de diálogos trae el bloque de voz grabado, entero: no se fingen cortes por frase');
+di(plan.bloques[0].lineas[0].dialogo === '001' && plan.detalle[0].frases[0].dialogo === '001',
+  'La frase queda numerada como diálogo 001 en el bloque y en su plano');
 di(!nombres.some((uno) => uno.includes('bso-de-otra')),
   'Y la música de otra pieza no se cuela');
 di(nombres.includes('subtitulos.srt') && nombres.includes('guion.txt'),
   'Van los subtítulos y el guion, escritos desde las líneas y los planos de la pieza');
-di(plan.conteos.imagenes === 2 && plan.conteos.clips === 1 && plan.conteos.efectos === 1 &&
+di(plan.conteos.imagenes === 1 && plan.conteos.clips === 1 && plan.conteos.efectos === 1 &&
   plan.conteos.bloquesVoz === 1 && plan.conteos.musica === 1 && plan.conteos.lineas === 1,
   'Los conteos cuentan lo que hay, ni uno más',
   JSON.stringify(plan.conteos));
-di(plan.faltas.some((una) => /A3 no tiene imagen/.test(una)) &&
-  plan.faltas.some((una) => /A3 no tiene clip/.test(una)) &&
-  plan.faltas.some((una) => /A3 pide un efecto/.test(una)),
-  'Lo que falta se dice plano a plano, y no impide el paquete');
+di(plan.faltas.some((una) => /plano 003 \(A3\) no tiene ni imagen ni clip/.test(una)) &&
+  plan.faltas.some((una) => /plano 003 \(A3\) pide un efecto/.test(una)),
+  'Lo que falta se dice plano a plano, por su número, y no impide el paquete',
+  plan.faltas.join(' · '));
 di(!plan.faltas.some((una) => /A2/.test(una)),
-  'Y un plano de cobertura sin clip NO es una falta: es su forma');
+  'Y un plano de cobertura sin clip NO es una falta: es su forma, y su imagen va en su número');
 
 const srt = mat.subtitulosEnSrt([{ t: 1, hasta: 3, es: 'No dejes que te vean.' }]);
 di(/^1\n00:00:01,000 --> 00:00:03,000\nNo dejes que te vean\./.test(srt),
   'El .srt sale con su numeración y sus tiempos, listo para importar', srt.split('\n')[1]);
 
 const guia = mat.guiaDelMaterial(serieFalsa, estadoFalso, { id: 'teaser', titulo: 'Teaser', datos: datosFalsos }, plan);
-di(/## Orden de montaje/.test(guia) && /\*\*A1\*\*/.test(guia) && /imagenes\/A1\.png/.test(guia),
-  'La guía trae el orden de los planos con el archivo de cada uno');
-di(/de 0:01 a 0:03/.test(guia),
-  'Y dice en qué tramo del bloque de voz está cada frase, para poder cortarla suelta');
-di(/## Lo que falta/.test(guia) && /A3 no tiene clip/.test(guia),
+di(/## Orden de montaje/.test(guia) && /\*\*Plano 001\*\*/.test(guia) && /01-en-orden\/001-video\.mp4/.test(guia),
+  'La guía trae la serie completa en orden, número a número, con el archivo de cada plano');
+di(/Diálogo 001/.test(guia) && /de 0:01 a 0:03/.test(guia),
+  'Y cada diálogo va con su número y el tramo exacto que ocupa dentro de su archivo, para cortarlo suelto');
+di(/## Lo que falta/.test(guia) && /plano 003 \(A3\) no tiene ni imagen ni clip/.test(guia),
   'Y lo que falta va escrito en la guía, no hay que volver a abrir el estudio para saberlo');
 
 const delMaterial = mat.piezasDelMaterial(
