@@ -83,7 +83,7 @@
   },
   "personajes": {
     "madre": {
-      "identidad": "young woman in her early twenties, gaunt and worn; long dark brown hair, matted and unwashed; pale olive skin; large deep-set grey-green eyes with dark circles; high sharp cheekbones, cracked lips; very thin; torn undyed linen shift; old and recent chafe marks from restraints ringing both wrists"
+      "identidad": "young woman in her early twenties, gaunt and worn; long dark brown hair, matted and unwashed, falling over where her face would be; pale olive skin; very thin; torn undyed linen shift; old and recent chafe marks from restraints ringing both wrists; always seen from behind, in shadow or with her face covered by her hair — her face is never shown"
     },
     "bebe": {
       "nombre": "el bebé",
@@ -98,7 +98,7 @@
       "identidad": "wiry boy about ten years old, dark hair to the jaw, red eyes, pale olive skin, a thin ritual line marked across the left palm, thin scavenged dark clothing, cloth wraps over his feet, flat unreadable face"
     },
     "saharis": {
-      "identidad": "young man about seventeen, short black hair in uneven ragged lengths, roughly cut and never groomed or barbered, red eyes, pale olive skin, fine features gone hard, the same high cheekbones as his mother, immaculate dark charcoal noble coat, no high collar, the coat collar turned down flat over a plain black shirt closed at the neck, a silver signet ring, a thin old pale line across the left palm, unreadable face",
+      "identidad": "young man of sixteen, short black hair in uneven ragged lengths, roughly cut and never groomed or barbered, red eyes, pale olive skin, fine features gone hard, the same high cheekbones as his mother, immaculate dark charcoal noble coat, no high collar, the coat collar turned down flat over a plain black shirt closed at the neck, a silver signet ring, a thin old pale line across the left palm, unreadable face",
       "nota": "Ancla de linaje. Todas las edades encadenan a esta. Sus pomulos son los de su madre: es el unico rasgo heredado."
     },
     "saharis-bebe": {
