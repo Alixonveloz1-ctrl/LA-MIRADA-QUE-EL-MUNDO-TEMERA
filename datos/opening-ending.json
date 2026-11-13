@@ -92,13 +92,11 @@
         "veo": "medio",
         "luz": "CRIPTA",
         "escenario": "cripta",
-        "refs": [
-          "madre-cripta"
-        ],
+        "refs": [],
         "encadena_con": null,
         "boca_visible": null,
-        "imagen": "Close shot of a gaunt young woman lying on a dark stone altar, head turned to one side, eyes open and empty, orange torchlight raking across her face",
-        "video": "Her eyes stay open. One slow blink and nothing else. Camera locked."
+        "imagen": "Shot from above and behind the head of a gaunt young woman lying on a dark stone altar, her long dark hair spread across the stone and covering her face completely, orange torchlight raking across her hair and shoulders, her face never visible",
+        "video": "She lies completely still beneath her hair. Only the torchlight breathes over her. Camera locked."
       },
       {
         "id": "OP03",

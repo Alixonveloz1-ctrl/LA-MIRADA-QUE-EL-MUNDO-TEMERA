@@ -254,6 +254,13 @@ comprobar('Se sabe cuándo el español ya respira, con cierres o sin ellos', () 
 //
 // Las dos cosas se prueban aquí y CON LOS DATOS DE VERDAD, no con un ejemplo de
 // juguete: si alguien reescribe el teaser y esto deja de cumplirse, se pone rojo.
+//
+// CORRECCIÓN DE CANON (Alixon, 2026-11-12): la madre se filma SIN CARA en toda
+// la serie, también en el teaser. El plano B2 ya no es un primer plano de sus
+// labios: va de espaldas y agachada sobre el niño, con el pelo cubriéndole la
+// cara, y su línea se oye desde debajo del pelo. Ningún plano del teaser le
+// mueve los labios, así que su línea de los 24 s YA no se adelanta: se queda
+// escrita donde está, como línea en off, que es como suenan todas las suyas.
 
 /** El ámbito de una pieza entera, que es como se monta el teaser. */
 function ambitoDe(modelo) {
@@ -277,14 +284,16 @@ const elTeaser = construirModelo(serie, {
 });
 const bocasDelTeaser = bocasQueHablan(elTeaser, ambitoDe(elTeaser));
 
-comprobar('La línea de la madre se adelanta al plano donde se le mueven los labios', () => {
+comprobar('La línea de la madre YA no se adelanta: ningún plano le mueve los labios', () => {
   const suya = elTeaser.lineas.find((una) => una.quien === 'madre' && una.t === 24);
   if (!suya) throw new Error('el teaser ya no tiene esa línea; hay que revisar esta prueba');
 
-  const movida = bocasDelTeaser.get(claveDeLinea(suya));
-  if (!movida) throw new Error('no se adelanta, y B2 le mueve los labios durante cuatro segundos');
-  if (movida.toma !== 'B2') throw new Error(`se empareja con ${movida.toma} y no con B2`);
-  if (movida.en !== 21) throw new Error(`entra en ${movida.en} s y B2 empieza en 21`);
+  if (bocasDelTeaser.get(claveDeLinea(suya))) {
+    throw new Error('se adelanta a un plano de boca, y la madre ya no tiene boca visible en el teaser');
+  }
+  const b2 = elTeaser.tomas.find((una) => una.id === 'B2');
+  if (!b2) throw new Error('el teaser ya no tiene el plano B2');
+  if (b2.boca_visible) throw new Error('B2 vuelve a enseñar la boca de la madre: su cara no se ve nunca');
 });
 
 comprobar('La de Saharis NO se adelanta: ahí tiene la boca en cuadro pero quieta', () => {

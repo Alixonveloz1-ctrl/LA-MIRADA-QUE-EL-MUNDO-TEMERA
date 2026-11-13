@@ -794,20 +794,18 @@
           "dur": 4,
           "veo": "medio",
           "luz": "BARRIO",
-          "refs": [
-            "madre-barrio-34"
-          ],
+          "refs": [],
           "encadena_con": null,
-          "imagen": "Extreme close up of a young woman's cracked lips, lower half of the face only, eyes out of frame, cold light from the left, lips parted mid-word",
-          "video": "She finishes a soft sung phrase, then her lips move continuously as she speaks quietly and urgently to the child. The mouth keeps moving for as long as she is speaking. Camera locked, nothing else moves.",
+          "imagen": "Shot from behind and above a young woman in a bare stone cell, bowed over the child in her arms, her long dark hair falling forward and covering her face completely, cold light from the left catching only the edge of her hair and her shoulder, her face never visible",
+          "video": "She finishes a soft sung phrase, heard but not seen, then whispers quietly and urgently to the child, her head bowed low and her hair covering her face the whole time. Camera locked, nothing else moves.",
           "dur_gen": 4,
           "recorte": [
             0,
             4
           ],
-          "nota": "Unico plano del teaser con boca visible sonando una linea. Ella deja de cantar y susurra; el vocalise sigue por debajo como partitura, no como sonido de la escena.",
+          "nota": "La madre se filma sin cara, como en toda la serie (correccion de canon de Alixon, 2026-11-12): su linea se oye desde debajo del pelo, sin boca visible. Ella deja de cantar y susurra; el vocalise sigue por debajo como partitura, no como sonido de la escena.",
           "escenario": "celda",
-          "boca_visible": "madre"
+          "boca_visible": null
         },
         {
           "id": "B3",
